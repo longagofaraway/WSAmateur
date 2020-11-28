@@ -78,7 +78,7 @@ ListView {
 
     function createTextFrame(frameParent) {
         let comp = Qt.createComponent("CardInfoFrame.qml");
-        let incubator = comp.incubateObject(root.contentItem, { visible: false }, Qt.Asynchronous);
+        let incubator = comp.incubateObject(root, { visible: false }, Qt.Asynchronous);
         let createdCallback = function(status) {
             if (status === Component.Ready) {
                 if (frameParent.state !== "hovered") {
@@ -89,7 +89,7 @@ ListView {
                     frameParent.cardTextFrame.destroy();
                 var textFrame = incubator.object;
 
-                let cardMappedPoint = root.contentItem.mapFromItem(frameParent, frameParent.x, frameParent.y);
+                let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
                 let cardOffset = frameParent.x * clockView.scale;
                 let cardWidthAndScaleOffset = frameParent.width * clockView.scale * (frameParent.scale + 1) / 2;
                 textFrame.x = clockView.x + cardOffset + cardWidthAndScaleOffset;

@@ -11,9 +11,9 @@
         <file>qml/CardsView.qml</file>
         <file>qml/CardsViewColumn.qml</file>
         <file>qml/Clock.qml</file>
-		
+        <file>qml/GameWindow.qml</file>
+        <file>qml/MainWindow.qml</file>
         <file>resources/background.jpg</file>
-		
         <file>resources/images/imc.jpg</file>
         <file>resources/images/imc0.jpg</file>
         <file>resources/images/imc2.jpg</file>

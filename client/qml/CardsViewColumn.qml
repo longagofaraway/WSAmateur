@@ -15,7 +15,7 @@ ListView {
     visible: count
 
     function maxHeight() {
-        var point = root.contentItem.mapFromItem(thisListView, x, y);
+        var point = root.mapFromItem(thisListView, x, y);
         var allHeight = contentHeight + topMargin + bottomMargin;
         if (point.y + allHeight > root.height)
             return root.height - point.y;
@@ -51,9 +51,6 @@ ListView {
             MouseArea {
                 id: cardDelegate
 
-                //property int visualIndex: DelegateModel.itemsIndex
-                //Binding { target: cardImgDelegate; property: "visualIndex"; value: visualIndex }
-
                 width: root.cardWidth
                 height: root.cardHeight
                 hoverEnabled: true
@@ -74,7 +71,6 @@ ListView {
                     anchors.centerIn: cardDelegate
 
                     property CardInfoFrame cardTextFrame: null
-                    //property int visualIndex: 0
 
                     states: State {
                         name: "hovered"
@@ -109,7 +105,7 @@ ListView {
 
     function createTextFrame(frameParent) {
         let comp = Qt.createComponent("CardInfoFrame.qml");
-        let incubator = comp.incubateObject(root.contentItem, { visible: false }, Qt.Asynchronous);
+        let incubator = comp.incubateObject(root, { visible: false }, Qt.Asynchronous);
         let createdCallback = function(status) {
             if (status === Component.Ready) {
                 if (frameParent.state !== "hovered") {
@@ -120,8 +116,8 @@ ListView {
                     frameParent.cardTextFrame.destroy();
                 let textFrame = incubator.object;
 
-                let listViewMappedPoint = root.contentItem.mapFromItem(thisListView, thisListView.x, thisListView.y);
-                let cardMappedPoint = root.contentItem.mapFromItem(frameParent, frameParent.x, frameParent.y);
+                let listViewMappedPoint = root.mapFromItem(thisListView, thisListView.x, thisListView.y);
+                let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
                 textFrame.x = cardMappedPoint.x - textFrame.width;
                 let scaleOffset = root.cardHeight * 0.1 * 0.5;
                 textFrame.y = listViewMappedPoint.y + frameParent.y - scaleOffset;

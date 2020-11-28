@@ -9,24 +9,24 @@ Rectangle {
     color: "#564747"
 
     property ListModel listModel: ListModel {
-        ListElement { type: "char"; level: 1; img: "imc"; }
-        ListElement { type: "char"; level: 0; img: "imc0" }
-        ListElement { type: "char"; level: 3; img: "imc3" }
-        ListElement { type: "climax"; level: 0; img: "imc4" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc" }
-        ListElement { type: "char"; level: 0; img: "imc0" }
-        ListElement { type: "char"; level: 3; img: "imc3" }
-        ListElement { type: "climax"; level: 0; img: "imc4" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc2" }
-        ListElement { type: "char"; level: 1; img: "imc" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc"; }
+        ListElement { type: "char"; level: 0; img: "qrc:///resources/images/imc0" }
+        ListElement { type: "char"; level: 3; img: "qrc:///resources/images/imc3" }
+        ListElement { type: "climax"; level: 0; img: "qrc:///resources/images/imc4" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc" }
+        ListElement { type: "char"; level: 0; img: "qrc:///resources/images/imc0" }
+        ListElement { type: "char"; level: 3; img: "qrc:///resources/images/imc3" }
+        ListElement { type: "climax"; level: 0; img: "qrc:///resources/images/imc4" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
+        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc" }
     }
 
     Row {

@@ -8,7 +8,6 @@ ListView {
     id: handView
 
     property bool opponent
-    property var innerModel
     property real length: getHandLength(count)
     property int dragIndex: -1
 
