@@ -1,27 +1,25 @@
 set(clientSources
     src/card.cpp
     src/client.cpp
+    src/clientConnection.cpp
     src/game.cpp
     src/hand.cpp
-    src/localConnection.cpp
+    src/localClientConnection.cpp
     src/localServer.cpp
+    src/localServerConnection.cpp
     src/main.cpp
     src/player.cpp
-    src/remoteConnection.cpp
     src/card.h
     src/client.h
+    src/clientConnection.h
     src/game.h
     src/hand.h
-    src/localConnection.h
+    src/localClientConnection.h
     src/localServer.h
-    src/player.h
-    src/remoteConnection.h)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+    src/localServerConnection.h
+    src/player.h)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
-
-include_directories(../common)
 
 add_executable(WSAmateur ${clientSources} qml.qrc)
 target_compile_features(WSAmateur PRIVATE cxx_std_17)

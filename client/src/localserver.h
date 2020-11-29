@@ -4,18 +4,14 @@
 
 #include <QObject>
 
-#include "localConnection.h"
-#include "serverProtocolHandler.h"
+#include "localServerConnection.h"
+#include "server.h"
 
-class LocalServer : public QObject
+class LocalServer : public Server
 {
     Q_OBJECT
-private:
-    std::vector<std::shared_ptr<ServerProtocolHandler>> mClients;
 public:
-    explicit LocalServer(QObject *parent = nullptr);
-
-    std::shared_ptr<LocalConnection> newConnection();
+    std::shared_ptr<LocalServerConnection> newConnection();
 signals:
 
 };

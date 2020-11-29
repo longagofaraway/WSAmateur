@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+message LobbyCommand {
+	google.protobuf.Any command = 1;
+}
+
+message CommandCreateGame {
+	string description = 1;
+}
+
+message CommandJoinGame {
+	int32 gameId = 1;
+}

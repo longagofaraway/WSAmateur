@@ -17,7 +17,6 @@ class LocalServer;
 class QThread;
 class Client;
 
-
 class Game : public QQuickItem {
     Q_OBJECT
 private:
@@ -28,10 +27,14 @@ private:
     std::vector<std::unique_ptr<Client>> mClients;
 
 public:
+    Game();
     ~Game();
 
     QQmlEngine* engine() const;
     QQmlContext* context() const;
+
+public slots:
+    void localGameJoined(const std::shared_ptr<EventGameJoined> event);
 
 private:
     void startLocalGame();

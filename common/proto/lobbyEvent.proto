@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+message LobbyEvent {
+	google.protobuf.Any event = 1;
+}
+
+message EventGameJoined {
+        int32 playerId = 1;
+}

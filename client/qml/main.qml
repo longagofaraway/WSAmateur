@@ -5,6 +5,7 @@ import QtGraphicalEffects 1.12
 import QtQuick.Controls 1.1
 
 Window {
+    id: mainWindow
     visible: true
     visibility: "FullScreen"
     width: 640

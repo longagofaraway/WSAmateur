@@ -25,13 +25,13 @@ Item {
         id: minimize
         anchors.top: exit.bottom
         text: "exit fullscreen" + root.height
-        onClicked: root.visibility = "Windowed"
+        onClicked: mainWindow.visibility = "Windowed"
     }
     Button {
         id: maximize
         anchors.top: minimize.bottom
         text: "enter fullscreen" + root.width
-        onClicked: root.visibility = "FullScreen"
+        onClicked: mainWindow.visibility = "FullScreen"
     }
     Button {
         id: deleter
