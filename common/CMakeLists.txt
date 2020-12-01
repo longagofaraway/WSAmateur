@@ -1,12 +1,18 @@
 add_subdirectory(proto)
 
 set(commonSources
+    deckList.cpp
     server.cpp
+    serverCard.cpp
+    serverCardZone.cpp
     serverGame.cpp
     serverPlayer.cpp
     serverProtocolHandler.cpp
     connection.h
+    deckList.h
     server.h
+    serverCard.h
+    serverCardZone.h
     serverGame.h
     serverPlayer.h
     serverProtocolHandler.h
@@ -22,6 +28,10 @@ target_include_directories(wsamateurCommon
 )
 
 target_compile_features(wsamateurCommon PRIVATE cxx_std_17)
+
+if (MSVC)
+    target_compile_options(wsamateurCommon PRIVATE "/wd4251")
+endif()
 
 target_link_libraries(wsamateurCommon PUBLIC wsamateurProto)
 

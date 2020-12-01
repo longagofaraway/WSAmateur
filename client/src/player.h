@@ -7,11 +7,12 @@
 class Game;
 
 class Player {
+    size_t mId;
     Game *mGame;
     bool mOpponent;
     std::unique_ptr<Hand> mHand;
 public:
-    Player(Game *game, bool opponent);
+    Player(size_t id, Game *game, bool opponent);
 
     bool isOpponent() {
         return mOpponent;

@@ -1,12 +1,14 @@
 #include "localServer.h"
 
+#include "localServerConnection.h"
 #include "serverProtocolHandler.h"
 
-std::shared_ptr<LocalServerConnection> LocalServer::newConnection() {
-    auto conn = std::make_shared<LocalServerConnection>();
+LocalServerConnection* LocalServer::newConnection() {
+    auto conn = std::make_unique<LocalServerConnection>();
     conn->moveToThread(thread());
-    auto client = std::make_shared<ServerProtocolHandler>(this, conn);
+    auto connPtr = conn.get();
+    auto client = std::make_unique<ServerProtocolHandler>(this, std::move(conn));
     client->moveToThread(thread());
-    mClients.emplace_back(client);
-    return conn;
+    mClients.emplace_back(std::move(client));
+    return connPtr;
 }

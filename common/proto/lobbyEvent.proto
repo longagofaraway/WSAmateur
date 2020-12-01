@@ -7,5 +7,6 @@ message LobbyEvent {
 }
 
 message EventGameJoined {
-        int32 playerId = 1;
+	uint32 playerId = 1;
+	uint32 gameId = 2;
 }

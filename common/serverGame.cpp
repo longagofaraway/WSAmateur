@@ -1,5 +1,4 @@
 #include "serverGame.h"
-#include "serverPlayer.h"
 #include "serverProtocolHandler.h"
 
 #include "lobbyEvent.pb.h"
@@ -9,13 +8,34 @@ ServerGame::ServerGame(size_t id, std::string description)
 
 }
 
+ServerPlayer* ServerGame::player(size_t id) {
+    if (!mPlayers.count(id))
+        return nullptr;
+
+    return mPlayers.at(id).get();
+}
+
 void ServerGame::addPlayer(ServerProtocolHandler *client) {
-    QMutexLocker locker(&gameMutex);
-    auto player = std::make_shared<ServerPlayer>(this, client, mNextPlayerId++);
-    mPlayers.emplace(player->id(), player);
-    locker.unlock();
+    QMutexLocker locker(&mGameMutex);
+    size_t newId = ++mNextPlayerId;
+    auto player = std::make_unique<ServerPlayer>(this, client, newId);
+    mPlayers.emplace(newId, std::move(player));
+
+    client->addGameAndPlayer(mId, newId);
 
     EventGameJoined event;
-    event.set_playerid(static_cast<google::protobuf::int32>(player->id()));
+    event.set_playerid(static_cast<google::protobuf::uint32>(newId));
+    event.set_gameid(static_cast<google::protobuf::uint32>(mId));
     client->sendLobbyEvent(event);
+}
+
+void ServerGame::startGame() {
+    for (auto &playerEntry: mPlayers) {
+        if (!playerEntry.second->ready())
+            return;
+    }
+
+    for (auto &playerEntry: mPlayers) {
+        playerEntry.second->setupZones();
+    }
 }

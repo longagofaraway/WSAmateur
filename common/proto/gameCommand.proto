@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+message GameCommand {
+	google.protobuf.Any command = 1;
+}
+
+message CommandSetDeck {
+	string deck = 1;
+}
+
+message CommandReadyToStart {
+	bool ready = 1;
+}

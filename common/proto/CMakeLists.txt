@@ -1,6 +1,7 @@
 set(protoSources
     commandContainer.proto
     serverMessage.proto
+    gameCommand.proto
     lobbyCommand.proto
     lobbyEvent.proto
     )

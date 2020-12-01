@@ -14,7 +14,6 @@ class QQmlContext;
 class QQmlEngine;
 class QQmlContext;
 class LocalServer;
-class QThread;
 class Client;
 
 class Game : public QQuickItem {
@@ -23,7 +22,7 @@ private:
     std::unique_ptr<Player> mPlayer;
     std::unique_ptr<Player> mOpponent;
     std::unique_ptr<LocalServer> mLocalServer;
-    std::unique_ptr<QThread> mClientThread;
+    QThread mClientThread;
     std::vector<std::unique_ptr<Client>> mClients;
 
 public:
@@ -34,7 +33,8 @@ public:
     QQmlContext* context() const;
 
 public slots:
-    void localGameJoined(const std::shared_ptr<EventGameJoined> event);
+    void localGameCreated(const std::shared_ptr<EventGameJoined> event);
+    void opponentJoined(const std::shared_ptr<EventGameJoined> event);
 
 private:
     void startLocalGame();

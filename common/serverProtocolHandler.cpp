@@ -1,24 +1,35 @@
 #include "serverProtocolHandler.h"
 
+#include <exception>
+
 #include "commandContainer.pb.h"
+#include "gameCommand.pb.h"
 #include "lobbyCommand.pb.h"
 #include "lobbyEvent.pb.h"
 #include "serverMessage.pb.h"
 
+#include "serverPlayer.h"
 #include "server.h"
+#include "serverGame.h"
 
-ServerProtocolHandler::ServerProtocolHandler(Server *server, std::shared_ptr<Connection> connection)
-    : mServer(server), mConnection(connection) {
+ServerProtocolHandler::ServerProtocolHandler(Server *server, std::unique_ptr<Connection> &&connection)
+    : mServer(server), mConnection(std::move(connection)), mGameId(0), mPlayerId(0) {
     connect(mConnection.get(), SIGNAL(messageReady(std::shared_ptr<CommandContainer>)),
             this, SLOT(processCommand(std::shared_ptr<CommandContainer>)));
 }
 
 void ServerProtocolHandler::processCommand(std::shared_ptr<CommandContainer> cont) {
+    try {
     if (cont->command().Is<LobbyCommand>()) {
         LobbyCommand lobbyCmd;
         cont->command().UnpackTo(&lobbyCmd);
         processLobbyCommand(lobbyCmd);
+    } else if (cont->command().Is<GameCommand>()) {
+        GameCommand gameCmd;
+        cont->command().UnpackTo(&gameCmd);
+        processGameCommand(gameCmd);
     }
+    } catch (const std::exception &) {}
 }
 
 void ServerProtocolHandler::processLobbyCommand(LobbyCommand &cmd) {
@@ -26,7 +37,27 @@ void ServerProtocolHandler::processLobbyCommand(LobbyCommand &cmd) {
         CommandCreateGame createCmd;
         cmd.command().UnpackTo(&createCmd);
         mServer->createGame(createCmd, this);
+    } else if (cmd.command().Is<CommandJoinGame>()) {
+        CommandJoinGame joinCmd;
+        cmd.command().UnpackTo(&joinCmd);
+        mServer->processGameJoinRequest(joinCmd, this);
     }
+}
+
+void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
+    QReadLocker locker(&mServer->mGamesLock);
+
+    auto game = mServer->game(mGameId);
+    if (game)
+        return;
+
+    QMutexLocker gameLocker(&game->mGameMutex);
+
+    auto player = game->player(mPlayerId);
+    if (!player)
+        return;
+
+    player->processGameCommand(cmd);
 }
 
 void ServerProtocolHandler::sendProtocolItem(const ::google::protobuf::Message &event) {
@@ -39,4 +70,9 @@ void ServerProtocolHandler::sendLobbyEvent(const ::google::protobuf::Message &ev
     LobbyEvent lobbyEvent;
     lobbyEvent.mutable_event()->PackFrom(event);
     sendProtocolItem(lobbyEvent);
+}
+
+void ServerProtocolHandler::addGameAndPlayer(size_t gameId, size_t playerId) {
+    mGameId = gameId;
+    mPlayerId = playerId;
 }

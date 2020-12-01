@@ -11,22 +11,20 @@
 class LobbyEvent;
 class EventGameJoined;
 
-std::shared_ptr<CommandContainer> prepareLobbyCommand(const ::google::protobuf::Message &cmd);
-
 class Client : public QObject {
     Q_OBJECT
 private:
-    std::shared_ptr<ClientConnection> mConnection;
+    std::unique_ptr<ClientConnection> mConnection;
 public:
-    Client(std::shared_ptr<ClientConnection> connection);
+    Client(std::unique_ptr<ClientConnection> &&connection);
 
     void sendCommand(std::shared_ptr<CommandContainer> command) {
+        // this should going to different thread
         emit queueCommand(command);
     }
 
-    void sendLobbyCommand(const ::google::protobuf::Message &cmd) {
-        sendCommand(prepareLobbyCommand(cmd));
-    }
+    void sendLobbyCommand(const ::google::protobuf::Message &cmd);
+    void sendGameCommand(const ::google::protobuf::Message &cmd);
 
 signals:
     void queueCommand(std::shared_ptr<CommandContainer> command);
