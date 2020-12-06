@@ -13,7 +13,7 @@ void ServerGame::sendPublicEvent(const ::google::protobuf::Message &event, size_
         if (playersEntry.first == senderId)
             continue;
 
-        playersEntry.second->sendGameEvent(event);
+        playersEntry.second->sendGameEvent(event, senderId);
     }
 }
 

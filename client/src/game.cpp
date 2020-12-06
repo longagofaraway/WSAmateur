@@ -4,8 +4,10 @@
 #include "localServer.h"
 
 #include "gameCommand.pb.h"
+#include "gameEvent.pb.h"
 #include "lobbyCommand.pb.h"
 #include "lobbyEvent.pb.h"
+#include "moveEvents.pb.h"
 
 Game::Game() {
     qRegisterMetaType<std::shared_ptr<EventGameJoined>>("std::shared_ptr<EventGameJoined>");
@@ -31,6 +33,9 @@ void Game::startLocalGame() {
 
     mClientThread.start();
 
+    for (auto &client: mClients)
+        connect(client.get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
+                this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
     connect(mClients.front().get(), SIGNAL(gameJoinedEventReceived(const std::shared_ptr<EventGameJoined>)),
             this, SLOT(localGameCreated(const std::shared_ptr<EventGameJoined>)));
 
@@ -84,6 +89,11 @@ void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
         client->sendGameCommand(cmd);
         client->sendGameCommand(cmd2);
     }
+}
+
+void Game::processGameEvent(const std::shared_ptr<GameEvent> event) {
+    if (mPlayer->id() == event->playerid())
+        mPlayer->processGameEvent(event);
 }
 
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }

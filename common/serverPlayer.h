@@ -28,7 +28,7 @@ public:
     bool ready() const { return mReady; }
 
     void processGameCommand(GameCommand &cmd);
-    void sendGameEvent(const ::google::protobuf::Message &event);
+    void sendGameEvent(const ::google::protobuf::Message &event, size_t playerId = 0);
     void addDeck(const std::string &deck);
     DeckList* deck() { return mDeck.get(); }
     ServerCardZone* addZone(std::string_view name);

@@ -8,6 +8,7 @@
 
 #include "clientConnection.h"
 
+class GameEvent;
 class LobbyEvent;
 class EventGameJoined;
 
@@ -29,6 +30,7 @@ public:
 signals:
     void queueCommand(std::shared_ptr<CommandContainer> command);
     void gameJoinedEventReceived(const std::shared_ptr<EventGameJoined> event);
+    void gameEventReceived(const std::shared_ptr<GameEvent> event);
 
 private slots:
     void sendCommandContainer(std::shared_ptr<CommandContainer> command) {

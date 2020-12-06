@@ -10,6 +10,7 @@ ListView {
     property bool opponent
     property real length: getHandLength(count)
     property int dragIndex: -1
+    property bool mulligan: false
 
     width: length
     height: root.cardHeight
@@ -28,6 +29,20 @@ ListView {
     spacing: -root.cardWidth  / 3
     interactive: false
     z: 1
+
+    states: State {
+        name: "mulligan"
+        ParentChange {
+            target: handView
+            parent: root
+        }
+        PropertyChanges {
+            target: handView
+            scale: 1.5
+            y: root.height / 2;
+            z: 100
+        }
+    }
 
     function getAngle(index, middle) {
         return (index - middle) * 3 * (opponent ? -1 : 1);
@@ -89,14 +104,14 @@ ListView {
             Card {
                 id: cardImgDelegate
 
-                source: src
+                source: "image://imgprov/" + code
 
                 property int visualIndex: 0
                 property var cardCode: code
 
                 anchors {
-                    horizontalCenter: parent === cardDelegate ? parent.horizontalCenter : undefined
-                    verticalCenter: parent === cardDelegate ? parent.verticalCenter : undefined
+                    horizontalCenter: cardDelegate.horizontalCenter
+                    verticalCenter: cardDelegate.verticalCenter
                 }
 
                 states: [
@@ -109,7 +124,13 @@ ListView {
                                 verticalCenter: undefined
                             }
                             scale: 1.5
-                            anchors.verticalCenterOffset: -(getFanOffset(cardDelegate.visualIndex) + (root.cardHeight / 2 - 8) * 1.5)
+                            anchors.verticalCenterOffset: {
+                                if (handView.mulligan) {
+                                    return -getFanOffset(cardDelegate.visualIndex);
+                                } else {
+                                    return -(getFanOffset(cardDelegate.visualIndex) + (root.cardHeight / 2 - 8) * 1.5);
+                                }
+                            }
                             z: 100
                         }
                         ParentChange {
@@ -148,21 +169,14 @@ ListView {
                         SequentialAnimation {
                             ParallelAnimation {
                                 NumberAnimation {
-                                    target: cardImgDelegate
                                     property: "scale"
                                     duration: 50
                                     easing.type: Easing.OutElastic
                                     easing.amplitude: 2.6
                                     easing.period: 2.0
                                 }
-                                NumberAnimation {
-                                    target: cardImgDelegate
-                                    property: "anchors.verticalCenterOffset"
-                                    duration: 17
-                                }
-                                RotationAnimation {
-                                    duration: 17
-                                }
+                                NumberAnimation { property: "anchors.verticalCenterOffset"; duration: 17 }
+                                RotationAnimation { duration: 17 }
                             }
                             ScriptAction { scriptName: "textFrame" }
                         }
@@ -170,20 +184,11 @@ ListView {
                     Transition {
                         from: "hovered"
                         to: ""
+
                         ParallelAnimation {
-                            NumberAnimation {
-                                target: cardImgDelegate
-                                property: "scale"
-                                duration: 150
-                            }
-                            NumberAnimation {
-                                target: cardImgDelegate
-                                property: "anchors.verticalCenterOffset"
-                                duration: 150
-                            }
-                            RotationAnimation {
-                                duration: 150
-                            }
+                            NumberAnimation { property: "scale"; duration: 150 }
+                            NumberAnimation { property: "anchors.verticalCenterOffset"; duration: 150 }
+                            RotationAnimation { duration: 150 }
                             ScriptAction { script: destroyTextFrame(cardDelegate); }
                         }
                     },
@@ -191,16 +196,8 @@ ListView {
                         from: "hovered"
                         to: "dragged"
                         ParallelAnimation {
-                            NumberAnimation {
-                                target: cardImgDelegate
-                                property: "scale"
-                                duration: 150
-                            }
-                            NumberAnimation {
-                                target: cardImgDelegate
-                                property: "y"
-                                duration: 50
-                            }
+                            NumberAnimation { property: "scale"; duration: 150 }
+                            NumberAnimation { property: "y"; duration: 50 }
                             ScriptAction { script: destroyTextFrame(cardDelegate); }
                         }
                     }

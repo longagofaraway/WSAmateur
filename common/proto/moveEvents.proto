@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 message EventInitialHand {
-	uint32 playerId = 1;
-	uint32 count = 2;
-	repeated string codes = 3;
+	uint32 count = 1;
+	repeated string codes = 2;
 }

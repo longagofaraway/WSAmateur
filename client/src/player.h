@@ -4,7 +4,9 @@
 
 #include "hand.h"
 
+class EventInitialHand;
 class Game;
+class GameEvent;
 
 class Player {
     size_t mId;
@@ -18,5 +20,9 @@ public:
         return mOpponent;
     }
 
-protected:
+    size_t id() const { return mId; }
+    void processGameEvent(const std::shared_ptr<GameEvent> event);
+
+private:
+    void setInitialHand(const EventInitialHand &event);
 };

@@ -1,8 +1,10 @@
 #include "client.h"
 
 #include "gameCommand.pb.h"
+#include "gameEvent.pb.h"
 #include "lobbyCommand.pb.h"
 #include "lobbyEvent.pb.h"
+#include "moveEvents.pb.h"
 #include "serverMessage.pb.h"
 
 namespace {
@@ -42,11 +44,17 @@ void Client::sendGameCommand(const ::google::protobuf::Message &cmd) {
 }
 
 void Client::processServerMessage(std::shared_ptr<ServerMessage> message) {
+    try {
     if (message->message().Is<LobbyEvent>()) {
         LobbyEvent event;
         message->message().UnpackTo(&event);
         processLobbyEvent(event);
+    } else if (message->message().Is<GameEvent>()) {
+        auto event = std::make_shared<GameEvent>();
+        message->message().UnpackTo(event.get());
+        emit gameEventReceived(event);
     }
+    } catch(const std::exception &) {}
 }
 
 void Client::processLobbyEvent(LobbyEvent &event) {

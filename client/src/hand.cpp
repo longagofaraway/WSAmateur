@@ -8,10 +8,13 @@
 Hand::Hand(Player *player, Game *game)
     : mPlayer(player), mGame(game) {
     mCardsModel = {
-        new HandCard("qrc:///resources/images/imc.jpg", "q1", false),
-        new HandCard("qrc:///resources/images/imc3.jpg", "q2", false),
-        new HandCard("qrc:///resources/images/imc4.jpg", "q3", true),
-        new HandCard("qrc:///resources/images/imc2.jpg", "q4", false)
+        new HandCard("IMC/W43-111", false),
+        new HandCard("IMC/W43-009", false),
+        new HandCard("IMC/W43-046", true),
+        new HandCard("IMC/W43-127", false),
+        new HandCard("IMC/W43-091", false),
+        new HandCard("IMC/W43-046", false),
+        new HandCard("IMC/W43-009", false)
     };
 
     QQmlComponent component(mGame->engine(), "qrc:/qml/Hand.qml");
@@ -22,4 +25,8 @@ Hand::Hand(Player *player, Game *game)
     mQmlHand->setParentItem(mGame->parentItem());
     mQmlHand->setParent(mGame->parent());
     mQmlHand->setProperty("opponent", player->isOpponent());
+    /*if (!player->isOpponent()) {
+        mQmlHand->setProperty("state", "mulligan");
+        mQmlHand->setProperty("mulligan", true);
+    }*/
 }

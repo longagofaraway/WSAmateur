@@ -12,7 +12,7 @@ Window {
     height: 480
     title: qsTr("Hello World")
 
-    Image {
+    /*Image {
         id: backgroundImg
         anchors.fill: parent
         source: "qrc:///resources/background.jpg"
@@ -24,11 +24,23 @@ Window {
         anchors.fill: backgroundImg
         source: backgroundImg
         color: "#B0000000"
-    }
+    }*/
 
     Loader {
         id: mainLoader
         anchors.fill: parent
-        source: "MainWindow.qml"
+        source: "GameWindow.qml"
+    }
+
+    GaussianBlur {
+        id: blurEffect
+        anchors.fill: parent
+        source: mainLoader
+
+        radius: 8
+        samples: 16
+        opacity: 0
+
+        Behavior on opacity { NumberAnimation { duration: 200 } }
     }
 }

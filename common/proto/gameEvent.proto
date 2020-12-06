@@ -3,5 +3,6 @@ syntax = "proto3";
 import "google/protobuf/any.proto";
 
 message GameEvent {
-	google.protobuf.Any event = 1;
+	uint32 playerId = 1;
+	google.protobuf.Any event = 2;
 }

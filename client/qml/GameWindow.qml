@@ -2,7 +2,7 @@ import QtQuick 2.12
 import QtQml.Models 2.12
 import QtQuick.Window 2.12
 import QtGraphicalEffects 1.12
-import QtQuick.Controls 2.12
+import QtQuick.Controls 1.1
 
 import wsamateur.game 1.0
 
@@ -14,7 +14,46 @@ Item {
     property bool dragInProgress: false
     property var stageDropTarget: undefined
 
-    Game {}
+
+    /*GaussianBlur {
+        id: blurEffect
+        z: 1
+        anchors.fill: parent
+        source: blurTarget
+
+        radius: 8
+        samples: 16
+    }*/
+
+    MainButton {
+        z: 5
+        anchors.centerIn: parent
+    }
+
+    Item {
+        id: blurTarget
+        anchors.fill: parent
+    Image {
+        id: backgroundImg
+        anchors.fill: parent
+        source: "qrc:///resources/background.jpg"
+        fillMode: Image.PreserveAspectCrop
+    }
+
+    ColorOverlay {
+        id: colorOverlay
+        anchors.fill: backgroundImg
+        source: backgroundImg
+        color: "#B0000000"
+    }
+
+    Game {Card {
+            id: butt
+            z: 100
+            x:50
+            y:50
+            source: "qrc:///resources/images/cardback"
+        }}
 
     Button {
         id: exit
@@ -79,6 +118,7 @@ Item {
         }
     }
     Button {
+        id: wrAdder
         anchors.top: glower.bottom
         text: "add to wr"
         onClicked: {
@@ -86,6 +126,21 @@ Item {
                         { type: "char", level: 0, img: "qrc:///resources/images/imc0" }, { type: "char", level: 3, img: "qrc:///resources/images/imc3" }];
             var img = imgs[Math.floor(Math.random() * 10) % 4];
             deck.view.listModel.append(img);
+        }
+    }
+    Button {
+        property bool blurred: false
+        anchors.top: wrAdder.bottom
+        text: "blur"
+        onClicked: {
+            butt.parent = root
+            /*if (!blurred) {
+                blurEffect.opacity = 1;
+                blurred = true;
+            } else {
+                blurEffect.opacity = 0;
+                blurred = false;
+            }*/
         }
     }
 
@@ -198,23 +253,11 @@ Item {
     Clock {
     }
 
-    /*Popup {
-        id: popup
-        modal: true
-        //opacity: 0
-        closePolicy: Popup.CloseOnPressOutside
-        Overlay.modal: GaussianBlur {
-            source: root
-
-            radius: 8
-            samples: 16
-        }
-    }*/
-
     /*Text {
         id: texthere
         anchors.centerIn: parent
         text: String(handView.x) + " " + String(handView.y) + "\n" + String(handView.width)+" " + String(handView.height)
         color: "white"
     }*/
+    }
 }

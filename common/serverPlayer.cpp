@@ -24,8 +24,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     }
 }
 
-void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event) {
-    mClient->sendGameEvent(event);
+void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event, size_t playerId) {
+    if (!playerId)
+        playerId = mId;
+    mClient->sendGameEvent(event, playerId);
 }
 
 void ServerPlayer::addDeck(const std::string &deck) {
@@ -75,6 +77,6 @@ void ServerPlayer::dealStartingHand() {
         hand->addCard(std::move(card));
     }
 
-    mClient->sendGameEvent(eventPrivate);
+    sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 }

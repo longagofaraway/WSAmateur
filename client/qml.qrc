@@ -20,5 +20,8 @@
         <file>resources/images/imc3.jpg</file>
         <file>resources/images/imc4.jpg</file>
         <file>resources/images/cardback.png</file>
+        <file>resources/images/btn_pressed.png</file>
+        <file>resources/images/btn_state.png</file>
+        <file>qml/MainButton.qml</file>
     </qresource>
 </RCC>

@@ -4,6 +4,7 @@ set(clientSources
     src/clientConnection.cpp
     src/game.cpp
     src/hand.cpp
+    src/imageProvider.cpp
     src/localClientConnection.cpp
     src/localServer.cpp
     src/localServerConnection.cpp
@@ -14,6 +15,7 @@ set(clientSources
     src/clientConnection.h
     src/game.h
     src/hand.h
+    src/imageProvider.h
     src/localClientConnection.h
     src/localServer.h
     src/localServerConnection.h
