@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 
+#include <google/protobuf/message.h>
+
 #include "deckList.h"
 #include "serverCardZone.h"
 
@@ -17,7 +19,7 @@ class ServerPlayer
     size_t mId;
     bool mReady;
     std::unique_ptr<DeckList> mDeck;
-    std::unordered_map<std::string, std::unique_ptr<ServerCardZone>> mZones;
+    std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>> mZones;
 
 public:
     ServerPlayer(ServerGame *game, ServerProtocolHandler *client, size_t id);
@@ -26,8 +28,13 @@ public:
     bool ready() const { return mReady; }
 
     void processGameCommand(GameCommand &cmd);
+    void sendGameEvent(const ::google::protobuf::Message &event);
     void addDeck(const std::string &deck);
-    void addZone(std::string_view name);
+    DeckList* deck() { return mDeck.get(); }
+    ServerCardZone* addZone(std::string_view name);
+    ServerCardZone* zone(std::string_view name);
     void setReady(bool ready) { mReady = ready; }
     void setupZones();
+
+    void dealStartingHand();
 };

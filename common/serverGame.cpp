@@ -8,6 +8,15 @@ ServerGame::ServerGame(size_t id, std::string description)
 
 }
 
+void ServerGame::sendPublicEvent(const ::google::protobuf::Message &event, size_t senderId) {
+    for (auto &playersEntry: mPlayers) {
+        if (playersEntry.first == senderId)
+            continue;
+
+        playersEntry.second->sendGameEvent(event);
+    }
+}
+
 ServerPlayer* ServerGame::player(size_t id) {
     if (!mPlayers.count(id))
         return nullptr;
@@ -31,11 +40,14 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
 
 void ServerGame::startGame() {
     for (auto &playerEntry: mPlayers) {
-        if (!playerEntry.second->ready())
+        if (!playerEntry.second->ready()
+            || !playerEntry.second->deck())
             return;
     }
 
     for (auto &playerEntry: mPlayers) {
         playerEntry.second->setupZones();
+
+        playerEntry.second->dealStartingHand();
     }
 }

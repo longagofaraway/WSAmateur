@@ -22,6 +22,7 @@ public:
     ServerProtocolHandler(Server *server, std::unique_ptr<Connection> &&connection);
 
     void sendLobbyEvent(const ::google::protobuf::Message &event);
+    void sendGameEvent(const ::google::protobuf::Message &event);
     void sendProtocolItem(const ::google::protobuf::Message &event);
 
     void addGameAndPlayer(size_t gameId, size_t playerId);

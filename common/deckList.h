@@ -6,10 +6,10 @@
 class QXmlStreamReader;
 
 struct DeckCard {
-    size_t number;
+    size_t count;
     std::string code;
     DeckCard(size_t num, std::string &&c)
-        : number(num), code(std::move(c)) {}
+        : count(num), code(std::move(c)) {}
 };
 
 class DeckList

@@ -4,6 +4,7 @@
 
 #include "commandContainer.pb.h"
 #include "gameCommand.pb.h"
+#include "gameEvent.pb.h"
 #include "lobbyCommand.pb.h"
 #include "lobbyEvent.pb.h"
 #include "serverMessage.pb.h"
@@ -48,7 +49,7 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
     QReadLocker locker(&mServer->mGamesLock);
 
     auto game = mServer->game(mGameId);
-    if (game)
+    if (!game)
         return;
 
     QMutexLocker gameLocker(&game->mGameMutex);
@@ -70,6 +71,12 @@ void ServerProtocolHandler::sendLobbyEvent(const ::google::protobuf::Message &ev
     LobbyEvent lobbyEvent;
     lobbyEvent.mutable_event()->PackFrom(event);
     sendProtocolItem(lobbyEvent);
+}
+
+void ServerProtocolHandler::sendGameEvent(const ::google::protobuf::Message &event) {
+    GameEvent gameEvent;
+    gameEvent.mutable_event()->PackFrom(event);
+    sendProtocolItem(gameEvent);
 }
 
 void ServerProtocolHandler::addGameAndPlayer(size_t gameId, size_t playerId) {

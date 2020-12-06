@@ -1,9 +1,11 @@
 set(protoSources
     commandContainer.proto
-    serverMessage.proto
     gameCommand.proto
+    gameEvent.proto
+    moveEvents.proto
     lobbyCommand.proto
     lobbyEvent.proto
+    serverMessage.proto
     )
 
 set (Protobuf_IMPORT_DIRS ${Protobuf_INCLUDE_DIR})

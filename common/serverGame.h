@@ -5,6 +5,8 @@
 
 #include <QMutex>
 
+#include <google/protobuf/message.h>
+
 #include "serverPlayer.h"
 
 class ServerProtocolHandler;
@@ -27,4 +29,6 @@ public:
     ServerPlayer* player(size_t id);
     void addPlayer(ServerProtocolHandler *client);
     void startGame();
+
+    void sendPublicEvent(const ::google::protobuf::Message &event, size_t senderId);
 };

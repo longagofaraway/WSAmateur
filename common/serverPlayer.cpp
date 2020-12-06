@@ -1,9 +1,12 @@
 #include "serverPlayer.h"
 
 #include "gameCommand.pb.h"
+#include "moveEvents.pb.h"
 
+#include "cardDatabase.h"
 #include "serverCardZone.h"
 #include "serverGame.h"
+#include "serverProtocolHandler.h"
 
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, size_t id)
     : mGame(game), mClient(client), mId(id), mReady(false) { }
@@ -21,20 +24,57 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     }
 }
 
+void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event) {
+    mClient->sendGameEvent(event);
+}
+
 void ServerPlayer::addDeck(const std::string &deck) {
     mDeck = std::make_unique<DeckList>(deck);
 }
 
-void ServerPlayer::addZone(std::string_view name) {
-    mZones.emplace(name, std::make_unique<ServerCardZone>(this, name));
+ServerCardZone* ServerPlayer::addZone(std::string_view name) {
+    return mZones.emplace(name, std::make_unique<ServerCardZone>(this, name)).first->second.get();
+}
+
+ServerCardZone* ServerPlayer::zone(std::string_view name) {
+    if (!mZones.count(name))
+        return nullptr;
+
+    return mZones.at(name).get();
 }
 
 void ServerPlayer::setupZones() {
-    addZone("deck");
+    auto deck = addZone("deck");
     addZone("wr");
     addZone("hand");
     addZone("clock");
     addZone("stock");
     addZone("memory");
     addZone("climax");
+
+    for (auto &card: mDeck->cards()) {
+        auto cardInfo = CardDatabase::get().getCard(card.code);
+        for (size_t i = 0; i < card.count; ++i)
+            deck->addCard(cardInfo);
+    }
+
+    deck->shuffle();
+}
+
+void ServerPlayer::dealStartingHand() {
+    auto deck = zone("deck");
+    auto hand = zone("hand");
+
+    EventInitialHand eventPrivate;
+    eventPrivate.set_count(5);
+    EventInitialHand eventPublic(eventPrivate);
+    for (int i = 0; i < 5; ++i) {
+        auto card = deck->takeTopCard();
+        auto code = eventPrivate.add_codes();
+        *code = card->code();
+        hand->addCard(std::move(card));
+    }
+
+    mClient->sendGameEvent(eventPrivate);
+    mGame->sendPublicEvent(eventPublic, mId);
 }

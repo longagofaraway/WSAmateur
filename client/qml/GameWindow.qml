@@ -2,7 +2,7 @@ import QtQuick 2.12
 import QtQml.Models 2.12
 import QtQuick.Window 2.12
 import QtGraphicalEffects 1.12
-import QtQuick.Controls 1.1
+import QtQuick.Controls 2.12
 
 import wsamateur.game 1.0
 
@@ -195,37 +195,21 @@ Item {
                   bottom: parent.verticalCenter; bottomMargin: parent.height * 0.03 }
     }
 
-    /*Hand {
-        id: oppHandView
-        opponent: true
-
-        innerModel: ListModel {
-        }
-    }
-
-    Hand {
-        id: handView
-
-        innerModel: ListModel {
-            ListElement {
-                // @disable-check M16
-                src: "qrc:///resources/images/imc.jpg"; code: "q1"; glow: false
-            }
-            ListElement { src: "qrc:///resources/images/imc2.jpg"; code: "q2"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc3.jpg"; code: "q3"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc.jpg"; code: "q4"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc3.jpg"; code: "q5"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc2.jpg"; code: "q6"; glow: true}
-            ListElement { src: "qrc:///resources/images/imc.jpg"; code: "q7"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc3.jpg"; code: "q8"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc2.jpg"; code: "q9"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc4.jpg"; code: "q10"; glow: false}
-            ListElement { src: "qrc:///resources/images/imc2.jpg"; code: "q11"; glow: false}
-        }
-    }*/
-
     Clock {
     }
+
+    /*Popup {
+        id: popup
+        modal: true
+        //opacity: 0
+        closePolicy: Popup.CloseOnPressOutside
+        Overlay.modal: GaussianBlur {
+            source: root
+
+            radius: 8
+            samples: 16
+        }
+    }*/
 
     /*Text {
         id: texthere
