@@ -25,10 +25,10 @@ Item {
         samples: 16
     }*/
 
-    MainButton {
+    /*MainButton {
         z: 5
         anchors.centerIn: parent
-    }
+    }*/
 
     Item {
         id: blurTarget
@@ -253,11 +253,11 @@ Item {
     Clock {
     }
 
-    /*Text {
+    Text {
         id: texthere
         anchors.centerIn: parent
         text: String(handView.x) + " " + String(handView.y) + "\n" + String(handView.width)+" " + String(handView.height)
         color: "white"
-    }*/
+    }
     }
 }

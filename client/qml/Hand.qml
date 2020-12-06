@@ -12,6 +12,14 @@ ListView {
     property int dragIndex: -1
     property bool mulligan: false
 
+    property var mmodel: ListModel {
+        ListElement { code: "IMC/W43-127"; glow: false }
+        ListElement { code: "IMC/W43-111"; glow: false }
+        ListElement { code: "IMC/W43-009"; glow: false }
+        ListElement { code: "IMC/W43-046"; glow: false }
+        ListElement { code: "IMC/W43-091"; glow: false }
+    }
+
     width: length
     height: root.cardHeight
     x: root.width / 2 - length / 2
@@ -76,7 +84,7 @@ ListView {
             property int visualIndex: DelegateModel.itemsIndex
             Binding { target: cardImgDelegate; property: "visualIndex"; value: visualIndex }
             onEntered: {
-                if (opponent)
+                if (opponent || handView.dragIndex == -1)
                     return;
 
                 var tempDragIndex = cardImgDelegate.visualIndex;
@@ -116,236 +124,83 @@ ListView {
                 property var shrinkAnim: mShrinkAnim
 
                 anchors.centerIn: cardDelegate
-                /*anchors {
-                    horizontalCenter: cardDelegate.horizontalCenter
-                    verticalCenter: cardDelegate.verticalCenter
-                }*/
 
+                // state transitions aren't suitable for this task as we cannot stop transition animations
                 ParallelAnimation {
                     id: mShrinkToDragAnim
-                    NumberAnimation {
-                        target: cardImgDelegate
-                        property: "scale"
-                        to: 1
-                    }
-                    /*NumberAnimation {
-                        target: cardImgDelegate
-                        property: "anchors.verticalCenter"
-                        to: 50
-                    }*/
-
+                    ScriptAction { script: destroyTextFrame(cardDelegate); }
+                    NumberAnimation { target: cardImgDelegate; property: "scale"; to: 1 }
                 }
                 SequentialAnimation {
                     id: mDropAnim
                     ParallelAnimation {
-                        NumberAnimation {
-                            target: cardImgDelegate
-                            property: "x"
-                            duration: 150
-                            to: cardDelegate.x
-                        }
-                        NumberAnimation {
-                            target: cardImgDelegate
-                            property: "y"
-                            duration: 150
-                            to: cardDelegate.y
-                        }
+                        NumberAnimation { target: cardImgDelegate; property: "x"; duration: 150; to: cardDelegate.x }
+                        NumberAnimation { target: cardImgDelegate; property: "y"; duration: 150; to: cardDelegate.y }
                     }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "parent"
-                        value: cardDelegate
-                    }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "x"
-                        value: 0
-                    }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "y"
-                        value: 0
-                    }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "rotation"
-                        value: 0
-                    }
+                    PropertyAction { target: cardImgDelegate; property: "parent"; value: cardDelegate }
+                    PropertyAction { target: cardImgDelegate; property: "x"; value: 0 }
+                    PropertyAction { target: cardImgDelegate; property: "y"; value: 0 }
+                    PropertyAction { target: cardImgDelegate; property: "rotation"; value: 0 }
                 }
 
                 SequentialAnimation {
                     id: mShrinkAnim
+                    ScriptAction { script: destroyTextFrame(cardDelegate); }
                     ParallelAnimation {
-                        NumberAnimation {
-                            target: cardImgDelegate
-                            property: "y"
-                            to: 0
-                        }
-                        NumberAnimation {
-                            target: cardImgDelegate
-                            property: "scale"
-                            to: 1
-                        }
-                        NumberAnimation {
-                            target: cardImgDelegate
-                            property: "rotation"
-                            to: cardDelegate.rotation
-                        }
+                        NumberAnimation { target: cardImgDelegate; property: "y"; to: 0; duration: 150 }
+                        NumberAnimation { target: cardImgDelegate; property: "scale"; to: 1; duration: 150 }
+                        NumberAnimation { target: cardImgDelegate; property: "rotation"; to: cardDelegate.rotation; duration: 150 }
                     }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "parent"
-                        value: cardDelegate
-                    }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "x"
-                        value: 0
-                    }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "rotation"
-                        value: 0
-                    }
+                    PropertyAction { target: cardImgDelegate; property: "parent"; value: cardDelegate }
+                    PropertyAction { target: cardImgDelegate; property: "x"; value: 0 }
+                    PropertyAction { target: cardImgDelegate; property: "rotation"; value: 0 }
                 }
 
                 SequentialAnimation {
                     id: mEnlargeAnim
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "parent"
-                        value: handView
-                    }
-                    PropertyAction {
-                        target: cardImgDelegate
-                        property: "x"
-                        value: visualIndex * root.cardWidth * 2/3
-                    }
+                    PropertyAction { target: cardImgDelegate; property: "parent"; value: handView }
+                    PropertyAction { target: cardImgDelegate; property: "x"; value: visualIndex * root.cardWidth * 2/3 }
                     ParallelAnimation {
-                        NumberAnimation {
-                            target: cardImgDelegate
-                            property: "y"
-                            to: -(root.cardHeight / 2 - 8) * 1.5
-                        }
                         NumberAnimation {
                             target: cardImgDelegate
                             property: "scale"
                             to: 1.5
+                            duration: 100
+                            easing.type: Easing.OutElastic
+                            easing.amplitude: 2.6
+                            easing.period: 2.0
                         }
-                        NumberAnimation {
-                            target: cardImgDelegate
-                            property: "rotation"
-                            to: 0
-                        }
+                        NumberAnimation { target: cardImgDelegate; property: "y"; to: -(root.cardHeight / 2 - 8) * 1.5; duration: 35 }
+                        NumberAnimation { target: cardImgDelegate; property: "rotation"; to: 0; duration: 35 }
                     }
+                    ScriptAction { script: createTextFrame(cardDelegate, cardImgDelegate); }
                 }
-
-                /*states: [
-                    State {
-                        name: "hovered"
-                        PropertyChanges {
-                            target: cardImgDelegate
-                            anchors {
-                                horizontalCenter: undefined
-                                verticalCenter: undefined
-                            }
-                            scale: 1.5
-                            anchors.verticalCenterOffset: {
-                                if (handView.mulligan) {
-                                    return -getFanOffset(cardDelegate.visualIndex);
-                                } else {
-                                    return -(getFanOffset(cardDelegate.visualIndex) + (root.cardHeight / 2 - 8) * 1.5);
-                                }
-                            }
-                            z: 100
-                        }
-                        ParentChange {
-                            target: cardImgDelegate
-                            parent: handView.contentItem
-                            rotation: parent.rotation
-                        }
-                        StateChangeScript {
-                            name: "textFrame"
-                            script: createTextFrame(cardDelegate, cardImgDelegate);
-                        }
-                    },
-                    State {
-                        name: "dragged"
-                        PropertyChanges {
-                            target: cardImgDelegate
-                            anchors{
-                                horizontalCenter: undefined
-                                verticalCenter: undefined
-                            }
-                            z: 100
-                            scale: 1
-                        }
-                        ParentChange {
-                            target: cardImgDelegate
-                            parent: handView.contentItem
-                            rotation: parent.rotation
-                        }
-                    }
-                ]
-
-                transitions: [
-                    Transition {
-                        from: "*"
-                        to: "hovered"
-                        SequentialAnimation {
-                            ParallelAnimation {
-                                NumberAnimation {
-                                    property: "scale"
-                                    duration: 50
-                                    easing.type: Easing.OutElastic
-                                    easing.amplitude: 2.6
-                                    easing.period: 2.0
-                                }
-                                NumberAnimation { property: "anchors.verticalCenterOffset"; duration: 17 }
-                                RotationAnimation { duration: 17 }
-                            }
-                            ScriptAction { scriptName: "textFrame" }
-                        }
-                    },
-                    Transition {
-                        from: "hovered"
-                        to: ""
-
-                        ParallelAnimation {
-                            NumberAnimation { property: "scale"; duration: 150 }
-                            NumberAnimation { property: "anchors.verticalCenterOffset"; duration: 150 }
-                            RotationAnimation { duration: 150 }
-                            ScriptAction { script: destroyTextFrame(cardDelegate); }
-                        }
-                    },
-                    Transition {
-                        from: "hovered"
-                        to: "dragged"
-                        ParallelAnimation {
-                            NumberAnimation { property: "scale"; duration: 150 }
-                            NumberAnimation { property: "y"; duration: 50 }
-                            ScriptAction { script: destroyTextFrame(cardDelegate); }
-                        }
-                    }
-                ]*/
 
                 MouseArea {
                     id: dragArea
+
+                    property bool dragActive: false
+
                     anchors.fill: parent
                     enabled: !opponent
-                    drag.target: cardImgDelegate
-                    drag.threshold: 0
-                    drag.smoothed: true
-                    drag.onActiveChanged: {
-                        if (dragArea.drag.active) {
+
+                    // we need manual drag because I couldn't adjust center of the card to the cursor
+                    onPositionChanged: {
+                        if (!dragActive) {
                             handView.dragIndex = cardDelegate.visualIndex;
+                            dragActive = true;
                             cardImgDelegate.state = "dragged";
                             mShrinkAnim.stop();
                             mEnlargeAnim.stop();
                             mShrinkToDragAnim.start();
                         }
+                        var point = cardImgDelegate.mapToItem(handView, mouse.x, mouse.y);
+                        cardImgDelegate.x = point.x - root.cardWidth / 2;
+                        cardImgDelegate.y = point.y - root.cardHeight / 2;
                     }
+
                     onReleased: {
+                        dragActive = false;
                         if (stageDropTarget !== undefined) {
                             for (var i = 0; i < handDelegate.model.count; i++) {
                                 if (handDelegate.model.get(i).code === cardImgDelegate.cardCode) {
@@ -358,42 +213,16 @@ ListView {
                                 }
                             }
                         }
-
-                        aX.from = cardImgDelegate.x;
-                        aX.to = cardDelegate.x;
-                        aY.from = cardImgDelegate.y;
-                        aY.to = cardDelegate.y;
-                        //dropAnim.start();
+                        cardImgDelegate.state = "";
                         mDropAnim.start();
                     }
                 }
 
                 Drag.source: dragArea
-                Drag.active: dragArea.drag.active
+                Drag.active: dragArea.dragActive
 
                 Drag.hotSpot.x: root.cardWidth / 2
                 Drag.hotSpot.y: root.cardHeight
-
-                ParallelAnimation {
-                    id: dropAnim
-                    running: false
-
-                    NumberAnimation {
-                        id: aX
-                        target: cardImgDelegate
-                        property: "x"
-                        duration: 150
-                    }
-                    NumberAnimation {
-                        id: aY
-                        target: cardImgDelegate
-                        property: "y"
-                        duration: 150
-                    }
-                    onFinished: {
-                        cardImgDelegate.state = "";
-                    }
-                }
 
                 RectangularGlow {
                     id: cardGlow
