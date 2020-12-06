@@ -92,11 +92,15 @@ ListView {
                 enabled: !opponent
                 onEntered: {
                     cardImgDelegate.state = "hovered";
+                    cardImgDelegate.shrinkAnim.stop();
+                    cardImgDelegate.enlargeAnim.start();
                 }
 
                 onExited: {
                     if (cardImgDelegate.state === "hovered") {
                         cardImgDelegate.state = "";
+                        cardImgDelegate.enlargeAnim.stop();
+                        cardImgDelegate.shrinkAnim.start();
                     }
                 }
             }
@@ -108,13 +112,135 @@ ListView {
 
                 property int visualIndex: 0
                 property var cardCode: code
+                property var enlargeAnim: mEnlargeAnim
+                property var shrinkAnim: mShrinkAnim
 
-                anchors {
+                anchors.centerIn: cardDelegate
+                /*anchors {
                     horizontalCenter: cardDelegate.horizontalCenter
                     verticalCenter: cardDelegate.verticalCenter
+                }*/
+
+                ParallelAnimation {
+                    id: mShrinkToDragAnim
+                    NumberAnimation {
+                        target: cardImgDelegate
+                        property: "scale"
+                        to: 1
+                    }
+                    /*NumberAnimation {
+                        target: cardImgDelegate
+                        property: "anchors.verticalCenter"
+                        to: 50
+                    }*/
+
+                }
+                SequentialAnimation {
+                    id: mDropAnim
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "x"
+                            duration: 150
+                            to: cardDelegate.x
+                        }
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "y"
+                            duration: 150
+                            to: cardDelegate.y
+                        }
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "parent"
+                        value: cardDelegate
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "x"
+                        value: 0
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "y"
+                        value: 0
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "rotation"
+                        value: 0
+                    }
                 }
 
-                states: [
+                SequentialAnimation {
+                    id: mShrinkAnim
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "y"
+                            to: 0
+                        }
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "scale"
+                            to: 1
+                        }
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "rotation"
+                            to: cardDelegate.rotation
+                        }
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "parent"
+                        value: cardDelegate
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "x"
+                        value: 0
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "rotation"
+                        value: 0
+                    }
+                }
+
+                SequentialAnimation {
+                    id: mEnlargeAnim
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "parent"
+                        value: handView
+                    }
+                    PropertyAction {
+                        target: cardImgDelegate
+                        property: "x"
+                        value: visualIndex * root.cardWidth * 2/3
+                    }
+                    ParallelAnimation {
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "y"
+                            to: -(root.cardHeight / 2 - 8) * 1.5
+                        }
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "scale"
+                            to: 1.5
+                        }
+                        NumberAnimation {
+                            target: cardImgDelegate
+                            property: "rotation"
+                            to: 0
+                        }
+                    }
+                }
+
+                /*states: [
                     State {
                         name: "hovered"
                         PropertyChanges {
@@ -201,7 +327,7 @@ ListView {
                             ScriptAction { script: destroyTextFrame(cardDelegate); }
                         }
                     }
-                ]
+                ]*/
 
                 MouseArea {
                     id: dragArea
@@ -214,6 +340,9 @@ ListView {
                         if (dragArea.drag.active) {
                             handView.dragIndex = cardDelegate.visualIndex;
                             cardImgDelegate.state = "dragged";
+                            mShrinkAnim.stop();
+                            mEnlargeAnim.stop();
+                            mShrinkToDragAnim.start();
                         }
                     }
                     onReleased: {
@@ -234,7 +363,8 @@ ListView {
                         aX.to = cardDelegate.x;
                         aY.from = cardImgDelegate.y;
                         aY.to = cardDelegate.y;
-                        dropAnim.start();
+                        //dropAnim.start();
+                        mDropAnim.start();
                     }
                 }
 

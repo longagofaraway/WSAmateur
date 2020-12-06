@@ -11,6 +11,7 @@
 
 Game::Game() {
     qRegisterMetaType<std::shared_ptr<EventGameJoined>>("std::shared_ptr<EventGameJoined>");
+    qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
 }
 
 Game::~Game() {
