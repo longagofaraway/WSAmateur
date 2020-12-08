@@ -19,6 +19,7 @@ Hand::Hand(Player *player, Game *game)
 
     QQmlComponent component(mGame->engine(), "qrc:/qml/Hand.qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame->parent());
+    mContext = context;
     context->setContextProperty("innerModel", QVariant::fromValue(mCardsModel));
     QObject *obj = component.create(context);
     mQmlHand = qobject_cast<QQuickItem*>(obj);
@@ -29,4 +30,17 @@ Hand::Hand(Player *player, Game *game)
         mQmlHand->setProperty("state", "mulligan");
         mQmlHand->setProperty("mulligan", true);
     }*/
+}
+
+void Hand::setHand(QList<QObject *> &handModel) {
+    //clearHand();
+    mCardsModel = handModel;
+
+    //mContext->setContextProperty("innerModel", QVariant::fromValue(mCardsModel));
+}
+
+void Hand::clearHand() {
+    while (mCardsModel.size()) {
+        delete mCardsModel.takeLast();
+    }
 }

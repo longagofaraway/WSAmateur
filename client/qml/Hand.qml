@@ -11,6 +11,8 @@ ListView {
     property real length: getHandLength(count)
     property int dragIndex: -1
     property bool mulligan: false
+    property bool selectable: false
+    property MulliganHeader mHeader: null
 
     property var mmodel: ListModel {
         ListElement { code: "IMC/W43-127"; glow: false }
@@ -47,8 +49,9 @@ ListView {
         PropertyChanges {
             target: handView
             scale: 1.5
-            y: root.height / 2;
+            y: root.height / 2 - root.cardHeight / 2
             z: 100
+            selectable: true
         }
     }
 
@@ -61,9 +64,9 @@ ListView {
         return (count - 1) * root.cardWidth * 2/3 + root.cardWidth;
     }
     function getFanOffset(index) {
-        var radius = 1700;
-        var pos = index * root.cardWidth * 2/3 + root.cardWidth / 2;
-        var x = -(handView.length / 2 - pos);
+        let radius = 1700;
+        let pos = index * root.cardWidth * 2/3 + root.cardWidth / 2;
+        let x = -(handView.length / 2 - pos);
         return (Math.sqrt(radius**2 - x**2) - radius) * (opponent ? 1 : -1);
     }
 
@@ -87,7 +90,7 @@ ListView {
                 if (opponent || handView.dragIndex == -1)
                     return;
 
-                var tempDragIndex = cardImgDelegate.visualIndex;
+                let tempDragIndex = cardImgDelegate.visualIndex;
                 handDelegate.items.move(
                         handView.dragIndex,
                         cardImgDelegate.visualIndex);
@@ -147,12 +150,22 @@ ListView {
                     id: mShrinkAnim
                     ScriptAction { script: destroyTextFrame(cardDelegate); }
                     ParallelAnimation {
-                        NumberAnimation { target: cardImgDelegate; property: "y"; to: 0; duration: 150 }
+                        NumberAnimation {
+                            target: cardImgDelegate;
+                            property: "y";
+                            to:  {
+                                if (handView.mulligan)
+                                    return getFanOffset(visualIndex);
+                                return 0;
+                            }
+                            duration: 150;
+                        }
                         NumberAnimation { target: cardImgDelegate; property: "scale"; to: 1; duration: 150 }
                         NumberAnimation { target: cardImgDelegate; property: "rotation"; to: cardDelegate.rotation; duration: 150 }
                     }
                     PropertyAction { target: cardImgDelegate; property: "parent"; value: cardDelegate }
                     PropertyAction { target: cardImgDelegate; property: "x"; value: 0 }
+                    PropertyAction { target: cardImgDelegate; property: "y"; value: 0 }
                     PropertyAction { target: cardImgDelegate; property: "rotation"; value: 0 }
                 }
 
@@ -170,7 +183,16 @@ ListView {
                             easing.amplitude: 2.6
                             easing.period: 2.0
                         }
-                        NumberAnimation { target: cardImgDelegate; property: "y"; to: -(root.cardHeight / 2 - 8) * 1.5; duration: 35 }
+                        NumberAnimation {
+                            target: cardImgDelegate;
+                            property: "y";
+                            to: {
+                                if (handView.mulligan)
+                                    return 0;//return getFanOffset(visualIndex);
+                                return -(root.cardHeight / 2 - 8) * 1.5;
+                            }
+                            duration: 35
+                        }
                         NumberAnimation { target: cardImgDelegate; property: "rotation"; to: 0; duration: 35 }
                     }
                     ScriptAction { script: createTextFrame(cardDelegate, cardImgDelegate); }
@@ -184,8 +206,21 @@ ListView {
                     anchors.fill: parent
                     enabled: !opponent
 
+                    onClicked: {
+                        //Object.keys(handDelegate.items.get(cardImgDelegate.visualIndex).model.index).forEach((prop)=> console.log(prop));
+
+                        let ind = handDelegate.items.get(cardImgDelegate.visualIndex).model.index;
+                        handDelegate.model[ind].glow = !handDelegate.model[ind].glow;
+                        console.log(handDelegate.model[ind].glow);
+                        //console.log(handDelegate.items.get(cardImgDelegate.visualIndex).model.index);
+                        //print(handDelegate.model);
+                    }
+
                     // we need manual drag because I couldn't adjust center of the card to the cursor
                     onPositionChanged: {
+                        if (handView.mulligan)
+                            return;
+
                         if (!dragActive) {
                             handView.dragIndex = cardDelegate.visualIndex;
                             dragActive = true;
@@ -194,12 +229,14 @@ ListView {
                             mEnlargeAnim.stop();
                             mShrinkToDragAnim.start();
                         }
-                        var point = cardImgDelegate.mapToItem(handView, mouse.x, mouse.y);
+                        let point = cardImgDelegate.mapToItem(handView, mouse.x, mouse.y);
                         cardImgDelegate.x = point.x - root.cardWidth / 2;
                         cardImgDelegate.y = point.y - root.cardHeight / 2;
                     }
 
                     onReleased: {
+                        if (!dragActive)
+                            return;
                         dragActive = false;
                         if (stageDropTarget !== undefined) {
                             for (var i = 0; i < handDelegate.model.count; i++) {
@@ -311,5 +348,15 @@ ListView {
             cardDelegate.cardTextFrame.destroy();
             cardDelegate.cardTextFrame = null;
         }
+    }
+
+    function startMulligan() {
+        handView.mulligan = true;
+        handView.state = "mulligan";
+        colorOverlay.color = "#D0000000";
+        blurEffect.opacity = 1;
+
+        var comp = Qt.createComponent("MulliganHeader.qml");
+        mHeader = comp.createObject(root);
     }
 }

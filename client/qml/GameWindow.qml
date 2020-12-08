@@ -14,16 +14,18 @@ Item {
     property bool dragInProgress: false
     property var stageDropTarget: undefined
 
-
-    /*GaussianBlur {
+    GaussianBlur {
         id: blurEffect
         z: 1
         anchors.fill: parent
         source: blurTarget
 
-        radius: 8
-        samples: 16
-    }*/
+        radius: 16
+        samples: 32
+
+        opacity: 0
+        Behavior on opacity { NumberAnimation { duration: 100 } }
+    }
 
     /*MainButton {
         z: 5
@@ -47,13 +49,7 @@ Item {
         color: "#B0000000"
     }
 
-    Game {Card {
-            id: butt
-            z: 100
-            x:50
-            y:50
-            source: "qrc:///resources/images/cardback"
-        }}
+    Game {}
 
     Button {
         id: exit

@@ -1,5 +1,9 @@
 #include "player.h"
 
+#include <QVariant>
+#include <QMetaObject>
+#include <QQuickItem>
+
 #include "gameEvent.pb.h"
 #include "moveEvents.pb.h"
 
@@ -17,5 +21,9 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
 }
 
 void Player::setInitialHand(const EventInitialHand &event) {
-
+    QList<QObject*> handModel;
+    for (int i = 0; i < event.codes_size(); ++i)
+        handModel.append(new HandCard(QString::fromStdString(event.codes(i)), false));
+    mHand->setHand(handModel);
+    QMetaObject::invokeMethod(mHand->visualItem(), "startMulligan");
 }
