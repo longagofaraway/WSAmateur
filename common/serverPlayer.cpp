@@ -1,6 +1,9 @@
 #include "serverPlayer.h"
 
+#include <algorithm>
+
 #include "gameCommand.pb.h"
+#include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
 
 #include "cardDatabase.h"
@@ -9,7 +12,7 @@
 #include "serverProtocolHandler.h"
 
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, size_t id)
-    : mGame(game), mClient(client), mId(id), mReady(false) { }
+    : mGame(game), mClient(client), mId(id) { }
 
 void ServerPlayer::processGameCommand(GameCommand &cmd) {
     if (cmd.command().Is<CommandSetDeck>()) {
@@ -21,6 +24,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         cmd.command().UnpackTo(&readyCmd);
         setReady(readyCmd.ready());
         mGame->startGame();
+    } else if (cmd.command().Is<CommandMulligan>()) {
+        CommandMulligan mulliganCmd;
+        cmd.command().UnpackTo(&mulliganCmd);
+        mulligan(mulliganCmd);
     }
 }
 
@@ -32,6 +39,7 @@ void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event, size_
 
 void ServerPlayer::addDeck(const std::string &deck) {
     mDeck = std::make_unique<DeckList>(deck);
+    mExpectedCommands.push_back(CommandReadyToStart::GetDescriptor()->name());
 }
 
 ServerCardZone* ServerPlayer::addZone(std::string_view name) {
@@ -63,6 +71,33 @@ void ServerPlayer::setupZones() {
     deck->shuffle();
 }
 
+void ServerPlayer::startGame() {
+    mExpectedCommands.clear();
+    mExpectedCommands.emplace_back(CommandMulligan::GetDescriptor()->name(), 1);
+}
+
+void ServerPlayer::addExpectedCommand(const std::string &command) {
+    mExpectedCommands.push_back(command);
+}
+
+bool ServerPlayer::expectsCommand(const GameCommand &command) {
+    auto &fullCmdName = command.command().type_url();
+    size_t pos = fullCmdName.find('/');
+    if (pos == std::string::npos)
+        throw std::runtime_error("error parsing GameCommand type");
+
+    auto cmdName = fullCmdName.substr(pos + 1);
+
+    auto it = std::find(mExpectedCommands.begin(), mExpectedCommands.end(), cmdName);
+    if (it == mExpectedCommands.end())
+        return false;
+
+    if (it->commandArrived())
+        mExpectedCommands.erase(it);
+
+    return true;
+}
+
 void ServerPlayer::dealStartingHand() {
     auto deck = zone("deck");
     auto hand = zone("hand");
@@ -79,4 +114,18 @@ void ServerPlayer::dealStartingHand() {
 
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
+}
+
+void ServerPlayer::mulligan(const CommandMulligan &cmd) {
+    std::vector<size_t> ids;
+    for (int i = 0; i < cmd.ids_size(); ++i)
+        ids.push_back(cmd.ids(i));
+
+    std::sort(ids.begin(), ids.end());
+    for (size_t i = ids.size() - 1; i >= 0; --i) {
+        //moveCard("hand", i, "wr");
+    }
+    //drawCards(ids.size());
+    mMulliganFinished = true;
+    mGame->endMulligan();
 }

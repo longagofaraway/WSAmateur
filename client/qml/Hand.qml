@@ -2,25 +2,19 @@ import QtQuick 2.12
 import QtQml.Models 2.12
 import QtGraphicalEffects 1.12
 
+import wsamateur.handModel 1.0
+
 import "objectCreation.js" as CardCreator
 
 ListView {
     id: handView
 
+    signal cardSelected(bool selected)
     property bool opponent
     property real length: getHandLength(count)
     property int dragIndex: -1
-    property bool mulligan: false
     property bool selectable: false
     property MulliganHeader mHeader: null
-
-    property var mmodel: ListModel {
-        ListElement { code: "IMC/W43-127"; glow: false }
-        ListElement { code: "IMC/W43-111"; glow: false }
-        ListElement { code: "IMC/W43-009"; glow: false }
-        ListElement { code: "IMC/W43-046"; glow: false }
-        ListElement { code: "IMC/W43-091"; glow: false }
-    }
 
     width: length
     height: root.cardHeight
@@ -53,6 +47,11 @@ ListView {
             z: 100
             selectable: true
         }
+    }
+
+    transitions: Transition {
+        NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
+        NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
     }
 
     function getAngle(index, middle) {
@@ -154,7 +153,7 @@ ListView {
                             target: cardImgDelegate;
                             property: "y";
                             to:  {
-                                if (handView.mulligan)
+                                if (handView.state === "mulligan")
                                     return getFanOffset(visualIndex);
                                 return 0;
                             }
@@ -187,8 +186,8 @@ ListView {
                             target: cardImgDelegate;
                             property: "y";
                             to: {
-                                if (handView.mulligan)
-                                    return 0;//return getFanOffset(visualIndex);
+                                if (handView.state === "mulligan")
+                                    return 0;
                                 return -(root.cardHeight / 2 - 8) * 1.5;
                             }
                             duration: 35
@@ -207,18 +206,15 @@ ListView {
                     enabled: !opponent
 
                     onClicked: {
-                        //Object.keys(handDelegate.items.get(cardImgDelegate.visualIndex).model.index).forEach((prop)=> console.log(prop));
-
-                        let ind = handDelegate.items.get(cardImgDelegate.visualIndex).model.index;
-                        handDelegate.model[ind].glow = !handDelegate.model[ind].glow;
-                        console.log(handDelegate.model[ind].glow);
-                        //console.log(handDelegate.items.get(cardImgDelegate.visualIndex).model.index);
-                        //print(handDelegate.model);
+                        if (handView.state === "mulligan") {
+                            model.glow = !model.glow;
+                            cardSelected(model.glow);
+                        }
                     }
 
                     // we need manual drag because I couldn't adjust center of the card to the cursor
                     onPositionChanged: {
-                        if (handView.mulligan)
+                        if (handView.state === "mulligan")
                             return;
 
                         if (!dragActive) {
@@ -348,15 +344,5 @@ ListView {
             cardDelegate.cardTextFrame.destroy();
             cardDelegate.cardTextFrame = null;
         }
-    }
-
-    function startMulligan() {
-        handView.mulligan = true;
-        handView.state = "mulligan";
-        colorOverlay.color = "#D0000000";
-        blurEffect.opacity = 1;
-
-        var comp = Qt.createComponent("MulliganHeader.qml");
-        mHeader = comp.createObject(root);
     }
 }

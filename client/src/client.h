@@ -12,7 +12,8 @@ class GameEvent;
 class LobbyEvent;
 class EventGameJoined;
 
-class Client : public QObject {
+class Client : public QObject
+{
     Q_OBJECT
 private:
     std::unique_ptr<ClientConnection> mConnection;

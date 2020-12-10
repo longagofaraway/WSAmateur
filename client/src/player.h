@@ -8,7 +8,8 @@ class EventInitialHand;
 class Game;
 class GameEvent;
 
-class Player {
+class Player
+{
     size_t mId;
     Game *mGame;
     bool mOpponent;
@@ -22,6 +23,8 @@ public:
 
     size_t id() const { return mId; }
     void processGameEvent(const std::shared_ptr<GameEvent> event);
+
+    void mulliganFinished();
 
 private:
     void setInitialHand(const EventInitialHand &event);

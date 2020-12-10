@@ -27,11 +27,6 @@ Item {
         Behavior on opacity { NumberAnimation { duration: 100 } }
     }
 
-    /*MainButton {
-        z: 5
-        anchors.centerIn: parent
-    }*/
-
     Item {
         id: blurTarget
         anchors.fill: parent
@@ -49,7 +44,34 @@ Item {
         color: "#B0000000"
     }
 
-    Game {}
+    Game {
+        id: game
+        property MulliganHeader mHeader
+
+        function startMulligan() {
+            colorOverlay.color = "#D0000000";
+            blurEffect.opacity = 1;
+
+            var comp = Qt.createComponent("MulliganHeader.qml");
+            mHeader = comp.createObject(root);
+            mHeader.finished.connect(mulliganFinished);
+        }
+
+        function changeCardCountForMulligan(selected) {
+            mHeader.cardSelected(selected);
+        }
+
+        function mulliganFinished() {
+            mHeader.finished.disconnect(mulliganFinished);
+
+            colorOverlay.color = "#B0000000";
+            blurEffect.opacity = 0;
+            mHeader.destroy();
+            mHeader = null;
+
+            game.sendMulliganFinished();
+        }
+    }
 
     Button {
         id: exit
@@ -122,21 +144,6 @@ Item {
                         { type: "char", level: 0, img: "qrc:///resources/images/imc0" }, { type: "char", level: 3, img: "qrc:///resources/images/imc3" }];
             var img = imgs[Math.floor(Math.random() * 10) % 4];
             deck.view.listModel.append(img);
-        }
-    }
-    Button {
-        property bool blurred: false
-        anchors.top: wrAdder.bottom
-        text: "blur"
-        onClicked: {
-            butt.parent = root
-            /*if (!blurred) {
-                blurEffect.opacity = 1;
-                blurred = true;
-            } else {
-                blurEffect.opacity = 0;
-                blurred = false;
-            }*/
         }
     }
 

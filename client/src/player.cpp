@@ -7,6 +7,8 @@
 #include "gameEvent.pb.h"
 #include "moveEvents.pb.h"
 
+#include "game.h"
+
 Player::Player(size_t id, Game *game, bool opponent)
     : mId(id), mGame(game), mOpponent(opponent) {
     mHand = std::make_unique<Hand>(this, game);
@@ -20,10 +22,24 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
     }
 }
 
+void Player::mulliganFinished() {
+    mHand->endMulligan();
+
+
+}
+
 void Player::setInitialHand(const EventInitialHand &event) {
-    QList<QObject*> handModel;
-    for (int i = 0; i < event.codes_size(); ++i)
-        handModel.append(new HandCard(QString::fromStdString(event.codes(i)), false));
-    mHand->setHand(handModel);
-    QMetaObject::invokeMethod(mHand->visualItem(), "startMulligan");
+    if (!event.codes_size()) {
+        for (size_t i = 0; i < event.count(); ++i)
+            mHand->addCard({ "cardback", false });
+    } else {
+        for (int i = 0; i < event.codes_size(); ++i)
+            mHand->addCard({ QString::fromStdString(event.codes(i)), false });
+    }
+
+    if (mOpponent)
+        return;
+
+    QMetaObject::invokeMethod(mGame, "startMulligan");
+    mHand->startMulligan();
 }

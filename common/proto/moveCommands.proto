@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message CommandMulligan {
+	repeated uint32 ids = 1;
+}

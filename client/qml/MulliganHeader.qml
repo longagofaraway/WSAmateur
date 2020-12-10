@@ -1,6 +1,11 @@
 import QtQuick 2.12
 
 Item {
+    id: mlgn
+
+    property int cardsSelected: 0
+
+    signal finished()
     width: root.width
     y: 170
     z: 1
@@ -36,4 +41,21 @@ Item {
         horizontalAlignment: Text.AlignHCenter
     }
 
+    MainButton {
+        id: button
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        mText: "Keep hand"
+        y: 600
+
+        onClicked: mlgn.finished()
+    }
+
+    function cardSelected(selected) {
+        cardsSelected += selected ? 1 : -1;
+        if (cardsSelected)
+            button.setText("Discard " + String(cardsSelected));
+        else
+            button.setText("Keep hand");
+    }
 }

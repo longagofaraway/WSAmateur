@@ -2,6 +2,7 @@ set(protoSources
     commandContainer.proto
     gameCommand.proto
     gameEvent.proto
+    moveCommands.proto
     moveEvents.proto
     lobbyCommand.proto
     lobbyEvent.proto

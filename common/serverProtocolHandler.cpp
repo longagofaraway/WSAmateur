@@ -13,6 +13,8 @@
 #include "server.h"
 #include "serverGame.h"
 
+#include <QDebug>
+
 ServerProtocolHandler::ServerProtocolHandler(Server *server, std::unique_ptr<Connection> &&connection)
     : mServer(server), mConnection(std::move(connection)), mGameId(0), mPlayerId(0) {
     connect(mConnection.get(), SIGNAL(messageReady(std::shared_ptr<CommandContainer>)),
@@ -56,6 +58,9 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
 
     auto player = game->player(mPlayerId);
     if (!player)
+        return;
+
+    if (!player->expectsCommand(cmd))
         return;
 
     player->processGameCommand(cmd);

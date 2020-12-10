@@ -10,6 +10,12 @@ AsyncImageResponse::AsyncImageResponse(const QString &id, const QSize &requested
 }
 
 void AsyncImageResponse::run() {
+    if (mId == "cardback") {
+        mImage = QImage(":/resources/images/cardback");
+        emit finished();
+        return;
+    }
+
     if (loadFromDisk()) {
         emit finished();
         return;

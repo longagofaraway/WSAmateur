@@ -10,7 +10,8 @@ class GameCommand;
 class LobbyCommand;
 class Server;
 
-class ServerProtocolHandler : public QObject {
+class ServerProtocolHandler : public QObject
+{
     Q_OBJECT
 private:
     Server *mServer;

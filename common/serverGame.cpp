@@ -1,6 +1,7 @@
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
 
+#include "gameCommand.pb.h"
 #include "lobbyEvent.pb.h"
 
 ServerGame::ServerGame(size_t id, std::string description)
@@ -29,6 +30,7 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     size_t newId = ++mNextPlayerId;
     auto player = std::make_unique<ServerPlayer>(this, client, newId);
     mPlayers.emplace(newId, std::move(player));
+    mPlayers[newId]->addExpectedCommand(CommandSetDeck::GetDescriptor()->name());
 
     client->addGameAndPlayer(mId, newId);
 
@@ -47,7 +49,16 @@ void ServerGame::startGame() {
 
     for (auto &playerEntry: mPlayers) {
         playerEntry.second->setupZones();
-
+        playerEntry.second->startGame();
         playerEntry.second->dealStartingHand();
     }
+}
+
+void ServerGame::endMulligan() {
+    for (auto &pEntry: mPlayers) {
+        if (!pEntry.second->mulliganFinished())
+            return;
+    }
+
+    //startTurn();
 }

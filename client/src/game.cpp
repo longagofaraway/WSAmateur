@@ -34,9 +34,8 @@ void Game::startLocalGame() {
 
     mClientThread.start();
 
-    for (auto &client: mClients)
-        connect(client.get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
-                this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
+    connect(mClients.front().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
+            this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
     connect(mClients.front().get(), SIGNAL(gameJoinedEventReceived(const std::shared_ptr<EventGameJoined>)),
             this, SLOT(localGameCreated(const std::shared_ptr<EventGameJoined>)));
 
@@ -95,6 +94,16 @@ void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
 void Game::processGameEvent(const std::shared_ptr<GameEvent> event) {
     if (mPlayer->id() == event->playerid())
         mPlayer->processGameEvent(event);
+    else
+        mOpponent->processGameEvent(event);
+}
+
+void Game::cardSelectedForMulligan(bool selected) {
+    QMetaObject::invokeMethod(this, "changeCardCountForMulligan", Q_ARG(QVariant, selected));
+}
+
+void Game::sendMulliganFinished() {
+    mPlayer->mulliganFinished();
 }
 
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }

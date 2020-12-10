@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 
 #include "game.h"
+#include "hand.h"
 #include "imageProvider.h"
 
 int main(int argc, char *argv[])
@@ -12,6 +13,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<Game>("wsamateur.game", 1, 0, "Game");
+    qmlRegisterType<HandModel>("wsamateur.handModel", 1, 0, "HandModel");
 
     QQmlApplicationEngine engine;
 

@@ -24,8 +24,8 @@ ServerGame* Server::game(size_t id) {
 void Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *client) {
     QWriteLocker locker(&mGamesLock);
     size_t newGameId = nextGameId();
-    auto entry = mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, cmd.description()));
-    entry.first->second->addPlayer(client);
+    mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, cmd.description()));
+    mGames[newGameId]->addPlayer(client);
 }
 
 void Server::processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHandler *client) {

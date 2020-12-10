@@ -12,6 +12,7 @@ set(commonSources
     serverProtocolHandler.cpp
     cardDatabase.h
     cardInfo.h
+    commands.h
     connection.h
     deckList.h
     server.h

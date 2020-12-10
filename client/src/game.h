@@ -16,8 +16,10 @@ class QQmlContext;
 class LocalServer;
 class Client;
 
-class Game : public QQuickItem {
+class Game : public QQuickItem
+{
     Q_OBJECT
+
 private:
     std::unique_ptr<Player> mPlayer;
     std::unique_ptr<Player> mOpponent;
@@ -29,6 +31,8 @@ public:
     Game();
     ~Game();
 
+    Q_INVOKABLE void sendMulliganFinished();
+
     QQmlEngine* engine() const;
     QQmlContext* context() const;
 
@@ -36,6 +40,8 @@ public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);
     void opponentJoined(const std::shared_ptr<EventGameJoined> event);
     void processGameEvent(const std::shared_ptr<GameEvent> event);
+
+    void cardSelectedForMulligan(bool selected);
 
 private:
     void startLocalGame();
