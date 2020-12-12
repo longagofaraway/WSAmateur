@@ -9,6 +9,8 @@
 #include "lobbyEvent.pb.h"
 #include "moveEvents.pb.h"
 
+#include <QDebug>
+
 Game::Game() {
     qRegisterMetaType<std::shared_ptr<EventGameJoined>>("std::shared_ptr<EventGameJoined>");
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
@@ -17,6 +19,11 @@ Game::Game() {
 Game::~Game() {
     mClientThread.quit();
     mClientThread.wait();
+}
+
+void Game::actionComplete() {
+    mActionInProgress = false;
+    QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
 }
 
 void Game::componentComplete() {
@@ -92,19 +99,54 @@ void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
 }
 
 void Game::processGameEvent(const std::shared_ptr<GameEvent> event) {
+    mEventQueue.push_back(event);
+    processGameEventFromQueue();
+}
+
+void Game::processGameEventFromQueue() {
+    if (mActionInProgress || mEventQueue.empty())
+        return;
+
+    auto event = mEventQueue.front();
+    mEventQueue.pop_front();
     if (mPlayer->id() == event->playerid())
         mPlayer->processGameEvent(event);
     else
         mOpponent->processGameEvent(event);
+
+    if (!mEventQueue.empty())
+        QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
 }
 
 void Game::cardSelectedForMulligan(bool selected) {
     QMetaObject::invokeMethod(this, "changeCardCountForMulligan", Q_ARG(QVariant, selected));
 }
 
+void Game::cardMoveFinished() {
+    sender()->deleteLater();
+}
+
 void Game::sendMulliganFinished() {
+    mActionInProgress = true;
     mPlayer->mulliganFinished();
 }
 
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
 QQmlContext* Game::context() const { return qmlContext(parentItem()); }
+
+Client* Game::getClientForPlayer(size_t playerId) {
+    if (mClients.size() > 1)
+        return mClients.at(playerId - 1).get();
+    else if (mClients.empty())
+        return nullptr;
+    else
+        return mClients.front().get();
+}
+
+void Game::sendGameCommand(const google::protobuf::Message &command, size_t playerId) {
+    Client *client = getClientForPlayer(playerId);
+    if (!client)
+        return;
+
+    client->sendGameCommand(command);
+}

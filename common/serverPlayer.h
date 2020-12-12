@@ -30,21 +30,23 @@ public:
 
     size_t id() const { return mId; }
     bool ready() const { return mReady; }
-    bool mulliganFinished() const { return mMulliganFinished; }
-
-    void processGameCommand(GameCommand &cmd);
-    void sendGameEvent(const ::google::protobuf::Message &event, size_t playerId = 0);
-    void addDeck(const std::string &deck);
-    DeckList* deck() { return mDeck.get(); }
-    ServerCardZone* addZone(std::string_view name);
-    ServerCardZone* zone(std::string_view name);
     void setReady(bool ready) { mReady = ready; }
-    void setupZones();
-    void startGame();
+    bool mulliganFinished() const { return mMulliganFinished; }
 
     void addExpectedCommand(const std::string &command);
     bool expectsCommand(const GameCommand &command);
 
+    void processGameCommand(GameCommand &cmd);
+    void sendGameEvent(const ::google::protobuf::Message &event, size_t playerId = 0);
+
+    void addDeck(const std::string &deck);
+    DeckList* deck() { return mDeck.get(); }
+    ServerCardZone* addZone(std::string_view name, ZoneType type = ZoneType::PublicZone);
+    ServerCardZone* zone(std::string_view name);
+    void setupZones();
+    void startGame();
     void dealStartingHand();
     void mulligan(const CommandMulligan &cmd);
+    void drawCards(size_t number);
+    void moveCard(std::string_view startZoneName, const std::vector<size_t> &cardIds, std::string_view targetZoneName);
 };

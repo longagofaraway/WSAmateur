@@ -42,8 +42,8 @@ void ServerPlayer::addDeck(const std::string &deck) {
     mExpectedCommands.push_back(CommandReadyToStart::GetDescriptor()->name());
 }
 
-ServerCardZone* ServerPlayer::addZone(std::string_view name) {
-    return mZones.emplace(name, std::make_unique<ServerCardZone>(this, name)).first->second.get();
+ServerCardZone* ServerPlayer::addZone(std::string_view name, ZoneType type) {
+    return mZones.emplace(name, std::make_unique<ServerCardZone>(this, name, type)).first->second.get();
 }
 
 ServerCardZone* ServerPlayer::zone(std::string_view name) {
@@ -54,11 +54,11 @@ ServerCardZone* ServerPlayer::zone(std::string_view name) {
 }
 
 void ServerPlayer::setupZones() {
-    auto deck = addZone("deck");
+    auto deck = addZone("deck", ZoneType::HiddenZone);
     addZone("wr");
-    addZone("hand");
+    addZone("hand", ZoneType::PrivateZone);
     addZone("clock");
-    addZone("stock");
+    addZone("stock", ZoneType::HiddenZone);
     addZone("memory");
     addZone("climax");
 
@@ -117,15 +117,63 @@ void ServerPlayer::dealStartingHand() {
 }
 
 void ServerPlayer::mulligan(const CommandMulligan &cmd) {
-    std::vector<size_t> ids;
-    for (int i = 0; i < cmd.ids_size(); ++i)
-        ids.push_back(cmd.ids(i));
+    if (cmd.ids_size()) {
+        std::vector<size_t> ids;
+        for (int i = 0; i < cmd.ids_size(); ++i)
+            ids.push_back(cmd.ids(i));
 
-    std::sort(ids.begin(), ids.end());
-    for (size_t i = ids.size() - 1; i >= 0; --i) {
-        //moveCard("hand", i, "wr");
+        moveCard("hand", ids, "wr");
+        drawCards(ids.size());
     }
-    //drawCards(ids.size());
     mMulliganFinished = true;
     mGame->endMulligan();
+}
+
+void ServerPlayer::drawCards(size_t number) {
+    auto deck = zone("deck");
+
+    for (size_t i = 0; i < number; ++i) {
+        moveCard("deck", { deck->count() - 1 }, "hand");
+    }
+}
+
+void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<size_t> &cardIds, std::string_view targetZoneName) {
+    ServerCardZone *startZone = zone(startZoneName);
+    if (!startZone)
+        return;
+
+    ServerCardZone *targetZone = zone(targetZoneName);
+    if (!targetZone)
+        return;
+
+    auto sortedIds = cardIds;
+    std::sort(sortedIds.begin(), sortedIds.end());
+    for (size_t i = sortedIds.size(); i-- > 0;) {
+        auto cardPtr = startZone->takeCard(sortedIds[i]);
+        if (!cardPtr)
+            return;
+
+        ServerCard *card = targetZone->addCard(std::move(cardPtr));
+
+        std::string code;
+        EventMoveCard eventPublic;
+        eventPublic.set_id(static_cast<google::protobuf::uint32>(sortedIds[i]));
+        eventPublic.set_startzone(startZone->name());
+        eventPublic.set_targetzone(targetZone->name());
+
+        if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PublicZone)
+            eventPublic.set_code(card->code());
+
+        EventMoveCard eventPrivate(eventPublic);
+
+        if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PrivateZone)
+            eventPrivate.set_code(card->code());
+
+        // revealing card from hand, opponent didn't see this card yet
+        if (startZone->type() == ZoneType::PrivateZone && targetZone->type() == ZoneType::PublicZone)
+            eventPublic.set_code(card->code());
+
+        sendGameEvent(eventPrivate);
+        mGame->sendPublicEvent(eventPublic, mId);
+    }
 }

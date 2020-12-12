@@ -45,7 +45,7 @@ Item {
     }
 
     Game {
-        id: game
+        id: gGame
         property MulliganHeader mHeader
 
         function startMulligan() {
@@ -69,7 +69,7 @@ Item {
             mHeader.destroy();
             mHeader = null;
 
-            game.sendMulliganFinished();
+            gGame.sendMulliganFinished();
         }
     }
 
@@ -135,15 +135,21 @@ Item {
             handView.model.model.setProperty(5, "glow", glowing);
         }
     }
-    Button {
-        id: wrAdder
+    Row {
         anchors.top: glower.bottom
-        text: "add to wr"
-        onClicked: {
-            var imgs = [{ type: "char", level: 1, img: "qrc:///resources/images/imc" }, { type: "climax", level: 0, img: "qrc:///resources/images/imc4" },
-                        { type: "char", level: 0, img: "qrc:///resources/images/imc0" }, { type: "char", level: 3, img: "qrc:///resources/images/imc3" }];
-            var img = imgs[Math.floor(Math.random() * 10) % 4];
-            deck.view.listModel.append(img);
+        Button {
+            id: wrAdder
+            text: "add to wr"
+            onClicked: {
+                var imgs = [{ type: "char", level: 1, img: "qrc:///resources/images/imc" }, { type: "climax", level: 0, img: "qrc:///resources/images/imc4" },
+                            { type: "char", level: 0, img: "qrc:///resources/images/imc0" }, { type: "char", level: 3, img: "qrc:///resources/images/imc3" }];
+                var img = imgs[Math.floor(Math.random() * 10) % 4];
+                deck.view.listModel.append(img);
+            }
+        }
+        Button {
+            text: "hand to wr"
+            onClicked: handToWr()
         }
     }
 
@@ -192,6 +198,9 @@ Item {
         var topDeck = comp.createObject(root, {opponent: true, img: "qrc:///resources/images/imc2"});
         topDeck.startToStockAnim("stock", oppStock.x, destY, addOpponentStock);
     }
+    function handToWr() {
+
+    }
 
     StagePlace { row: 1 }
     StagePlace { row: 1; anchors.horizontalCenterOffset: parent.width * 0.14 }
@@ -213,7 +222,7 @@ Item {
         id: stock
     }
 
-    Card {
+    /*Card {
         id: deck
 
         property CardsView view
@@ -243,15 +252,15 @@ Item {
                 }
             }
         }
-    }
-    Card {
+    }*/
+    /*Card {
         id: opponentDeck
         source: "qrc:///resources/images/cardback"
 
         rotation: 180
         anchors { left: parent.left; leftMargin: parent.width * 0.05;
                   bottom: parent.verticalCenter; bottomMargin: parent.height * 0.03 }
-    }
+    }*/
 
     Clock {
     }

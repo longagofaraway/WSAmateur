@@ -13,6 +13,10 @@
         <file>qml/Clock.qml</file>
         <file>qml/GameWindow.qml</file>
         <file>qml/MainWindow.qml</file>
+        <file>qml/MainButton.qml</file>
+        <file>qml/MulliganHeader.qml</file>
+        <file>qml/MovingCard.qml</file>
+        <file>qml/WaitingRoom.qml</file>
         <file>resources/background.jpg</file>
         <file>resources/images/imc.jpg</file>
         <file>resources/images/imc0.jpg</file>
@@ -22,7 +26,6 @@
         <file>resources/images/cardback.png</file>
         <file>resources/images/btn_pressed.png</file>
         <file>resources/images/btn_state.png</file>
-        <file>qml/MainButton.qml</file>
-        <file>qml/MulliganHeader.qml</file>
+        <file>qml/Deck.qml</file>
     </qresource>
 </RCC>

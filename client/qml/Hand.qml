@@ -2,7 +2,7 @@ import QtQuick 2.12
 import QtQml.Models 2.12
 import QtGraphicalEffects 1.12
 
-import wsamateur.handModel 1.0
+import wsamateur.cardModel 1.0
 
 import "objectCreation.js" as CardCreator
 
@@ -10,11 +10,14 @@ ListView {
     id: handView
 
     signal cardSelected(bool selected)
+    signal moveFinished()
     property bool opponent
     property real length: getHandLength(count)
     property int dragIndex: -1
     property bool selectable: false
     property MulliganHeader mHeader: null
+    property string moveDestination: "wr"
+    property CardModel mModel: innerModel
 
     width: length
     height: root.cardHeight
@@ -50,8 +53,11 @@ ListView {
     }
 
     transitions: Transition {
-        NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
-        NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
+        SequentialAnimation {
+            NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
+            NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
+            ScriptAction { script: gGame.actionComplete() }
+        }
     }
 
     function getAngle(index, middle) {
@@ -73,18 +79,23 @@ ListView {
         id: handDelegate
 
         property real halfIndex: (count ? (count - 1) : count) / 2
-        model: innerModel
+        model: mModel
 
         delegate: DropArea {
             id: cardDelegate
+
+            property string mCode: code
+            property bool mGlow: glow
+
+            property CardInfoFrame cardTextFrame: null
+            property int visualIndex: DelegateModel.itemsIndex
 
             width: root.cardWidth
             height: root.cardHeight
             z: DelegateModel.itemsIndex
 
-            property CardInfoFrame cardTextFrame: null
-            property int visualIndex: DelegateModel.itemsIndex
             Binding { target: cardImgDelegate; property: "visualIndex"; value: visualIndex }
+
             onEntered: {
                 if (opponent || handView.dragIndex == -1)
                     return;
@@ -118,7 +129,7 @@ ListView {
             Card {
                 id: cardImgDelegate
 
-                source: "image://imgprov/" + code
+                source: "image://imgprov/" + cardDelegate.mCode
 
                 property int visualIndex: 0
                 property var cardCode: code
@@ -261,10 +272,10 @@ ListView {
                     id: cardGlow
                     anchors.fill: cardImgDelegate
                     z: -1
-                    color: "#55ff55"
+                    color: "#2BFDFF"
                     cornerRadius: 0
                     glowRadius: 10
-                    visible: glow
+                    visible: cardDelegate.mGlow
                 }
                 SequentialAnimation {
                     running: cardGlow.visible
@@ -343,6 +354,37 @@ ListView {
         if (cardDelegate.cardTextFrame !== null) {
             cardDelegate.cardTextFrame.destroy();
             cardDelegate.cardTextFrame = null;
+        }
+    }
+
+    function addCard(code) { handView.mModel.addCard(code); }
+
+    function getXForNewCard() { return handView.x + handDelegate.count * root.cardWidth * 2/3; }
+    function getXForCard(modelId) {
+        let visualIndex = 0;
+        for (var i = 0; i < handDelegate.count; i++) {
+            let item = handDelegate.items.get(i);
+            if (item.model.index === modelId) {
+                visualIndex = i;
+                break;
+            }
+        }
+
+        return handView.x + visualIndex * root.cardWidth * 2/3;
+    }
+    function getYForNewCard() { return handView.y; }
+    function getYForCard() { return handView.y; }
+
+    MainButton {
+        x: 500
+        y: -100
+        mText: "LOL"
+        onClicked: {
+            console.log(handDelegate.items.get(0).model);
+            console.log(handDelegate.items.get(0).index);
+            console.log(handDelegate.items.get(0).model.index);
+            console.log(Object.keys(handDelegate.items.get(0).model));
+            //handDelegate.model.removeCard(1);
         }
     }
 }
