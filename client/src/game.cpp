@@ -7,8 +7,10 @@
 #include "gameEvent.pb.h"
 #include "lobbyCommand.pb.h"
 #include "lobbyEvent.pb.h"
+#include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
 
+#include <QTimer>
 #include <QDebug>
 
 Game::Game() {
@@ -23,6 +25,11 @@ Game::~Game() {
 
 void Game::actionComplete() {
     mActionInProgress = false;
+    QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
+}
+
+void Game::uiActionComplete() {
+    mUiActionInProgress = false;
     QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
 }
 
@@ -45,6 +52,9 @@ void Game::startLocalGame() {
             this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
     connect(mClients.front().get(), SIGNAL(gameJoinedEventReceived(const std::shared_ptr<EventGameJoined>)),
             this, SLOT(localGameCreated(const std::shared_ptr<EventGameJoined>)));
+
+    connect(mClients.back().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
+            this, SLOT(processGameEventByOpponent(const std::shared_ptr<GameEvent>)));
 
     CommandCreateGame command;
     command.set_description("hah");
@@ -104,7 +114,7 @@ void Game::processGameEvent(const std::shared_ptr<GameEvent> event) {
 }
 
 void Game::processGameEventFromQueue() {
-    if (mActionInProgress || mEventQueue.empty())
+    if (mActionInProgress || mUiActionInProgress || mEventQueue.empty())
         return;
 
     auto event = mEventQueue.front();
@@ -122,13 +132,20 @@ void Game::cardSelectedForMulligan(bool selected) {
     QMetaObject::invokeMethod(this, "changeCardCountForMulligan", Q_ARG(QVariant, selected));
 }
 
+void Game::cardSelectedForClock(bool selected) {
+    QMetaObject::invokeMethod(this, "changeCardCountForClock", Q_ARG(QVariant, selected));
+}
+
 void Game::cardMoveFinished() {
     sender()->deleteLater();
 }
 
 void Game::sendMulliganFinished() {
-    mActionInProgress = true;
     mPlayer->mulliganFinished();
+}
+
+void Game::sendClockPhaseFinished() {
+    mPlayer->clockPhaseFinished();
 }
 
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
@@ -149,4 +166,35 @@ void Game::sendGameCommand(const google::protobuf::Message &command, size_t play
         return;
 
     client->sendGameCommand(command);
+}
+
+void Game::startTurn(bool opponent) {
+    if (opponent) {
+        mOpponent->setActivePlayer(true);
+        mPlayer->setActivePlayer(false);
+    } else {
+        mOpponent->setActivePlayer(false);
+        mPlayer->setActivePlayer(true);
+    }
+    mActionInProgress = true;
+    QMetaObject::invokeMethod(this, "startTurn", Q_ARG(QVariant, opponent));
+}
+
+void Game::clockPhase() {
+    QMetaObject::invokeMethod(this, "clockPhase");
+    //connect(this, SIGNAL(mainButtonClicked), )
+}
+
+
+
+
+void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
+    if (event->event().Is<EventInitialHand>()) {
+        EventInitialHand ev;
+        event->event().UnpackTo(&ev);
+        CommandMulligan cmd;
+        //cmd.add_ids(0);
+        //cmd.add_ids(2);
+        QTimer::singleShot(1700, this, [this, cmd]() { sendGameCommand(cmd, mOpponent->id()); });
+    }
 }

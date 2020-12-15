@@ -4,6 +4,7 @@ Item {
     id: mlgn
 
     property int cardsSelected: 0
+    property bool firstTurn: false
 
     signal finished()
     width: root.width
@@ -13,7 +14,7 @@ Item {
     Text {
         id: textHeader
         width: root.width
-        text: "Mulligan"
+        text: firstTurn ? "You're going first" : "Your opponent goes first"
         color: "#F0F0F0"
         font.pointSize: 40
         horizontalAlignment: Text.AlignHCenter
@@ -44,6 +45,7 @@ Item {
     MainButton {
         id: button
         anchors.horizontalCenter: parent.horizontalCenter
+        state: "active"
 
         mText: "Keep hand"
         y: 600

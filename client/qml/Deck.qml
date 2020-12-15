@@ -8,6 +8,7 @@ Card {
     property CardModel mModel: innerModel
 
     source: "image://imgprov/cardback"
+    rotation: opponent ? 180 : 0
 
     x: {
         if (opponent)
@@ -16,7 +17,7 @@ Card {
     }
     y: {
         if (opponent)
-            return root.height * 0.35;
+            return root.height * 0.47 - root.cardHeight;
         return root.height * 0.53;
     }
     z: 1

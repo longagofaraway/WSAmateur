@@ -3,3 +3,8 @@ syntax = "proto3";
 message CommandMulligan {
 	repeated uint32 ids = 1;
 }
+
+message CommandClockPhase {
+	uint32 count = 1;
+	uint32 cardId = 2;
+}

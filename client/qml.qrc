@@ -26,6 +26,9 @@
         <file>resources/images/cardback.png</file>
         <file>resources/images/btn_pressed.png</file>
         <file>resources/images/btn_state.png</file>
+        <file>resources/images/hourglass.png</file>
         <file>qml/Deck.qml</file>
+        <file>qml/TurnIndicator.qml</file>
+        <file>qml/HelpText.qml</file>
     </qresource>
 </RCC>

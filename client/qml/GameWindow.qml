@@ -47,18 +47,52 @@ Item {
     Game {
         id: gGame
         property MulliganHeader mHeader
+        property HelpText mHelpText
+        signal mainButtonClicked()
 
-        function startMulligan() {
+        MainButton {
+            id: mainButton
+            x: root.width * 0.75
+            y: root.height * 0.85
+        }
+
+        function changeState() {
+            if (mainButton.state === "")
+                mainButton.state = "active";
+            else if (mainButton.state === "active")
+                mainButton.state = "oppTurn";
+            else
+                mainButton.state = "";
+        }
+
+        function destroyHelpText() {
+            mHelpText.destroy();
+            mHelpText = null;
+        }
+
+        function startMulligan(firstTurn) {
             colorOverlay.color = "#D0000000";
             blurEffect.opacity = 1;
 
             var comp = Qt.createComponent("MulliganHeader.qml");
             mHeader = comp.createObject(root);
+            mHeader.firstTurn = firstTurn;
             mHeader.finished.connect(mulliganFinished);
         }
 
         function changeCardCountForMulligan(selected) {
             mHeader.cardSelected(selected);
+        }
+        function changeCardCountForClock(selected) {
+            if (selected) {
+                mainButton.mText = "Send To Clock";
+                mainButton.mFontSizeAdjustment = -3;
+                mainButton.mSubText = "";
+            } else {
+                mainButton.mText = "Next";
+                mainButton.mFontSizeAdjustment = 0;
+                mainButton.mSubText = "To Main Phase";
+            }
         }
 
         function mulliganFinished() {
@@ -70,6 +104,36 @@ Item {
             mHeader = null;
 
             gGame.sendMulliganFinished();
+        }
+
+        function startTurn(opponent) {
+            if (opponent)
+                mainButton.state = "oppTurn";
+            else
+                mainButton.state = "waiting";
+            let comp = Qt.createComponent("TurnIndicator.qml");
+            let indicator = comp.createObject(gGame);
+            indicator.opponent = opponent;
+            indicator.startAnimation();
+        }
+
+        function clockPhase() {
+            let comp = Qt.createComponent("HelpText.qml");
+            mHelpText = comp.createObject(gGame);
+            mHelpText.mText = "Choose up to 1 card to send to Clock";
+            mainButton.state = "active";
+            mainButton.mText = "Next";
+            mainButton.mSubText = "To Main Phase";
+            mainButton.clicked.connect(clockPhaseFinished);
+        }
+
+        function clockPhaseFinished() {
+            mHelpText.startDestroy();
+            mainButton.clicked.disconnect(clockPhaseFinished);
+            mainButton.mFontSizeAdjustment = 0;
+            mainButton.state = "waiting";
+
+            gGame.sendClockPhaseFinished();
         }
     }
 
@@ -222,6 +286,38 @@ Item {
         id: stock
     }
 
+    /*Item {
+        z: 3
+        width: 700
+        height: 200
+        x: root.width / 2 - width / 2;
+        y: root.height / 2 - height / 2;
+        scale: 0
+
+        RadialGradient {
+            anchors.fill: parent
+            horizontalRadius: 700
+            verticalRadius: 100
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "#FCDE01" }
+                GradientStop { position: 0.5; color: "#00FCDE01" }
+            }
+        }
+        Text {
+            anchors.centerIn: parent
+            text: "Your Turn"
+            color: "white"
+            font.pointSize: 60
+            font.bold: true
+        }
+
+        Component.onCompleted: {
+            scaleAnim.start();
+        }
+
+        NumberAnimation on scale { id: scaleAnim; to: 1; duration: 300; }
+    }*/
+
     /*Card {
         id: deck
 
@@ -253,23 +349,15 @@ Item {
             }
         }
     }*/
-    /*Card {
-        id: opponentDeck
-        source: "qrc:///resources/images/cardback"
-
-        rotation: 180
-        anchors { left: parent.left; leftMargin: parent.width * 0.05;
-                  bottom: parent.verticalCenter; bottomMargin: parent.height * 0.03 }
-    }*/
 
     Clock {
     }
 
-    Text {
+    /*Text {
         id: texthere
         anchors.centerIn: parent
         text: String(handView.x) + " " + String(handView.y) + "\n" + String(handView.width)+" " + String(handView.height)
         color: "white"
-    }
+    }*/
     }
 }

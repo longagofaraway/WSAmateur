@@ -22,10 +22,12 @@ class Hand: public CardZone
 public:
     Hand(Player *player, Game *game);
 
-    const std::vector<Card>& cards() const override;
+    std::vector<Card>& cards() override;
     QQuickItem* visualItem() const override { return mQmlHand; }
     void addCard(Card &&card);
     void removeCard(int index) { mCardsModel.removeCard(index); }
     void startMulligan();
     void endMulligan();
+    void clockPhase();
+    void endClockPhase();
 };

@@ -54,9 +54,12 @@ ListView {
 
     transitions: Transition {
         SequentialAnimation {
-            NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
-            NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
-            ScriptAction { script: gGame.actionComplete() }
+            ScriptAction { script: gGame.startUiAction(); }
+            ParallelAnimation {
+                NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
+                NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
+            }
+            ScriptAction { script: gGame.uiActionComplete(); }
         }
     }
 
@@ -85,7 +88,6 @@ ListView {
             id: cardDelegate
 
             property string mCode: code
-            property bool mGlow: glow
 
             property CardInfoFrame cardTextFrame: null
             property int visualIndex: DelegateModel.itemsIndex
@@ -129,7 +131,11 @@ ListView {
             Card {
                 id: cardImgDelegate
 
-                source: "image://imgprov/" + cardDelegate.mCode
+                source: {
+                    if (cardDelegate.mCode)
+                        return "image://imgprov/" + cardDelegate.mCode;
+                    return "image://imgprov/cardback";
+                }
 
                 property int visualIndex: 0
                 property var cardCode: code
@@ -220,12 +226,21 @@ ListView {
                         if (handView.state === "mulligan") {
                             model.glow = !model.glow;
                             cardSelected(model.glow);
+                        } else if (handView.state === "clock") {
+                            if (!model.glow)
+                                return;
+                            model.selected = !model.selected;
+                            cardSelected(model.selected);
+                            if (model.selected)
+                                unglowUnselected();
+                            else
+                                glowAllCards(true);
                         }
                     }
 
                     // we need manual drag because I couldn't adjust center of the card to the cursor
                     onPositionChanged: {
-                        if (handView.state === "mulligan")
+                        if (handView.state === "mulligan" || handView.state === "clock")
                             return;
 
                         if (!dragActive) {
@@ -272,10 +287,10 @@ ListView {
                     id: cardGlow
                     anchors.fill: cardImgDelegate
                     z: -1
-                    color: "#2BFDFF"
+                    color: model.selected ? "#FCDE01" : "#2BFDFF"
                     cornerRadius: 0
                     glowRadius: 10
-                    visible: cardDelegate.mGlow
+                    visible: model.glow
                 }
                 SequentialAnimation {
                     running: cardGlow.visible
@@ -357,6 +372,34 @@ ListView {
         }
     }
 
+    function clockPhase() {
+        handView.state = "clock";
+        glowAllCards(true);
+    }
+
+    function endClockPhase() {
+        handView.state = "";
+        glowAllCards(false);
+    }
+
+    function glowAllCards(glow) {
+        for (let i = 0; i < handView.mModel.rowCount(); i++) {
+            let index = handView.mModel.index(i, 0);
+            handView.mModel.setData(index, glow, 0x102);
+        }
+    }
+
+    function unglowUnselected() {
+        for (let i = 0; i < handView.mModel.rowCount(); i++) {
+            let index = handView.mModel.index(i, 0);
+            let selected = handView.mModel.data(index, 0x103);
+            if (selected)
+                continue;
+            handView.mModel.setData(index, false, 0x102);
+        }
+    }
+
+
     function addCard(code) { handView.mModel.addCard(code); }
 
     function getXForNewCard() { return handView.x + handDelegate.count * root.cardWidth * 2/3; }
@@ -376,15 +419,14 @@ ListView {
     function getYForCard() { return handView.y; }
 
     MainButton {
+        property bool opp: false
         x: 500
         y: -100
         mText: "LOL"
+        state: "active"
         onClicked: {
-            console.log(handDelegate.items.get(0).model);
-            console.log(handDelegate.items.get(0).index);
-            console.log(handDelegate.items.get(0).model.index);
-            console.log(Object.keys(handDelegate.items.get(0).model));
-            //handDelegate.model.removeCard(1);
+            gGame.changeState()
+
         }
     }
 }

@@ -3,8 +3,10 @@
 #include <algorithm>
 
 #include "gameCommand.pb.h"
+#include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
+#include "phaseEvent.pb.h"
 
 #include "cardDatabase.h"
 #include "serverCardZone.h"
@@ -28,6 +30,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandMulligan mulliganCmd;
         cmd.command().UnpackTo(&mulliganCmd);
         mulligan(mulliganCmd);
+    } else if (cmd.command().Is<CommandClockPhase>()) {
+        CommandClockPhase clockCmd;
+        cmd.command().UnpackTo(&clockCmd);
+        processClockPhaseResult(clockCmd);
     }
 }
 
@@ -76,6 +82,20 @@ void ServerPlayer::startGame() {
     mExpectedCommands.emplace_back(CommandMulligan::GetDescriptor()->name(), 1);
 }
 
+void ServerPlayer::startTurn() {
+    EventStartTurn event;
+    sendGameEvent(event);
+    mGame->sendPublicEvent(event, mId);
+
+    drawCards(1);
+
+    EventClockPhase ev;
+    sendGameEvent(ev);
+    mGame->sendPublicEvent(ev, mId);
+
+    addExpectedCommand(CommandClockPhase::GetDescriptor()->name());
+}
+
 void ServerPlayer::addExpectedCommand(const std::string &command) {
     mExpectedCommands.push_back(command);
 }
@@ -104,6 +124,7 @@ void ServerPlayer::dealStartingHand() {
 
     EventInitialHand eventPrivate;
     eventPrivate.set_count(5);
+    eventPrivate.set_firstturn(mStartingPlayer);
     EventInitialHand eventPublic(eventPrivate);
     for (int i = 0; i < 5; ++i) {
         auto card = deck->takeTopCard();
@@ -176,4 +197,14 @@ void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<s
         sendGameEvent(eventPrivate);
         mGame->sendPublicEvent(eventPublic, mId);
     }
+}
+
+void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
+    if (cmd.count()) {
+        moveCard("hand", { cmd.cardid() }, "clock");
+    }
+
+    EventMainPhase ev;
+    sendGameEvent(ev);
+    mGame->sendPublicEvent(ev, mId);
 }

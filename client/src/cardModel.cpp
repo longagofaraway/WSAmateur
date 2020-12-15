@@ -27,17 +27,34 @@ void CardModel::removeCard(int index) {
     endRemoveRows();
 }
 
+void CardModel::setGlow(int row, bool glow) {
+    auto index = createIndex(row, 0);
+    setData(index, glow, GlowRole);
+}
+
+void CardModel::setSelected(int row, bool selected) {
+    auto index = createIndex(row, 0);
+    setData(index, selected, SelectedRole);
+}
+
 bool CardModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (index.row() < 0 || static_cast<size_t>(index.row()) >= mCards.size())
         return false;
 
-    if (role != GlowRole)
-        return false;
-
     Card &card = mCards[index.row()];
 
-    card.setGlow(value.toBool());
-    emit dataChanged(index, index, { GlowRole });
+    switch(role) {
+    case GlowRole:
+        card.setGlow(value.toBool());
+        break;
+    case SelectedRole:
+        card.setSelected(value.toBool());
+        break;
+    default:
+        return false;
+    }
+
+    emit dataChanged(index, index, { role });
     return true;
 }
 
@@ -55,6 +72,8 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
         return card.qcode();
     case GlowRole:
         return card.glow();
+    case SelectedRole:
+        return card.selected();
     default:
         return QVariant();
     }
@@ -66,6 +85,7 @@ QHash<int, QByteArray> CardModel::roleNames() const {
         roles = new QHash<int, QByteArray>;
         (*roles)[CodeRole] = "code";
         (*roles)[GlowRole] = "glow";
+        (*roles)[SelectedRole] = "selected";
     }
     return *roles;
 }

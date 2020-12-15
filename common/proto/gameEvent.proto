@@ -6,3 +6,5 @@ message GameEvent {
 	uint32 playerId = 1;
 	google.protobuf.Any event = 2;
 }
+
+message EventStartTurn { }

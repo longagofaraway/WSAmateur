@@ -1,8 +1,12 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 
+import wsamateur.cardModel 1.0
+
 ListView {
     id: clockView
+
+    property CardModel mModel: innerModel
 
     x: root.width * 0.08
     y: root.height * 0.85
@@ -14,7 +18,9 @@ ListView {
     orientation: ListView.Horizontal
     interactive: false
 
-    model: ListModel {
+    model: mModel
+
+        /*ListModel {
         ListElement { img: "qrc:///resources/images/imc" }
         ListElement { img: "qrc:///resources/images/imc2" }
         ListElement { img: "qrc:///resources/images/imc3" }
@@ -25,7 +31,7 @@ ListView {
         ListElement { img: "qrc:///resources/images/imc4" }
         ListElement { img: "qrc:///resources/images/imc3" }
         ListElement { img: "qrc:///resources/images/imc4" }
-    }
+    }*/
 
     delegate: Component {
         MouseArea {
@@ -47,7 +53,7 @@ ListView {
 
                 property CardInfoFrame cardTextFrame: null
 
-                source: img
+                source: "image://imgprov/" + code;
                 anchors.centerIn: cardDelegate
 
                 states: State {
@@ -115,4 +121,13 @@ ListView {
             frameParent.cardTextFrame = null;
         }
     }
+
+
+    function addCard(code) {
+        clockView.mModel.addCard(code);
+    }
+    function getXForNewCard() { return clockView.x + clockView.count * root.cardWidth * 2/3; }
+    function getYForNewCard() { return clockView.y; }
+    //function getXForCard() { return waitingRoom.x; }
+    //function getYForCard() { return waitingRoom.y; }
 }

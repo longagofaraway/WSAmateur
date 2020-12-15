@@ -1,8 +1,13 @@
 #include "serverGame.h"
+
+#include <random>
+
 #include "serverProtocolHandler.h"
 
+#include "gameEvent.pb.h"
 #include "gameCommand.pb.h"
 #include "lobbyEvent.pb.h"
+#include "phaseEvent.pb.h"
 
 ServerGame::ServerGame(size_t id, std::string description)
     : mId(id), mNextPlayerId(0), mDescription(description) {
@@ -40,6 +45,17 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     client->sendLobbyEvent(event);
 }
 
+void ServerGame::setStartingPlayer() {
+    std::random_device dev;
+    std::mt19937 gen(dev());
+    std::uniform_int_distribution<> distrib(1, 2);
+    int startingPlayerId = 1;//distrib(gen);
+    for (auto &playerEntry: mPlayers) {
+        if (playerEntry.first == static_cast<size_t>(startingPlayerId))
+            playerEntry.second->setStartingPlayer();
+    }
+}
+
 void ServerGame::startGame() {
     for (auto &playerEntry: mPlayers) {
         if (!playerEntry.second->ready()
@@ -47,6 +63,7 @@ void ServerGame::startGame() {
             return;
     }
 
+    setStartingPlayer();
     for (auto &playerEntry: mPlayers) {
         playerEntry.second->setupZones();
         playerEntry.second->startGame();
@@ -60,5 +77,9 @@ void ServerGame::endMulligan() {
             return;
     }
 
-    //startTurn();
+    for (auto &pEntry: mPlayers) {
+        if (pEntry.second->startingPlayer())
+            pEntry.second->startTurn();
+    }
 }
+

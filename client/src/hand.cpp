@@ -2,6 +2,7 @@
 
 #include <QQmlContext>
 
+#include "card.h"
 #include "player.h"
 #include "game.h"
 
@@ -27,7 +28,7 @@ Hand::Hand(Player *player, Game *game)
     mQmlHand->setProperty("opponent", player->isOpponent());
 }
 
-const std::vector<Card> &Hand::cards() const {
+std::vector<Card> &Hand::cards() {
     return mCardsModel.cards();
 }
 
@@ -44,3 +45,14 @@ void Hand::endMulligan() {
     mQmlHand->setState("");
     mQmlHand->disconnect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForMulligan(bool)));
 }
+
+void Hand::clockPhase() {
+    QMetaObject::invokeMethod(mQmlHand, "clockPhase");
+    mQmlHand->connect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForClock(bool)));
+}
+
+void Hand::endClockPhase() {
+    QMetaObject::invokeMethod(mQmlHand, "endClockPhase");
+    mQmlHand->disconnect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForClock(bool)));
+}
+

@@ -17,6 +17,6 @@ public:
     WaitingRoom(Player *player, Game *game);
 
     QQuickItem* visualItem() const override { return mQmlObject; }
-    const std::vector<Card> & cards() const override { return mCardsModel.cards(); }
+    std::vector<Card> & cards() override { return mCardsModel.cards(); }
     void removeCard(int index) override { mCardsModel.removeCard(index); }
 };

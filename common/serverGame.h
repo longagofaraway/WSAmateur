@@ -29,6 +29,7 @@ public:
     }
     ServerPlayer* player(size_t id);
     void addPlayer(ServerProtocolHandler *client);
+    void setStartingPlayer();
     void startGame();
     void endMulligan();
 

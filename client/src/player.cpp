@@ -7,7 +7,9 @@
 #include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
+#include "phaseEvent.pb.h"
 
+#include "commonCardZone.h"
 #include "deck.h"
 #include "game.h"
 #include "waitingRoom.h"
@@ -24,6 +26,8 @@ Player::Player(size_t id, Game *game, bool opponent)
     mZones.emplace("wr", std::move(wr));
     auto deck = std::make_unique<Deck>(this, game);
     mZones.emplace("deck", std::move(deck));
+    auto clock = std::make_unique<CommonCardZone>(this, game, "Clock");
+    mZones.emplace("clock", std::move(clock));
 }
 
 CardZone* Player::zone(std::string_view name) const {
@@ -42,6 +46,12 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventMoveCard ev;
         event->event().UnpackTo(&ev);
         moveCard(ev);
+    } else if (event->event().Is<EventStartTurn>()) {
+        startTurn();
+    } else if (event->event().Is<EventClockPhase>()) {
+        clockPhase();
+    } else if (event->event().Is<EventMainPhase>()) {
+
     }
 }
 
@@ -51,11 +61,25 @@ void Player::sendGameCommand(const google::protobuf::Message &command) {
 
 void Player::mulliganFinished() {
     mHand->endMulligan();
-    auto cards = mHand->cards();
+    auto &cards = mHand->cards();
     CommandMulligan cmd;
     for (uint32_t i = 0; i < cards.size(); ++i) {
         if (cards[i].glow())
             cmd.add_ids(i);
+    }
+
+    sendGameCommand(cmd);
+}
+
+void Player::clockPhaseFinished() {
+    mHand->endClockPhase();
+    auto &cards = mHand->cards();
+    CommandClockPhase cmd;
+    for (uint32_t i = 0; i < cards.size(); ++i) {
+        if (cards[i].selected()) {
+            cmd.set_count(1);
+            cmd.set_cardid(i);
+        }
     }
 
     sendGameCommand(cmd);
@@ -73,11 +97,12 @@ void Player::setInitialHand(const EventInitialHand &event) {
     if (mOpponent)
         return;
 
-    QMetaObject::invokeMethod(mGame, "startMulligan");
+    QMetaObject::invokeMethod(mGame, "startMulligan", Q_ARG(QVariant, event.firstturn()));
     mHand->startMulligan();
 }
 
 void Player::createMovingCard(const EventMoveCard &event, const QString &code) {
+    mGame->startAction();
     QString source = code;
     if (source.isEmpty())
         source = "cardback";
@@ -91,9 +116,9 @@ void Player::createMovingCard(const EventMoveCard &event, const QString &code) {
     obj->setProperty("startId", event.id());
     obj->setProperty("targetZone", QString::fromStdString(event.targetzone()));
     obj->connect(obj, SIGNAL(moveFinished()), mGame, SLOT(cardMoveFinished()));
-    mGame->startUiAction();
     QMetaObject::invokeMethod(obj, "startAnimation");
 }
+
 void Player::moveCard(const EventMoveCard &event) {
     CardZone *startZone = zone(event.startzone());
     if (!startZone)
@@ -113,4 +138,16 @@ void Player::moveCard(const EventMoveCard &event) {
 
     createMovingCard(event, code);
     startZone->removeCard(event.id());
+}
+
+void Player::clockPhase() {
+    if (mOpponent)
+        return;
+
+    mGame->clockPhase();
+    mHand->clockPhase();
+}
+
+void Player::startTurn() {
+    mGame->startTurn(mOpponent);
 }

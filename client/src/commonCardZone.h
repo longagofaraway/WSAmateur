@@ -6,7 +6,7 @@
 class Player;
 class Game;
 
-class Deck: public CardZone
+class CommonCardZone: public CardZone
 {
     Player *mPlayer;
     Game *mGame;
@@ -14,7 +14,7 @@ class Deck: public CardZone
     QQuickItem *mQmlObject;
 
 public:
-    Deck(Player *player, Game *game);
+    CommonCardZone(Player *player, Game *game, std::string_view name);
 
     QQuickItem* visualItem() const override { return mQmlObject; }
     std::vector<Card> & cards() override { return mCardsModel.cards(); }

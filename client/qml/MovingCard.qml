@@ -14,19 +14,24 @@ Card {
     property real toY
 
     z: 100
+    rotation: opponent ? 180 : 0
 
     function startAnimation() {
-
         let szone = gGame.getZone(startZone, opponent);
         movingCard.x = szone.getXForCard(startId);
         movingCard.y = szone.getYForCard();
         let tzone = gGame.getZone(targetZone, opponent);
         toX = tzone.getXForNewCard();
         toY = tzone.getYForNewCard();
-        if (startZone === "hand" && targetZone === "wr")
-            handToWr.start();
-        else if(startZone === "deck" && targetZone === "hand")
-            deckReveal.start();
+        if ((startZone === "hand" && targetZone === "wr")
+            || (startZone === "hand" && targetZone === "clock")) {
+            straightMove.start();
+        } else if(startZone === "deck" && targetZone === "hand") {
+            if (opponent)
+                straightMove.start();
+            else
+                deckReveal.start();
+        }
     }
 
     function finishMove() {
@@ -45,12 +50,12 @@ Card {
     }
 
     SequentialAnimation {
-        id: handToWr
+        id: straightMove
         ParallelAnimation {
-            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; /*easing.type: Easing.InOutQuad*/ }
-            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; /*easing.type: Easing.InOutQuad*/ }
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
         }
-        onStopped: finishMove()
+        ScriptAction { script: finishMove() }
     }
 
     ParallelAnimation {
@@ -70,10 +75,13 @@ Card {
                 toStockAnim.start();
         }
     }
-    ParallelAnimation {
+    SequentialAnimation {
         id: toHandAnim
-        NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 200 }
-        NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 200 }
-        onStopped: finishMove()
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 200 }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 200 }
+            //onStopped: finishMove()
+        }
+        ScriptAction { script: finishMove() }
     }
 }

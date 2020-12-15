@@ -3,6 +3,7 @@ syntax = "proto3";
 message EventInitialHand {
     uint32 count = 1;
     repeated string codes = 2;
+	bool firstTurn = 3;
 }
 
 message EventMoveCard {
