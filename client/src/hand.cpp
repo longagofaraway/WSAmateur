@@ -32,6 +32,10 @@ std::vector<Card> &Hand::cards() {
     return mCardsModel.cards();
 }
 
+void Hand::addCard() {
+    mCardsModel.addCard();
+}
+
 void Hand::addCard(Card &&card) {
     mCardsModel.addCard(std::move(card));
 }

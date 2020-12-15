@@ -24,7 +24,9 @@ public:
 
     std::vector<Card>& cards() override;
     QQuickItem* visualItem() const override { return mQmlHand; }
+    CardModel& model() { return mCardsModel; }
     void addCard(Card &&card);
+    void addCard();
     void removeCard(int index) { mCardsModel.removeCard(index); }
     void startMulligan();
     void endMulligan();

@@ -9,6 +9,7 @@
 #include "lobbyEvent.pb.h"
 #include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
+#include "phaseEvent.pb.h"
 
 #include <QTimer>
 #include <QDebug>
@@ -182,7 +183,10 @@ void Game::startTurn(bool opponent) {
 
 void Game::clockPhase() {
     QMetaObject::invokeMethod(this, "clockPhase");
-    //connect(this, SIGNAL(mainButtonClicked), )
+}
+
+void Game::mainPhase() {
+    QMetaObject::invokeMethod(this, "mainPhase");
 }
 
 
@@ -196,5 +200,10 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         //cmd.add_ids(0);
         //cmd.add_ids(2);
         QTimer::singleShot(1700, this, [this, cmd]() { sendGameCommand(cmd, mOpponent->id()); });
+    } else if (event->event().Is<EventClockPhase>()) {
+        CommandClockPhase cmd;
+        cmd.set_count(1);
+        cmd.set_cardid(1);
+        sendGameCommand(cmd, mOpponent->id());
     }
 }

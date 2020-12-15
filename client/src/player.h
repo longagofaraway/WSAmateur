@@ -22,6 +22,8 @@ class Player
     Hand *mHand;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
 
+    int mLevel = 0;
+
 public:
     Player(size_t id, Game *game, bool opponent);
 
@@ -46,5 +48,7 @@ private:
     void setInitialHand(const EventInitialHand &event);
     void moveCard(const EventMoveCard &event);
     void clockPhase();
+    void mainPhase();
     void startTurn();
+    bool canPlay(Card &card);
 };

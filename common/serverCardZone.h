@@ -26,7 +26,7 @@ public:
     size_t count() const { return mCards.size(); }
     const std::string& name() const { return mName; }
     ZoneType type() const { return mType; }
-    void addCard(const CardInfo &info);
+    void addCard(std::shared_ptr<CardInfo> info);
     ServerCard* addCard(std::unique_ptr<ServerCard> card);
     std::unique_ptr<ServerCard> takeCard(size_t index);
     std::unique_ptr<ServerCard> takeTopCard();

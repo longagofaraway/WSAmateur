@@ -11,7 +11,6 @@ Item {
 
     property real cardWidth: width * 0.0677
     property real cardHeight: height * 0.1685
-    property bool dragInProgress: false
     property var stageDropTarget: undefined
 
     GaussianBlur {
@@ -134,6 +133,12 @@ Item {
             mainButton.state = "waiting";
 
             gGame.sendClockPhaseFinished();
+        }
+
+        function mainPhase() {
+            mainButton.state = "active";
+            mainButton.mText = "Next";
+            mainButton.mSubText = "To Attack";
         }
     }
 
@@ -278,13 +283,13 @@ Item {
     StagePlace { opponent: true; row: 2; anchors.horizontalCenterOffset: parent.width * 0.07 }
     StagePlace { opponent: true; row: 2; anchors.horizontalCenterOffset: -parent.width * 0.07 }
 
-    Stock {
+    /*Stock {
         id: oppStock
         opponent: true
     }
     Stock {
         id: stock
-    }
+    }*/
 
     /*Item {
         z: 3
@@ -349,9 +354,6 @@ Item {
             }
         }
     }*/
-
-    Clock {
-    }
 
     /*Text {
         id: texthere

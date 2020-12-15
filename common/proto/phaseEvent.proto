@@ -2,3 +2,4 @@ syntax = "proto3";
 
 message EventClockPhase { }
 message EventMainPhase { }
+message EventAttackPhase { }

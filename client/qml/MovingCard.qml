@@ -12,9 +12,9 @@ Card {
 
     property real toX
     property real toY
+    property real toScale
 
     z: 100
-    rotation: opponent ? 180 : 0
 
     function startAnimation() {
         let szone = gGame.getZone(startZone, opponent);
@@ -23,6 +23,9 @@ Card {
         let tzone = gGame.getZone(targetZone, opponent);
         toX = tzone.getXForNewCard();
         toY = tzone.getYForNewCard();
+        toScale = tzone.scale;
+        if (targetZone === "clock")
+            movingCard.transformOrigin = Item.TopLeft;
         if ((startZone === "hand" && targetZone === "wr")
             || (startZone === "hand" && targetZone === "clock")) {
             straightMove.start();
@@ -54,6 +57,7 @@ Card {
         ParallelAnimation {
             NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
             NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
+            NumberAnimation { target: movingCard; property: "scale"; to: toScale; duration: 300; }
         }
         ScriptAction { script: finishMove() }
     }

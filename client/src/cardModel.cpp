@@ -7,6 +7,9 @@ void CardModel::addCard(Card &&card) {
     endInsertRows();
 }
 
+void CardModel::addCard() {
+    addCard(Card());
+}
 
 void CardModel::addCard(QString code) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());

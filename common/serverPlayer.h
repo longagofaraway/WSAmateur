@@ -38,6 +38,7 @@ public:
     bool startingPlayer() const { return mStartingPlayer; }
     void setStartingPlayer() { mStartingPlayer = true; }
 
+    void clearExpectedComands();
     void addExpectedCommand(const std::string &command);
     bool expectsCommand(const GameCommand &command);
 

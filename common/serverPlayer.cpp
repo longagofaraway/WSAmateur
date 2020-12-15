@@ -6,6 +6,7 @@
 #include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
+#include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
 #include "cardDatabase.h"
@@ -98,6 +99,10 @@ void ServerPlayer::startTurn() {
 
 void ServerPlayer::addExpectedCommand(const std::string &command) {
     mExpectedCommands.push_back(command);
+}
+
+void ServerPlayer::clearExpectedComands() {
+    mExpectedCommands.clear();
 }
 
 bool ServerPlayer::expectsCommand(const GameCommand &command) {
@@ -202,9 +207,16 @@ void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<s
 void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
     if (cmd.count()) {
         moveCard("hand", { cmd.cardid() }, "clock");
+        drawCards(2);
     }
 
     EventMainPhase ev;
     sendGameEvent(ev);
     mGame->sendPublicEvent(ev, mId);
+
+    clearExpectedComands();
+    addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
+    addExpectedCommand(CommandAttackPhase::GetDescriptor()->name());
+    //TODO activate ability
+    //switch stage positions
 }

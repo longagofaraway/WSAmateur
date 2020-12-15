@@ -6,6 +6,7 @@ set(protoSources
     moveEvents.proto
     lobbyCommand.proto
     lobbyEvent.proto
+    phaseCommand.proto
     phaseEvent.proto
     serverMessage.proto
     )

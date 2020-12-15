@@ -132,8 +132,8 @@ ListView {
                 id: cardImgDelegate
 
                 source: {
-                    if (cardDelegate.mCode)
-                        return "image://imgprov/" + cardDelegate.mCode;
+                    if (model.code)
+                        return "image://imgprov/" + model.code;
                     return "image://imgprov/cardback";
                 }
 

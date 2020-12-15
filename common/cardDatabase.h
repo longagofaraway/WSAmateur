@@ -6,11 +6,11 @@
 
 class CardDatabase
 {
-    std::unordered_map<std::string, CardInfo> mDb;
+    std::unordered_map<std::string, std::shared_ptr<CardInfo>> mDb;
 
     CardDatabase();
 public:
     static CardDatabase& get();
 
-    CardInfo getCard(const std::string &code);
+    std::shared_ptr<CardInfo> getCard(const std::string &code);
 };

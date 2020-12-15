@@ -23,6 +23,7 @@ public:
 
     std::vector<Card>& cards() { return mCards; }
     void addCard(Card &&card);
+    void addCard();
     void addCards(size_t count);
     Q_INVOKABLE void addCard(QString code);
     Q_INVOKABLE void removeCard(int index);

@@ -1,10 +1,14 @@
 syntax = "proto3";
 
 message CommandMulligan {
-	repeated uint32 ids = 1;
+    repeated uint32 ids = 1;
 }
 
 message CommandClockPhase {
-	uint32 count = 1;
-	uint32 cardId = 2;
+    uint32 count = 1;
+    uint32 cardId = 2;
+}
+
+message CommandPlayCard {
+    uint32 cardId = 1;
 }

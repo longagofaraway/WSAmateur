@@ -28,6 +28,8 @@ Player::Player(size_t id, Game *game, bool opponent)
     mZones.emplace("deck", std::move(deck));
     auto clock = std::make_unique<CommonCardZone>(this, game, "Clock");
     mZones.emplace("clock", std::move(clock));
+    auto stock = std::make_unique<CommonCardZone>(this, game, "Stock");
+    mZones.emplace("stock", std::move(stock));
 }
 
 CardZone* Player::zone(std::string_view name) const {
@@ -51,7 +53,7 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
     } else if (event->event().Is<EventClockPhase>()) {
         clockPhase();
     } else if (event->event().Is<EventMainPhase>()) {
-
+        mainPhase();
     }
 }
 
@@ -88,7 +90,7 @@ void Player::clockPhaseFinished() {
 void Player::setInitialHand(const EventInitialHand &event) {
     if (!event.codes_size()) {
         for (size_t i = 0; i < event.count(); ++i)
-            mHand->addCard({ "cardback" });
+            mHand->addCard();
     } else {
         for (int i = 0; i < event.codes_size(); ++i)
             mHand->addCard({ event.codes(i) });
@@ -148,6 +150,38 @@ void Player::clockPhase() {
     mHand->clockPhase();
 }
 
+void Player::mainPhase() {
+    if (mOpponent)
+        return;
+
+    mGame->mainPhase();
+    auto &cards = mHand->cards();
+    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
+        if (canPlay(cards[i]))
+            mHand->model().setGlow(i, true);
+    }
+}
+
 void Player::startTurn() {
     mGame->startTurn(mOpponent);
+}
+
+bool Player::canPlay(Card &card) {
+    if (card.level() > mLevel)
+        return false;
+    if (card.cost() > static_cast<int>(zone("stock")->cards().size()))
+        return false;
+    if (card.level() > 0 || card.type() == CardType::Climax) {
+        bool colorMatch = false;
+        for (auto &card: zone("clock")->cards()) {
+            if(card.color() == card.color()) {
+                colorMatch = true;
+                break;
+            }
+        }
+        // TODO same for level zone
+        if (!colorMatch)
+            return false;
+    }
+    return true;
 }

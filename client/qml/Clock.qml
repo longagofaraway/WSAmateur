@@ -6,10 +6,21 @@ import wsamateur.cardModel 1.0
 ListView {
     id: clockView
 
+    property bool opponent
     property CardModel mModel: innerModel
 
-    x: root.width * 0.08
-    y: root.height * 0.85
+    x: {
+        if (opponent)
+            return root.width * 0.7;
+        else
+            return root.width * 0.08;
+    }
+    y: {
+        if (opponent)
+            return root.height * 0.04;
+        else
+            return root.height * 0.85;
+    }
     width: contentWidth
     height: root.cardHeight
     spacing: -root.cardWidth / 3
@@ -53,7 +64,7 @@ ListView {
 
                 property CardInfoFrame cardTextFrame: null
 
-                source: "image://imgprov/" + code;
+                source: "image://imgprov/" + model.code;
                 anchors.centerIn: cardDelegate
 
                 states: State {
@@ -97,13 +108,20 @@ ListView {
 
                 let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
                 let cardOffset = frameParent.x * clockView.scale;
-                let cardWidthAndScaleOffset = frameParent.width * clockView.scale * (frameParent.scale + 1) / 2;
-                textFrame.x = clockView.x + cardOffset + cardWidthAndScaleOffset;
-                textFrame.y = cardMappedPoint.y;
 
-                let cardHeight = frameParent.height * clockView.scale * frameParent.scale;
-                if (textFrame.height > cardHeight)
-                    textFrame.y -= textFrame.height - cardHeight;
+                if (!opponent) {
+                    let cardWidthAndScaleOffset = frameParent.width * clockView.scale * (frameParent.scale + 1) / 2;
+                    textFrame.x = clockView.x + cardOffset + cardWidthAndScaleOffset;
+                    textFrame.y = cardMappedPoint.y;
+
+                    let cardHeight = frameParent.height * clockView.scale * frameParent.scale;
+                    if (textFrame.height > cardHeight)
+                        textFrame.y -= textFrame.height - cardHeight;
+                } else {
+                    textFrame.x = clockView.x - textFrame.width + cardOffset;
+                    textFrame.y = cardMappedPoint.y;
+                }
+
                 textFrame.visible = true;
                 frameParent.cardTextFrame = textFrame;
             }

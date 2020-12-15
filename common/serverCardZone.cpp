@@ -7,7 +7,7 @@
 ServerCardZone::ServerCardZone(ServerPlayer *player, const std::string_view name, ZoneType type)
     : mPlayer(player), mName(name), mType(type) {}
 
-void ServerCardZone::addCard(const CardInfo &info) {
+void ServerCardZone::addCard(std::shared_ptr<CardInfo> info) {
     mCards.emplace_back(std::make_unique<ServerCard>(info, this));
 }
 

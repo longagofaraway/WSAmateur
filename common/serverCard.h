@@ -13,7 +13,7 @@ enum StageRow {
 
 class ServerCard
 {
-    CardInfo mCardInfo;
+    std::shared_ptr<CardInfo> mCardInfo;
     ServerCardZone *mZone;
     std::string mCode;
 
@@ -25,7 +25,7 @@ class ServerCard
     int mSoul;
 
 public:
-    ServerCard(const CardInfo &info, ServerCardZone *zone = nullptr);
+    ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone = nullptr);
 
     void setZone(ServerCardZone *zone) { mZone = zone; }
     const std::string& code() { return mCode; }
