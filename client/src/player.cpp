@@ -30,6 +30,9 @@ Player::Player(size_t id, Game *game, bool opponent)
     mZones.emplace("clock", std::move(clock));
     auto stock = std::make_unique<CommonCardZone>(this, game, "Stock");
     mZones.emplace("stock", std::move(stock));
+    auto stage= std::make_unique<CommonCardZone>(this, game, "Stage");
+    stage->model().addCards(5);
+    mZones.emplace("stage", std::move(stage));
 }
 
 CardZone* Player::zone(std::string_view name) const {
@@ -93,7 +96,7 @@ void Player::setInitialHand(const EventInitialHand &event) {
             mHand->addCard();
     } else {
         for (int i = 0; i < event.codes_size(); ++i)
-            mHand->addCard({ event.codes(i) });
+            mHand->addCard(event.codes(i));
     }
 
     if (mOpponent)
@@ -113,7 +116,7 @@ void Player::createMovingCard(const EventMoveCard &event, const QString &code) {
     obj->setParentItem(mGame->parentItem());
     obj->setProperty("code", code);
     obj->setProperty("opponent", mOpponent);
-    obj->setProperty("source", "image://imgprov/" + source);
+    obj->setProperty("mSource", source);
     obj->setProperty("startZone", QString::fromStdString(event.startzone()));
     obj->setProperty("startId", event.id());
     obj->setProperty("targetZone", QString::fromStdString(event.targetzone()));
@@ -173,8 +176,8 @@ bool Player::canPlay(Card &card) {
         return false;
     if (card.level() > 0 || card.type() == CardType::Climax) {
         bool colorMatch = false;
-        for (auto &card: zone("clock")->cards()) {
-            if(card.color() == card.color()) {
+        for (auto &clockCard: zone("clock")->cards()) {
+            if (card.color() == clockCard.color()) {
                 colorMatch = true;
                 break;
             }

@@ -35,7 +35,7 @@ ListView {
    delegate: Component {
        Card {
            rotation: -90
-           source: "image://imgprov/cardback";
+           mSource: "cardback";
        }
    }
 

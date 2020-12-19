@@ -40,7 +40,9 @@ public:
     int soul() const { return mSoul; }
     void setSoul(int soul) { mSoul = soul; }
     char color() const { return mColor; }
-    void setColor(char color) { mColor = color; }
+    void setColor(char color) {
+        mColor = color;
+    }
     CardType type() const { return mType; }
     void setType(CardType type) { mType = type; }
     const std::string& code() const { return mCode; }

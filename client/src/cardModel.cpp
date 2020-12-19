@@ -1,24 +1,50 @@
 #include "cardModel.h"
 
 
-void CardModel::addCard(Card &&card) {
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mCards.emplace_back(std::move(card));
-    endInsertRows();
+CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
+    mRoles = QVector<int>() << CodeRole << GlowRole << SelectedRole;
 }
 
 void CardModel::addCard() {
-    addCard(Card());
+    beginInsertRows(QModelIndex(), rowCount(), rowCount());
+    mCards.emplace_back(Card());
+    endInsertRows();
 }
 
 void CardModel::addCard(QString code) {
+    addCard(code.toStdString());
+}
+
+void CardModel::addCard(std::string code) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mCards.emplace_back(code.toStdString());
+    mCards.emplace_back(code);
     endInsertRows();
 }
 
 void CardModel::addCards(size_t count) {
-    mCards = std::vector<Card>(count, { "" });
+    for (size_t i = 0; i < count; ++i)
+        addCard();
+}
+
+void CardModel::setCard(int row, QString code) {
+    if (row < 0 || row >= rowCount())
+        return;
+
+    auto modelIndex = index(row);
+    mCards[row].init(code.toStdString());
+    emit dataChanged(modelIndex, modelIndex, mRoles);
+}
+
+void CardModel::swapCards(int from, int to) {
+    if (from < 0 ||from >= rowCount()
+        || to < 0 || to >= rowCount())
+        return;
+
+    auto fromIndex = index(from);
+    auto toIndex = index(to);
+    std::swap(mCards[from], mCards[to]);
+    emit dataChanged(fromIndex, fromIndex, mRoles);
+    emit dataChanged(toIndex, toIndex, mRoles);
 }
 
 void CardModel::removeCard(int index) {
@@ -92,3 +118,5 @@ QHash<int, QByteArray> CardModel::roleNames() const {
     }
     return *roles;
 }
+
+QVector<int> CardModel::mRoles;

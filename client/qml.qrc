@@ -30,5 +30,7 @@
         <file>qml/Deck.qml</file>
         <file>qml/TurnIndicator.qml</file>
         <file>qml/HelpText.qml</file>
+        <file>qml/Stage.qml</file>
+        <file>qml/StageCard.qml</file>
     </qresource>
 </RCC>

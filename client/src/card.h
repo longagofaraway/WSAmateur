@@ -10,6 +10,7 @@ class Card {
     std::string mCode;
     bool mGlow = false;
     bool mSelected = false;
+
     char mColor;
     int mLevel;
     int mCost;
@@ -17,12 +18,13 @@ class Card {
     int mSoul;
     CardType mType;
 
-
     std::shared_ptr<CardInfo> mInfo;
 
 public:
     Card() = default;
-    Card(std::string code);
+    Card(const std::string &code);
+
+    void init(const std::string &code);
 
     bool glow() const { return mGlow; }
     bool selected() const { return mSelected; }

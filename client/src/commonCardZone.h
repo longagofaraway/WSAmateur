@@ -18,5 +18,6 @@ public:
 
     QQuickItem* visualItem() const override { return mQmlObject; }
     std::vector<Card> & cards() override { return mCardsModel.cards(); }
+    CardModel& model() { return mCardsModel; }
     void removeCard(int index) override { mCardsModel.removeCard(index); }
 };

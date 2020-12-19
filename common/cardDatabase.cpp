@@ -60,7 +60,7 @@ CardDatabase::CardDatabase() {
     info5->setType(CardType::Climax);
     info5->setColor('B');
     info5->setTraits({ "Music" });
-    info4->setTriggers({ Door });
+    info5->setTriggers({ Door });
     mDb.emplace(info5->code(), info5);
 }
 

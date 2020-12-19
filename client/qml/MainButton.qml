@@ -7,9 +7,9 @@ Item {
     height: 75//247
 
     signal clicked()
-    property string mText
+    property alias mText: buttonText.text
     property int mFontSizeAdjustment
-    property string mSubText
+    property alias mSubText: subText.text
 
     states: [
         State {
@@ -59,7 +59,6 @@ Item {
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -5
         width: parent.width
-        text: mText
         horizontalAlignment: Text.AlignHCenter
         color: "white"
         font.pointSize: 20 + mFontSizeAdjustment

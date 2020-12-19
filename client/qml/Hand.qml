@@ -4,8 +4,6 @@ import QtGraphicalEffects 1.12
 
 import wsamateur.cardModel 1.0
 
-import "objectCreation.js" as CardCreator
-
 ListView {
     id: handView
 
@@ -35,7 +33,7 @@ ListView {
     orientation: ListView.Horizontal
     spacing: -root.cardWidth  / 3
     interactive: false
-    z: 1
+    //z: 50
 
     states: State {
         name: "mulligan"
@@ -131,10 +129,10 @@ ListView {
             Card {
                 id: cardImgDelegate
 
-                source: {
+                mSource: {
                     if (model.code)
-                        return "image://imgprov/" + model.code;
-                    return "image://imgprov/cardback";
+                        return model.code;
+                    return "cardback";
                 }
 
                 property int visualIndex: 0
@@ -242,7 +240,6 @@ ListView {
                     onPositionChanged: {
                         if (handView.state === "mulligan" || handView.state === "clock")
                             return;
-
                         if (!dragActive) {
                             handView.dragIndex = cardDelegate.visualIndex;
                             dragActive = true;
@@ -259,19 +256,15 @@ ListView {
                     onReleased: {
                         if (!dragActive)
                             return;
-                        dragActive = false;
-                        if (stageDropTarget !== undefined) {
-                            for (var i = 0; i < handDelegate.model.count; i++) {
-                                if (handDelegate.model.get(i).code === cardImgDelegate.cardCode) {
-                                    //create
-                                    stageDropTarget.contentCard = CardCreator.createCard(stageDropTarget, "Card.qml");
-                                    stageDropTarget.contentCard.source = cardImgDelegate.source;
-                                    //delete
-                                    handDelegate.model.remove(i);
-                                    return;
-                                }
-                            }
+                        handView.dragIndex = -1;
+                        if (root.stageDropTarget !== undefined) {
+                            root.stageDropTarget.setCard(model.code);
+                            dragActive = false;
+                            handView.mModel.removeCard(model.index);
+                            root.stageDropTarget = undefined;
+                            return;
                         }
+                        dragActive = false;
                         cardImgDelegate.state = "";
                         mDropAnim.start();
                     }
@@ -419,14 +412,13 @@ ListView {
     function getYForCard() { return handView.y; }
 
     MainButton {
-        property bool opp: false
-        x: 500
-        y: -100
         mText: "LOL"
         state: "active"
-        onClicked: {
-            gGame.changeState()
-
+        x: -width
+        onClicked:  {
+            console.log(handView.z);
+            console.log(handView.parent);
+            console.log(handView.parent.z);
         }
     }
 }

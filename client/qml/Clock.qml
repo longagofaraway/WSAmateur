@@ -31,19 +31,6 @@ ListView {
 
     model: mModel
 
-        /*ListModel {
-        ListElement { img: "qrc:///resources/images/imc" }
-        ListElement { img: "qrc:///resources/images/imc2" }
-        ListElement { img: "qrc:///resources/images/imc3" }
-        ListElement { img: "qrc:///resources/images/imc4" }
-        ListElement { img: "qrc:///resources/images/imc" }
-        ListElement { img: "qrc:///resources/images/imc2" }
-        ListElement { img: "qrc:///resources/images/imc3" }
-        ListElement { img: "qrc:///resources/images/imc4" }
-        ListElement { img: "qrc:///resources/images/imc3" }
-        ListElement { img: "qrc:///resources/images/imc4" }
-    }*/
-
     delegate: Component {
         MouseArea {
             id: cardDelegate
@@ -64,7 +51,7 @@ ListView {
 
                 property CardInfoFrame cardTextFrame: null
 
-                source: "image://imgprov/" + model.code;
+                mSource: model.code;
                 anchors.centerIn: cardDelegate
 
                 states: State {

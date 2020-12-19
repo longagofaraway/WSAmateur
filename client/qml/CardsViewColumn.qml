@@ -15,8 +15,8 @@ ListView {
     visible: count
 
     function maxHeight() {
-        var point = root.mapFromItem(thisListView, x, y);
-        var allHeight = contentHeight + topMargin + bottomMargin;
+        let point = root.mapFromItem(thisListView, x, y);
+        let allHeight = contentHeight + topMargin + bottomMargin;
         if (point.y + allHeight > root.height)
             return root.height - point.y;
         return allHeight;
@@ -37,7 +37,7 @@ ListView {
         filterOnGroup: "visibleGroup"
 
         items.onChanged: {
-            let cur = 0
+            let cur = 0;
             while (cur < items.count) {
                 let item = items.get(cur);
                 if (predicate(item.model))

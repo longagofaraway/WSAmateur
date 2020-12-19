@@ -47,12 +47,16 @@ Item {
         id: gGame
         property MulliganHeader mHeader
         property HelpText mHelpText
-        signal mainButtonClicked()
+
+        anchors.fill: parent
 
         MainButton {
             id: mainButton
             x: root.width * 0.75
             y: root.height * 0.85
+            onClicked: {
+
+            }
         }
 
         function changeState() {
@@ -271,7 +275,7 @@ Item {
 
     }
 
-    StagePlace { row: 1 }
+    /*StagePlace { row: 1 }
     StagePlace { row: 1; anchors.horizontalCenterOffset: parent.width * 0.14 }
     StagePlace { row: 1; anchors.horizontalCenterOffset: -parent.width * 0.14 }
     StagePlace { row: 2; anchors.horizontalCenterOffset: parent.width * 0.07 }
@@ -281,7 +285,7 @@ Item {
     StagePlace { opponent: true; row: 1; anchors.horizontalCenterOffset: parent.width * 0.14 }
     StagePlace { opponent: true; row: 1; anchors.horizontalCenterOffset: -parent.width * 0.14 }
     StagePlace { opponent: true; row: 2; anchors.horizontalCenterOffset: parent.width * 0.07 }
-    StagePlace { opponent: true; row: 2; anchors.horizontalCenterOffset: -parent.width * 0.07 }
+    StagePlace { opponent: true; row: 2; anchors.horizontalCenterOffset: -parent.width * 0.07 }*/
 
     /*Stock {
         id: oppStock

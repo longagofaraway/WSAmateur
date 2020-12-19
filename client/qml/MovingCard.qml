@@ -68,7 +68,7 @@ Card {
         NumberAnimation { target: movingCard; property: "y"; to: root.height * (opponent ? 0.25 : 0.6); duration: 200 }
         SequentialAnimation {
             NumberAnimation { target: yRot; property: "angle"; from: 0; to: 90; duration: 100; }
-            PropertyAction { target: movingCard; property: "source"; value: "image://imgprov/" + code }
+            PropertyAction { target: movingCard; property: "mSource"; value: code }
             NumberAnimation { target: yRot; property: "angle"; from: -90; to: 0; duration: 100; }
             PauseAnimation { duration: 300 }
         }
@@ -84,7 +84,6 @@ Card {
         ParallelAnimation {
             NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 200 }
             NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 200 }
-            //onStopped: finishMove()
         }
         ScriptAction { script: finishMove() }
     }

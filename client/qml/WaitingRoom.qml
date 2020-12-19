@@ -20,7 +20,7 @@ Card {
     z: 1
 
     function addCard(code) {
-        waitingRoom.source = "image://imgprov/" + code;
+        waitingRoom.mSource = code;
         waitingRoom.mModel.addCard(code);
     }
 

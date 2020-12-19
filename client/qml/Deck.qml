@@ -7,7 +7,7 @@ Card {
     property bool opponent
     property CardModel mModel: innerModel
 
-    source: "image://imgprov/cardback"
+    mSource: "cardback"
     rotation: opponent ? 180 : 0
 
     x: {

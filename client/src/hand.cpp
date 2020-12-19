@@ -19,12 +19,12 @@ Hand::Hand(Player *player, Game *game)
     };*/
 
     QQmlComponent component(mGame->engine(), "qrc:/qml/Hand.qml");
-    QQmlContext *context = new QQmlContext(mGame->context(), mGame->parent());
+    QQmlContext *context = new QQmlContext(mGame->context(), mGame);
     context->setContextProperty("innerModel", QVariant::fromValue(&mCardsModel));
     QObject *obj = component.create(context);
     mQmlHand = qobject_cast<QQuickItem*>(obj);
-    mQmlHand->setParentItem(mGame->parentItem());
-    mQmlHand->setParent(mGame->parent());
+    mQmlHand->setParentItem(mGame);
+    mQmlHand->setParent(mGame);
     mQmlHand->setProperty("opponent", player->isOpponent());
 }
 
@@ -36,8 +36,8 @@ void Hand::addCard() {
     mCardsModel.addCard();
 }
 
-void Hand::addCard(Card &&card) {
-    mCardsModel.addCard(std::move(card));
+void Hand::addCard(const std::string &code) {
+    mCardsModel.addCard(code);
 }
 
 void Hand::startMulligan() {
