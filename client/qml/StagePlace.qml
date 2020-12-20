@@ -6,6 +6,7 @@ ListView {
 
     property int mIndex
     property StageCard mStageCard: null
+    property bool mTooltipsDisabled: false
 
     width: root.cardWidth; height: root.cardHeight
     y: {
@@ -78,7 +79,7 @@ ListView {
 
                 anchors.fill: parent
                 hoverEnabled: true
-                drag.target: mStageCard
+                drag.target: (stage.opponent || !stage.mDragEnabled) ? undefined : mStageCard
                 drag.onActiveChanged: {
                     if (active)
                         destroyCardInfo();
@@ -89,25 +90,23 @@ ListView {
                     if (!stagePlaceMouseArea.drag.active)
                         return;
                     if (root.stageDropTarget !== undefined) {
-                        if (root.stageDropTarget.mStageCard === null) {
-                            root.stageDropTarget.createStageCard(model.code);
-                            root.stageDropTarget.swapCards(stagePlace.mIndex);
+                        let swappingCard = model.code;
+                        let dropTarget = root.stageDropTarget;
+                        dropTarget.swapCards(stagePlace.mIndex);
+                        if (dropTarget.mStageCard === null)
                             mStageCard.destroy();
-                            return;
-                        } else {
-                            let swappingCard = model.code;
-                            root.stageDropTarget.swapCards(stagePlace.mIndex);
-                            root.stageDropTarget.createStageCard(swappingCard);
-                            createStageCard(model.code);
-                            return
-                        }
+                        else
+                            createStageCardWithAnim(model.code, dropTarget.x, dropTarget.y);
+                        dropTarget.createStageCard(swappingCard);
+                        stage.switchPositions(stagePlace.mIndex, dropTarget.mIndex);
+                        return;
                     }
                     mStageCard.x = stagePlace.x;
                     mStageCard.y = stagePlace.y;
                 }
 
                 onEntered: {
-                    if (mStageCard === null || drag.active)
+                    if (mStageCard === null || drag.active || mTooltipsDisabled)
                         return;
                     let comp = Qt.createComponent("CardInfoFrame.qml");
                     let incubator = comp.incubateObject(root, { visible: false, z: 100 }, Qt.Asynchronous);
@@ -144,14 +143,32 @@ ListView {
         }
     }
 
+    // when you place a card and a tooltip appears immediately (annoying)
+    SequentialAnimation {
+        id: tooltipTimeout
+        PauseAnimation { duration: 100 }
+        PropertyAction { target: stagePlace; property: "mTooltipsDisabled"; value: false }
+    }
+
+    function createStageCardWithAnim(code, _x, _y) {
+        createCardInternal(code, _x, _y);
+        mStageCard.startAnimation(stagePlace.x, stagePlace.y);
+    }
+
     function createStageCard(code) {
+        createCardInternal(code, stagePlace.x, stagePlace.y);
+    }
+
+    function createCardInternal(code, _x, _y) {
         if (mStageCard !== null) {
             mStageCard.dragActive = false;
             mStageCard.destroy();
         }
         let comp = Qt.createComponent("StageCard.qml");
-        mStageCard = comp.createObject(gGame, { x: stagePlace.x, y: stagePlace.y });
+        mStageCard = comp.createObject(gGame, { x: _x, y: _y });
         mStageCard.mSource = code;
+        stagePlace.mTooltipsDisabled = true;
+        tooltipTimeout.start();
     }
 
     function setCard(code) {

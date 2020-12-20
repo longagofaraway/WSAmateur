@@ -2,24 +2,31 @@
 
 #include <memory>
 
+#include <QObject>
+
 #include <google/protobuf/message.h>
 
 #include "cardZone.h"
-#include "hand.h"
 
 class EventInitialHand;
 class EventDrawCard;
 class EventMoveCard;
+class EventPlayCard;
 class Game;
 class GameEvent;
+class Hand;
+class Stage;
 
-class Player
+class Player : public QObject
 {
+    Q_OBJECT
+private:
     size_t mId;
     Game *mGame;
     bool mOpponent;
     bool mActivePlayer = false;
     Hand *mHand;
+    Stage *mStage;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
 
     int mLevel = 0;
@@ -41,14 +48,21 @@ public:
     void mulliganFinished();
     void clockPhaseFinished();
 
-private:
-    void createMovingCard(const EventMoveCard &event, const QString &code);
+    void testAction();
 
+private:
+    void createMovingCard(const QString &code, const std::string &startZone, int startId,
+                          const std::string &targetZone, int targetId = 0);
 
     void setInitialHand(const EventInitialHand &event);
     void moveCard(const EventMoveCard &event);
+    void playCard(const EventPlayCard &event);
     void clockPhase();
     void mainPhase();
     void startTurn();
     bool canPlay(Card &card);
+
+public slots:
+    void cardPlayed(int handId, int stageId);
+    void switchPositions(int from, int to);
 };

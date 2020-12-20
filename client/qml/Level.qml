@@ -4,32 +4,22 @@ import QtQuick.Window 2.12
 import wsamateur.cardModel 1.0
 
 ListView {
-    id: clockView
+    id: level
 
     property bool opponent
     property bool hidden: false
     property CardModel mModel: innerModel
-    property real mMarginModifier: 0.3
-    property real mMargin: root.cardWidth * mMarginModifier
-    property real mScale: 0.7
+    property real mMarginModifier: 0.2
+    property real mMargin: root.cardHeight * mMarginModifier
+    property real mScale: 0.8
 
-    x: {
-        if (opponent)
-            return root.width * 0.7;
-        else
-            return root.width * 0.08;
-    }
-    y: {
-        if (opponent)
-            return -root.height * 0.01;
-        else
-            return root.height * 0.85;
-    }
-    width: contentWidth
-    height: root.cardHeight
-    spacing: -root.cardWidth * (1 - mMarginModifier)
-    orientation: ListView.Horizontal
+    x: opponent ? (root.width * 0.82) : (root.width * 0.08)
+    y: opponent ? (root.height * 0.15) : (root.height * 0.87 - getLevelHeight())
+    width: root.cardWidth
+    height: getLevelHeight()
+    spacing: -root.cardHeight * (1 - mMarginModifier)
     interactive: false
+    rotation: opponent ? 0 : 180
 
     model: mModel
 
@@ -56,6 +46,7 @@ ListView {
 
                 mSource: model.code;
                 anchors.centerIn: cardDelegate
+                rotation: 90
 
                 states: State {
                     name: "hovered"
@@ -65,8 +56,8 @@ ListView {
                     }
                     ParentChange {
                         target: cardImgDelegate
-                        parent: clockView.contentItem
-                        scale: 0.8
+                        parent: level.contentItem
+                        scale: 0.9
                     }
                     StateChangeScript {
                         name: "textFrame"
@@ -97,18 +88,18 @@ ListView {
                 var textFrame = incubator.object;
 
                 let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
-                let cardOffset = frameParent.x * clockView.scale;
+                let cardOffset = frameParent.x * level.scale;
 
                 if (!opponent) {
-                    let cardWidthAndScaleOffset = frameParent.width * clockView.scale * (frameParent.scale + 1) / 2;
-                    textFrame.x = clockView.x + cardOffset + cardWidthAndScaleOffset;
+                    let cardWidthAndScaleOffset = frameParent.width * level.scale * (frameParent.scale + 1) / 2;
+                    textFrame.x = level.x + cardOffset + cardWidthAndScaleOffset;
                     textFrame.y = cardMappedPoint.y;
 
-                    let cardHeight = frameParent.height * clockView.scale * frameParent.scale;
+                    let cardHeight = frameParent.height * level.scale * frameParent.scale;
                     if (textFrame.height > cardHeight)
                         textFrame.y -= textFrame.height - cardHeight;
                 } else {
-                    textFrame.x = clockView.x - textFrame.width + cardOffset;
+                    textFrame.x = level.x - textFrame.width + cardOffset;
                     textFrame.y = cardMappedPoint.y;
                 }
 
@@ -130,12 +121,22 @@ ListView {
         }
     }
 
-    function addCard(code) {
-        clockView.mModel.addCard(code);
+    function getLevelHeight()  {
+        if (!level.count)
+            return 0;
+        return (level.count - 1) * mMargin + root.cardHeight;
     }
-    function getXForNewCard() { return clockView.x + clockView.count * mMargin; }
-    function getYForNewCard() { return clockView.y; }
-    function getXForCard() { return clockView.x + (clockView.count ? (clockView.count - 1) : 0) * mMargin; }
-    function getYForCard() { return clockView.y; }
-    function scaleForMovingCard() { return mScale; }
+
+    function addCard(code) {
+        level.mModel.addCard(code);
+    }
+    function getXForNewCard() { return opponent ? level.x : level.x; }
+    function getYForNewCard() {
+        if (opponent)
+            return level.y + level.count * mMargin;
+        return root.height * 0.87 - level.count * mMargin - root.cardHeight;
+    }
+    function getXForCard() { return level.x; }
+    function getYForCard() { return level.y + (level.count ? (level.count - 1) : 0) * mMargin; }
+    function scaleForMovingCard() { return level.mScale; }
 }

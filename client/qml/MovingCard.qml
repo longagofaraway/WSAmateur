@@ -12,34 +12,51 @@ Card {
 
     property real toX
     property real toY
-    property real toScale
+    property real toScale: 1
+    property real toRot: 0
+    property string toImg: "cardback"
 
     z: 100
 
     function startAnimation() {
         let szone = gGame.getZone(startZone, opponent);
         movingCard.x = szone.getXForCard(startId);
-        movingCard.y = szone.getYForCard();
+        movingCard.y = szone.getYForCard(startId);
+        movingCard.rotation = szone.rotation;
+        if (startZone === "stock")
+            movingCard.rotation += -90;
+        else if (startZone === "level")
+            movingCard.rotation += 90;
+        if (startZone === "clock" || startZone === "level")
+            movingCard.scale = szone.scaleForMovingCard();
         let tzone = gGame.getZone(targetZone, opponent);
-        toX = tzone.getXForNewCard();
-        toY = tzone.getYForNewCard();
-        toScale = tzone.scale;
-        if (targetZone === "clock")
-            movingCard.transformOrigin = Item.TopLeft;
-        if ((startZone === "hand" && targetZone === "wr")
-            || (startZone === "hand" && targetZone === "clock")) {
-            straightMove.start();
-        } else if(startZone === "deck" && targetZone === "hand") {
+        toX = tzone.getXForNewCard(targetId);
+        toY = tzone.getYForNewCard(targetId);
+        if (targetZone === "clock" || targetZone === "level") {
+            toScale = tzone.scaleForMovingCard();
+        }
+        toRot = tzone.rotation;
+        if (targetZone === "stock")
+            toRot += -90;
+        else if (targetZone === "level")
+            toRot += 90;
+        else if (targetZone == "hand" && opponent)
+            toRot += 180;
+        if (toRot > 180)
+            toRot -= 360;
+        if (startZone === "deck" && targetZone === "hand") {
             if (opponent)
                 straightMove.start();
             else
                 deckReveal.start();
+        } else {
+            straightMove.start();
         }
     }
 
     function finishMove() {
         var zone = gGame.getZone(targetZone, opponent);
-        zone.addCard(code);
+        zone.addCard(code, targetId);
         gGame.actionComplete();
         moveFinished();
     }
@@ -55,12 +72,29 @@ Card {
     SequentialAnimation {
         id: straightMove
         ParallelAnimation {
-            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
-            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
-            NumberAnimation { target: movingCard; property: "scale"; to: toScale; duration: 300; }
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 1500; }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 1500; }
+            NumberAnimation { target: movingCard; property: "scale"; to: toScale; duration: 1500; }
+            NumberAnimation { target: movingCard; property: "rotation"; to: toRot; duration: 1500; }
         }
         ScriptAction { script: finishMove() }
     }
+
+    /*SequentialAnimation {
+        id: straightFlippingMove
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 2000; }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 2000; }
+            NumberAnimation { target: movingCard; property: "scale"; to: toScale; duration: 2000; }
+            NumberAnimation { target: movingCard; property: "rotation"; to: -90; duration: 2000; }
+            SequentialAnimation {
+                NumberAnimation { target: yRot; property: "angle"; from: 0; to: -90; duration: 1000; }
+                PropertyAction { target: movingCard; property: "mSource"; value: toImg }
+                NumberAnimation { target: yRot; property: "angle"; from: -90; to: -180; duration: 1000; }
+            }
+        }
+        ScriptAction { script: finishMove() }
+    }*/
 
     ParallelAnimation {
         id: deckReveal

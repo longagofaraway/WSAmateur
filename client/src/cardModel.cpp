@@ -1,5 +1,7 @@
 #include "cardModel.h"
 
+#include <algorithm>
+
 
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
     mRoles = QVector<int>() << CodeRole << GlowRole << SelectedRole;
@@ -9,6 +11,7 @@ void CardModel::addCard() {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     mCards.emplace_back(Card());
     endInsertRows();
+    emit countChanged();
 }
 
 void CardModel::addCard(QString code) {
@@ -19,6 +22,7 @@ void CardModel::addCard(std::string code) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     mCards.emplace_back(code);
     endInsertRows();
+    emit countChanged();
 }
 
 void CardModel::addCards(size_t count) {
@@ -54,6 +58,7 @@ void CardModel::removeCard(int index) {
     beginRemoveRows(QModelIndex(), index, index);
     mCards.erase(mCards.begin() + index);
     endRemoveRows();
+    emit countChanged();
 }
 
 void CardModel::setGlow(int row, bool glow) {

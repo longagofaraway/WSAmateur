@@ -5,6 +5,7 @@ import wsamateur.cardModel 1.0
 Card {
     id: deck
     property bool opponent
+    property bool hidden: true
     property CardModel mModel: innerModel
 
     mSource: "cardback"

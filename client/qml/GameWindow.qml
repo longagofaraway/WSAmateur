@@ -54,8 +54,16 @@ Item {
             id: mainButton
             x: root.width * 0.75
             y: root.height * 0.85
-            onClicked: {
+        }
 
+        MainButton {
+            id: testButton
+            x: root.width * 0.2
+            y: root.height * 0.8
+            mText: "test"
+            state: "active"
+            onClicked: {
+                gGame.testAction();
             }
         }
 

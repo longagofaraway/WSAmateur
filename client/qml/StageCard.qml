@@ -12,4 +12,16 @@ Card {
         when: stageCard.dragActive
         PropertyChanges { target: stageCard; z: 100 }
     }
+
+    ParallelAnimation {
+        id: moveAnim
+        NumberAnimation { id: aX; target: stageCard; property: "x"; duration: 200 }
+        NumberAnimation { id: aY; target: stageCard; property: "y"; duration: 200 }
+    }
+
+    function startAnimation(_x, _y) {
+        aX.to = _x;
+        aY.to = _y;
+        moveAnim.start();
+    }
 }

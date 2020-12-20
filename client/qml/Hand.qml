@@ -9,7 +9,9 @@ ListView {
 
     signal cardSelected(bool selected)
     signal moveFinished()
+    signal cardPlayed(int handId, int stageId)
     property bool opponent
+    property bool hidden: opponent
     property real length: getHandLength(count)
     property int dragIndex: -1
     property bool selectable: false
@@ -33,7 +35,7 @@ ListView {
     orientation: ListView.Horizontal
     spacing: -root.cardWidth  / 3
     interactive: false
-    //z: 50
+    z: 50
 
     states: State {
         name: "mulligan"
@@ -238,7 +240,7 @@ ListView {
 
                     // we need manual drag because I couldn't adjust center of the card to the cursor
                     onPositionChanged: {
-                        if (handView.state === "mulligan" || handView.state === "clock")
+                        if (handView.state !== "main")
                             return;
                         if (!dragActive) {
                             handView.dragIndex = cardDelegate.visualIndex;
@@ -258,6 +260,7 @@ ListView {
                             return;
                         handView.dragIndex = -1;
                         if (root.stageDropTarget !== undefined) {
+                            cardPlayed(model.index, root.stageDropTarget.mIndex);
                             root.stageDropTarget.setCard(model.code);
                             dragActive = false;
                             handView.mModel.removeCard(model.index);
@@ -395,30 +398,15 @@ ListView {
 
     function addCard(code) { handView.mModel.addCard(code); }
 
-    function getXForNewCard() { return handView.x + handDelegate.count * root.cardWidth * 2/3; }
-    function getXForCard(modelId) {
-        let visualIndex = 0;
+    function getVisualIndexFromModelIndex(modelId) {
         for (var i = 0; i < handDelegate.count; i++) {
-            let item = handDelegate.items.get(i);
-            if (item.model.index === modelId) {
-                visualIndex = i;
-                break;
-            }
-        }
-
-        return handView.x + visualIndex * root.cardWidth * 2/3;
-    }
-    function getYForNewCard() { return handView.y; }
-    function getYForCard() { return handView.y; }
-
-    MainButton {
-        mText: "LOL"
-        state: "active"
-        x: -width
-        onClicked:  {
-            console.log(handView.z);
-            console.log(handView.parent);
-            console.log(handView.parent.z);
+            if (handDelegate.items.get(i).model.index === modelId)
+                return i;
         }
     }
+
+    function getXForNewCard() { return handView.x + handDelegate.count * root.cardWidth * 2/3; }
+    function getXForCard(modelId) { return handView.x + getVisualIndexFromModelIndex(modelId) * root.cardWidth * 2/3; }
+    function getYForNewCard() { return handView.y + getFanOffset(handDelegate.count); }
+    function getYForCard(modelId) { return handView.y + getFanOffset(getVisualIndexFromModelIndex(modelId)); }
 }

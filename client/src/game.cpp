@@ -192,6 +192,11 @@ void Game::mainPhase() {
 
 
 
+void Game::testAction() {
+    mPlayer->testAction();
+    mOpponent->testAction();
+}
+
 void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
     if (event->event().Is<EventInitialHand>()) {
         EventInitialHand ev;
@@ -199,11 +204,15 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         CommandMulligan cmd;
         //cmd.add_ids(0);
         //cmd.add_ids(2);
-        QTimer::singleShot(1700, this, [this, cmd]() { sendGameCommand(cmd, mOpponent->id()); });
+        QTimer::singleShot(100, this, [this, cmd]() { sendGameCommand(cmd, mOpponent->id()); });
     } else if (event->event().Is<EventClockPhase>()) {
         CommandClockPhase cmd;
-        cmd.set_count(1);
-        cmd.set_cardid(1);
+        cmd.set_count(0);
+        sendGameCommand(cmd, mOpponent->id());
+    } else if (event->event().Is<EventMainPhase>()) {
+        CommandPlayCard cmd;
+        cmd.set_handid(3);
+        cmd.set_stageid(0);
         sendGameCommand(cmd, mOpponent->id());
     }
 }

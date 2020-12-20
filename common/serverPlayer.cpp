@@ -35,6 +35,14 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandClockPhase clockCmd;
         cmd.command().UnpackTo(&clockCmd);
         processClockPhaseResult(clockCmd);
+    } else if (cmd.command().Is<CommandPlayCard>()) {
+        CommandPlayCard playCmd;
+        cmd.command().UnpackTo(&playCmd);
+        playCard(playCmd);
+    } else if (cmd.command().Is<CommandSwitchStagePositions>()) {
+        CommandSwitchStagePositions switchCmd;
+        cmd.command().UnpackTo(&switchCmd);
+        switchPositions(switchCmd);
     }
 }
 
@@ -68,12 +76,16 @@ void ServerPlayer::setupZones() {
     addZone("stock", ZoneType::HiddenZone);
     addZone("memory");
     addZone("climax");
+    addZone("level");
+    auto stage = addZone("stage");
 
     for (auto &card: mDeck->cards()) {
         auto cardInfo = CardDatabase::get().getCard(card.code);
         for (size_t i = 0; i < card.count; ++i)
             deck->addCard(cardInfo);
     }
+    for (size_t i = 0; i < 5; ++i)
+        stage->addCard(i);
 
     deck->shuffle();
 }
@@ -217,6 +229,69 @@ void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
     addExpectedCommand(CommandAttackPhase::GetDescriptor()->name());
+    addExpectedCommand(CommandSwitchStagePositions::GetDescriptor()->name());
     //TODO activate ability
-    //switch stage positions
+}
+
+void ServerPlayer::playCard(const CommandPlayCard &cmd) {
+    ServerCardZone *hand = zone("hand");
+    ServerCardZone *stage = zone("stage");
+    if (cmd.stageid() >= stage->count())
+        return;
+
+    auto cardPtr = hand->card(cmd.handid());
+    if (!cardPtr)
+        return;
+
+    if (!canPlay(cardPtr))
+        return;
+
+    auto card = hand->takeCard(cmd.handid());
+
+    auto oldStageCard = stage->swapCards(std::move(card), cmd.stageid());
+    auto cardInPlay = stage->card(cmd.stageid());
+
+    EventPlayCard eventPublic;
+    eventPublic.set_handid(cmd.handid());
+    eventPublic.set_stageid(cmd.stageid());
+    EventPlayCard eventPrivate(eventPublic);
+    eventPublic.set_code(cardInPlay->code());
+
+    sendGameEvent(eventPrivate);
+    mGame->sendPublicEvent(eventPublic, mId);
+
+    if (!oldStageCard)
+        zone("wr")->addCard(std::move(oldStageCard));
+
+    auto stock = zone("stock");
+    /*for (int i = 0; i < cardInPlay->cost(); ++i)
+        moveCard("stock", { stock->count() - 1 }, "wr");*/
+}
+
+void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
+    ServerCardZone *stage = zone("stage");
+    if (cmd.stageidfrom() >= stage->count()
+        || cmd.stageidto() >= stage->count())
+        return;
+
+    stage->swapCards(cmd.stageidfrom(), cmd.stageidto());
+    EventSwitchStagePositions event;
+    event.set_stageidfrom(cmd.stageidfrom());
+    event.set_stageidto(cmd.stageidto());
+
+    sendGameEvent(event);
+    mGame->sendPublicEvent(event, mId);
+}
+
+bool ServerPlayer::canPlay(ServerCard *card) {
+    /*if (card->level() > mLevel)
+        return false;
+    if (static_cast<size_t>(card->cost()) > zone("stock")->count())
+        return false;
+    if (card->level() > 0 || card->type() == CardType::Climax) {
+        if (!zone("clock")->hasCardWithColor(card->color())
+            && !zone("level")->hasCardWithColor(card->color()))
+            return false;
+    }*/
+    return true;
 }

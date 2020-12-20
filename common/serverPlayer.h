@@ -15,6 +15,8 @@ class ServerProtocolHandler;
 
 class CommandMulligan;
 class CommandClockPhase;
+class CommandPlayCard;
+class CommandSwitchStagePositions;
 
 class ServerPlayer
 {
@@ -27,6 +29,8 @@ class ServerPlayer
     std::unique_ptr<DeckList> mDeck;
     std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>> mZones;
     std::vector<ExpectedCommand> mExpectedCommands;
+
+    int mLevel = 0;
 
 public:
     ServerPlayer(ServerGame *game, ServerProtocolHandler *client, size_t id);
@@ -57,4 +61,7 @@ public:
     void drawCards(size_t number);
     void moveCard(std::string_view startZoneName, const std::vector<size_t> &cardIds, std::string_view targetZoneName);
     void processClockPhaseResult(const CommandClockPhase &cmd);
+    void playCard(const CommandPlayCard &cmd);
+    void switchPositions(const CommandSwitchStagePositions &cmd);
+    bool canPlay(ServerCard *card);
 };

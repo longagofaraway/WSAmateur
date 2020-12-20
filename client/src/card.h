@@ -22,6 +22,10 @@ class Card {
 
 public:
     Card() = default;
+    Card(const Card&) = delete;
+    Card(Card&&) = default;
+    Card& operator=(Card &&other) = default;
+
     Card(const std::string &code);
 
     void init(const std::string &code);

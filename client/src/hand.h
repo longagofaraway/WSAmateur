@@ -32,4 +32,5 @@ public:
     void endMulligan();
     void clockPhase();
     void endClockPhase();
+    void mainPhase();
 };

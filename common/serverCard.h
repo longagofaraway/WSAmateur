@@ -25,8 +25,14 @@ class ServerCard
     int mSoul;
 
 public:
-    ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone = nullptr);
+    ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
+    ServerCard(size_t pos, ServerCardZone *zone);
 
+    void setPos(size_t pos);
     void setZone(ServerCardZone *zone) { mZone = zone; }
     const std::string& code() { return mCode; }
+    int level() const { return mCardInfo->level(); }
+    int cost() const { return mCardInfo->cost(); }
+    CardType type() const { return mCardInfo->type(); }
+    char color() const { return mCardInfo->color(); }
 };

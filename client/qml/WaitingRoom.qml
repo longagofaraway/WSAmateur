@@ -5,7 +5,20 @@ import wsamateur.cardModel 1.0
 Card {
     id: waitingRoom
     property bool opponent
+    property bool hidden: false
     property CardModel mModel: innerModel
+    Connections {
+        target: mModel
+        onCountChanged: {
+            if (mModel.count == 0)
+                waitingRoom.visible = false;
+            else if (!waitingRoom.visible)
+                waitingRoom.visible = true;
+        }
+    }
+
+    visible: false
+    rotation: opponent ? 180 : 0
 
     x: {
         if (opponent)

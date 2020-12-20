@@ -49,8 +49,10 @@ public:
             return mPlayer->zone(zoneName)->visualItem();
         }
 
-        return mOpponent->zone(zoneName)-> visualItem();
+        return mOpponent->zone(zoneName)->visualItem();
     }
+
+    Q_INVOKABLE void testAction();
 
     QQmlEngine* engine() const;
     QQmlContext* context() const;

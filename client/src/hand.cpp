@@ -60,3 +60,9 @@ void Hand::endClockPhase() {
     mQmlHand->disconnect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForClock(bool)));
 }
 
+void Hand::mainPhase() {
+    //QMetaObject::invokeMethod(mQmlHand, "clockPhase");
+    mQmlHand->setProperty("state", "main");
+    mQmlHand->connect(mQmlHand, SIGNAL(cardPlayed(int, int)), mPlayer, SLOT(cardPlayed(int, int)));
+}
+
