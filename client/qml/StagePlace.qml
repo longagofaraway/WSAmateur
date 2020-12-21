@@ -48,7 +48,7 @@ ListView {
 
             width: root.cardWidth
             height: root.cardHeight
-            color: mStageCard === null ? "#30FFFFFF" : "#00FFFFFF"
+            color: "#30FFFFFF"
 
             DropArea {
                 id: dropStage
@@ -60,17 +60,27 @@ ListView {
                 onEntered: {
                     if (stage.opponent)
                         return;
+                    if (drag.source.index === mIndex)
+                        return;
 
-                    stageRect.color = "#80FFFFFF";
                     root.stageDropTarget = stagePlace;
+                    if (mStageCard !== null)
+                        mStageCard.glowEnabled = true;
+                    else
+                        stageRect.color = "#80FFFFFF";
                 }
 
                 onExited: {
                     if (stage.opponent)
                         return;
+                    if (drag.source.index === mIndex)
+                        return;
 
                     root.stageDropTarget = undefined;
-                    stageRect.color = "#30FFFFFF";
+                    if (mStageCard !== null)
+                        mStageCard.glowEnabled = false;
+                    else
+                        stageRect.color = "#30FFFFFF";
                 }
             }
 
@@ -101,8 +111,9 @@ ListView {
                         stage.switchPositions(stagePlace.mIndex, dropTarget.mIndex);
                         return;
                     }
-                    mStageCard.x = stagePlace.x;
-                    mStageCard.y = stagePlace.y;
+                    //mStageCard.x = stagePlace.x;
+                    //mStageCard.y = stagePlace.y;
+                    mStageCard.startDropAnim(stagePlace.x, stagePlace.y);
                 }
 
                 onEntered: {
@@ -167,6 +178,7 @@ ListView {
         let comp = Qt.createComponent("StageCard.qml");
         mStageCard = comp.createObject(gGame, { x: _x, y: _y });
         mStageCard.mSource = code;
+        mStageCard.index = mIndex;
         stagePlace.mTooltipsDisabled = true;
         tooltipTimeout.start();
     }
@@ -178,5 +190,9 @@ ListView {
 
     function swapCards(from) {
         stage.mModel.swapCards(from, mIndex);
+    }
+
+    function sendToWr() {
+        stage.sendToWr(mIndex);
     }
 }

@@ -4,6 +4,7 @@ Card {
     id: movingCard
     property string code
     property bool opponent
+    property bool isUiAction
     property string startZone
     property int startId: 0
     property string targetZone
@@ -56,8 +57,11 @@ Card {
 
     function finishMove() {
         var zone = gGame.getZone(targetZone, opponent);
-        zone.addCard(code, targetId);
-        gGame.actionComplete();
+        zone.addCard(code, targetId, startZone, startId);
+        if (isUiAction)
+            gGame.uiActionComplete();
+        else
+            gGame.actionComplete();
         moveFinished();
     }
 
@@ -72,10 +76,10 @@ Card {
     SequentialAnimation {
         id: straightMove
         ParallelAnimation {
-            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 1500; }
-            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 1500; }
-            NumberAnimation { target: movingCard; property: "scale"; to: toScale; duration: 1500; }
-            NumberAnimation { target: movingCard; property: "rotation"; to: toRot; duration: 1500; }
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
+            NumberAnimation { target: movingCard; property: "scale"; to: toScale; duration: 300; }
+            NumberAnimation { target: movingCard; property: "rotation"; to: toRot; duration: 300; }
         }
         ScriptAction { script: finishMove() }
     }

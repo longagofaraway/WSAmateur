@@ -240,7 +240,8 @@ ListView {
 
                     // we need manual drag because I couldn't adjust center of the card to the cursor
                     onPositionChanged: {
-                        if (handView.state !== "main")
+                        if (handView.state !== "main" ||
+                            (handView.state === "main" && !model.glow))
                             return;
                         if (!dragActive) {
                             handView.dragIndex = cardDelegate.visualIndex;
@@ -261,6 +262,8 @@ ListView {
                         handView.dragIndex = -1;
                         if (root.stageDropTarget !== undefined) {
                             cardPlayed(model.index, root.stageDropTarget.mIndex);
+                            if (root.stageDropTarget.mStageCard !== null)
+                                root.stageDropTarget.sendToWr();
                             root.stageDropTarget.setCard(model.code);
                             dragActive = false;
                             handView.mModel.removeCard(model.index);

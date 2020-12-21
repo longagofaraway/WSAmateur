@@ -130,9 +130,7 @@ ListView {
         }
     }
 
-    function addCard(code) {
-        clockView.mModel.addCard(code);
-    }
+    function addCard(code) { clockView.mModel.addCard(code); }
     function getXForNewCard() { return clockView.x + clockView.count * mMargin; }
     function getYForNewCard() { return clockView.y; }
     function getXForCard() { return clockView.x + (clockView.count ? (clockView.count - 1) : 0) * mMargin; }

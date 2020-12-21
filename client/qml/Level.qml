@@ -127,9 +127,7 @@ ListView {
         return (level.count - 1) * mMargin + root.cardHeight;
     }
 
-    function addCard(code) {
-        level.mModel.addCard(code);
-    }
+    function addCard(code) { level.mModel.addCard(code); }
     function getXForNewCard() { return opponent ? level.x : level.x; }
     function getYForNewCard() {
         if (opponent)

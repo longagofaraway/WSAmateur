@@ -12,6 +12,7 @@ class EventInitialHand;
 class EventDrawCard;
 class EventMoveCard;
 class EventPlayCard;
+class EventSwitchStagePositions;
 class Game;
 class GameEvent;
 class Hand;
@@ -52,11 +53,12 @@ public:
 
 private:
     void createMovingCard(const QString &code, const std::string &startZone, int startId,
-                          const std::string &targetZone, int targetId = 0);
+                          const std::string &targetZone, int targetId = 0, bool isUiAction = false);
 
     void setInitialHand(const EventInitialHand &event);
     void moveCard(const EventMoveCard &event);
     void playCard(const EventPlayCard &event);
+    void switchStagePositions(const EventSwitchStagePositions &event);
     void clockPhase();
     void mainPhase();
     void startTurn();
@@ -65,4 +67,5 @@ private:
 public slots:
     void cardPlayed(int handId, int stageId);
     void switchPositions(int from, int to);
+    void sendFromStageToWr(int pos);
 };

@@ -211,8 +211,15 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventMainPhase>()) {
         CommandPlayCard cmd;
-        cmd.set_handid(3);
+        cmd.set_handid(2);
         cmd.set_stageid(0);
         sendGameCommand(cmd, mOpponent->id());
+        sendGameCommand(cmd, mOpponent->id());
+        cmd.set_stageid(1);
+        sendGameCommand(cmd, mOpponent->id());
+        CommandSwitchStagePositions c;
+        c.set_stageidfrom(0);
+        c.set_stageidto(1);
+        sendGameCommand(c, mOpponent->id());
     }
 }

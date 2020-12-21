@@ -34,8 +34,8 @@ Player::Player(size_t id, Game *game, bool opponent)
     mZones.emplace("clock", std::move(clock));
     auto stock = std::make_unique<CommonCardZone>(this, game, "Stock");
     stock->model().addCard();
-    /*stock->model().addCard();
     stock->model().addCard();
+    /*stock->model().addCard();
     stock->model().addCard();
     stock->model().addCard();*/
     mZones.emplace("stock", std::move(stock));
@@ -74,7 +74,9 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         event->event().UnpackTo(&ev);
         playCard(ev);
     } else if (event->event().Is<EventSwitchStagePositions>()) {
-
+        EventSwitchStagePositions ev;
+        event->event().UnpackTo(&ev);
+        switchStagePositions(ev);
     }
 }
 
@@ -125,8 +127,11 @@ void Player::setInitialHand(const EventInitialHand &event) {
 }
 
 void Player::createMovingCard(const QString &code, const std::string &startZone, int startId,
-                              const std::string &targetZone, int targetId) {
-    mGame->startAction();
+                              const std::string &targetZone, int targetId, bool isUiAction) {
+    if (isUiAction)
+        mGame->startUiAction();
+    else
+        mGame->startAction();
     QString source = code;
     if (source.isEmpty())
         source = "cardback";
@@ -135,6 +140,7 @@ void Player::createMovingCard(const QString &code, const std::string &startZone,
     obj->setParentItem(mGame->parentItem());
     obj->setProperty("code", code);
     obj->setProperty("opponent", mOpponent);
+    obj->setProperty("isUiAction", isUiAction);
     obj->setProperty("mSource", source);
     obj->setProperty("startZone", QString::fromStdString(startZone));
     obj->setProperty("startId", startId);
@@ -182,6 +188,18 @@ void Player::playCard(const EventPlayCard &event) {
 
     createMovingCard(code, "hand", event.handid(), "stage", event.stageid());
     mHand->removeCard(event.handid());
+}
+
+void Player::switchStagePositions(const EventSwitchStagePositions &event) {
+    if (!mOpponent)
+        return;
+
+    if (event.stageidfrom() >= mStage->cards().size()
+        || event.stageidto() >= mStage->cards().size())
+        return;
+
+    createMovingCard(mStage->cards()[event.stageidfrom()].qcode(), "stage", event.stageidfrom(),
+            "stage", event.stageidto(), true);
 }
 
 void Player::clockPhase() {
@@ -242,6 +260,10 @@ void Player::switchPositions(int from, int to) {
     cmd.set_stageidfrom(from);
     cmd.set_stageidto(to);
     sendGameCommand(cmd);
+}
+
+void Player::sendFromStageToWr(int pos) {
+    createMovingCard(mStage->cards()[pos].qcode(), "stage", pos, "wr", 0, true);
 }
 
 void Player::testAction()

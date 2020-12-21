@@ -264,8 +264,8 @@ void ServerPlayer::playCard(const CommandPlayCard &cmd) {
         zone("wr")->addCard(std::move(oldStageCard));
 
     auto stock = zone("stock");
-    /*for (int i = 0; i < cardInPlay->cost(); ++i)
-        moveCard("stock", { stock->count() - 1 }, "wr");*/
+    for (int i = 0; i < cardInPlay->cost(); ++i)
+        moveCard("stock", { stock->count() - 1 }, "wr");
 }
 
 void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {

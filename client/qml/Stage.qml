@@ -10,6 +10,7 @@ Item {
     property bool mDragEnabled: false
     property CardModel mModel: innerModel
     signal switchPositions(int from, int to)
+    signal sendToWr(int pos)
     property var mPositions: [{ x: stage1.x, y: stage1.y },
                               { x: stage2.x, y: stage2.y },
                               { x: stage3.x, y: stage3.y },
@@ -49,5 +50,23 @@ Item {
     function getYForNewCard(pos) { return mPositions[pos].y; }
     function getXForCard(pos) { return mPositions[pos].x; }
     function getYForCard(pos) { return mPositions[pos].y; }
-    function addCard(code, pos) { mStagePlaces[pos].setCard(code); }
+    function addCard(code, pos, startZone, startPos) {
+        if (startZone === "hand") {
+            if (mStagePlaces[pos].mStageCard !== null)
+                mStagePlaces[pos].sendToWr();
+            mStagePlaces[pos].setCard(code);
+            return;
+        }
+        if (startZone === "stage") {
+            mStagePlaces[pos].swapCards(startPos);
+            if (mStagePlaces[pos].mStageCard !== null) {
+                mStagePlaces[startPos].createStageCardWithAnim(mStagePlaces[pos].mStageCard.mSource, mPositions[pos].x, mPositions[pos].y);
+                mStagePlaces[pos].createStageCard(code);
+            } else {
+                mStagePlaces[startPos].mStageCard.destroy();
+            }
+
+            return;
+        }
+    }
 }

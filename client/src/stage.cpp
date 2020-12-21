@@ -19,6 +19,7 @@ Stage::Stage(Player *player, Game *game)
     mQmlObject->setParentItem(mGame);
     mQmlObject->setParent(mGame);
     mQmlObject->setProperty("opponent", player->isOpponent());
+    mQmlObject->connect(mQmlObject, SIGNAL(sendToWr(int)), mPlayer, SLOT(sendFromStageToWr(int)));
 }
 
 void Stage::mainPhase() {
