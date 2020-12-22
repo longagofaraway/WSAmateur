@@ -55,7 +55,6 @@ Item {
     Text {
         id: buttonText
         visible: false
-        //anchors { top: parent.top; topMargin: 15 }
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -5
         width: parent.width

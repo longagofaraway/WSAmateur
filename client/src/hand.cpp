@@ -65,3 +65,9 @@ void Hand::mainPhase() {
     mQmlHand->connect(mQmlHand, SIGNAL(cardPlayed(int, int)), mPlayer, SLOT(cardPlayed(int, int)));
 }
 
+void Hand::endMainPhase() {
+    mQmlHand->setProperty("state", "");
+    QMetaObject::invokeMethod(mQmlHand, "glowAllCards", Q_ARG(QVariant, false));
+    mQmlHand->disconnect(mQmlHand, SIGNAL(cardPlayed(int, int)), mPlayer, SLOT(cardPlayed(int, int)));
+}
+

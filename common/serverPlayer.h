@@ -62,6 +62,10 @@ public:
     void moveCard(std::string_view startZoneName, const std::vector<size_t> &cardIds, std::string_view targetZoneName);
     void processClockPhaseResult(const CommandClockPhase &cmd);
     void playCard(const CommandPlayCard &cmd);
+    void playCharacter(const CommandPlayCard &cmd);
+    void playClimax(size_t handIndex);
     void switchPositions(const CommandSwitchStagePositions &cmd);
     bool canPlay(ServerCard *card);
+    void climaxPhase();
+    void attackPhase();
 };

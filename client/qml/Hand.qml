@@ -138,9 +138,9 @@ ListView {
                 }
 
                 property int visualIndex: 0
-                property var cardCode: code
                 property var enlargeAnim: mEnlargeAnim
                 property var shrinkAnim: mShrinkAnim
+                property string cardType: opponent ? "" : model.type
 
                 anchors.centerIn: cardDelegate
 
@@ -252,6 +252,19 @@ ListView {
                             mShrinkToDragAnim.start();
                         }
                         let point = cardImgDelegate.mapToItem(handView, mouse.x, mouse.y);
+                        if (point.y < -170 && !model.selected
+                                && (cardImgDelegate.cardType === "Climax" || cardImgDelegate.cardType === "Event")) {
+                            if (cardImgDelegate.cardType === "Climax")
+                                cardImgDelegate.rotation = -90;
+                            setSelected(model.index, true);
+                        }
+                        else if (point.y >= -170 && model.selected
+                                 && (cardImgDelegate.cardType === "Climax" || cardImgDelegate.cardType === "Event")) {
+                            if (cardImgDelegate.cardType === "Climax")
+                                cardImgDelegate.rotation = 0;
+                            setSelected(model.index, false);
+                        }
+
                         cardImgDelegate.x = point.x - root.cardWidth / 2;
                         cardImgDelegate.y = point.y - root.cardHeight / 2;
                     }
@@ -271,12 +284,15 @@ ListView {
                             return;
                         }
                         dragActive = false;
+                        if (model.selected) {
+                            startPlayingClimax(cardImgDelegate, model.code, model.index);
+                        }
                         cardImgDelegate.state = "";
                         mDropAnim.start();
                     }
                 }
 
-                Drag.source: dragArea
+                Drag.source: cardImgDelegate
                 Drag.active: dragArea.dragActive
 
                 Drag.hotSpot.x: root.cardWidth / 2
@@ -309,6 +325,7 @@ ListView {
                         duration: 2000
                     }
                 }
+                Behavior on rotation { NumberAnimation { duration: 100 } }
             }
 
             rotation: getAngle(visualIndex, handDelegate.halfIndex) + (opponent? 180 : 0)
@@ -384,20 +401,41 @@ ListView {
     function glowAllCards(glow) {
         for (let i = 0; i < handView.mModel.rowCount(); i++) {
             let index = handView.mModel.index(i, 0);
-            handView.mModel.setData(index, glow, 0x102);
+            handView.mModel.setData(index, glow, CardModel.GlowRole);
         }
+    }
+
+    function setSelected(index, selected) {
+        let modelIndex = handView.mModel.index(index, 0);
+        handView.mModel.setData(modelIndex, selected, CardModel.SelectedRole);
     }
 
     function unglowUnselected() {
         for (let i = 0; i < handView.mModel.rowCount(); i++) {
             let index = handView.mModel.index(i, 0);
-            let selected = handView.mModel.data(index, 0x103);
+            let selected = handView.mModel.data(index, CardModel.SelectedRole);
             if (selected)
                 continue;
-            handView.mModel.setData(index, false, 0x102);
+            handView.mModel.setData(index, false, CardModel.GlowRole);
         }
     }
 
+    function startPlayingClimax(imgDelegate, code, index) {
+        let comp = Qt.createComponent("MovingCard.qml");
+        let point = root.mapFromItem(handView, imgDelegate.x, imgDelegate.y);
+        let card = comp.createObject(root, { x: point.x, y: point.y });
+        gGame.startUiAction();
+        card.opponent = false;
+        card.isQmlAction = true;
+        card.targetZone = "climax";
+        card.targetId = index;
+        card.code = code;
+        card.mSource = code;
+        card.rotation = imgDelegate.rotation;
+        card.startAnimation();
+        gGame.sendClimaxPhaseCommand();
+        handView.mModel.removeCard(index);
+    }
 
     function addCard(code) { handView.mModel.addCard(code); }
 

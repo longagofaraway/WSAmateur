@@ -149,6 +149,14 @@ void Game::sendClockPhaseFinished() {
     mPlayer->clockPhaseFinished();
 }
 
+void Game::sendMainPhaseFinished() {
+    mPlayer->mainPhaseFinished();
+}
+
+void Game::sendClimaxPhaseCommand() {
+    mPlayer->sendClimaxPhaseCommand();
+}
+
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
 QQmlContext* Game::context() const { return qmlContext(parentItem()); }
 
@@ -189,11 +197,15 @@ void Game::mainPhase() {
     QMetaObject::invokeMethod(this, "mainPhase");
 }
 
+void Game::attackPhase() {
+    QMetaObject::invokeMethod(this, "attackPhase");
+}
+
 
 
 
 void Game::testAction() {
-    mPlayer->testAction();
+    //mPlayer->testAction();
     mOpponent->testAction();
 }
 
@@ -210,7 +222,9 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         cmd.set_count(0);
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventMainPhase>()) {
-        CommandPlayCard cmd;
+        mOpponent->testAction();
+
+        /*CommandPlayCard cmd;
         cmd.set_handid(2);
         cmd.set_stageid(0);
         sendGameCommand(cmd, mOpponent->id());
@@ -220,6 +234,6 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         CommandSwitchStagePositions c;
         c.set_stageidfrom(0);
         c.set_stageidto(1);
-        sendGameCommand(c, mOpponent->id());
+        sendGameCommand(c, mOpponent->id());*/
     }
 }

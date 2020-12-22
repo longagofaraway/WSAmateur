@@ -10,7 +10,7 @@ ListView {
    property bool hidden: true
    property real mMargin: root.cardHeight * 0.2
 
-   x: opponent ? (root.width * 0.934) : (-root.width * 0.03)
+   x: opponent ? (root.width * 0.962) : (-root.width * 0.03)
    y: opponent ? (root.height / 2 - stock.contentHeight) : (root.height / 2)
    interactive: false
    width: root.cardWidth

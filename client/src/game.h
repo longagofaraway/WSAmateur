@@ -43,6 +43,8 @@ public:
     Q_INVOKABLE void startUiAction() { mUiActionInProgress = true; }
     Q_INVOKABLE void sendMulliganFinished();
     Q_INVOKABLE void sendClockPhaseFinished();
+    Q_INVOKABLE void sendMainPhaseFinished();
+    Q_INVOKABLE void sendClimaxPhaseCommand();
     Q_INVOKABLE QQuickItem* getZone(QString name, bool opponent) {
         auto zoneName = name.toStdString();
         if (!opponent) {
@@ -63,6 +65,7 @@ public:
     void startTurn(bool opponent);
     void clockPhase();
     void mainPhase();
+    void attackPhase();
 
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);

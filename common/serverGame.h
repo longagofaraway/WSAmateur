@@ -12,12 +12,19 @@
 
 class ServerProtocolHandler;
 
+enum class Phase {
+    Mulligan,
+    Climax,
+    Attack
+};
+
 class ServerGame
 {
     size_t mId;
     size_t mNextPlayerId;
     std::string mDescription;
     std::unordered_map<size_t, std::unique_ptr<ServerPlayer>> mPlayers;
+    Phase mCurrentPhase = Phase::Mulligan;
 
 public:
     ServerGame(size_t id, std::string description);
@@ -32,6 +39,8 @@ public:
     void setStartingPlayer();
     void startGame();
     void endMulligan();
+    Phase phase() const { return mCurrentPhase; }
+    void setPhase(Phase phase) { mCurrentPhase = phase; }
 
     void sendPublicEvent(const ::google::protobuf::Message &event, size_t senderId);
 };

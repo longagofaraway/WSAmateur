@@ -108,6 +108,8 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
         return card.glow();
     case SelectedRole:
         return card.selected();
+    case TypeRole:
+        return card.qtype();
     default:
         return QVariant();
     }
@@ -120,6 +122,7 @@ QHash<int, QByteArray> CardModel::roleNames() const {
         (*roles)[CodeRole] = "code";
         (*roles)[GlowRole] = "glow";
         (*roles)[SelectedRole] = "selected";
+        (*roles)[TypeRole] = "type";
     }
     return *roles;
 }

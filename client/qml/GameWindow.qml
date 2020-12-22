@@ -151,6 +151,23 @@ Item {
             mainButton.state = "active";
             mainButton.mText = "Next";
             mainButton.mSubText = "To Attack";
+            mainButton.clicked.connect(mainPhaseFinished);
+        }
+
+        function mainPhaseFinished() {
+            mainButton.clicked.disconnect(mainPhaseFinished);
+            mainButton.state = "waiting";
+
+            gGame.sendMainPhaseFinished();
+        }
+
+        function attackPhase() {
+            let comp = Qt.createComponent("HelpText.qml");
+            mHelpText = comp.createObject(gGame);
+            mHelpText.mText = "Choose attacker";
+            mainButton.mText = "Skip attack";
+            mainButton.mSubText = "";
+
         }
     }
 

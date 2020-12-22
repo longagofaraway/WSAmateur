@@ -43,6 +43,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandSwitchStagePositions switchCmd;
         cmd.command().UnpackTo(&switchCmd);
         switchPositions(switchCmd);
+    } else if (cmd.command().Is<CommandClimaxPhase>()) {
+        climaxPhase();
+    } else if (cmd.command().Is<CommandAttackPhase>()) {
+        attackPhase();
     }
 }
 
@@ -228,12 +232,25 @@ void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
 
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
+    addExpectedCommand(CommandClimaxPhase::GetDescriptor()->name());
     addExpectedCommand(CommandAttackPhase::GetDescriptor()->name());
     addExpectedCommand(CommandSwitchStagePositions::GetDescriptor()->name());
     //TODO activate ability
 }
 
 void ServerPlayer::playCard(const CommandPlayCard &cmd) {
+    auto *hand = zone("hand");
+    auto cardPtr = hand->card(cmd.handid());
+    if (!cardPtr)
+        return;
+
+    if (cardPtr->type() == CardType::Character)
+        playCharacter(cmd);
+    else if (cardPtr->type() == CardType::Climax)
+        playClimax(cmd.handid());
+}
+
+void ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     ServerCardZone *hand = zone("hand");
     ServerCardZone *stage = zone("stage");
     if (cmd.stageid() >= stage->count())
@@ -268,6 +285,26 @@ void ServerPlayer::playCard(const CommandPlayCard &cmd) {
         moveCard("stock", { stock->count() - 1 }, "wr");
 }
 
+void ServerPlayer::playClimax(size_t handIndex) {
+    auto hand = zone("hand");
+    auto climaxZone = zone("climax");
+
+    auto card = hand->takeCard(handIndex);
+    climaxZone->addCard(std::move(card));
+    auto cardPtr = climaxZone->card(0);
+
+    EventPlayCard eventPublic;
+    eventPublic.set_handid(static_cast<google::protobuf::uint32>(handIndex));
+    EventPlayCard eventPrivate(eventPublic);
+    eventPublic.set_code(cardPtr->code());
+
+    sendGameEvent(eventPrivate);
+    mGame->sendPublicEvent(eventPublic, mId);
+
+    //process climax effects
+    attackPhase();
+}
+
 void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
     ServerCardZone *stage = zone("stage");
     if (cmd.stageidfrom() >= stage->count()
@@ -284,6 +321,8 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
 }
 
 bool ServerPlayer::canPlay(ServerCard *card) {
+    if (mGame->phase() == Phase::Climax && card->type() != CardType::Climax)
+        return false;
     /*if (card->level() > mLevel)
         return false;
     if (static_cast<size_t>(card->cost()) > zone("stock")->count())
@@ -294,4 +333,22 @@ bool ServerPlayer::canPlay(ServerCard *card) {
             return false;
     }*/
     return true;
+}
+
+void ServerPlayer::climaxPhase() {
+    // check timing at start of climax phase
+    mGame->setPhase(Phase::Climax);
+    clearExpectedComands();
+    addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
+    EventClimaxPhase event;
+    sendGameEvent(event);
+    mGame->sendPublicEvent(event, mId);
+}
+
+void ServerPlayer::attackPhase() {
+    mGame->setPhase(Phase::Attack);
+    clearExpectedComands();
+    EventAttackPhase event;
+    sendGameEvent(event);
+    mGame->sendPublicEvent(event, mId);
 }

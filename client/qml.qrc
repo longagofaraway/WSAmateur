@@ -33,5 +33,6 @@
         <file>qml/Stage.qml</file>
         <file>qml/StageCard.qml</file>
         <file>qml/Level.qml</file>
+        <file>qml/Climax.qml</file>
     </qresource>
 </RCC>

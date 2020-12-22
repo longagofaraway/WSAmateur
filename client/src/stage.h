@@ -22,4 +22,5 @@ public:
     void removeCard(int index) override { mCardsModel.removeCard(index); }
 
     void mainPhase();
+    void endMainPhase();
 };

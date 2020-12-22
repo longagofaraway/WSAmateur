@@ -7,8 +7,10 @@
 #include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
+#include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
+#include "cardDatabase.h"
 #include "commonCardZone.h"
 #include "deck.h"
 #include "game.h"
@@ -35,9 +37,6 @@ Player::Player(size_t id, Game *game, bool opponent)
     auto stock = std::make_unique<CommonCardZone>(this, game, "Stock");
     stock->model().addCard();
     stock->model().addCard();
-    /*stock->model().addCard();
-    stock->model().addCard();
-    stock->model().addCard();*/
     mZones.emplace("stock", std::move(stock));
     auto stage= std::make_unique<Stage>(this, game);
     mStage = stage.get();
@@ -45,6 +44,9 @@ Player::Player(size_t id, Game *game, bool opponent)
     auto level = std::make_unique<CommonCardZone>(this, game, "Level");
     level->model().addCard(std::string("IMC/W43-046"));
     mZones.emplace("level", std::move(level));
+    auto climax = std::make_unique<CommonCardZone>(this, game, "Climax");
+    //climax->model().addCard(std::string("IMC/W43-127"));
+    mZones.emplace("climax", std::move(climax));
 }
 
 CardZone* Player::zone(std::string_view name) const {
@@ -77,11 +79,48 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventSwitchStagePositions ev;
         event->event().UnpackTo(&ev);
         switchStagePositions(ev);
+    } else if (event->event().Is<EventClimaxPhase>()) {
+        playClimax();
+    } else if (event->event().Is<EventAttackPhase>()) {
+        attackPhase();
     }
 }
 
 void Player::sendGameCommand(const google::protobuf::Message &command) {
     mGame->sendGameCommand(command, mId);
+}
+
+void Player::clockPhase() {
+    if (mOpponent)
+        return;
+
+    mGame->clockPhase();
+    mHand->clockPhase();
+}
+
+void Player::mainPhase() {
+    if (mOpponent)
+        return;
+
+    mGame->mainPhase();
+    mHand->mainPhase();
+    mStage->mainPhase();
+    auto &cards = mHand->cards();
+    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
+        if (canPlay(cards[i]))
+            mHand->model().setGlow(i, true);
+    }
+}
+
+void Player::attackPhase() {
+    if (mOpponent)
+        return;
+
+    mGame->attackPhase();
+}
+
+void Player::startTurn() {
+    mGame->startTurn(mOpponent);
 }
 
 void Player::mulliganFinished() {
@@ -107,6 +146,29 @@ void Player::clockPhaseFinished() {
         }
     }
 
+    sendGameCommand(cmd);
+}
+
+void Player::mainPhaseFinished() {
+    mHand->endMainPhase();
+    mStage->endMainPhase();
+    CommandAttackPhase cmd;
+    sendGameCommand(cmd);
+}
+
+void Player::sendClimaxPhaseCommand() {
+    // a little about playing climaxes
+    // climax phase starts when player presses 'Next(to attack)' or when he plays a climax
+    // this approach eliminates unnecessary button click 'Next(to climax phase)', but has a drawback in current realization
+    // 1. Player plays a climax, climax is added to the climax zone and removed from hand on player's side,
+    //    but not on the server's. Climax effects are not performed yet. Player sends CommandClimaxPhase.
+    // 2. Server triggers 'At the start of climax phase' abilities. Player resolves abilities.
+    // 3. Player sends 'play climax' command. Climax effects are rsolved.
+    // If there are 'At the start of climax phase' abilities that mess with card count in hand or
+    // smth like that we are fcked;
+    mHand->endMainPhase();
+    mStage->endMainPhase();
+    CommandClimaxPhase cmd;
     sendGameCommand(cmd);
 }
 
@@ -186,7 +248,18 @@ void Player::playCard(const EventPlayCard &event) {
     if (code.isEmpty())
         code = cards[event.stageid()].qcode();
 
-    createMovingCard(code, "hand", event.handid(), "stage", event.stageid());
+    auto cardInfo = CardDatabase::get().getCard(event.code());
+    if (!cardInfo)
+        return;
+
+    std::string targetZone;
+    if (cardInfo->type() == CardType::Climax)
+        targetZone = "climax";
+    else
+        targetZone = "stage";
+
+
+    createMovingCard(code, "hand", event.handid(), targetZone, event.stageid());
     mHand->removeCard(event.handid());
 }
 
@@ -200,32 +273,6 @@ void Player::switchStagePositions(const EventSwitchStagePositions &event) {
 
     createMovingCard(mStage->cards()[event.stageidfrom()].qcode(), "stage", event.stageidfrom(),
             "stage", event.stageidto(), true);
-}
-
-void Player::clockPhase() {
-    if (mOpponent)
-        return;
-
-    mGame->clockPhase();
-    mHand->clockPhase();
-}
-
-void Player::mainPhase() {
-    if (mOpponent)
-        return;
-
-    mGame->mainPhase();
-    mHand->mainPhase();
-    mStage->mainPhase();
-    auto &cards = mHand->cards();
-    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
-        if (canPlay(cards[i]))
-            mHand->model().setGlow(i, true);
-    }
-}
-
-void Player::startTurn() {
-    mGame->startTurn(mOpponent);
 }
 
 bool Player::canPlay(Card &card) {
@@ -248,6 +295,19 @@ bool Player::canPlay(Card &card) {
     return true;
 }
 
+void Player::playClimax() {
+    if (mOpponent)
+        return;
+
+    auto climaxZone = zone("climax");
+    if (climaxZone->cards().empty())
+        return;
+    int handIndex = climaxZone->visualItem()->property("mHandIndex").toInt();
+    CommandPlayCard cmd;
+    cmd.set_handid(handIndex);
+    sendGameCommand(cmd);
+}
+
 void Player::cardPlayed(int handId, int stageId) {
     CommandPlayCard cmd;
     cmd.set_handid(handId);
@@ -268,4 +328,10 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
+    auto &cards = mHand->cards();
+    for (size_t i = 0; i < cards.size(); ++i) {
+        CommandPlayCard cmd;
+        cmd.set_handid(0);
+        sendGameCommand(cmd);
+    }
 }

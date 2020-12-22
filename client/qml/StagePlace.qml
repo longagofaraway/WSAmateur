@@ -60,6 +60,9 @@ ListView {
                 onEntered: {
                     if (stage.opponent)
                         return;
+                    if (drag.source.cardType === "Climax"
+                        || drag.source.cardType === "Event")
+                        return;
                     if (drag.source.index === mIndex)
                         return;
 
@@ -111,8 +114,6 @@ ListView {
                         stage.switchPositions(stagePlace.mIndex, dropTarget.mIndex);
                         return;
                     }
-                    //mStageCard.x = stagePlace.x;
-                    //mStageCard.y = stagePlace.y;
                     mStageCard.startDropAnim(stagePlace.x, stagePlace.y);
                 }
 

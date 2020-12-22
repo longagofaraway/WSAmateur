@@ -40,5 +40,6 @@ public:
     int power() const { return mPower; }
     int soul() const { return mSoul; }
     CardType type() const { return mType; }
+    QString qtype() const;
     QString qcode() const { return QString::fromStdString(mCode); }
 };

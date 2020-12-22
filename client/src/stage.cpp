@@ -26,3 +26,8 @@ void Stage::mainPhase() {
     mQmlObject->connect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(switchPositions(int, int)));
     mQmlObject->setProperty("mDragEnabled", true);
 }
+
+void Stage::endMainPhase() {
+    mQmlObject->disconnect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(switchPositions(int, int)));
+    mQmlObject->setProperty("mDragEnabled", false);
+}

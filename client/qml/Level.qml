@@ -13,7 +13,7 @@ ListView {
     property real mMargin: root.cardHeight * mMarginModifier
     property real mScale: 0.8
 
-    x: opponent ? (root.width * 0.82) : (root.width * 0.08)
+    x: opponent ? (root.width * 0.85) : (root.width * 0.08)
     y: opponent ? (root.height * 0.15) : (root.height * 0.87 - getLevelHeight())
     width: root.cardWidth
     height: getLevelHeight()
@@ -85,22 +85,17 @@ ListView {
                 }
                 if (frameParent.cardTextFrame !== null)
                     frameParent.cardTextFrame.destroy();
-                var textFrame = incubator.object;
+                let textFrame = incubator.object;
 
+                let scaledX = root.cardWidth * (1 - 0.9) / 2;
                 let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
-                let cardOffset = frameParent.x * level.scale;
-
+                textFrame.x = level.x + scaledX;
+                textFrame.y = cardMappedPoint.y;
                 if (!opponent) {
-                    let cardWidthAndScaleOffset = frameParent.width * level.scale * (frameParent.scale + 1) / 2;
-                    textFrame.x = level.x + cardOffset + cardWidthAndScaleOffset;
-                    textFrame.y = cardMappedPoint.y;
-
-                    let cardHeight = frameParent.height * level.scale * frameParent.scale;
-                    if (textFrame.height > cardHeight)
-                        textFrame.y -= textFrame.height - cardHeight;
+                    textFrame.x += (root.cardHeight + root.cardWidth) / 2 * 0.9;
+                    textFrame.y -= textFrame.height;
                 } else {
-                    textFrame.x = level.x - textFrame.width + cardOffset;
-                    textFrame.y = cardMappedPoint.y;
+                    textFrame.x += -textFrame.width - ((root.cardHeight - root.cardWidth) / 2) * 0.9;
                 }
 
                 textFrame.visible = true;

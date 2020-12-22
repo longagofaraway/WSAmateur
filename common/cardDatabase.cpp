@@ -71,7 +71,7 @@ CardDatabase& CardDatabase::get() {
 
 std::shared_ptr<CardInfo> CardDatabase::getCard(const std::string &code) {
     if (!mDb.count(code))
-        throw std::runtime_error("card not found");
+        return {};
 
     return mDb.at(code);
 }

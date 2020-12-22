@@ -33,4 +33,5 @@ public:
     void clockPhase();
     void endClockPhase();
     void mainPhase();
+    void endMainPhase();
 };

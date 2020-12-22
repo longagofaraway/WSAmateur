@@ -6,6 +6,7 @@
 
 #include "card.h"
 
+
 class CardModel : public QAbstractListModel
 {
     Q_OBJECT
@@ -16,8 +17,10 @@ public:
     enum HandCardRoles {
         CodeRole = Qt::UserRole + 1,
         GlowRole,
-        SelectedRole
+        SelectedRole,
+        TypeRole
     };
+    Q_ENUM(HandCardRoles)
     static QVector<int> mRoles;
 
     Q_PROPERTY(int count READ count NOTIFY countChanged)

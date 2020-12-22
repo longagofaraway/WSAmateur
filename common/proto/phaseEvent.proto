@@ -1,5 +1,6 @@
 syntax = "proto3";
 
-message EventClockPhase { }
-message EventMainPhase { }
-message EventAttackPhase { }
+message EventClockPhase {}
+message EventMainPhase {}
+message EventClimaxPhase {}
+message EventAttackPhase {}

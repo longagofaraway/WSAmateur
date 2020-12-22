@@ -48,6 +48,8 @@ public:
 
     void mulliganFinished();
     void clockPhaseFinished();
+    void mainPhaseFinished();
+    void sendClimaxPhaseCommand();
 
     void testAction();
 
@@ -61,8 +63,10 @@ private:
     void switchStagePositions(const EventSwitchStagePositions &event);
     void clockPhase();
     void mainPhase();
+    void attackPhase();
     void startTurn();
     bool canPlay(Card &card);
+    void playClimax();
 
 public slots:
     void cardPlayed(int handId, int stageId);

@@ -5,6 +5,7 @@ Card {
     property string code
     property bool opponent
     property bool isUiAction
+    property bool isQmlAction: false
     property string startZone
     property int startId: 0
     property string targetZone
@@ -20,6 +21,12 @@ Card {
     z: 100
 
     function startAnimation() {
+        if (!isQmlAction)
+            setupMoveFromZone();
+        setupMoveToZone();
+    }
+
+    function setupMoveFromZone() {
         let szone = gGame.getZone(startZone, opponent);
         movingCard.x = szone.getXForCard(startId);
         movingCard.y = szone.getYForCard(startId);
@@ -30,6 +37,9 @@ Card {
             movingCard.rotation += 90;
         if (startZone === "clock" || startZone === "level")
             movingCard.scale = szone.scaleForMovingCard();
+    }
+
+    function setupMoveToZone() {
         let tzone = gGame.getZone(targetZone, opponent);
         toX = tzone.getXForNewCard(targetId);
         toY = tzone.getYForNewCard(targetId);
@@ -58,11 +68,16 @@ Card {
     function finishMove() {
         var zone = gGame.getZone(targetZone, opponent);
         zone.addCard(code, targetId, startZone, startId);
-        if (isUiAction)
+        if (!isQmlAction) {
+            if (isUiAction)
+                gGame.uiActionComplete();
+            else
+                gGame.actionComplete();
+            moveFinished();
+        } else {
             gGame.uiActionComplete();
-        else
-            gGame.actionComplete();
-        moveFinished();
+            movingCard.destroy();
+        }
     }
 
     transform: Rotation {

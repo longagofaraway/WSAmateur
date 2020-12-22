@@ -13,8 +13,8 @@ Card {
 
     x: {
         if (opponent)
-            return root.width * 0.05;
-        return root.width * 0.95 - root.cardWidth;
+            return root.width * 0.03;
+        return root.width * 0.97 - root.cardWidth;
     }
     y: {
         if (opponent)

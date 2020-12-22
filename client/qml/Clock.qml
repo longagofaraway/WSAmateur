@@ -1,5 +1,4 @@
 import QtQuick 2.12
-import QtQuick.Window 2.12
 
 import wsamateur.cardModel 1.0
 
@@ -13,18 +12,8 @@ ListView {
     property real mMargin: root.cardWidth * mMarginModifier
     property real mScale: 0.7
 
-    x: {
-        if (opponent)
-            return root.width * 0.7;
-        else
-            return root.width * 0.08;
-    }
-    y: {
-        if (opponent)
-            return -root.height * 0.01;
-        else
-            return root.height * 0.85;
-    }
+    x: opponent ? (root.width * 0.7) : (root.width * 0.08)
+    y: opponent ? (-root.height * 0.01) : (root.height * 0.85)
     width: contentWidth
     height: root.cardHeight
     spacing: -root.cardWidth * (1 - mMarginModifier)

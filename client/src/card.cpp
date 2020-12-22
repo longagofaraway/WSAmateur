@@ -20,3 +20,15 @@ void Card::init(const std::string &code) {
     mColor = mInfo->color();
     mType = mInfo->type();
 }
+
+QString Card::qtype() const {
+    switch(mType) {
+    case CardType::Character:
+        return QString("Char");
+    case CardType::Climax:
+        return QString("Climax");
+    case CardType::Event:
+        return QString("Event");
+    }
+    assert(false);
+}
