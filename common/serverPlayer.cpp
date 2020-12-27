@@ -47,6 +47,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         climaxPhase();
     } else if (cmd.command().Is<CommandAttackPhase>()) {
         attackPhase();
+    } else if (cmd.command().Is<CommandDeclareAttack>()) {
+        CommandDeclareAttack declareAttackCmd;
+        cmd.command().UnpackTo(&declareAttackCmd);
+        declareAttack(declareAttackCmd);
     }
 }
 
@@ -348,7 +352,41 @@ void ServerPlayer::climaxPhase() {
 void ServerPlayer::attackPhase() {
     mGame->setPhase(Phase::Attack);
     clearExpectedComands();
-    EventAttackPhase event;
+    addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
+    EventAttackDeclarationStep event;
     sendGameEvent(event);
     mGame->sendPublicEvent(event, mId);
+}
+
+bool isCenterStagePosition(size_t pos) { return pos >= 3 ? false : true; }
+void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
+    auto stage = zone("stage");
+    if (!isCenterStagePosition(cmd.stageid()))
+        return;
+    auto attCard = stage->card(cmd.stageid());
+    if (attCard->state() != CardState::Standing)
+        return;
+
+    attCard->setState(CardState::Rested);
+
+    AttackType type = cmd.attacktype();
+    if (hasBattleOpponent(cmd.stageid()))
+        type = AttackType::DirectAttack;
+
+    EventDeclareAttack event;
+    event.set_stageid(cmd.stageid());
+    event.set_attacktype(type);
+    sendGameEvent(event);
+    mGame->sendPublicEvent(event, mId);
+}
+
+bool ServerPlayer::hasBattleOpponent(size_t pos) const {
+    auto opponent = mGame->opponentOfPlayer(mId);
+    if (!opponent)
+        return false;
+
+    if (opponent->zone("stage")->card(pos))
+        return true;
+
+    return false;
 }

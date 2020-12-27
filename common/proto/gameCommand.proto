@@ -1,15 +1,21 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
+import "attackType.proto";
 
 message GameCommand {
-	google.protobuf.Any command = 1;
+    google.protobuf.Any command = 1;
 }
 
 message CommandSetDeck {
-	string deck = 1;
+    string deck = 1;
 }
 
 message CommandReadyToStart {
-	bool ready = 1;
+    bool ready = 1;
+}
+
+message CommandDeclareAttack {
+    uint32 stageId = 1;
+	AttackType attackType = 2;
 }

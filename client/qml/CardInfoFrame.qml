@@ -5,14 +5,14 @@ Shape {
     id: shape
 
     property ListModel effectsModel: ListModel {
-        ListElement { effect: "Text is a 2019 Russian crime drama psychological thriller film directed by Klim Shipenko, an adaptation of the best-selling novel Text by writer Dmitry Glukhovsky, who adapted the novel into a movie script. The film stars Alexander Petrov, Ivan Yankovsky and Kristina Asmus." }
-        ListElement { effect: "Text is a 2019 Russian crime drama psychological thriller film directed by Klim Shipenko, an adaptation of the best-selling novel Text by writer Dmitry Glukhovsky, who adapted the novel into a movie script. The film stars Alexander Petrov, Ivan Yankovsky and Kristina Asmus." }
+        ListElement { effect: "You can't take damage from your opponent character's AUTO effects." }
+        ListElement { effect: "AUTO [(1) Put the top card of your deck in your clock & put a card from your hand into your waiting room] When this card is put into your waiting room from the stage, you may pay cost. If you do, look at up to six cards from the top of your deck, search for up to 1 red character and up to 1 blue character, reveal them to your opponent, put them into your hand, and put the rest into your waiting room." }
     }
 
     property real selfHeight: effectsView.height + borderRect.borderWidth * 2
 
     z: 100
-    width: 200
+    width: 300
     height: effectsView.height + borderRect.borderWidth * 2
     ShapePath {
         strokeWidth: -1
@@ -61,7 +61,8 @@ Shape {
 
             delegate: Component {
                 Rectangle {
-                    color: "#F2FFFE"
+                    //color: "#F2FFFE"
+                    color: "#FFFFFF"
                     radius: 5
                     border.width: 1
                     anchors.left: parent.left
@@ -75,6 +76,8 @@ Shape {
                         leftPadding: 4
                         rightPadding: 4
                         text: effect
+                        font.family: "Futura Bk BT"
+                        font.pointSize: 10
                     }
                 }
             }

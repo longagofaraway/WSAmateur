@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+enum AttackType {
+    DirectAttack = 0;
+    FrontAttack = 1;
+    SideAttack = 2;
+}

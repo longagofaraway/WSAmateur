@@ -4,7 +4,7 @@
 
 
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
-    mRoles = QVector<int>() << CodeRole << GlowRole << SelectedRole;
+    mRoles = QVector<int>() << CodeRole << GlowRole << SelectedRole << TypeRole << StateRole << PowerRole << SoulRole;
 }
 
 void CardModel::addCard() {
@@ -71,6 +71,11 @@ void CardModel::setSelected(int row, bool selected) {
     setData(index, selected, SelectedRole);
 }
 
+void CardModel::setState(int row, CardState state) {
+    auto index = createIndex(row, 0);
+    setData(index, static_cast<int>(state), StateRole);
+}
+
 bool CardModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (index.row() < 0 || static_cast<size_t>(index.row()) >= mCards.size())
         return false;
@@ -83,6 +88,9 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         break;
     case SelectedRole:
         card.setSelected(value.toBool());
+        break;
+    case StateRole:
+        card.setState(static_cast<CardState>(value.toInt()));
         break;
     default:
         return false;
@@ -110,6 +118,12 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
         return card.selected();
     case TypeRole:
         return card.qtype();
+    case StateRole:
+        return card.qstate();
+    case PowerRole:
+        return card.power();
+    case SoulRole:
+        return card.soul();
     default:
         return QVariant();
     }
@@ -123,6 +137,9 @@ QHash<int, QByteArray> CardModel::roleNames() const {
         (*roles)[GlowRole] = "glow";
         (*roles)[SelectedRole] = "selected";
         (*roles)[TypeRole] = "type";
+        (*roles)[StateRole] = "state";
+        (*roles)[PowerRole] = "power";
+        (*roles)[SoulRole] = "soul";
     }
     return *roles;
 }

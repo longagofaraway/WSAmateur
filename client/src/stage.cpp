@@ -31,3 +31,34 @@ void Stage::endMainPhase() {
     mQmlObject->disconnect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(switchPositions(int, int)));
     mQmlObject->setProperty("mDragEnabled", false);
 }
+
+void Stage::attackDeclarationStep() {
+    mQmlObject->setProperty("state", "attack");
+    mQmlObject->connect(mQmlObject, SIGNAL(declareAttack(int)), mPlayer, SLOT(sendAttackDeclaration(int)));
+    highlightAttackers();
+}
+
+void Stage::highlightAttackers() {
+    auto &cards = mCardsModel.cards();
+    for (int i = 0; i < 3; ++i) {
+        if (cards[i].cardPresent())
+            mCardsModel.setGlow(i, true);
+    }
+}
+
+void Stage::attackDeclared(int pos) {
+    QMetaObject::invokeMethod(mQmlObject, "attackDeclared", Q_ARG(QVariant, pos));
+
+    if (mPlayer->isOpponent())
+        return;
+
+    mCardsModel.setState(pos, CardState::Rested);
+    mQmlObject->setProperty("state", "");
+    mQmlObject->disconnect(mQmlObject, SIGNAL(declareAttack(int)), mPlayer, SLOT(sendAttackDeclaration(int)));
+    auto &cards = mCardsModel.cards();
+    for (int i = 0; i < 3; ++i) {
+        if (cards[i].cardPresent() && i != pos)
+            mCardsModel.setGlow(i, false);
+    }
+
+}

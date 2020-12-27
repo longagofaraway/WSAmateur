@@ -4,6 +4,7 @@
 #include <QMetaObject>
 #include <QQuickItem>
 
+#include "gameCommand.pb.h"
 #include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
@@ -81,8 +82,14 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         switchStagePositions(ev);
     } else if (event->event().Is<EventClimaxPhase>()) {
         playClimax();
-    } else if (event->event().Is<EventAttackPhase>()) {
-        attackPhase();
+    } else if (event->event().Is<EventAttackDeclarationStep>()) {
+        attackDeclarationStep();
+    } else if (event->event().Is<EventDeclareAttack>()) {
+        EventDeclareAttack ev;
+        event->event().UnpackTo(&ev);
+        declareAttack(ev);
+    } else if (event->event().Is<EventTriggerStep>()) {
+
     }
 }
 
@@ -112,11 +119,26 @@ void Player::mainPhase() {
     }
 }
 
-void Player::attackPhase() {
+void Player::attackDeclarationStep() {
     if (mOpponent)
         return;
 
-    mGame->attackPhase();
+    mGame->attackDeclarationStep();
+    mStage->attackDeclarationStep();
+}
+
+void Player::declareAttack(const EventDeclareAttack &event) {
+    if (event.stageid() >= 3)
+        return;
+    mStage->attackDeclared(event.stageid());
+    if (!isOpponent())
+        mGame->attackDeclarationStepFinished();
+}
+
+void Player::sendAttackDeclaration(int pos) {
+    CommandDeclareAttack cmd;
+    cmd.set_stageid(pos);
+    sendGameCommand(cmd);
 }
 
 void Player::startTurn() {
@@ -288,7 +310,12 @@ bool Player::canPlay(Card &card) {
                 break;
             }
         }
-        // TODO same for level zone
+        for (auto &levelCard: zone("level")->cards()) {
+            if (card.color() == levelCard.color()) {
+                colorMatch = true;
+                break;
+            }
+        }
         if (!colorMatch)
             return false;
     }
@@ -329,9 +356,7 @@ void Player::sendFromStageToWr(int pos) {
 void Player::testAction()
 {
     auto &cards = mHand->cards();
-    for (size_t i = 0; i < cards.size(); ++i) {
-        CommandPlayCard cmd;
-        cmd.set_handid(0);
-        sendGameCommand(cmd);
-    }
+    CommandPlayCard cmd;
+    cmd.set_handid(0);
+    sendGameCommand(cmd);
 }

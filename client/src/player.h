@@ -13,6 +13,8 @@ class EventDrawCard;
 class EventMoveCard;
 class EventPlayCard;
 class EventSwitchStagePositions;
+class EventDeclareAttack;
+
 class Game;
 class GameEvent;
 class Hand;
@@ -63,7 +65,8 @@ private:
     void switchStagePositions(const EventSwitchStagePositions &event);
     void clockPhase();
     void mainPhase();
-    void attackPhase();
+    void attackDeclarationStep();
+    void declareAttack(const EventDeclareAttack &event);
     void startTurn();
     bool canPlay(Card &card);
     void playClimax();
@@ -72,4 +75,5 @@ public slots:
     void cardPlayed(int handId, int stageId);
     void switchPositions(int from, int to);
     void sendFromStageToWr(int pos);
+    void sendAttackDeclaration(int pos);
 };

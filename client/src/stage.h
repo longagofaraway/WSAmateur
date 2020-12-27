@@ -23,4 +23,7 @@ public:
 
     void mainPhase();
     void endMainPhase();
+    void attackDeclarationStep();
+    void highlightAttackers();
+    void attackDeclared(int pos);
 };

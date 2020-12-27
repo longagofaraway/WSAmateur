@@ -9,6 +9,7 @@
 #include "lobbyEvent.pb.h"
 #include "moveCommands.pb.h"
 #include "moveEvents.pb.h"
+#include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
 #include <QTimer>
@@ -197,8 +198,12 @@ void Game::mainPhase() {
     QMetaObject::invokeMethod(this, "mainPhase");
 }
 
-void Game::attackPhase() {
-    QMetaObject::invokeMethod(this, "attackPhase");
+void Game::attackDeclarationStep() {
+    QMetaObject::invokeMethod(this, "attackDeclarationStep");
+}
+
+void Game::attackDeclarationStepFinished() {
+    QMetaObject::invokeMethod(this, "attackDeclarationStepFinished");
 }
 
 
@@ -222,18 +227,15 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         cmd.set_count(0);
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventMainPhase>()) {
-        mOpponent->testAction();
-
-        /*CommandPlayCard cmd;
-        cmd.set_handid(2);
+        CommandPlayCard cmd;
+        cmd.set_handid(0);
+        sendGameCommand(cmd, mOpponent->id());
+        CommandAttackPhase cmd2;
+        sendGameCommand(cmd2, mOpponent->id());
+    } else if (event->event().Is<EventAttackDeclarationStep>()) {
+        CommandDeclareAttack cmd;
         cmd.set_stageid(0);
+        cmd.set_attacktype(AttackType::FrontAttack);
         sendGameCommand(cmd, mOpponent->id());
-        sendGameCommand(cmd, mOpponent->id());
-        cmd.set_stageid(1);
-        sendGameCommand(cmd, mOpponent->id());
-        CommandSwitchStagePositions c;
-        c.set_stageidfrom(0);
-        c.set_stageidto(1);
-        sendGameCommand(c, mOpponent->id());*/
     }
 }

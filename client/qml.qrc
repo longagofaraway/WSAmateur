@@ -17,6 +17,14 @@
         <file>qml/MulliganHeader.qml</file>
         <file>qml/MovingCard.qml</file>
         <file>qml/WaitingRoom.qml</file>
+        <file>qml/Deck.qml</file>
+        <file>qml/TurnIndicator.qml</file>
+        <file>qml/HelpText.qml</file>
+        <file>qml/Stage.qml</file>
+        <file>qml/StageCard.qml</file>
+        <file>qml/Level.qml</file>
+        <file>qml/Climax.qml</file>
+
         <file>resources/background.jpg</file>
         <file>resources/images/imc.jpg</file>
         <file>resources/images/imc0.jpg</file>
@@ -27,12 +35,6 @@
         <file>resources/images/btn_pressed.png</file>
         <file>resources/images/btn_state.png</file>
         <file>resources/images/hourglass.png</file>
-        <file>qml/Deck.qml</file>
-        <file>qml/TurnIndicator.qml</file>
-        <file>qml/HelpText.qml</file>
-        <file>qml/Stage.qml</file>
-        <file>qml/StageCard.qml</file>
-        <file>qml/Level.qml</file>
-        <file>qml/Climax.qml</file>
+		<file>resources/images/soul.png</file>
     </qresource>
 </RCC>

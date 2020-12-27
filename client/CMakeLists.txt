@@ -16,6 +16,7 @@ set(clientSources
     src/player.cpp
     src/stage.cpp
     src/waitingRoom.cpp
+    src/attributeChange.h
     src/card.h
     src/cardModel.h
     src/cardZone.h

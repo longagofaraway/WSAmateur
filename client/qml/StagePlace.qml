@@ -1,5 +1,8 @@
 import QtQuick 2.12
 import QtQml.Models 2.12
+import QtGraphicalEffects 1.12
+
+import wsamateur.cardModel 1.0
 
 ListView {
     id: stagePlace
@@ -7,6 +10,7 @@ ListView {
     property int mIndex
     property StageCard mStageCard: null
     property bool mTooltipsDisabled: false
+    property var mStageRect
 
     width: root.cardWidth; height: root.cardHeight
     y: {
@@ -50,6 +54,8 @@ ListView {
             height: root.cardHeight
             color: "#30FFFFFF"
 
+            Component.onCompleted: { mStageRect = stageRect; }
+
             DropArea {
                 id: dropStage
                 width: root.cardWidth * 2
@@ -68,7 +74,7 @@ ListView {
 
                     root.stageDropTarget = stagePlace;
                     if (mStageCard !== null)
-                        mStageCard.glowEnabled = true;
+                        mStageCard.onCardEntered();
                     else
                         stageRect.color = "#80FFFFFF";
                 }
@@ -81,7 +87,7 @@ ListView {
 
                     root.stageDropTarget = undefined;
                     if (mStageCard !== null)
-                        mStageCard.glowEnabled = false;
+                        mStageCard.onCardExited();
                     else
                         stageRect.color = "#30FFFFFF";
                 }
@@ -99,6 +105,10 @@ ListView {
                 }
 
                 Binding { target: mStageCard; property: "dragActive"; value: stagePlaceMouseArea.drag.active }
+                Binding { target: mStageCard; property: "glow"; value: model.glow }
+                Binding { target: mStageCard; property: "selected"; value: model.selected }
+                Binding { target: mStageCard; property: "power"; value: model.power }
+                Binding { target: mStageCard; property: "soul"; value: model.soul }
                 onReleased: {
                     if (!stagePlaceMouseArea.drag.active)
                         return;
@@ -106,10 +116,12 @@ ListView {
                         let swappingCard = model.code;
                         let dropTarget = root.stageDropTarget;
                         dropTarget.swapCards(stagePlace.mIndex);
-                        if (dropTarget.mStageCard === null)
+                        if (dropTarget.mStageCard === null) {
+                            stageRect.color = "#30FFFFFF";
                             mStageCard.destroy();
-                        else
+                        } else {
                             createStageCardWithAnim(model.code, dropTarget.x, dropTarget.y);
+                        }
                         dropTarget.createStageCard(swappingCard);
                         stage.switchPositions(stagePlace.mIndex, dropTarget.mIndex);
                         return;
@@ -133,6 +145,10 @@ ListView {
                             cardInfo = incubator.object;
                             cardInfo.x = stagePlace.x + stageRect.width;
                             cardInfo.y = stagePlace.y;
+                            if (model.state === "Rested") {
+                                cardInfo.x += (root.cardHeight - root.cardWidth) / 2;
+                                cardInfo.y += (root.cardHeight - root.cardWidth) / 2;
+                            }
                             cardInfo.visible = true;
                         }
                     }
@@ -144,6 +160,13 @@ ListView {
                 }
 
                 onExited: destroyCardInfo()
+
+                onClicked: {
+                    if (stage.state === "attack" && model.glow) {
+                        destroyCardInfo();
+                        declareAttack();
+                    }
+                }
 
                 function destroyCardInfo() {
                     if (cardInfo !== null) {
@@ -182,18 +205,22 @@ ListView {
         mStageCard.index = mIndex;
         stagePlace.mTooltipsDisabled = true;
         tooltipTimeout.start();
+        mStageRect.color = "#00FFFFFF";
     }
 
     function setCard(code) {
         createStageCard(code);
         stage.mModel.setCard(mIndex, code);
     }
+    function swapCards(from) { stage.mModel.swapCards(from, mIndex); }
+    function sendToWr() { stage.sendToWr(mIndex); }
 
-    function swapCards(from) {
-        stage.mModel.swapCards(from, mIndex);
+    function declareAttack() {
+        stage.declareAttack(mIndex);
     }
-
-    function sendToWr() {
-        stage.sendToWr(mIndex);
+    function attackDeclared() {
+        mStageCard.tap();
+        let modelIndex = stage.mModel.index(mIndex, 0);
+        stage.mModel.setData(modelIndex, true, CardModel.SelectedRole);
     }
 }

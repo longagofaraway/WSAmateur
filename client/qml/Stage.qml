@@ -11,6 +11,7 @@ Item {
     property CardModel mModel: innerModel
     signal switchPositions(int from, int to)
     signal sendToWr(int pos)
+    signal declareAttack(int pos);
     property var mPositions: [{ x: stage1.x, y: stage1.y },
                               { x: stage2.x, y: stage2.y },
                               { x: stage3.x, y: stage3.y },
@@ -45,6 +46,9 @@ Item {
         mIndex: 4
         x: root.width / 2 - root.cardWidth / 2 + root.width * 0.07;
     }
+
+    function attackPhase() { state = "attack"; }
+    function attackDeclared(pos) { mStagePlaces[pos].attackDeclared(); }
 
     function getXForNewCard(pos) { return mPositions[pos].x; }
     function getYForNewCard(pos) { return mPositions[pos].y; }

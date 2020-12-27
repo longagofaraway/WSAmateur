@@ -161,13 +161,17 @@ Item {
             gGame.sendMainPhaseFinished();
         }
 
-        function attackPhase() {
+        function attackDeclarationStep() {
             let comp = Qt.createComponent("HelpText.qml");
             mHelpText = comp.createObject(gGame);
             mHelpText.mText = "Choose attacker";
             mainButton.mText = "Skip attack";
             mainButton.mSubText = "";
+        }
 
+        function attackDeclarationStepFinished() {
+            mHelpText.startDestroy();
+            mainButton.state = "waiting";
         }
     }
 

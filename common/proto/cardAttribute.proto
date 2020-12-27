@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+enum CardAttribute {
+    AttrPower = 0;
+    AttrSoul = 1;
+    AttrState = 2;
+}

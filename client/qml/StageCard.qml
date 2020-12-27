@@ -5,8 +5,12 @@ Card {
     id: stageCard
 
     property bool dragActive: false
-    property bool glowEnabled: false
+    property bool cardOverGlow: false
+    property bool glow: false
+    property bool selected: false
     property int index
+    property int power: 9000
+    property int soul: 1
 
     Drag.active: dragActive
     Drag.hotSpot.x: root.cardWidth / 2
@@ -15,6 +19,50 @@ Card {
         when: stageCard.dragActive
         PropertyChanges { target: stageCard; z: 100 }
     }
+
+    Rectangle {
+        width: powerText.contentWidth + 10
+        height: powerText.contentHeight + 6
+        anchors.bottom: stageCard.bottom
+        anchors.left: stageCard.left
+        color: "#E0FFF4F4"
+        radius: 8
+        Text {
+            id: powerText
+            anchors.centerIn: parent
+            text: power.toString()
+            font.pointSize: 12
+            font.family: "Aprikas Black Demo"
+        }
+    }
+    Rectangle {
+        width: soulImg.width + soulText.contentWidth + 10
+        height: powerText.contentHeight + 6
+        anchors.right: stageCard.right
+        anchors.bottom: stageCard.bottom
+        color: "#E0FFF4F4"
+        radius: 8
+        Text {
+            id: soulText
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: 3
+            text: soul.toString()
+            font.pointSize: 12
+            font.family: "Aprikas Black Demo"
+        }
+        Image {
+            id: soulImg
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: soulText.left
+            anchors.rightMargin: 3
+            source: "qrc:///resources/images/soul"
+            width: 15
+            height: width / 49 * 58
+        }
+    }
+
+    Behavior on rotation { NumberAnimation { duration: 150 } }
 
     ParallelAnimation {
         id: moveAnim
@@ -34,11 +82,34 @@ Card {
         id: cardGlow
         anchors.fill: stageCard
         z: -1
-        color: "#FFFFFF"
+        color: getGlowColor()
         cornerRadius: 0
         glowRadius: 10
-        visible: glowEnabled
+        visible: cardOverGlow || glow || selected
     }
+    SequentialAnimation {
+        running: cardGlow.visible
+        loops: 1000
+        NumberAnimation {
+            target: cardGlow
+            property: "spread"
+            from: 0
+            to: 0.1
+            duration: 2000
+        }
+        NumberAnimation {
+            target: cardGlow
+            property: "spread"
+            from: 0.1
+            to: 0
+            duration: 2000
+        }
+    }
+
+    function tap() { stageCard.rotation = -90; }
+    function getGlowColor() { return cardOverGlow ? "#FFFFFF" : (selected ? "#FCDE01" : "#2BFDFF"); }
+    function onCardEntered() { cardOverGlow = true; }
+    function onCardExited() { cardOverGlow = false; }
 
     function startAnimation(_x, _y) {
         aX.to = _x;

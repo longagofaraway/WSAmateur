@@ -1,4 +1,5 @@
 set(protoSources
+    attackType.proto
     commandContainer.proto
     gameCommand.proto
     gameEvent.proto

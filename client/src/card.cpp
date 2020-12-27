@@ -21,6 +21,19 @@ void Card::init(const std::string &code) {
     mType = mInfo->type();
 }
 
+QString Card::qstate() const {
+    switch(mState) {
+    case CardState::Standing:
+        return QString("Standing");
+    case CardState::Rested:
+        return QString("Rested");
+    case CardState::Reversed:
+        return QString("Reversed");
+    }
+    assert(false);
+    return "";
+}
+
 QString Card::qtype() const {
     switch(mType) {
     case CardType::Character:
@@ -31,4 +44,5 @@ QString Card::qtype() const {
         return QString("Event");
     }
     assert(false);
+    return "";
 }

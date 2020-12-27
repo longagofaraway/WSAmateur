@@ -65,7 +65,8 @@ public:
     void startTurn(bool opponent);
     void clockPhase();
     void mainPhase();
-    void attackPhase();
+    void attackDeclarationStep();
+    void attackDeclarationStepFinished();
 
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);

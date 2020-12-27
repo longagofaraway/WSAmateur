@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
+import "attackType.proto";
 
 message GameEvent {
 	uint32 playerId = 1;
@@ -8,3 +9,7 @@ message GameEvent {
 }
 
 message EventStartTurn { }
+message EventDeclareAttack {
+    uint32 stageId = 1;
+	AttackType attackType = 2;
+}

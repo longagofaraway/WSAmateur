@@ -18,7 +18,10 @@ public:
         CodeRole = Qt::UserRole + 1,
         GlowRole,
         SelectedRole,
-        TypeRole
+        TypeRole,
+        StateRole,
+        PowerRole,
+        SoulRole
     };
     Q_ENUM(HandCardRoles)
     static QVector<int> mRoles;
@@ -38,6 +41,7 @@ public:
 
     void setGlow(int row, bool glow);
     void setSelected(int row, bool selected);
+    void setState(int row, CardState state);
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int count() const { return rowCount(); }

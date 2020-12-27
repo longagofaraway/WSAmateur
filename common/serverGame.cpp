@@ -45,11 +45,20 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     client->sendLobbyEvent(event);
 }
 
+ServerPlayer* ServerGame::opponentOfPlayer(size_t id) const {
+    for (auto &playerEntry: mPlayers) {
+        if (playerEntry.first != id)
+            return playerEntry.second.get();
+    }
+
+    return nullptr;
+}
+
 void ServerGame::setStartingPlayer() {
     std::random_device dev;
     std::mt19937 gen(dev());
     std::uniform_int_distribution<> distrib(1, 2);
-    int startingPlayerId = 2;//distrib(gen);
+    int startingPlayerId = 1;//distrib(gen);
     for (auto &playerEntry: mPlayers) {
         if (playerEntry.first == static_cast<size_t>(startingPlayerId))
             playerEntry.second->setStartingPlayer();

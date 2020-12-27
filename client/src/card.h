@@ -18,6 +18,8 @@ class Card {
     int mSoul;
     CardType mType;
 
+    CardState mState = CardState::Standing;
+
     std::shared_ptr<CardInfo> mInfo;
 
 public:
@@ -29,6 +31,7 @@ public:
     Card(const std::string &code);
 
     void init(const std::string &code);
+    bool cardPresent() const { return !mCode.empty(); }
 
     bool glow() const { return mGlow; }
     bool selected() const { return mSelected; }
@@ -40,6 +43,9 @@ public:
     int power() const { return mPower; }
     int soul() const { return mSoul; }
     CardType type() const { return mType; }
+    CardState state() const { return mState; }
+    void setState(CardState state) { mState = state; }
+    QString qstate() const;
     QString qtype() const;
     QString qcode() const { return QString::fromStdString(mCode); }
 };

@@ -36,6 +36,7 @@ public:
     }
     ServerPlayer* player(size_t id);
     void addPlayer(ServerProtocolHandler *client);
+    ServerPlayer* opponentOfPlayer(size_t id) const;
     void setStartingPlayer();
     void startGame();
     void endMulligan();

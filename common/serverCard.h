@@ -23,6 +23,7 @@ class ServerCard
 
     int mPower;
     int mSoul;
+    CardState mState = CardState::Standing;
 
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
@@ -35,4 +36,6 @@ public:
     int cost() const { return mCardInfo->cost(); }
     CardType type() const { return mCardInfo->type(); }
     char color() const { return mCardInfo->color(); }
+    CardState state() const { return mState; }
+    void setState(CardState state) { mState = state; }
 };

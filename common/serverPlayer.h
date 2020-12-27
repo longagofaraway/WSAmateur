@@ -17,6 +17,7 @@ class CommandMulligan;
 class CommandClockPhase;
 class CommandPlayCard;
 class CommandSwitchStagePositions;
+class CommandDeclareAttack;
 
 class ServerPlayer
 {
@@ -41,6 +42,7 @@ public:
     bool mulliganFinished() const { return mMulliganFinished; }
     bool startingPlayer() const { return mStartingPlayer; }
     void setStartingPlayer() { mStartingPlayer = true; }
+    bool hasBattleOpponent(size_t pos) const;
 
     void clearExpectedComands();
     void addExpectedCommand(const std::string &command);
@@ -68,4 +70,5 @@ public:
     bool canPlay(ServerCard *card);
     void climaxPhase();
     void attackPhase();
+    void declareAttack(const CommandDeclareAttack &cmd);
 };
