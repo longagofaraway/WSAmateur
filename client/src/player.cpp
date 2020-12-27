@@ -4,6 +4,7 @@
 #include <QMetaObject>
 #include <QQuickItem>
 
+#include "cardAttribute.pb.h"
 #include "gameCommand.pb.h"
 #include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
@@ -90,6 +91,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         declareAttack(ev);
     } else if (event->event().Is<EventTriggerStep>()) {
 
+    } else if (event->event().Is<EventSetCardAttr>()) {
+        EventSetCardAttr ev;
+        event->event().UnpackTo(&ev);
+        setCardAttr(ev);
     }
 }
 
@@ -135,9 +140,10 @@ void Player::declareAttack(const EventDeclareAttack &event) {
         mGame->attackDeclarationStepFinished();
 }
 
-void Player::sendAttackDeclaration(int pos) {
+void Player::sendAttackDeclaration(int pos, bool sideAttack) {
     CommandDeclareAttack cmd;
     cmd.set_stageid(pos);
+    cmd.set_attacktype(sideAttack ? AttackType::SideAttack : FrontAttack);
     sendGameCommand(cmd);
 }
 
@@ -333,6 +339,13 @@ void Player::playClimax() {
     CommandPlayCard cmd;
     cmd.set_handid(handIndex);
     sendGameCommand(cmd);
+}
+
+void Player::setCardAttr(const EventSetCardAttr &event) {
+    if (event.stageid() >= 5)
+        return;
+
+    mStage->model().setAttr(event.stageid(), event.attr(), event.value());
 }
 
 void Player::cardPlayed(int handId, int stageId) {

@@ -76,6 +76,16 @@ void CardModel::setState(int row, CardState state) {
     setData(index, static_cast<int>(state), StateRole);
 }
 
+void CardModel::setAttr(int row, CardAttribute attr, int value) {
+    auto index = createIndex(row, 0);
+    int role;
+    if (attr == CardAttribute::AttrSoul)
+        role = SoulRole;
+    else
+        role = PowerRole;
+    setData(index, value, role);
+}
+
 bool CardModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (index.row() < 0 || static_cast<size_t>(index.row()) >= mCards.size())
         return false;
@@ -91,6 +101,12 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         break;
     case StateRole:
         card.setState(static_cast<CardState>(value.toInt()));
+        break;
+    case SoulRole:
+        card.setSoul(value.toInt());
+        break;
+    case PowerRole:
+        card.setPower(value.toInt());
         break;
     default:
         return false;

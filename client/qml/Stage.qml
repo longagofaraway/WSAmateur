@@ -11,7 +11,7 @@ Item {
     property CardModel mModel: innerModel
     signal switchPositions(int from, int to)
     signal sendToWr(int pos)
-    signal declareAttack(int pos);
+    signal declareAttack(int pos, bool sideAttack);
     property var mPositions: [{ x: stage1.x, y: stage1.y },
                               { x: stage2.x, y: stage2.y },
                               { x: stage3.x, y: stage3.y },

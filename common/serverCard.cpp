@@ -19,3 +19,8 @@ void ServerCard::setPos(int pos) {
     else
         mRow = BackStage;
 }
+
+void ServerCard::addSoulBuff(int delta, int duration) {
+    mBuffs.emplace_back(CardAttribute::AttrSoul, delta, duration);
+    mSoul++;
+}

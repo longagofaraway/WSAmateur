@@ -34,7 +34,7 @@ void Stage::endMainPhase() {
 
 void Stage::attackDeclarationStep() {
     mQmlObject->setProperty("state", "attack");
-    mQmlObject->connect(mQmlObject, SIGNAL(declareAttack(int)), mPlayer, SLOT(sendAttackDeclaration(int)));
+    mQmlObject->connect(mQmlObject, SIGNAL(declareAttack(int, bool)), mPlayer, SLOT(sendAttackDeclaration(int, bool)));
     highlightAttackers();
 }
 
@@ -54,7 +54,7 @@ void Stage::attackDeclared(int pos) {
 
     mCardsModel.setState(pos, CardState::Rested);
     mQmlObject->setProperty("state", "");
-    mQmlObject->disconnect(mQmlObject, SIGNAL(declareAttack(int)), mPlayer, SLOT(sendAttackDeclaration(int)));
+    mQmlObject->disconnect(mQmlObject, SIGNAL(declareAttack(int, bool)), mPlayer, SLOT(sendAttackDeclaration(int, bool)));
     auto &cards = mCardsModel.cards();
     for (int i = 0; i < 3; ++i) {
         if (cards[i].cardPresent() && i != pos)

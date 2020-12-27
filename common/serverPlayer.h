@@ -42,7 +42,7 @@ public:
     bool mulliganFinished() const { return mMulliganFinished; }
     bool startingPlayer() const { return mStartingPlayer; }
     void setStartingPlayer() { mStartingPlayer = true; }
-    bool hasBattleOpponent(int pos) const;
+    ServerCard* battleOpponent(int pos) const;
 
     void clearExpectedComands();
     void addExpectedCommand(const std::string &command);
@@ -50,6 +50,7 @@ public:
 
     void processGameCommand(GameCommand &cmd);
     void sendGameEvent(const ::google::protobuf::Message &event, int playerId = 0);
+    void sendToBoth(const ::google::protobuf::Message &event);
 
     void addDeck(const std::string &deck);
     DeckList* deck() { return mDeck.get(); }
@@ -71,4 +72,6 @@ public:
     void climaxPhase();
     void attackPhase();
     void declareAttack(const CommandDeclareAttack &cmd);
+    void addSoulBuff(int pos, int delta, int duration = 1);
+    void triggerStep();
 };

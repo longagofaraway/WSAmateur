@@ -165,6 +165,7 @@ Item {
             let comp = Qt.createComponent("HelpText.qml");
             mHelpText = comp.createObject(gGame);
             mHelpText.mText = "Choose attacker";
+            mHelpText.mHelpText = "(Right click for Side Attack)";
             mainButton.mText = "Skip attack";
             mainButton.mSubText = "";
         }

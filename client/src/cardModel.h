@@ -4,6 +4,8 @@
 
 #include <QAbstractListModel>
 
+#include "cardAttribute.pb.h"
+
 #include "card.h"
 
 
@@ -14,7 +16,7 @@ private:
     std::vector<Card> mCards;
 
 public:
-    enum HandCardRoles {
+    enum CardRoles {
         CodeRole = Qt::UserRole + 1,
         GlowRole,
         SelectedRole,
@@ -23,7 +25,7 @@ public:
         PowerRole,
         SoulRole
     };
-    Q_ENUM(HandCardRoles)
+    Q_ENUM(CardRoles)
     static QVector<int> mRoles;
 
     Q_PROPERTY(int count READ count NOTIFY countChanged)
@@ -42,6 +44,7 @@ public:
     void setGlow(int row, bool glow);
     void setSelected(int row, bool selected);
     void setState(int row, CardState state);
+    void setAttr(int row, CardAttribute attr, int value);
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int count() const { return rowCount(); }

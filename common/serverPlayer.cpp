@@ -60,6 +60,11 @@ void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event, int p
     mClient->sendGameEvent(event, playerId);
 }
 
+void ServerPlayer::sendToBoth(const google::protobuf::Message &event) {
+    sendGameEvent(event);
+    mGame->sendPublicEvent(event, mId);
+}
+
 void ServerPlayer::addDeck(const std::string &deck) {
     mDeck = std::make_unique<DeckList>(deck);
     mExpectedCommands.push_back(CommandReadyToStart::GetDescriptor()->name());
@@ -105,14 +110,12 @@ void ServerPlayer::startGame() {
 
 void ServerPlayer::startTurn() {
     EventStartTurn event;
-    sendGameEvent(event);
-    mGame->sendPublicEvent(event, mId);
+    sendToBoth(event);
 
     drawCards(1);
 
     EventClockPhase ev;
-    sendGameEvent(ev);
-    mGame->sendPublicEvent(ev, mId);
+    sendToBoth(ev);
 
     addExpectedCommand(CommandClockPhase::GetDescriptor()->name());
 }
@@ -169,7 +172,7 @@ void ServerPlayer::mulligan(const CommandMulligan &cmd) {
             ids.push_back(cmd.ids(i));
 
         moveCard("hand", ids, "wr");
-        drawCards(ids.size());
+        drawCards(static_cast<int>(ids.size()));
     }
     mMulliganFinished = true;
     mGame->endMulligan();
@@ -194,7 +197,7 @@ void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<i
 
     auto sortedIds = cardIds;
     std::sort(sortedIds.begin(), sortedIds.end());
-    for (int i = sortedIds.size(); i-- > 0;) {
+    for (int i = static_cast<int>(sortedIds.size()); i-- > 0;) {
         auto cardPtr = startZone->takeCard(sortedIds[i]);
         if (!cardPtr)
             return;
@@ -231,8 +234,7 @@ void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
     }
 
     EventMainPhase ev;
-    sendGameEvent(ev);
-    mGame->sendPublicEvent(ev, mId);
+    sendToBoth(ev);
 
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
@@ -320,8 +322,7 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
     event.set_stageidfrom(cmd.stageidfrom());
     event.set_stageidto(cmd.stageidto());
 
-    sendGameEvent(event);
-    mGame->sendPublicEvent(event, mId);
+    sendToBoth(event);
 }
 
 bool ServerPlayer::canPlay(ServerCard *card) {
@@ -345,8 +346,7 @@ void ServerPlayer::climaxPhase() {
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
     EventClimaxPhase event;
-    sendGameEvent(event);
-    mGame->sendPublicEvent(event, mId);
+    sendToBoth(event);
 }
 
 void ServerPlayer::attackPhase() {
@@ -354,8 +354,7 @@ void ServerPlayer::attackPhase() {
     clearExpectedComands();
     addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
     EventAttackDeclarationStep event;
-    sendGameEvent(event);
-    mGame->sendPublicEvent(event, mId);
+    sendToBoth(event);
 }
 
 bool isCenterStagePosition(int pos) { return pos >= 3 ? false : true; }
@@ -370,23 +369,46 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     attCard->setState(CardState::Rested);
 
     AttackType type = cmd.attacktype();
-    if (hasBattleOpponent(cmd.stageid()))
+    auto battleOpp = battleOpponent(cmd.stageid());
+    if (!battleOpp->cardPresent())
         type = AttackType::DirectAttack;
 
     EventDeclareAttack event;
     event.set_stageid(cmd.stageid());
     event.set_attacktype(type);
-    sendGameEvent(event);
-    mGame->sendPublicEvent(event, mId);
+    sendToBoth(event);
+
+    if (type == AttackType::DirectAttack)
+        addSoulBuff(cmd.stageid(), 1);
+    else if (type == AttackType::SideAttack)
+        addSoulBuff(cmd.stageid(), -battleOpp->level());
+
+    triggerStep();
 }
 
-bool ServerPlayer::hasBattleOpponent(int pos) const {
+void ServerPlayer::addSoulBuff(int pos, int delta, int duration) {
+    auto stage = zone("stage");
+    auto card = stage->card(pos);
+    if (!card)
+        return;
+
+    card->addSoulBuff(delta, duration);
+
+    EventSetCardAttr event;
+    event.set_stageid(pos);
+    event.set_attr(CardAttribute::AttrSoul);
+    event.set_value(card->soul());
+    sendToBoth(event);
+}
+
+void ServerPlayer::triggerStep() {
+
+}
+
+ServerCard *ServerPlayer::battleOpponent(int pos) const {
     auto opponent = mGame->opponentOfPlayer(mId);
     if (!opponent)
-        return false;
+        return nullptr;
 
-    if (opponent->zone("stage")->card(pos))
-        return true;
-
-    return false;
+    return opponent->zone("stage")->card(pos);
 }

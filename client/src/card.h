@@ -41,7 +41,9 @@ public:
     int level() const { return mLevel; }
     int cost() const { return mCost; }
     int power() const { return mPower; }
+    void setPower(int power) { mPower = power; }
     int soul() const { return mSoul; }
+    void setSoul(int soul) { mSoul = soul; }
     CardType type() const { return mType; }
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }

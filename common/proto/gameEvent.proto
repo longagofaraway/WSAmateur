@@ -2,14 +2,21 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 import "attackType.proto";
+import "cardAttribute.proto";
 
 message GameEvent {
-	sint32 playerId = 1;
-	google.protobuf.Any event = 2;
+    sint32 playerId = 1;
+    google.protobuf.Any event = 2;
 }
 
 message EventStartTurn { }
 message EventDeclareAttack {
     sint32 stageId = 1;
-	AttackType attackType = 2;
+    AttackType attackType = 2;
+}
+
+message EventSetCardAttr {
+    sint32 stageid = 1;
+	CardAttribute attr = 2;
+	sint32 value = 3;
 }

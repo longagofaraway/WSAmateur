@@ -5,6 +5,7 @@ Item {
     id: thisItem
 
     property string mText
+    property string mHelpText
 
     z: 150
     width: 1200
@@ -22,12 +23,24 @@ Item {
             GradientStop { position: 0.5; color: "#00FFFFFF" }
         }
     }
-    Text {
+    Row {
         anchors.centerIn: parent
+        spacing: 10
+    Text {
+        id: mainText
         text: mText
         color: "black"
         font.pointSize: 25
         font.bold: true
+    }
+    Text {
+        anchors.bottom: mainText.bottom
+        anchors.bottomMargin: 5
+        text: mHelpText
+        color: "black"
+        font.pointSize: 14
+        font.bold: false
+    }
     }
 
     NumberAnimation on opacity { to: 1; duration: 100 }

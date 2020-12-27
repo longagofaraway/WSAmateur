@@ -98,6 +98,7 @@ ListView {
 
                 anchors.fill: parent
                 hoverEnabled: true
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
                 drag.target: (stage.opponent || !stage.mDragEnabled) ? undefined : mStageCard
                 drag.onActiveChanged: {
                     if (active)
@@ -164,7 +165,7 @@ ListView {
                 onClicked: {
                     if (stage.state === "attack" && model.glow) {
                         destroyCardInfo();
-                        declareAttack();
+                        declareAttack(mouse.button === Qt.LeftButton ? false : true);
                     }
                 }
 
@@ -215,8 +216,8 @@ ListView {
     function swapCards(from) { stage.mModel.swapCards(from, mIndex); }
     function sendToWr() { stage.sendToWr(mIndex); }
 
-    function declareAttack() {
-        stage.declareAttack(mIndex);
+    function declareAttack(sideAttack) {
+        stage.declareAttack(mIndex, sideAttack);
     }
     function attackDeclared() {
         mStageCard.tap();

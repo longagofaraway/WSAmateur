@@ -14,6 +14,7 @@ class EventMoveCard;
 class EventPlayCard;
 class EventSwitchStagePositions;
 class EventDeclareAttack;
+class EventSetCardAttr;
 
 class Game;
 class GameEvent;
@@ -70,10 +71,11 @@ private:
     void startTurn();
     bool canPlay(Card &card);
     void playClimax();
+    void setCardAttr(const EventSetCardAttr &event);
 
 public slots:
     void cardPlayed(int handId, int stageId);
     void switchPositions(int from, int to);
     void sendFromStageToWr(int pos);
-    void sendAttackDeclaration(int pos);
+    void sendAttackDeclaration(int pos, bool sideAttack);
 };
