@@ -1,25 +1,25 @@
 syntax = "proto3";
 
 message EventInitialHand {
-    uint32 count = 1;
+    sint32 count = 1;
     repeated string codes = 2;
     bool firstTurn = 3;
 }
 
 message EventMoveCard {
-    uint32 id = 1;
+    sint32 id = 1;
     string code = 2;
     string startZone = 3;
     string targetZone = 4;
 }
 
 message EventPlayCard {
-    uint32 handId = 1;
-    uint32 stageId = 2;
+    sint32 handId = 1;
+    sint32 stageId = 2;
 	string code = 3;
 }
 
 message EventSwitchStagePositions {
-    uint32 stageIdFrom = 1;
-    uint32 stageIdTo = 2;
+    sint32 stageIdFrom = 1;
+    sint32 stageIdTo = 2;
 }

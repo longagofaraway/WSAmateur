@@ -9,12 +9,12 @@
 #include "lobbyEvent.pb.h"
 #include "phaseEvent.pb.h"
 
-ServerGame::ServerGame(size_t id, std::string description)
+ServerGame::ServerGame(int id, std::string description)
     : mId(id), mNextPlayerId(0), mDescription(description) {
 
 }
 
-void ServerGame::sendPublicEvent(const ::google::protobuf::Message &event, size_t senderId) {
+void ServerGame::sendPublicEvent(const ::google::protobuf::Message &event, int senderId) {
     for (auto &playersEntry: mPlayers) {
         if (playersEntry.first == senderId)
             continue;
@@ -23,7 +23,7 @@ void ServerGame::sendPublicEvent(const ::google::protobuf::Message &event, size_
     }
 }
 
-ServerPlayer* ServerGame::player(size_t id) {
+ServerPlayer* ServerGame::player(int id) {
     if (!mPlayers.count(id))
         return nullptr;
 
@@ -32,7 +32,7 @@ ServerPlayer* ServerGame::player(size_t id) {
 
 void ServerGame::addPlayer(ServerProtocolHandler *client) {
     QMutexLocker locker(&mGameMutex);
-    size_t newId = ++mNextPlayerId;
+    int newId = ++mNextPlayerId;
     auto player = std::make_unique<ServerPlayer>(this, client, newId);
     mPlayers.emplace(newId, std::move(player));
     mPlayers[newId]->addExpectedCommand(CommandSetDeck::GetDescriptor()->name());
@@ -45,7 +45,7 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     client->sendLobbyEvent(event);
 }
 
-ServerPlayer* ServerGame::opponentOfPlayer(size_t id) const {
+ServerPlayer* ServerGame::opponentOfPlayer(int id) const {
     for (auto &playerEntry: mPlayers) {
         if (playerEntry.first != id)
             return playerEntry.second.get();
@@ -60,7 +60,7 @@ void ServerGame::setStartingPlayer() {
     std::uniform_int_distribution<> distrib(1, 2);
     int startingPlayerId = 1;//distrib(gen);
     for (auto &playerEntry: mPlayers) {
-        if (playerEntry.first == static_cast<size_t>(startingPlayerId))
+        if (playerEntry.first == static_cast<int>(startingPlayerId))
             playerEntry.second->setStartingPlayer();
     }
 }

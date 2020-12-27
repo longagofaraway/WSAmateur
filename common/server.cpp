@@ -10,11 +10,11 @@ Server::Server() : mNextGameId(0)
     qRegisterMetaType<std::shared_ptr<ServerMessage>>("std::shared_ptr<ServerMessage>");
 }
 
-size_t Server::nextGameId() {
+int Server::nextGameId() {
     return ++mNextGameId;
 }
 
-ServerGame* Server::game(size_t id) {
+ServerGame* Server::game(int id) {
     if (!mGames.count(id))
         return nullptr;
 
@@ -23,7 +23,7 @@ ServerGame* Server::game(size_t id) {
 
 void Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *client) {
     QWriteLocker locker(&mGamesLock);
-    size_t newGameId = nextGameId();
+    int newGameId = nextGameId();
     mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, cmd.description()));
     mGames[newGameId]->addPlayer(client);
 }

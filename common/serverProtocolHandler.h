@@ -16,17 +16,17 @@ class ServerProtocolHandler : public QObject
 private:
     Server *mServer;
     std::unique_ptr<Connection> mConnection;
-    size_t mGameId;
-    size_t mPlayerId;
+    int mGameId;
+    int mPlayerId;
 
 public:
     ServerProtocolHandler(Server *server, std::unique_ptr<Connection> &&connection);
 
     void sendLobbyEvent(const ::google::protobuf::Message &event);
-    void sendGameEvent(const ::google::protobuf::Message &event, size_t playerId);
+    void sendGameEvent(const ::google::protobuf::Message &event, int playerId);
     void sendProtocolItem(const ::google::protobuf::Message &event);
 
-    void addGameAndPlayer(size_t gameId, size_t playerId);
+    void addGameAndPlayer(int gameId, int playerId);
 
 public slots:
     void processCommand(std::shared_ptr<CommandContainer>);

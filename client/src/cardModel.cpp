@@ -25,8 +25,8 @@ void CardModel::addCard(std::string code) {
     emit countChanged();
 }
 
-void CardModel::addCards(size_t count) {
-    for (size_t i = 0; i < count; ++i)
+void CardModel::addCards(int count) {
+    for (int i = 0; i < count; ++i)
         addCard();
 }
 
@@ -52,7 +52,7 @@ void CardModel::swapCards(int from, int to) {
 }
 
 void CardModel::removeCard(int index) {
-    if ((size_t)index >= mCards.size())
+    if (static_cast<size_t>(index) >= mCards.size())
         return;
 
     beginRemoveRows(QModelIndex(), index, index);

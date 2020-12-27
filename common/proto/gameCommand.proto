@@ -16,6 +16,6 @@ message CommandReadyToStart {
 }
 
 message CommandDeclareAttack {
-    uint32 stageId = 1;
+    sint32 stageId = 1;
 	AttackType attackType = 2;
 }

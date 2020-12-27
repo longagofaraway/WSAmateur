@@ -4,12 +4,12 @@ import "google/protobuf/any.proto";
 import "attackType.proto";
 
 message GameEvent {
-	uint32 playerId = 1;
+	sint32 playerId = 1;
 	google.protobuf.Any event = 2;
 }
 
 message EventStartTurn { }
 message EventDeclareAttack {
-    uint32 stageId = 1;
+    sint32 stageId = 1;
 	AttackType attackType = 2;
 }

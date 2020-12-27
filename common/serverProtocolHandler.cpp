@@ -78,14 +78,14 @@ void ServerProtocolHandler::sendLobbyEvent(const ::google::protobuf::Message &ev
     sendProtocolItem(lobbyEvent);
 }
 
-void ServerProtocolHandler::sendGameEvent(const ::google::protobuf::Message &event, size_t playerId) {
+void ServerProtocolHandler::sendGameEvent(const ::google::protobuf::Message &event, int playerId) {
     GameEvent gameEvent;
     gameEvent.set_playerid(static_cast<::google::protobuf::uint32>(playerId));
     gameEvent.mutable_event()->PackFrom(event);
     sendProtocolItem(gameEvent);
 }
 
-void ServerProtocolHandler::addGameAndPlayer(size_t gameId, size_t playerId) {
+void ServerProtocolHandler::addGameAndPlayer(int gameId, int playerId) {
     mGameId = gameId;
     mPlayerId = playerId;
 }

@@ -19,7 +19,7 @@ class ServerCard
 
     // stage position
     StageRow mRow;
-    size_t mPosition;
+    int mPosition;
 
     int mPower;
     int mSoul;
@@ -27,9 +27,9 @@ class ServerCard
 
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
-    ServerCard(size_t pos, ServerCardZone *zone);
+    ServerCard(int pos, ServerCardZone *zone);
 
-    void setPos(size_t pos);
+    void setPos(int pos);
     void setZone(ServerCardZone *zone) { mZone = zone; }
     const std::string& code() { return mCode; }
     int level() const { return mCardInfo->level(); }

@@ -24,7 +24,7 @@ class Player : public QObject
 {
     Q_OBJECT
 private:
-    size_t mId;
+    int mId;
     Game *mGame;
     bool mOpponent;
     bool mActivePlayer = false;
@@ -35,7 +35,7 @@ private:
     int mLevel = 0;
 
 public:
-    Player(size_t id, Game *game, bool opponent);
+    Player(int id, Game *game, bool opponent);
 
     bool isOpponent() {
         return mOpponent;
@@ -43,7 +43,7 @@ public:
     bool activePlayer() const { return mActivePlayer; }
     void setActivePlayer(bool active) { mActivePlayer = active; }
 
-    size_t id() const { return mId; }
+    int id() const { return mId; }
     CardZone* zone(std::string_view name) const;
     void processGameEvent(const std::shared_ptr<GameEvent> event);
     void sendGameCommand(const google::protobuf::Message &command);

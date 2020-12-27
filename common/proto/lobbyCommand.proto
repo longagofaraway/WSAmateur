@@ -11,5 +11,5 @@ message CommandCreateGame {
 }
 
 message CommandJoinGame {
-	uint32 gameId = 1;
+	sint32 gameId = 1;
 }

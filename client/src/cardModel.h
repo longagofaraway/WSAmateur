@@ -31,7 +31,7 @@ public:
     CardModel(QObject *parent = 0);
 
     std::vector<Card>& cards() { return mCards; }
-    void addCards(size_t count);
+    void addCards(int count);
     void addCard(std::string code);
     Q_INVOKABLE void addCard();
     Q_INVOKABLE void addCard(QString code);

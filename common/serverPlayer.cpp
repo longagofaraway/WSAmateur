@@ -14,7 +14,7 @@
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
 
-ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, size_t id)
+ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
     : mGame(game), mClient(client), mId(id) { }
 
 void ServerPlayer::processGameCommand(GameCommand &cmd) {
@@ -54,7 +54,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     }
 }
 
-void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event, size_t playerId) {
+void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event, int playerId) {
     if (!playerId)
         playerId = mId;
     mClient->sendGameEvent(event, playerId);
@@ -89,10 +89,10 @@ void ServerPlayer::setupZones() {
 
     for (auto &card: mDeck->cards()) {
         auto cardInfo = CardDatabase::get().getCard(card.code);
-        for (size_t i = 0; i < card.count; ++i)
+        for (int i = 0; i < card.count; ++i)
             deck->addCard(cardInfo);
     }
-    for (size_t i = 0; i < 5; ++i)
+    for (int i = 0; i < 5; ++i)
         stage->addCard(i);
 
     deck->shuffle();
@@ -164,7 +164,7 @@ void ServerPlayer::dealStartingHand() {
 
 void ServerPlayer::mulligan(const CommandMulligan &cmd) {
     if (cmd.ids_size()) {
-        std::vector<size_t> ids;
+        std::vector<int> ids;
         for (int i = 0; i < cmd.ids_size(); ++i)
             ids.push_back(cmd.ids(i));
 
@@ -175,15 +175,15 @@ void ServerPlayer::mulligan(const CommandMulligan &cmd) {
     mGame->endMulligan();
 }
 
-void ServerPlayer::drawCards(size_t number) {
+void ServerPlayer::drawCards(int number) {
     auto deck = zone("deck");
 
-    for (size_t i = 0; i < number; ++i) {
+    for (int i = 0; i < number; ++i) {
         moveCard("deck", { deck->count() - 1 }, "hand");
     }
 }
 
-void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<size_t> &cardIds, std::string_view targetZoneName) {
+void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName) {
     ServerCardZone *startZone = zone(startZoneName);
     if (!startZone)
         return;
@@ -194,7 +194,7 @@ void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<s
 
     auto sortedIds = cardIds;
     std::sort(sortedIds.begin(), sortedIds.end());
-    for (size_t i = sortedIds.size(); i-- > 0;) {
+    for (int i = sortedIds.size(); i-- > 0;) {
         auto cardPtr = startZone->takeCard(sortedIds[i]);
         if (!cardPtr)
             return;
@@ -289,7 +289,7 @@ void ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
         moveCard("stock", { stock->count() - 1 }, "wr");
 }
 
-void ServerPlayer::playClimax(size_t handIndex) {
+void ServerPlayer::playClimax(int handIndex) {
     auto hand = zone("hand");
     auto climaxZone = zone("climax");
 
@@ -329,7 +329,7 @@ bool ServerPlayer::canPlay(ServerCard *card) {
         return false;
     /*if (card->level() > mLevel)
         return false;
-    if (static_cast<size_t>(card->cost()) > zone("stock")->count())
+    if (static_cast<int>(card->cost()) > zone("stock")->count())
         return false;
     if (card->level() > 0 || card->type() == CardType::Climax) {
         if (!zone("clock")->hasCardWithColor(card->color())
@@ -358,7 +358,7 @@ void ServerPlayer::attackPhase() {
     mGame->sendPublicEvent(event, mId);
 }
 
-bool isCenterStagePosition(size_t pos) { return pos >= 3 ? false : true; }
+bool isCenterStagePosition(int pos) { return pos >= 3 ? false : true; }
 void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     auto stage = zone("stage");
     if (!isCenterStagePosition(cmd.stageid()))
@@ -380,7 +380,7 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     mGame->sendPublicEvent(event, mId);
 }
 
-bool ServerPlayer::hasBattleOpponent(size_t pos) const {
+bool ServerPlayer::hasBattleOpponent(int pos) const {
     auto opponent = mGame->opponentOfPlayer(mId);
     if (!opponent)
         return false;

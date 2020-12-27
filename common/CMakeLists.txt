@@ -10,6 +10,7 @@ set(commonSources
     serverGame.cpp
     serverPlayer.cpp
     serverProtocolHandler.cpp
+    attributeChange.h
     cardDatabase.h
     cardInfo.h
     commands.h

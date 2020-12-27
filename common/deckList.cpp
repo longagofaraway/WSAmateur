@@ -10,7 +10,7 @@ void DeckList::readCards(QXmlStreamReader &xml) {
         xml.readNext();
         if(xml.isStartElement()) {
             if (xml.name() == "card") {
-                size_t number = xml.attributes().value("number").toUInt();
+                int number = xml.attributes().value("number").toInt();
                 if (!number)
                     throw std::runtime_error("deck parsing error");
                 mCards.emplace_back(DeckCard(number, xml.attributes().value("code").toString().toStdString()));

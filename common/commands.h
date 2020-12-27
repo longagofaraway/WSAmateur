@@ -4,14 +4,14 @@
 
 class ExpectedCommand {
     std::string mCommand;
-    size_t mCount = 0;
-    size_t mMaxCount;
+    int mCount = 0;
+    int mMaxCount;
 
 public:
-    ExpectedCommand(const std::string &command, size_t maxCount = 0) : mCommand(command), mMaxCount(maxCount) {
+    ExpectedCommand(const std::string &command, int maxCount = 0) : mCommand(command), mMaxCount(maxCount) {
         // 0 is unlimited
         if (mMaxCount == 0)
-            mMaxCount = std::numeric_limits<size_t>::max();
+            mMaxCount = std::numeric_limits<int>::max();
     }
     const std::string& command() const { return mCommand; }
     bool commandArrived() {

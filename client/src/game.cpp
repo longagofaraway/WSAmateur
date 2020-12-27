@@ -161,7 +161,7 @@ void Game::sendClimaxPhaseCommand() {
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
 QQmlContext* Game::context() const { return qmlContext(parentItem()); }
 
-Client* Game::getClientForPlayer(size_t playerId) {
+Client* Game::getClientForPlayer(int playerId) {
     if (mClients.size() > 1)
         return mClients.at(playerId - 1).get();
     else if (mClients.empty())
@@ -170,7 +170,7 @@ Client* Game::getClientForPlayer(size_t playerId) {
         return mClients.front().get();
 }
 
-void Game::sendGameCommand(const google::protobuf::Message &command, size_t playerId) {
+void Game::sendGameCommand(const google::protobuf::Message &command, int playerId) {
     Client *client = getClientForPlayer(playerId);
     if (!client)
         return;

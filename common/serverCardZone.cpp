@@ -11,7 +11,7 @@ void ServerCardZone::addCard(std::shared_ptr<CardInfo> info) {
     mCards.emplace_back(std::make_unique<ServerCard>(info, this));
 }
 
-void ServerCardZone::addCard(size_t pos) {
+void ServerCardZone::addCard(int pos) {
     mCards.emplace_back(std::make_unique<ServerCard>(pos, this));
 }
 
@@ -19,13 +19,13 @@ ServerCard* ServerCardZone::addCard(std::unique_ptr<ServerCard> card) {
     return mCards.emplace_back(std::move(card)).get();
 }
 
-std::unique_ptr<ServerCard> ServerCardZone::swapCards(std::unique_ptr<ServerCard> card, size_t pos) {
+std::unique_ptr<ServerCard> ServerCardZone::swapCards(std::unique_ptr<ServerCard> card, int pos) {
     std::swap(mCards[pos], card);
     mCards[pos]->setPos(pos);
     return card;
 }
 
-void ServerCardZone::swapCards(size_t pos1, size_t pos2) {
+void ServerCardZone::swapCards(int pos1, int pos2) {
     std::swap(mCards[pos1], mCards[pos2]);
 }
 
@@ -33,8 +33,8 @@ void ServerCardZone::shuffle() {
     std::shuffle(mCards.begin(), mCards.end(), std::mt19937((unsigned int)time(0)));
 }
 
-std::unique_ptr<ServerCard> ServerCardZone::takeCard(size_t index) {
-    if (index >= mCards.size())
+std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
+    if (static_cast<size_t>(index) >= mCards.size())
         return {};
 
     auto card = std::move(mCards[index]);
@@ -51,14 +51,14 @@ std::unique_ptr<ServerCard> ServerCardZone::takeTopCard() {
     return card;
 }
 
-std::unique_ptr<ServerCard> ServerCardZone::takeCardFromPos(size_t pos) {
+std::unique_ptr<ServerCard> ServerCardZone::takeCardFromPos(int pos) {
     auto card = std::move(mCards[pos]);
     mCards[pos].reset();
     return card;
 }
 
-ServerCard *ServerCardZone::card(size_t index) {
-    if (index >= mCards.size())
+ServerCard *ServerCardZone::card(int index) {
+    if (static_cast<size_t>(index) >= mCards.size())
         return nullptr;
 
     return mCards[index].get();

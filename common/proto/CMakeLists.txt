@@ -1,5 +1,6 @@
 set(protoSources
     attackType.proto
+    cardAttribute.proto
     commandContainer.proto
     gameCommand.proto
     gameEvent.proto

@@ -21,7 +21,7 @@
 
 #include <QDebug>
 
-Player::Player(size_t id, Game *game, bool opponent)
+Player::Player(int id, Game *game, bool opponent)
     : mId(id), mGame(game), mOpponent(opponent) {
     auto hand = std::make_unique<Hand>(this, game);
     mHand = hand.get();
@@ -196,7 +196,7 @@ void Player::sendClimaxPhaseCommand() {
 
 void Player::setInitialHand(const EventInitialHand &event) {
     if (!event.codes_size()) {
-        for (size_t i = 0; i < event.count(); ++i)
+        for (int i = 0; i < event.count(); ++i)
             mHand->addCard();
     } else {
         for (int i = 0; i < event.codes_size(); ++i)
@@ -244,7 +244,7 @@ void Player::moveCard(const EventMoveCard &event) {
         return;
 
     auto &cards = startZone->cards();
-    if (event.id() + 1 > cards.size())
+    if (size_t(event.id() + 1) > cards.size())
         return;
 
     QString code = QString::fromStdString(event.code());
@@ -262,8 +262,8 @@ void Player::playCard(const EventPlayCard &event) {
         return;
 
     auto &cards = mHand->cards();
-    if (event.handid() >= cards.size()
-        || event.stageid() >= mStage->cards().size())
+    if (size_t(event.handid()) >= cards.size()
+        || size_t(event.stageid()) >= mStage->cards().size())
         return;
 
     QString code = QString::fromStdString(event.code());
@@ -289,8 +289,8 @@ void Player::switchStagePositions(const EventSwitchStagePositions &event) {
     if (!mOpponent)
         return;
 
-    if (event.stageidfrom() >= mStage->cards().size()
-        || event.stageidto() >= mStage->cards().size())
+    if (size_t(event.stageidfrom()) >= mStage->cards().size()
+        || size_t(event.stageidto()) >= mStage->cards().size())
         return;
 
     createMovingCard(mStage->cards()[event.stageidfrom()].qcode(), "stage", event.stageidfrom(),

@@ -59,7 +59,7 @@ public:
     QQmlEngine* engine() const;
     QQmlContext* context() const;
 
-    void sendGameCommand(const google::protobuf::Message &command, size_t playerId);
+    void sendGameCommand(const google::protobuf::Message &command, int playerId);
     void startAction() { mActionInProgress = true; }
 
     void startTurn(bool opponent);
@@ -83,7 +83,7 @@ private:
     void startLocalGame();
     void addClient();
 
-    Client* getClientForPlayer(size_t playerId);
+    Client* getClientForPlayer(int playerId);
 
 protected:
     void componentComplete() override;
