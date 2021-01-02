@@ -27,6 +27,8 @@ std::unique_ptr<ServerCard> ServerCardZone::swapCards(std::unique_ptr<ServerCard
 
 void ServerCardZone::swapCards(int pos1, int pos2) {
     std::swap(mCards[pos1], mCards[pos2]);
+    mCards[pos1]->setPos(pos1);
+    mCards[pos2]->setPos(pos2);
 }
 
 void ServerCardZone::shuffle() {

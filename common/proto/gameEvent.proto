@@ -20,3 +20,5 @@ message EventSetCardAttr {
 	CardAttribute attr = 2;
 	sint32 value = 3;
 }
+
+message EventLevelUp {}

@@ -58,7 +58,7 @@ void ServerGame::setStartingPlayer() {
     std::random_device dev;
     std::mt19937 gen(dev());
     std::uniform_int_distribution<> distrib(1, 2);
-    int startingPlayerId = 1;//distrib(gen);
+    int startingPlayerId = 2;//distrib(gen);
     for (auto &playerEntry: mPlayers) {
         if (playerEntry.first == static_cast<int>(startingPlayerId))
             playerEntry.second->setStartingPlayer();

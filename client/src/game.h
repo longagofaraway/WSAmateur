@@ -45,6 +45,7 @@ public:
     Q_INVOKABLE void sendClockPhaseFinished();
     Q_INVOKABLE void sendMainPhaseFinished();
     Q_INVOKABLE void sendClimaxPhaseCommand();
+    Q_INVOKABLE void sendTakeDamageCommand();
     Q_INVOKABLE QQuickItem* getZone(QString name, bool opponent) {
         auto zoneName = name.toStdString();
         if (!opponent) {
@@ -67,6 +68,9 @@ public:
     void mainPhase();
     void attackDeclarationStep();
     void attackDeclarationStepFinished();
+    void counterStep();
+    void levelUp();
+    void endLevelUp();
 
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);

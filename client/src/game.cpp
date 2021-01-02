@@ -158,6 +158,10 @@ void Game::sendClimaxPhaseCommand() {
     mPlayer->sendClimaxPhaseCommand();
 }
 
+void Game::sendTakeDamageCommand() {
+    mPlayer->sendTakeDamageCommand();
+}
+
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
 QQmlContext* Game::context() const { return qmlContext(parentItem()); }
 
@@ -206,11 +210,22 @@ void Game::attackDeclarationStepFinished() {
     QMetaObject::invokeMethod(this, "attackDeclarationStepFinished");
 }
 
+void Game::counterStep() {
+    QMetaObject::invokeMethod(this, "counterStep");
+}
+
+void Game::levelUp() {
+    QMetaObject::invokeMethod(this, "levelUp");
+}
+
+void Game::endLevelUp() {
+    QMetaObject::invokeMethod(this, "endLevelUp");
+}
 
 
 
 void Game::testAction() {
-    //mPlayer->testAction();
+    mPlayer->testAction();
     mOpponent->testAction();
 }
 

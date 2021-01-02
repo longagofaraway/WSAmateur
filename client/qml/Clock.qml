@@ -5,6 +5,7 @@ import wsamateur.cardModel 1.0
 ListView {
     id: clockView
 
+    signal cardSelected(int index)
     property bool opponent
     property bool hidden: false
     property CardModel mModel: innerModel
@@ -19,6 +20,33 @@ ListView {
     spacing: -root.cardWidth * (1 - mMarginModifier)
     orientation: ListView.Horizontal
     interactive: false
+
+    states: State {
+        name: "levelup"
+        ParentChange {
+            target: clockView
+            parent: root
+        }
+        PropertyChanges {
+            target: clockView
+            scale: 1.5
+            x: root.width / 2 - clockView.contentWidth / 2;
+            y: root.height / 2 - root.cardHeight / 2
+            z: 100
+        }
+    }
+
+    transitions: Transition {
+        SequentialAnimation {
+            ScriptAction { script: gGame.startUiAction(); }
+            ParallelAnimation {
+                NumberAnimation { property: "x"; easing.type: Easing.OutExpo; duration: 300 }
+                NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
+                NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
+            }
+            ScriptAction { script: gGame.uiActionComplete(); }
+        }
+    }
 
     model: mModel
 
@@ -37,6 +65,14 @@ ListView {
             onExited: {
                 cardImgDelegate.state = "";
             }
+            onClicked: {
+                if (clockView.state === "levelup" && model.index < 7) {
+                    model.selected = !model.selected;
+                    cardSelected(model.index);
+                    glow7Cards(false);
+                    clockView.state = "";
+                }
+            }
 
             Card {
                 id: cardImgDelegate
@@ -45,6 +81,7 @@ ListView {
 
                 mSource: model.code;
                 anchors.centerIn: cardDelegate
+                Component.onDestruction: destroyTextFrame(cardImgDelegate)
 
                 states: State {
                     name: "hovered"
@@ -68,7 +105,23 @@ ListView {
                     to: ""
                     ScriptAction { script: destroyTextFrame(cardImgDelegate); }
                 }
+
+                CardGlow {
+                    glow: model.glow
+                    selected: model.selected
+                }
             }
+        }
+    }
+
+    function levelUp() {
+        glow7Cards(true);
+    }
+
+    function glow7Cards(glow) {
+        for (let i = 0; i < Math.min(clockView.mModel.rowCount(), 7); i++) {
+            let index = clockView.mModel.index(i, 0);
+            clockView.mModel.setData(index, glow, CardModel.GlowRole);
         }
     }
 

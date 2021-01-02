@@ -51,6 +51,8 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandDeclareAttack declareAttackCmd;
         cmd.command().UnpackTo(&declareAttackCmd);
         declareAttack(declareAttackCmd);
+    } else if (cmd.command().Is<CommandTakeDamage>()) {
+        damageStep();
     }
 }
 
@@ -90,6 +92,7 @@ void ServerPlayer::setupZones() {
     addZone("memory");
     addZone("climax");
     addZone("level");
+    addZone("res");
     auto stage = addZone("stage");
 
     for (auto &card: mDeck->cards()) {
@@ -171,7 +174,7 @@ void ServerPlayer::mulligan(const CommandMulligan &cmd) {
         for (int i = 0; i < cmd.ids_size(); ++i)
             ids.push_back(cmd.ids(i));
 
-        moveCard("hand", ids, "wr");
+        moveCards("hand", ids, "wr");
         drawCards(static_cast<int>(ids.size()));
     }
     mMulliganFinished = true;
@@ -182,11 +185,18 @@ void ServerPlayer::drawCards(int number) {
     auto deck = zone("deck");
 
     for (int i = 0; i < number; ++i) {
-        moveCard("deck", { deck->count() - 1 }, "hand");
+        moveCard("deck", deck->count() - 1, "hand");
     }
 }
 
-void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName) {
+void ServerPlayer::moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName) {
+    auto sortedIds = cardIds;
+    std::sort(sortedIds.begin(), sortedIds.end());
+    for (int i = static_cast<int>(sortedIds.size()); i-- > 0;)
+        moveCard(startZoneName, sortedIds[i], targetZoneName);
+}
+
+void ServerPlayer::moveCard(std::string_view startZoneName,  int id, std::string_view targetZoneName) {
     ServerCardZone *startZone = zone(startZoneName);
     if (!startZone)
         return;
@@ -195,41 +205,43 @@ void ServerPlayer::moveCard(std::string_view startZoneName,  const std::vector<i
     if (!targetZone)
         return;
 
-    auto sortedIds = cardIds;
-    std::sort(sortedIds.begin(), sortedIds.end());
-    for (int i = static_cast<int>(sortedIds.size()); i-- > 0;) {
-        auto cardPtr = startZone->takeCard(sortedIds[i]);
-        if (!cardPtr)
-            return;
+    auto cardPtr = startZone->takeCard(id);
+    if (!cardPtr)
+        return;
 
-        ServerCard *card = targetZone->addCard(std::move(cardPtr));
+    ServerCard *card = targetZone->addCard(std::move(cardPtr));
 
-        std::string code;
-        EventMoveCard eventPublic;
-        eventPublic.set_id(static_cast<google::protobuf::uint32>(sortedIds[i]));
-        eventPublic.set_startzone(startZone->name());
-        eventPublic.set_targetzone(targetZone->name());
+    std::string code;
+    EventMoveCard eventPublic;
+    eventPublic.set_id(static_cast<google::protobuf::uint32>(id));
+    eventPublic.set_startzone(startZone->name());
+    eventPublic.set_targetzone(targetZone->name());
 
-        if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PublicZone)
-            eventPublic.set_code(card->code());
+    if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PublicZone)
+        eventPublic.set_code(card->code());
 
-        EventMoveCard eventPrivate(eventPublic);
+    EventMoveCard eventPrivate(eventPublic);
 
-        if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PrivateZone)
-            eventPrivate.set_code(card->code());
+    if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PrivateZone)
+        eventPrivate.set_code(card->code());
 
-        // revealing card from hand, opponent didn't see this card yet
-        if (startZone->type() == ZoneType::PrivateZone && targetZone->type() == ZoneType::PublicZone)
-            eventPublic.set_code(card->code());
+    // revealing card from hand, opponent didn't see this card yet
+    if (startZone->type() == ZoneType::PrivateZone && targetZone->type() == ZoneType::PublicZone)
+        eventPublic.set_code(card->code());
 
-        sendGameEvent(eventPrivate);
-        mGame->sendPublicEvent(eventPublic, mId);
-    }
+    sendGameEvent(eventPrivate);
+    mGame->sendPublicEvent(eventPublic, mId);
+}
+
+void ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
+    auto deck = zone("deck");
+    moveCard("deck", deck->count() - 1, targetZoneName);
+    // check for refresh
 }
 
 void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
     if (cmd.count()) {
-        moveCard("hand", { cmd.cardid() }, "clock");
+        moveCard("hand", cmd.cardid(), "clock");
         drawCards(2);
     }
 
@@ -288,7 +300,7 @@ void ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
 
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
-        moveCard("stock", { stock->count() - 1 }, "wr");
+        moveCard("stock", stock->count() - 1, "wr");
 }
 
 void ServerPlayer::playClimax(int handIndex) {
@@ -366,13 +378,17 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     if (attCard->state() != CardState::Standing)
         return;
 
+    clearExpectedComands();
+
     attCard->setState(CardState::Rested);
+    setAttackingCard(attCard);
 
     AttackType type = cmd.attacktype();
     auto battleOpp = battleOpponent(cmd.stageid());
     if (!battleOpp->cardPresent())
         type = AttackType::DirectAttack;
 
+    setAttackType(type);
     EventDeclareAttack event;
     event.set_stageid(cmd.stageid());
     event.set_attacktype(type);
@@ -383,7 +399,7 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     else if (type == AttackType::SideAttack)
         addSoulBuff(cmd.stageid(), -battleOpp->level());
 
-    triggerStep();
+    triggerStep(cmd.stageid());
 }
 
 void ServerPlayer::addSoulBuff(int pos, int delta, int duration) {
@@ -401,8 +417,51 @@ void ServerPlayer::addSoulBuff(int pos, int delta, int duration) {
     sendToBoth(event);
 }
 
-void ServerPlayer::triggerStep() {
+void ServerPlayer::triggerStep(int pos) {
+    moveTopDeck("res");
+    auto card = zone("res")->card(0);
+    for (auto trigger: card->triggers()) {
+        switch(trigger) {
+        case Trigger::Soul:
+            addSoulBuff(pos, 1);
+            break;
+        }
+    }
+    moveCard("res", 0, "stock");
 
+    mGame->opponentOfPlayer(mId)->counterStep();
+}
+
+void ServerPlayer::counterStep() {
+    addExpectedCommand(CommandTakeDamage::GetDescriptor()->name());
+    EventCounterStep event;
+    sendToBoth(event);
+}
+
+void ServerPlayer::damageStep() {
+    clearExpectedComands();
+    auto attCard = mGame->opponentOfPlayer(mId)->attackingCard();
+    if (!attCard)
+        return;
+
+    auto resZone = zone("res");
+    for (int i = 0; i < attCard->soul(); ++i) {
+        moveTopDeck("res");
+        auto card = resZone->card(resZone->count() - 1);
+        if (card->type() == CardType::Climax)
+            break;
+    }
+
+    while(resZone->card(0))
+        moveCard("res", 0, "clock");
+
+    if (zone("clock")->count() >= 7)
+        levelUp();
+}
+
+void ServerPlayer::levelUp() {
+    EventLevelUp event;
+    sendToBoth(event);
 }
 
 ServerCard *ServerPlayer::battleOpponent(int pos) const {

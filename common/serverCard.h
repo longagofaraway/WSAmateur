@@ -26,6 +26,8 @@ class ServerCard
     int mPower;
     int mSoul;
     CardState mState = CardState::Standing;
+    //bool mAttacking = false;
+    //AttackType mAttackType;
 
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
@@ -33,6 +35,7 @@ public:
 
     bool cardPresent() const { return !mCode.empty(); }
     void setPos(int pos);
+    int pos() const;
     void setZone(ServerCardZone *zone) { mZone = zone; }
     const std::string& code() { return mCode; }
     int level() const { return mCardInfo->level(); }
@@ -43,5 +46,8 @@ public:
     char color() const { return mCardInfo->color(); }
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }
+    //bool attacking() const { return mAttacking; }
+    //void setAttacking(bool attacking) { mAttacking = attacking; }
+    const std::vector<Trigger>& triggers() { return mCardInfo->triggers(); }
     void addSoulBuff(int delta, int duration);
 };

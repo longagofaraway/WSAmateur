@@ -6,6 +6,8 @@
 
 class QQuickItem;
 
+class CardModel;
+
 class CardZone
 {
 public:
@@ -14,4 +16,5 @@ public:
     virtual QQuickItem* visualItem() const = 0;
     virtual std::vector<Card>& cards() = 0;
     virtual void removeCard(int index) = 0;
+    virtual CardModel& model() = 0;
 };

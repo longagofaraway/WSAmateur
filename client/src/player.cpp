@@ -49,6 +49,8 @@ Player::Player(int id, Game *game, bool opponent)
     auto climax = std::make_unique<CommonCardZone>(this, game, "Climax");
     //climax->model().addCard(std::string("IMC/W43-127"));
     mZones.emplace("climax", std::move(climax));
+    auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "ResolutionZone");
+    mZones.emplace("res", std::move(resolutionZone));
 }
 
 CardZone* Player::zone(std::string_view name) const {
@@ -89,12 +91,14 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventDeclareAttack ev;
         event->event().UnpackTo(&ev);
         declareAttack(ev);
-    } else if (event->event().Is<EventTriggerStep>()) {
-
     } else if (event->event().Is<EventSetCardAttr>()) {
         EventSetCardAttr ev;
         event->event().UnpackTo(&ev);
         setCardAttr(ev);
+    } else if (event->event().Is<EventCounterStep>()) {
+        counterStep();
+    } else if (event->event().Is<EventLevelUp>()) {
+        levelUp();
     }
 }
 
@@ -197,6 +201,11 @@ void Player::sendClimaxPhaseCommand() {
     mHand->endMainPhase();
     mStage->endMainPhase();
     CommandClimaxPhase cmd;
+    sendGameCommand(cmd);
+}
+
+void Player::sendTakeDamageCommand() {
+    CommandTakeDamage cmd;
     sendGameCommand(cmd);
 }
 
@@ -348,6 +357,32 @@ void Player::setCardAttr(const EventSetCardAttr &event) {
     mStage->model().setAttr(event.stageid(), event.attr(), event.value());
 }
 
+void Player::counterStep() {
+    if (mOpponent)
+        return;
+
+    mGame->counterStep();
+}
+
+void Player::levelUp() {
+    if  (mOpponent)
+        return;
+
+    mGame->levelUp();
+
+    auto visualClock = zone("clock")->visualItem();
+    QMetaObject::invokeMethod(visualClock, "levelUp");
+    visualClock->connect(visualClock, SIGNAL(cardSelected(int)), this, SLOT(cardSelectedForLevelUp(int)));
+}
+
+void Player::cardSelectedForLevelUp(int index) {
+    mGame->endLevelUp();
+
+    CommandLevelUp cmd;
+    cmd.set_clockid(index);
+    sendGameCommand(cmd);
+}
+
 void Player::cardPlayed(int handId, int stageId) {
     CommandPlayCard cmd;
     cmd.set_handid(handId);
@@ -368,8 +403,6 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    auto &cards = mHand->cards();
-    CommandPlayCard cmd;
-    cmd.set_handid(0);
-    sendGameCommand(cmd);
+    //createMovingCard("IMC/W43-046", "hand", 1, "res", 0, true);
+    createMovingCard("IMC/W43-046", "deck", 1, "res", 0, true);
 }

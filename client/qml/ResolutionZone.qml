@@ -1,25 +1,24 @@
-import QtQuick 2.12
-import QtQuick.Window 2.12
+import QtQuick 2.0
 
 import wsamateur.cardModel 1.0
 
 ListView {
-    id: level
+    id: zone
 
     property bool opponent
     property bool hidden: false
     property CardModel mModel: innerModel
-    property real mMarginModifier: 0.2
-    property real mMargin: root.cardHeight * mMarginModifier
-    property real mScale: 0.8
+    property real mMarginModifier: 0.3
+    property real mMargin: root.cardWidth * mMarginModifier
 
-    x: opponent ? (root.width * 0.85) : (root.width * 0.08)
-    y: opponent ? (root.height * 0.15) : (root.height * 0.87 - getLevelHeight())
-    width: root.cardWidth
-    height: getLevelHeight()
-    spacing: -root.cardHeight * (1 - mMarginModifier)
+    x: (opponent ? (root.width * 0.22) : (root.width * 0.78)) - (count ? contentWidth / 2 : root.cardWidth / 2)
+    y: opponent ? (root.height * 0.3) : (root.height * 0.6)
+    width: contentWidth
+    height: root.cardHeight
+    spacing: -root.cardWidth * (1 - mMarginModifier)
+    orientation: ListView.Horizontal
     interactive: false
-    rotation: opponent ? 0 : 180
+    z: 50
 
     model: mModel
 
@@ -30,14 +29,9 @@ ListView {
             width: root.cardWidth
             height: root.cardHeight
             hoverEnabled: true
-            scale: mScale
 
-            onEntered: {
-                cardImgDelegate.state = "hovered";
-            }
-            onExited: {
-                cardImgDelegate.state = "";
-            }
+            onEntered: cardImgDelegate.state = "hovered";
+            onExited: cardImgDelegate.state = "";
 
             Card {
                 id: cardImgDelegate
@@ -46,7 +40,6 @@ ListView {
 
                 mSource: model.code;
                 anchors.centerIn: cardDelegate
-                rotation: 90
                 Component.onDestruction: destroyTextFrame(cardImgDelegate)
 
                 states: State {
@@ -57,8 +50,8 @@ ListView {
                     }
                     ParentChange {
                         target: cardImgDelegate
-                        parent: level.contentItem
-                        scale: 0.9
+                        parent: zone.contentItem
+                        scale: 1.1
                     }
                     StateChangeScript {
                         name: "textFrame"
@@ -74,6 +67,7 @@ ListView {
             }
         }
     }
+    Behavior on x { NumberAnimation { duration: 100 } }
 
     function createTextFrame(frameParent) {
         let comp = Qt.createComponent("CardInfoFrame.qml");
@@ -86,17 +80,22 @@ ListView {
                 }
                 if (frameParent.cardTextFrame !== null)
                     frameParent.cardTextFrame.destroy();
-                let textFrame = incubator.object;
+                var textFrame = incubator.object;
 
-                let scaledX = root.cardWidth * (1 - 0.9) / 2;
                 let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
-                textFrame.x = level.x + scaledX;
-                textFrame.y = cardMappedPoint.y;
-                if (!opponent) {
-                    textFrame.x += (root.cardHeight + root.cardWidth) / 2 * 0.9;
-                    textFrame.y -= textFrame.height;
+                let cardOffset = frameParent.x * zone.scale;
+
+                if (opponent) {
+                    let cardWidthAndScaleOffset = frameParent.width * zone.scale * (frameParent.scale + 1) / 2;
+                    textFrame.x = zone.x + cardOffset + cardWidthAndScaleOffset;
+                    textFrame.y = cardMappedPoint.y;
+
+                    let cardHeight = frameParent.height * zone.scale * frameParent.scale;
+                    if (textFrame.height > cardHeight)
+                        textFrame.y -= textFrame.height - cardHeight;
                 } else {
-                    textFrame.x += -textFrame.width - ((root.cardHeight - root.cardWidth) / 2) * 0.9;
+                    textFrame.x = zone.x - textFrame.width + cardOffset;
+                    textFrame.y = cardMappedPoint.y;
                 }
 
                 textFrame.visible = true;
@@ -117,20 +116,9 @@ ListView {
         }
     }
 
-    function getLevelHeight()  {
-        if (!level.count)
-            return 0;
-        return (level.count - 1) * mMargin + root.cardHeight;
-    }
-
-    function addCard(code) { level.mModel.addCard(code); }
-    function getXForNewCard() { return opponent ? level.x : level.x; }
-    function getYForNewCard() {
-        if (opponent)
-            return level.y + level.count * mMargin;
-        return root.height * 0.87 - level.count * mMargin - root.cardHeight;
-    }
-    function getXForCard() { return level.x; }
-    function getYForCard() { return level.y + (level.count ? (level.count - 1) : 0) * mMargin; }
-    function scaleForMovingCard() { return level.mScale; }
+    function addCard(code) { zone.mModel.addCard(code); }
+    function getXForNewCard() { return zone.x + zone.count * mMargin; }
+    function getYForNewCard() { return zone.y; }
+    function getXForCard(index) { return zone.x + (index ? (index - 1) : 0) * mMargin; }
+    function getYForCard() { return zone.y; }
 }

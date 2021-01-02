@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-enum Trigger {
+enum class Trigger {
     Soul,
     Door
 };

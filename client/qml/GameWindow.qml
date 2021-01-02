@@ -38,9 +38,11 @@ Item {
 
     ColorOverlay {
         id: colorOverlay
+
+        property bool darker: false
         anchors.fill: backgroundImg
         source: backgroundImg
-        color: "#B0000000"
+        color: darker ? "#D0000000" : "#B0000000"
     }
 
     Game {
@@ -82,7 +84,7 @@ Item {
         }
 
         function startMulligan(firstTurn) {
-            colorOverlay.color = "#D0000000";
+            colorOverlay.darker = true;
             blurEffect.opacity = 1;
 
             var comp = Qt.createComponent("MulliganHeader.qml");
@@ -109,7 +111,7 @@ Item {
         function mulliganFinished() {
             mHeader.finished.disconnect(mulliganFinished);
 
-            colorOverlay.color = "#B0000000";
+            colorOverlay.darker = false;
             blurEffect.opacity = 0;
             mHeader.destroy();
             mHeader = null;
@@ -166,13 +168,42 @@ Item {
             mHelpText = comp.createObject(gGame);
             mHelpText.mText = "Choose attacker";
             mHelpText.mHelpText = "(Right click for Side Attack)";
+            mainButton.state = "active";
             mainButton.mText = "Skip attack";
-            mainButton.mSubText = "";
+            mainButton.mSubText = "To Encore";
         }
 
         function attackDeclarationStepFinished() {
             mHelpText.startDestroy();
             mainButton.state = "waiting";
+        }
+
+        function counterStep() {
+            let comp = Qt.createComponent("HelpText.qml");
+            mHelpText = comp.createObject(gGame);
+            mHelpText.mText = "Counter step";
+            mainButton.state = "active";
+            mainButton.mText = "Take damage";
+            mainButton.mSubText = "";
+            mainButton.clicked.connect(endCounterStep);
+        }
+
+        function endCounterStep() {
+            mainButton.clicked.disconnect(endCounterStep);
+            mHelpText.startDestroy();
+            mainButton.state = "oppTurn";
+
+            gGame.sendTakeDamageCommand();
+        }
+
+        function levelUp() {
+            colorOverlay.darker = true;
+            blurEffect.opacity = 1;
+        }
+
+        function endLevelUp() {
+            colorOverlay.darker = false;
+            blurEffect.opacity = 0;
         }
     }
 

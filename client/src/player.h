@@ -53,6 +53,7 @@ public:
     void clockPhaseFinished();
     void mainPhaseFinished();
     void sendClimaxPhaseCommand();
+    void sendTakeDamageCommand();
 
     void testAction();
 
@@ -72,10 +73,13 @@ private:
     bool canPlay(Card &card);
     void playClimax();
     void setCardAttr(const EventSetCardAttr &event);
+    void counterStep();
+    void levelUp();
 
 public slots:
     void cardPlayed(int handId, int stageId);
     void switchPositions(int from, int to);
     void sendFromStageToWr(int pos);
     void sendAttackDeclaration(int pos, bool sideAttack);
+    void cardSelectedForLevelUp(int index);
 };

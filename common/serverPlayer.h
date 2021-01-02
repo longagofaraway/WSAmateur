@@ -5,6 +5,8 @@
 
 #include <google/protobuf/message.h>
 
+#include "attackType.pb.h"
+
 #include "commands.h"
 #include "deckList.h"
 #include "serverCardZone.h"
@@ -31,6 +33,9 @@ class ServerPlayer
     std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>> mZones;
     std::vector<ExpectedCommand> mExpectedCommands;
 
+    ServerCard *mAttackingCard = nullptr;
+    AttackType mAttackType;
+
     int mLevel = 0;
 
 public:
@@ -43,6 +48,10 @@ public:
     bool startingPlayer() const { return mStartingPlayer; }
     void setStartingPlayer() { mStartingPlayer = true; }
     ServerCard* battleOpponent(int pos) const;
+    ServerCard* attackingCard() const { return mAttackingCard; }
+    void setAttackingCard(ServerCard *card) { mAttackingCard = card; }
+    AttackType attackType() const { return mAttackType; }
+    void setAttackType(AttackType type) { mAttackType = type; }
 
     void clearExpectedComands();
     void addExpectedCommand(const std::string &command);
@@ -62,7 +71,9 @@ public:
     void dealStartingHand();
     void mulligan(const CommandMulligan &cmd);
     void drawCards(int number);
-    void moveCard(std::string_view startZoneName, const std::vector<int> &cardIds, std::string_view targetZoneName);
+    void moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName);
+    void moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName);
+    void moveTopDeck(std::string_view targetZoneName);
     void processClockPhaseResult(const CommandClockPhase &cmd);
     void playCard(const CommandPlayCard &cmd);
     void playCharacter(const CommandPlayCard &cmd);
@@ -73,5 +84,8 @@ public:
     void attackPhase();
     void declareAttack(const CommandDeclareAttack &cmd);
     void addSoulBuff(int pos, int delta, int duration = 1);
-    void triggerStep();
+    void triggerStep(int pos);
+    void counterStep();
+    void damageStep();
+    void levelUp();
 };

@@ -47,7 +47,7 @@ CardDatabase::CardDatabase() {
     info4->setType(CardType::Character);
     info4->setColor('B');
     info4->setTraits({ "Music" });
-    info4->setTriggers({ Soul });
+    info4->setTriggers({ Trigger::Soul });
     mDb.emplace(info4->code(), info4);
 
     auto info5 = std::make_shared<CardInfo>();
@@ -60,7 +60,7 @@ CardDatabase::CardDatabase() {
     info5->setType(CardType::Climax);
     info5->setColor('B');
     info5->setTraits({ "Music" });
-    info5->setTriggers({ Door });
+    info5->setTriggers({ Trigger::Door });
     mDb.emplace(info5->code(), info5);
 }
 
