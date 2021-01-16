@@ -1,0 +1,36 @@
+Target {
+  type TargetType,
+  targetSpecification Choice {
+    TargetSpecificCards,
+    Nothing
+  }
+}
+
+enum TargetType {
+  thisCard = 1,
+  chosenCards = 2,
+  specificCards = 3,
+  restOfTheCards = 4,
+  battleOpponent = 5,
+  mentionedCards = 6,
+  charInBattle = 7,
+  oppositeThis = 8
+}
+mentionedCards are revealed, beeing looked at etc
+
+TargetSpecificCards {
+  mode TargetMode,
+  number Number,
+  cards Card
+}
+
+TargetMode {
+  notSpecified = 0,
+  all = 1,
+  allOther = 2,
+  inFrontOfThis = 3,
+  frontRow = 4,
+  backRow = 5,
+  frontRowOther = 6,
+  backRowOther = 7
+}

@@ -1,0 +1,100 @@
+Ability {
+  type AbilityType,
+  ability Choice {
+    AutoAbility,
+    ContAbility,
+    ActAbility,
+    EventAbility
+  }
+}
+
+enum AbilityType {
+  cont = 1,
+  auto = 2,
+  act = 3,
+  event = 4
+}
+
+enum Keyword {
+  encore = 1,
+  cxcombo = 2,
+  brainstorm = 3,
+  backup = 4,
+  experience = 5,
+  resonance = 6,
+  bond = 7,
+  replay = 8,
+  alarm = 9,
+  change = 10
+}
+
+enum AbilityItem {
+  cost = 1,
+  trigger = 2,
+  condition = 3,
+  effect = 4,
+  keyword = 5,
+  activation = 6
+}
+
+AutoAbility {
+  {
+    tag AbilityItem,
+    activatesUpTo Uint8
+  } OPTIONAL,
+  {
+    tag AbilityItem,
+    keyword Array of Keyword
+  } OPTIONAL,
+  {
+    tag AbilityItem,
+    cost Cost 
+  } OPTIONAL,
+  {
+    tag AbilityItem,
+    trigger Trigger
+  },
+  {
+    tag AbilityItem,
+    effects Array of Effect
+  }
+}
+
+ContAbility {
+  {
+    tag AbilityItem,
+    keyword Array of Keyword
+  } OPTIONAL,
+  {
+    tag AbilityItem,
+    effects Array of Effect
+  }
+}
+
+ActAbility {
+  {
+    tag AbilityItem,
+    keyword Array of Keyword
+  } OPTIONAL,
+  {
+    tag AbilityItem,
+    cost Cost 
+  },
+  {
+    tag AbilityItem,
+    effects Array of Effect
+  }
+}
+
+EventAbility {
+  {
+    tag AbilityItem,
+    keyword Array of Keyword
+  } OPTIONAL,
+  {
+    tag AbilityItem,
+    effects Array of Effect
+  }
+}
+  
+  

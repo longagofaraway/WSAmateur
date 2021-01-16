@@ -1,0 +1,20 @@
+Cost {
+  items Array of CostItem
+}
+
+CostItem {
+  type CostType,
+  costItem Choice {
+    StockCost,
+    Effect
+  }
+}
+
+enum CostType {
+  stock = 1,
+  effect = 2
+}
+
+StockCost {
+  value Int8
+}

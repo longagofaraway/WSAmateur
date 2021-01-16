@@ -1,0 +1,274 @@
+Effect {
+  type EffectType,
+  condition Condition,
+  effect Choice {
+    AttributeGain,
+    ChooseCard,
+    RevealCard,
+    MoveCard,
+    SearchCard,
+    PayCost,
+    AbilityGain,
+    PerformEffect,
+    MoveWrToDeck,
+    FlipOver,
+    Backup,
+    Look,
+    NonMandatory,
+    ChangeState,
+    DealDamage,
+    CannotUseBackupOrEvent,
+    SwapCards,
+    AddMarker,
+    Bond,
+    PerformReplay,
+    Replay,
+    DrawCard,
+    HardcodedEffect,
+    Nothing
+  }
+}
+
+enum EffectType {
+  attributeGain = 1,
+  chooseCard = 2,
+  revealCard = 3,
+  moveCard = 4,
+  searchCard = 5,
+  payCost = 6,
+  abilityGain = 7,
+  moveWrToDeck = 8,
+  flipOver = 9,
+  backup = 10,
+  triggerCheckTwice = 11,
+  look = 12,
+  nonMandatory = 13,
+  earlyPlay = 14,
+  cannotPlay = 15,
+  performEffect = 16,
+  changeState = 17,
+  dealDamage = 18,
+  cannotUseBackupOrEvent = 19,
+  drawCard = 20,
+  swapCards = 21,
+  cannotFrontAttack = 22,
+  cannotSideAttack = 23,
+  opponentCharAutoCannotDealDamage = 24,
+  cannotBecomeReversed = 25,
+  stockSwap = 26,
+  addMarker = 27,
+  bond = 28,
+  cannotMove = 29,
+  putRestedInSameSlot = 30,
+  performReplay = 31,
+  replay = 32,
+  sideAttackWithoutPenalty = 33,
+  standby = 34,
+  hardcodedEffects = 35
+}
+
+enum AttributeType {
+  power = 1,
+  soul = 2,
+  level = 3
+}
+
+
+AttributeGain {
+  target Target,
+  type AttributeType,
+  gainType ValueType,
+  value Int32,
+  modifier Choice {
+    Multiplier,
+    Nothing
+  },
+  duration UInt8
+}
+
+enum ValueType {
+  rawValue = 1,
+  multiplier = 2
+}
+
+Multiplier {
+  type MultiplierType,
+  forEachOf Choice {
+    Target,
+    Nothing
+  },
+  zone Zone
+}
+
+enum MultiplierType {
+  forEach = 1,
+  timesLevel = 2,
+  markersPutInWrThisWay = 3
+}
+
+
+ChooseCard {
+  targets Array of Target,
+  excluding Array of Card,
+  placeType PlaceType,
+  place Choice {
+    Place,
+    Nothing
+  }
+}
+
+Usually you'll use just one Target, but you'll need several in these cases: 
+"look at up to 6 cards from top of your deck, choose up to 1 red character and up to 1 blue character"
+
+PlaceType {
+  selection = 1,
+  specificPlace = 2
+}
+
+
+Look {
+  number Number,
+  place Place
+}
+
+
+RevealCard {
+  revealType RevealType,
+  number Number,
+  card Choice {
+    Card,
+    Nothing
+  }
+}
+
+enum RevealType {
+  topDeck = 1,
+  chosenCards = 2,
+  fromHand = 3
+}
+
+
+MoveCard {
+  executor Player,
+  target Target,
+  from Place,
+  to Array of Place, // OR is applied if there are more than one destination
+  order Order
+}
+
+enum Order {
+  notSpecified = 0,
+  any = 1,
+  same = 2
+}
+
+
+PayCost {
+  ifYouDo Array of Effect,
+  ifYouDont Array of Effect
+}
+
+
+AbilityGain {
+  target Target,
+  number UInt8,
+  abilities Array of Ability,
+  duration UInt8
+}
+
+PerformEffect {
+  numberOfEffects UInt8,
+  numberOfTimes UInt8,
+  effects Array of Effect
+}
+
+
+SearchCard {
+  targets Array of SearchTarget
+}
+
+SearchTarget {
+  number Number,
+  cards Array of Card // OR is applied to elements of this array
+}
+
+
+MoveWrToDeck {
+  executor Player
+}
+
+
+FlipOver {
+  number Number,
+  forEach Card,
+  effect Array of Effect
+}
+
+
+Backup {
+  power Int32
+}
+
+
+NonMandatory {
+  effect Array of Effect,
+  ifYouDo Array of Effect,
+  ifYouDont Array of Effect
+}
+
+ChangeState {
+  target Target,
+  state State
+}
+
+DealDamage {
+  damageType ValueType,
+  damage UInt8,
+  modifier Choice {
+    Multiplier,
+    Nothing
+  }
+}
+
+CannotUseBackupOrEvent {
+  what BackupOrEvent,
+  player Player
+}
+
+enum BackupOrEvent {
+  backup,
+  event,
+  both
+}
+
+SwapCards {
+  chooseFirst ChooseCard,
+  chooseSecond ChooseCard
+}
+
+AddMarker {
+  target Target
+  destination Target
+}
+
+Bond {
+  name String
+}
+
+PerformReplay {
+  name String
+}
+
+Replay {
+  name String,
+  effects Array of Effect
+}
+
+DrawCard {
+  number Number
+}
+
+HardcodedEffect {
+  cardName String
+} 
+Possible values: "KGL/S79-020"

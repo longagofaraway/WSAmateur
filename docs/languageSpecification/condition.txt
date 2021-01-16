@@ -1,0 +1,75 @@
+Condition {
+  type ConditionType,
+  cond Choice {
+    ConditionIsCard,
+    ConditionHaveCard,
+    ConditionSumOfLevels,
+    ConditionCardsLocation,
+    ConditionDuringTurn,
+    ConditionCheckOpenedCards,
+    ConditionRevealCard,
+    ConditionPlayersLevel
+  }
+}
+
+enum ConditionType {
+  noCondition = 0,
+  isCard = 1,
+  haveCards = 2,
+  and = 3,
+  or = 4,
+  inBattleWithThis = 5,
+  sumOfLevels = 6,
+  cardsLocation = 7,
+  duringTurn = 8,
+  checkOpenedCards = 9,
+  revealedCard = 10,
+  playersLevel = 11
+}
+
+ConditionAnd {
+  cond Array of Condition
+}
+
+ConditionIsCard {
+  target Target,
+  neededCard Array of Card // array here instead of ORing conditions
+}
+
+ConditionHaveCard {
+  invert Bool,
+  who Player,
+  howMany Number,
+  whichCards Card,
+  where Zone,
+  excludingThis Bool
+}
+
+ConditionSumOfLevels {
+  moreThan UInt8
+}
+
+ConditionCardsLocation {
+  target Target,
+  place Place
+}
+
+ConditionDuringTurn {
+  player Owner
+}
+
+ConditionCheckOpenedCards {
+  number Number,
+  card Card
+}
+mill 2, if there's 1 char do x, if there's 2 do y...
+
+ConditionRevealCard {
+  number Number,
+  card Card
+}
+If you reveal 1 or more cards this way,...
+
+ConditionPlayersLevel {
+  number Number
+}

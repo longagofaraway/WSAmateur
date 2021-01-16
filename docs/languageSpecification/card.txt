@@ -1,0 +1,41 @@
+Card {
+  cardSpecifiers Array of CardSpecifier
+}
+
+Including 2 or more of the same specifier types into Card will apply OR to them.
+
+CardSpecifier {
+  type CardSpecifierType,
+  specifier Choice {
+    CardType,
+    Owner,
+    Trait,
+    ExactName,
+    NameContains,
+    Level,
+    Color,
+    CostSpecifier,
+    TriggerIcon,
+    Nothing
+  }
+}
+
+enum CardSpecifierType {
+  cardType = 1,
+  owner = 2,
+  trait = 3,
+  exactName = 4,
+  level = 5, 
+  level is higher than your opponent's level = 6,
+  color = 7,
+  cost = 8,
+  triggerIcon = 9,
+  hasMarker = 10
+}
+
+enum CardType {
+  character = 1,
+  climax = 2,
+  event = 3,
+  marker = 4
+}

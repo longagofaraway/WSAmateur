@@ -1,0 +1,108 @@
+enum Owner {
+  player = 1,
+  opponent = 2
+}
+
+enum Player {
+  player = 1,
+  opponent = 2,
+  both = 3
+}
+
+Trait {
+  value String
+}
+
+ExactName {
+  value String
+}
+
+NameContains {
+  value String
+}
+
+Level {
+  value Number
+}
+
+CostSpecifier {
+  value Number
+}
+
+enum TriggerIcon {
+  treasure = 1,
+  book = 2
+}
+
+Number {
+  mod NumModifier,
+  value Int8,
+  multiplier Choice {
+    Multiplier,
+    Nothing
+  }
+}
+
+NumModifier {
+  exactMatch = 1,
+  upTo = 2,
+  atLeast = 3,
+  multiplier = 4
+}
+
+Place {
+  pos Position,
+  zone Zone,
+  owner Owner
+}
+
+enum Zone {
+  notSpecified = 0,
+  stage = 1,
+  waiting room = 2,
+  deck = 3,
+  clock = 4,
+  hand = 5,
+  memory = 6,
+  stock = 7,
+  level = 8
+}
+
+enum Position {
+  notSpecified = 0,
+  top = 1,
+  bottom = 2,
+  frontRow = 3,
+  backRow = 4,
+  emptySlotFrontRow = 5,
+  emptySlotBackRow = 6,
+  emptySlot = 7,
+  slotThisWasIn = 8
+}
+
+enum State {
+  standing = 1,
+  rested = 2,
+  reversed = 3
+}
+
+Array Of X {
+  size UInt8,
+  x1 X,
+  ...
+  xn X
+}
+
+String {
+  string Array of UInt8
+}
+
+enum Bool {
+  false = 0,
+  true = 1
+}
+
+Nothing {
+}
+
+Int8, Int32 are using ZigZag encoding from Protobuf.

@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>AutoAbility.qml</file>
+        <file>Keywords.qml</file>
+        <file>Trigger.qml</file>
+    </qresource>
+</RCC>
