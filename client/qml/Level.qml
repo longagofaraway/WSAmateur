@@ -31,6 +31,7 @@ ListView {
             height: root.cardHeight
             hoverEnabled: true
             scale: mScale
+            rotation: 90
 
             onEntered: {
                 cardImgDelegate.state = "hovered";
@@ -46,7 +47,6 @@ ListView {
 
                 mSource: model.code;
                 anchors.centerIn: cardDelegate
-                rotation: 90
                 Component.onDestruction: destroyTextFrame(cardImgDelegate)
 
                 states: State {

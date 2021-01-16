@@ -6,11 +6,11 @@ Item {
     property bool selected: false
 
     anchors.fill: parent
+    z: -1
 
     RectangularGlow {
         id: cardGlow
         anchors.fill: parent
-        z: -1
         color: selected ? "#FCDE01" : "#2BFDFF"
         cornerRadius: 0
         glowRadius: 10

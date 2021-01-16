@@ -78,6 +78,17 @@ Item {
                 mainButton.state = "";
         }
 
+        function createHelpText(mainText, subText) {
+            let comp = Qt.createComponent("HelpText.qml");
+            mHelpText = comp.createObject(gGame);
+            mHelpText.mText = mainText;
+            mHelpText.mHelpText = subText === undefined ? "" : subText;
+        }
+
+        function startHelpTextDestruction() {
+            mHelpText.startDestroy();
+        }
+
         function destroyHelpText() {
             mHelpText.destroy();
             mHelpText = null;
@@ -131,9 +142,7 @@ Item {
         }
 
         function clockPhase() {
-            let comp = Qt.createComponent("HelpText.qml");
-            mHelpText = comp.createObject(gGame);
-            mHelpText.mText = "Choose up to 1 card to send to Clock";
+            createHelpText("Choose up to 1 card to send to Clock");
             mainButton.state = "active";
             mainButton.mText = "Next";
             mainButton.mSubText = "To Main Phase";
@@ -141,7 +150,7 @@ Item {
         }
 
         function clockPhaseFinished() {
-            mHelpText.startDestroy();
+            startHelpTextDestruction();
             mainButton.clicked.disconnect(clockPhaseFinished);
             mainButton.mFontSizeAdjustment = 0;
             mainButton.state = "waiting";
@@ -164,24 +173,19 @@ Item {
         }
 
         function attackDeclarationStep() {
-            let comp = Qt.createComponent("HelpText.qml");
-            mHelpText = comp.createObject(gGame);
-            mHelpText.mText = "Choose attacker";
-            mHelpText.mHelpText = "(Right click for Side Attack)";
+            createHelpText("Choose attacker", "(Right click for Side Attack)");
             mainButton.state = "active";
             mainButton.mText = "Skip attack";
             mainButton.mSubText = "To Encore";
         }
 
         function attackDeclarationStepFinished() {
-            mHelpText.startDestroy();
+            startHelpTextDestruction();
             mainButton.state = "waiting";
         }
 
         function counterStep() {
-            let comp = Qt.createComponent("HelpText.qml");
-            mHelpText = comp.createObject(gGame);
-            mHelpText.mText = "Counter step";
+            createHelpText("Counter step");
             mainButton.state = "active";
             mainButton.mText = "Take damage";
             mainButton.mSubText = "";
@@ -190,20 +194,18 @@ Item {
 
         function endCounterStep() {
             mainButton.clicked.disconnect(endCounterStep);
-            mHelpText.startDestroy();
+            startHelpTextDestruction();
             mainButton.state = "oppTurn";
 
             gGame.sendTakeDamageCommand();
         }
 
         function levelUp() {
-            colorOverlay.darker = true;
-            blurEffect.opacity = 1;
+            createHelpText("Level up", "(Choose a card in clock to send to level zone)");
         }
 
         function endLevelUp() {
-            colorOverlay.darker = false;
-            blurEffect.opacity = 0;
+            startHelpTextDestruction();
         }
     }
 

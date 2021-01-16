@@ -23,3 +23,5 @@ message EventSwitchStagePositions {
     sint32 stageIdFrom = 1;
     sint32 stageIdTo = 2;
 }
+
+message EventClockToWr {}

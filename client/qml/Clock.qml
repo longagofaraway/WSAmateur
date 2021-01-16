@@ -21,21 +21,6 @@ ListView {
     orientation: ListView.Horizontal
     interactive: false
 
-    states: State {
-        name: "levelup"
-        ParentChange {
-            target: clockView
-            parent: root
-        }
-        PropertyChanges {
-            target: clockView
-            scale: 1.5
-            x: root.width / 2 - clockView.contentWidth / 2;
-            y: root.height / 2 - root.cardHeight / 2
-            z: 100
-        }
-    }
-
     transitions: Transition {
         SequentialAnimation {
             ScriptAction { script: gGame.startUiAction(); }
@@ -46,6 +31,10 @@ ListView {
             }
             ScriptAction { script: gGame.uiActionComplete(); }
         }
+    }
+
+    displaced: Transition {
+        NumberAnimation { properties: "x,y"; duration: 200 }
     }
 
     model: mModel
@@ -67,10 +56,10 @@ ListView {
             }
             onClicked: {
                 if (clockView.state === "levelup" && model.index < 7) {
-                    model.selected = !model.selected;
-                    cardSelected(model.index);
-                    glow7Cards(false);
                     clockView.state = "";
+                    model.selected = !model.selected;
+                    glow7Cards(false);
+                    cardSelected(model.index);
                 }
             }
 
@@ -116,6 +105,7 @@ ListView {
 
     function levelUp() {
         glow7Cards(true);
+        clockView.state = "levelup";
     }
 
     function glow7Cards(glow) {
@@ -175,7 +165,7 @@ ListView {
     function addCard(code) { clockView.mModel.addCard(code); }
     function getXForNewCard() { return clockView.x + clockView.count * mMargin; }
     function getYForNewCard() { return clockView.y; }
-    function getXForCard() { return clockView.x + (clockView.count ? (clockView.count - 1) : 0) * mMargin; }
+    function getXForCard(pos) { return clockView.x + pos * mMargin; }
     function getYForCard() { return clockView.y; }
     function scaleForMovingCard() { return mScale; }
 }

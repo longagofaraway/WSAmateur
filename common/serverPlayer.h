@@ -20,6 +20,7 @@ class CommandClockPhase;
 class CommandPlayCard;
 class CommandSwitchStagePositions;
 class CommandDeclareAttack;
+class CommandLevelUp;
 
 class ServerPlayer
 {
@@ -72,7 +73,7 @@ public:
     void mulligan(const CommandMulligan &cmd);
     void drawCards(int number);
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName);
-    void moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName);
+    bool moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName);
     void moveTopDeck(std::string_view targetZoneName);
     void processClockPhaseResult(const CommandClockPhase &cmd);
     void playCard(const CommandPlayCard &cmd);
@@ -88,4 +89,5 @@ public:
     void counterStep();
     void damageStep();
     void levelUp();
+    void performLevelUp(const CommandLevelUp& cmd);
 };

@@ -6,6 +6,7 @@ Card {
     property bool opponent
     property bool isUiAction
     property bool isQmlAction: false
+    property bool dontFinishAction: false
     property string startZone
     property int startId: 0
     property string targetZone
@@ -78,10 +79,12 @@ Card {
 
     function completeAction() {
         if (!isQmlAction) {
-            if (isUiAction)
-                gGame.uiActionComplete();
-            else
-                gGame.actionComplete();
+            if (!dontFinishAction) {
+                if (isUiAction)
+                    gGame.uiActionComplete();
+                else
+                    gGame.actionComplete();
+            }
             moveFinished();
         } else {
             gGame.uiActionComplete();

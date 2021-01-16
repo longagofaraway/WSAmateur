@@ -53,6 +53,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         declareAttack(declareAttackCmd);
     } else if (cmd.command().Is<CommandTakeDamage>()) {
         damageStep();
+    } else if (cmd.command().Is<CommandLevelUp>()) {
+        CommandLevelUp levelUpCmd;
+        cmd.command().UnpackTo(&levelUpCmd);
+        performLevelUp(levelUpCmd);
     }
 }
 
@@ -196,18 +200,18 @@ void ServerPlayer::moveCards(std::string_view startZoneName,  const std::vector<
         moveCard(startZoneName, sortedIds[i], targetZoneName);
 }
 
-void ServerPlayer::moveCard(std::string_view startZoneName,  int id, std::string_view targetZoneName) {
+bool ServerPlayer::moveCard(std::string_view startZoneName,  int id, std::string_view targetZoneName) {
     ServerCardZone *startZone = zone(startZoneName);
     if (!startZone)
-        return;
+        return false;
 
     ServerCardZone *targetZone = zone(targetZoneName);
     if (!targetZone)
-        return;
+        return false;
 
     auto cardPtr = startZone->takeCard(id);
     if (!cardPtr)
-        return;
+        return false;
 
     ServerCard *card = targetZone->addCard(std::move(cardPtr));
 
@@ -231,6 +235,8 @@ void ServerPlayer::moveCard(std::string_view startZoneName,  int id, std::string
 
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
+
+    return true;
 }
 
 void ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
@@ -320,6 +326,7 @@ void ServerPlayer::playClimax(int handIndex) {
     mGame->sendPublicEvent(eventPublic, mId);
 
     //process climax effects
+
     attackPhase();
 }
 
@@ -460,7 +467,23 @@ void ServerPlayer::damageStep() {
 }
 
 void ServerPlayer::levelUp() {
+    clearExpectedComands();
+    addExpectedCommand(CommandLevelUp::GetDescriptor()->name());
     EventLevelUp event;
+    sendToBoth(event);
+}
+
+void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
+    if (cmd.clockid() > 6)
+        return;
+
+    if (zone("clock")->count() < 7)
+        return;
+
+    if (!moveCard("clock", cmd.clockid(), "level"))
+        return;
+
+    EventClockToWr event;
     sendToBoth(event);
 }
 

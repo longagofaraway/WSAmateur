@@ -59,7 +59,8 @@ public:
 
 private:
     void createMovingCard(const QString &code, const std::string &startZone, int startId,
-                          const std::string &targetZone, int targetId = 0, bool isUiAction = false);
+                          const std::string &targetZone, int targetId = 0, bool isUiAction = false,
+                          bool dontFinishAction = false);
 
     void setInitialHand(const EventInitialHand &event);
     void moveCard(const EventMoveCard &event);
@@ -75,6 +76,7 @@ private:
     void setCardAttr(const EventSetCardAttr &event);
     void counterStep();
     void levelUp();
+    void moveClockToWr();
 
 public slots:
     void cardPlayed(int handId, int stageId);

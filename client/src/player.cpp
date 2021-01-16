@@ -33,8 +33,6 @@ Player::Player(int id, Game *game, bool opponent)
     auto deck = std::make_unique<Deck>(this, game);
     mZones.emplace("deck", std::move(deck));
     auto clock = std::make_unique<CommonCardZone>(this, game, "Clock");
-    clock->model().addCard(std::string("IMC/W43-046"));
-    clock->model().addCard(std::string("IMC/W43-046"));
     mZones.emplace("clock", std::move(clock));
     auto stock = std::make_unique<CommonCardZone>(this, game, "Stock");
     stock->model().addCard();
@@ -99,6 +97,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         counterStep();
     } else if (event->event().Is<EventLevelUp>()) {
         levelUp();
+    } else if (event->event().Is<EventClockToWr>()) {
+        moveClockToWr();
     }
 }
 
@@ -226,7 +226,7 @@ void Player::setInitialHand(const EventInitialHand &event) {
 }
 
 void Player::createMovingCard(const QString &code, const std::string &startZone, int startId,
-                              const std::string &targetZone, int targetId, bool isUiAction) {
+                              const std::string &targetZone, int targetId, bool isUiAction, bool dontFinishAction) {
     if (isUiAction)
         mGame->startUiAction();
     else
@@ -240,6 +240,7 @@ void Player::createMovingCard(const QString &code, const std::string &startZone,
     obj->setProperty("code", code);
     obj->setProperty("opponent", mOpponent);
     obj->setProperty("isUiAction", isUiAction);
+    obj->setProperty("dontFinishAction", dontFinishAction);
     obj->setProperty("mSource", source);
     obj->setProperty("startZone", QString::fromStdString(startZone));
     obj->setProperty("startId", startId);
@@ -373,6 +374,20 @@ void Player::levelUp() {
     auto visualClock = zone("clock")->visualItem();
     QMetaObject::invokeMethod(visualClock, "levelUp");
     visualClock->connect(visualClock, SIGNAL(cardSelected(int)), this, SLOT(cardSelectedForLevelUp(int)));
+}
+
+void Player::moveClockToWr() {
+    auto clock = zone("clock");
+    if (clock->cards().size() < 6)
+        return;
+
+    for (int i = 0; i < 6; ++i) {
+        bool dontFinishAction = true;
+        if (i == 5)
+            dontFinishAction = false;
+        createMovingCard(clock->cards()[0].qcode(), "clock", 0, "wr", 0, false, dontFinishAction);
+        clock->removeCard(0);
+    }
 }
 
 void Player::cardSelectedForLevelUp(int index) {
