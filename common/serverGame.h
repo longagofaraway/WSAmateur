@@ -15,7 +15,9 @@ class ServerProtocolHandler;
 enum class Phase {
     Mulligan,
     Climax,
-    Attack
+    AttackDeclarationStep,
+    DamageStep,
+    BattleStep
 };
 
 class ServerGame
@@ -35,6 +37,7 @@ public:
         return mPlayers;
     }
     ServerPlayer* player(int id);
+    ServerPlayer* activePlayer();
     void addPlayer(ServerProtocolHandler *client);
     ServerPlayer* opponentOfPlayer(int id) const;
     void setStartingPlayer();
@@ -42,6 +45,8 @@ public:
     void endMulligan();
     Phase phase() const { return mCurrentPhase; }
     void setPhase(Phase phase) { mCurrentPhase = phase; }
+    void battleStep();
+    void encorePhase();
 
     void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 };

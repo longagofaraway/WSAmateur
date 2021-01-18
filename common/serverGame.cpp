@@ -61,7 +61,7 @@ void ServerGame::setStartingPlayer() {
     int startingPlayerId = 1;//distrib(gen);
     for (auto &playerEntry: mPlayers) {
         if (playerEntry.first == static_cast<int>(startingPlayerId))
-            playerEntry.second->setStartingPlayer();
+            playerEntry.second->setActive(true);
     }
 }
 
@@ -87,8 +87,66 @@ void ServerGame::endMulligan() {
     }
 
     for (auto &pEntry: mPlayers) {
-        if (pEntry.second->startingPlayer())
+        if (pEntry.second->active())
             pEntry.second->startTurn();
     }
+}
+
+ServerPlayer* ServerGame::activePlayer() {
+    for (auto &pEntry: mPlayers) {
+        if (pEntry.second->active())
+            return pEntry.second.get();
+    }
+    assert(false);
+    return nullptr;
+}
+
+void ServerGame::battleStep() {
+    ServerPlayer *attPlayer = nullptr;
+    ServerPlayer *opponent = nullptr;
+    for (auto &pEntry: mPlayers) {
+        if (pEntry.second->active())
+            attPlayer = pEntry.second.get();
+        else
+            opponent = pEntry.second.get();
+    }
+
+    if (!attPlayer || !opponent)
+        return;
+
+    if (attPlayer->attackType() == AttackType::SideAttack
+        || attPlayer->attackType() == AttackType::DirectAttack) {
+        attPlayer->endOfAttack();
+        return;
+    }
+
+    mCurrentPhase = Phase::BattleStep;
+    //at the beginning of battle step, check timing
+
+    auto attCard = attPlayer->attackingCard();
+    if (!attCard->cardPresent()) {
+        attPlayer->endOfAttack();
+        return;
+    }
+
+    auto battleOpponent = attPlayer->battleOpponent(attCard);
+    if (!battleOpponent->cardPresent()) {
+        attPlayer->endOfAttack();
+        return;
+    }
+
+    if (attCard->power() > battleOpponent->power()) {
+        opponent->setCardState(battleOpponent->pos(), StateReversed);
+    } else if (attCard->power() < battleOpponent->power()) {
+        attPlayer->setCardState(attCard->pos(), StateReversed);
+    } else {
+        attPlayer->setCardState(attCard->pos(), StateReversed);
+        opponent->setCardState(battleOpponent->pos(), StateReversed);
+    }
+}
+
+void ServerGame::encorePhase() {
+    EventEncorePhase event;
+
 }
 

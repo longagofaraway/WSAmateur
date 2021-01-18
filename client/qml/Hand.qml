@@ -427,6 +427,8 @@ ListView {
         gGame.startUiAction();
         card.opponent = false;
         card.isQmlAction = true;
+        card.startZone = "hand";
+        card.startId = index;
         card.targetZone = "climax";
         card.targetId = index;
         card.code = code;
@@ -434,10 +436,10 @@ ListView {
         card.rotation = imgDelegate.rotation;
         card.startAnimation();
         gGame.sendClimaxPhaseCommand();
-        handView.mModel.removeCard(index);
     }
 
     function addCard(code) { handView.mModel.addCard(code); }
+    function removeCard(index) { handView.mModel.removeCard(index); }
 
     function getVisualIndexFromModelIndex(modelId) {
         for (var i = 0; i < handDelegate.count; i++) {

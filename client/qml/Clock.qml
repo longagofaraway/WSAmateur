@@ -163,6 +163,7 @@ ListView {
     }
 
     function addCard(code) { clockView.mModel.addCard(code); }
+    function removeCard(index) { clockView.mModel.removeCard(index); }
     function getXForNewCard() { return clockView.x + clockView.count * mMargin; }
     function getYForNewCard() { return clockView.y; }
     function getXForCard(pos) { return clockView.x + pos * mMargin; }

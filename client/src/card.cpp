@@ -23,11 +23,11 @@ void Card::init(const std::string &code) {
 
 QString Card::qstate() const {
     switch(mState) {
-    case CardState::Standing:
+    case StateStanding:
         return QString("Standing");
-    case CardState::Rested:
+    case StateRested:
         return QString("Rested");
-    case CardState::Reversed:
+    case StateReversed:
         return QString("Reversed");
     }
     assert(false);

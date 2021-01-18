@@ -252,5 +252,8 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         cmd.set_stageid(0);
         cmd.set_attacktype(AttackType::FrontAttack);
         sendGameCommand(cmd, mOpponent->id());
+    } else if (event->event().Is<EventCounterStep>()) {
+        CommandTakeDamage cmd;
+        sendGameCommand(cmd, mOpponent->id());
     }
 }

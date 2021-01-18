@@ -7,6 +7,7 @@ Card {
     property bool isUiAction
     property bool isQmlAction: false
     property bool dontFinishAction: false
+    property bool noDelete: false
     property string startZone
     property int startId: 0
     property string targetZone
@@ -24,7 +25,14 @@ Card {
     function startAnimation() {
         if (!isQmlAction)
             setupMoveFromZone();
+        if (!noDelete)
+            removeCard();
         setupMoveToZone();
+    }
+
+    function removeCard() {
+        let szone = gGame.getZone(startZone, opponent);
+        szone.removeCard(startId);
     }
 
     function setupMoveFromZone() {

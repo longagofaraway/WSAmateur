@@ -89,6 +89,7 @@ ListView {
         climaxZone.mHandIndex = handIndex;
         climaxZone.mModel.addCard(code);
     }
+    function removeCard(index) { climaxZone.mModel.removeCard(index); }
     function getXForNewCard() { return climaxZone.x; }
     function getYForNewCard() { return climaxZone.y; }
     function getXForCard() { return climaxZone.x; }

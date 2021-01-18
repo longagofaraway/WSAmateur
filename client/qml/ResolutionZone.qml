@@ -67,7 +67,11 @@ ListView {
             }
         }
     }
-    Behavior on x { NumberAnimation { duration: 100 } }
+    Behavior on x { NumberAnimation { duration: 200 } }
+
+    displaced: Transition {
+        NumberAnimation { properties: "x,y"; duration: 200 }
+    }
 
     function createTextFrame(frameParent) {
         let comp = Qt.createComponent("CardInfoFrame.qml");
@@ -117,8 +121,9 @@ ListView {
     }
 
     function addCard(code) { zone.mModel.addCard(code); }
+    function removeCard(index) { zone.mModel.removeCard(index); }
     function getXForNewCard() { return zone.x + zone.count * mMargin; }
     function getYForNewCard() { return zone.y; }
-    function getXForCard(index) { return zone.x + (index ? (index - 1) : 0) * mMargin; }
+    function getXForCard(index) { return zone.x + index/*(index ? (index - 1) : 0)*/ * mMargin; }
     function getYForCard() { return zone.y; }
 }

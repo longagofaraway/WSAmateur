@@ -4,6 +4,8 @@
 
 #include <QString>
 
+#include "cardAttribute.pb.h"
+
 #include "cardInfo.h"
 
 class Card {
@@ -18,7 +20,7 @@ class Card {
     int mSoul;
     CardType mType;
 
-    CardState mState = CardState::Standing;
+    CardState mState = StateStanding;
 
     std::shared_ptr<CardInfo> mInfo;
 

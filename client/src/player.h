@@ -15,6 +15,7 @@ class EventPlayCard;
 class EventSwitchStagePositions;
 class EventDeclareAttack;
 class EventSetCardAttr;
+class EventSetCardState;
 
 class Game;
 class GameEvent;
@@ -60,7 +61,7 @@ public:
 private:
     void createMovingCard(const QString &code, const std::string &startZone, int startId,
                           const std::string &targetZone, int targetId = 0, bool isUiAction = false,
-                          bool dontFinishAction = false);
+                          bool dontFinishAction = false, bool noDelete = false);
 
     void setInitialHand(const EventInitialHand &event);
     void moveCard(const EventMoveCard &event);
@@ -74,6 +75,7 @@ private:
     bool canPlay(Card &card);
     void playClimax();
     void setCardAttr(const EventSetCardAttr &event);
+    void setCardState(const EventSetCardState &event);
     void counterStep();
     void levelUp();
     void moveClockToWr();

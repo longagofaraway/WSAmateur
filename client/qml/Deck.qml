@@ -24,6 +24,7 @@ Card {
     z: 1
 
     function addCard(code) { deck.mModel.addCard(code); }
+    function removeCard(index) { deck.mModel.removeCard(index); }
 
     function getXForNewCard() { return deck.x; }
     function getYForNewCard() { return deck.y; }

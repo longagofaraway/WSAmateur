@@ -63,12 +63,6 @@ Card {
     }
 
     Behavior on rotation { NumberAnimation { duration: 150 } }
-    SequentialAnimation {
-        id: tapAnim
-        NumberAnimation { target: stageCard; property: "rotation"; to: -90; duration: 150 }
-        PauseAnimation { duration: 500 }
-        ScriptAction { script: gGame.uiActionComplete() }
-    }
 
     ParallelAnimation {
         id: moveAnim
@@ -112,13 +106,18 @@ Card {
         }
     }
 
-    function tap() {
-        gGame.startUiAction();
-        tapAnim.start();
-    }
+    function tap() { stageCard.rotation = -90; }
     function getGlowColor() { return cardOverGlow ? "#FFFFFF" : (selected ? "#FCDE01" : "#2BFDFF"); }
     function onCardEntered() { cardOverGlow = true; }
     function onCardExited() { cardOverGlow = false; }
+    function setCardState(state) {
+        if (state === 0)
+            stageCard.rotation = 0;
+        else if (state === 1)
+            stageCard.rotation = -90;
+        else if (state === 2)
+            stageCard.rotation = -180;
+    }
 
     function startAnimation(_x, _y) {
         aX.to = _x;

@@ -46,7 +46,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandClimaxPhase>()) {
         climaxPhase();
     } else if (cmd.command().Is<CommandAttackPhase>()) {
-        attackPhase();
+        attackDeclarationStep();
     } else if (cmd.command().Is<CommandDeclareAttack>()) {
         CommandDeclareAttack declareAttackCmd;
         cmd.command().UnpackTo(&declareAttackCmd);
@@ -159,7 +159,7 @@ void ServerPlayer::dealStartingHand() {
 
     EventInitialHand eventPrivate;
     eventPrivate.set_count(5);
-    eventPrivate.set_firstturn(mStartingPlayer);
+    eventPrivate.set_firstturn(mActive);
     EventInitialHand eventPublic(eventPrivate);
     for (int i = 0; i < 5; ++i) {
         auto card = deck->takeTopCard();
@@ -327,7 +327,7 @@ void ServerPlayer::playClimax(int handIndex) {
 
     //process climax effects
 
-    attackPhase();
+    attackDeclarationStep();
 }
 
 void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
@@ -368,12 +368,30 @@ void ServerPlayer::climaxPhase() {
     sendToBoth(event);
 }
 
-void ServerPlayer::attackPhase() {
-    mGame->setPhase(Phase::Attack);
+void ServerPlayer::endOfAttack() {
+    setAttackingCard(nullptr);
+    attackDeclarationStep();
+}
+
+void ServerPlayer::attackDeclarationStep() {
+    mGame->setPhase(Phase::AttackDeclarationStep);
     clearExpectedComands();
-    addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
-    EventAttackDeclarationStep event;
-    sendToBoth(event);
+
+    bool hasFrontRowChar = false;
+    for (int i = 0; i < 3; ++i) {
+        if (zone("stage")->card(i)->cardPresent()) {
+            hasFrontRowChar = true;
+            break;
+        }
+    }
+
+    if (hasFrontRowChar) {
+        addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
+        EventAttackDeclarationStep event;
+        sendToBoth(event);
+    } else {
+        mGame->encorePhase();
+    }
 }
 
 bool isCenterStagePosition(int pos) { return pos >= 3 ? false : true; }
@@ -382,16 +400,16 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     if (!isCenterStagePosition(cmd.stageid()))
         return;
     auto attCard = stage->card(cmd.stageid());
-    if (attCard->state() != CardState::Standing)
+    if (attCard->state() != StateStanding)
         return;
 
     clearExpectedComands();
 
-    attCard->setState(CardState::Rested);
+    attCard->setState(StateRested);
     setAttackingCard(attCard);
 
     AttackType type = cmd.attacktype();
-    auto battleOpp = battleOpponent(cmd.stageid());
+    auto battleOpp = battleOpponent(attCard);
     if (!battleOpp->cardPresent())
         type = AttackType::DirectAttack;
 
@@ -446,24 +464,33 @@ void ServerPlayer::counterStep() {
 }
 
 void ServerPlayer::damageStep() {
+    mGame->setPhase(Phase::DamageStep);
     clearExpectedComands();
     auto attCard = mGame->opponentOfPlayer(mId)->attackingCard();
     if (!attCard)
         return;
 
     auto resZone = zone("res");
+    bool canceled = false;
     for (int i = 0; i < attCard->soul(); ++i) {
         moveTopDeck("res");
-        auto card = resZone->card(resZone->count() - 1);
-        if (card->type() == CardType::Climax)
+        auto card = resZone->topCard();
+        assert(card);
+        if (card->type() == CardType::Climax) {
+            canceled = true;
             break;
+        }
     }
 
-    while(resZone->card(0))
-        moveCard("res", 0, "clock");
+    while (resZone->card(0))
+        moveCard("res", 0, canceled ? "wr" : "clock");
 
-    if (zone("clock")->count() >= 7)
+    if (zone("clock")->count() >= 7) {
         levelUp();
+        return;
+    }
+
+    mGame->battleStep();
 }
 
 void ServerPlayer::levelUp() {
@@ -483,14 +510,27 @@ void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
     if (!moveCard("clock", cmd.clockid(), "level"))
         return;
 
+    clearExpectedComands();
+
     EventClockToWr event;
+    sendToBoth(event);
+
+    if (mGame->phase() == Phase::DamageStep) {
+        mGame->battleStep();
+    }
+}
+
+void ServerPlayer::setCardState(int id, CardState state) {
+    EventSetCardState event;
+    event.set_stageid(id);
+    event.set_state(state);
     sendToBoth(event);
 }
 
-ServerCard *ServerPlayer::battleOpponent(int pos) const {
+ServerCard *ServerPlayer::battleOpponent(ServerCard *card) const {
     auto opponent = mGame->opponentOfPlayer(mId);
     if (!opponent)
         return nullptr;
 
-    return opponent->zone("stage")->card(pos);
+    return opponent->zone("stage")->card(card->pos());
 }

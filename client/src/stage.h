@@ -25,5 +25,7 @@ public:
     void endMainPhase();
     void attackDeclarationStep();
     void highlightAttackers();
+    void unhighlightAttacker();
     void attackDeclared(int pos);
+    void setCardState(int pos, CardState state);
 };

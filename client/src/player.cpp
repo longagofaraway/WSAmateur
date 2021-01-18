@@ -93,6 +93,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventSetCardAttr ev;
         event->event().UnpackTo(&ev);
         setCardAttr(ev);
+    } else if (event->event().Is<EventSetCardState>()) {
+        EventSetCardState ev;
+        event->event().UnpackTo(&ev);
+        setCardState(ev);
     } else if (event->event().Is<EventCounterStep>()) {
         counterStep();
     } else if (event->event().Is<EventLevelUp>()) {
@@ -195,7 +199,7 @@ void Player::sendClimaxPhaseCommand() {
     // 1. Player plays a climax, climax is added to the climax zone and removed from hand on player's side,
     //    but not on the server's. Climax effects are not performed yet. Player sends CommandClimaxPhase.
     // 2. Server triggers 'At the start of climax phase' abilities. Player resolves abilities.
-    // 3. Player sends 'play climax' command. Climax effects are rsolved.
+    // 3. Player sends 'play climax' command. Climax effects are resolved.
     // If there are 'At the start of climax phase' abilities that mess with card count in hand or
     // smth like that we are fcked;
     mHand->endMainPhase();
@@ -226,7 +230,8 @@ void Player::setInitialHand(const EventInitialHand &event) {
 }
 
 void Player::createMovingCard(const QString &code, const std::string &startZone, int startId,
-                              const std::string &targetZone, int targetId, bool isUiAction, bool dontFinishAction) {
+                              const std::string &targetZone, int targetId, bool isUiAction,
+                              bool dontFinishAction, bool noDelete) {
     if (isUiAction)
         mGame->startUiAction();
     else
@@ -241,6 +246,7 @@ void Player::createMovingCard(const QString &code, const std::string &startZone,
     obj->setProperty("opponent", mOpponent);
     obj->setProperty("isUiAction", isUiAction);
     obj->setProperty("dontFinishAction", dontFinishAction);
+    obj->setProperty("noDelete", noDelete);
     obj->setProperty("mSource", source);
     obj->setProperty("startZone", QString::fromStdString(startZone));
     obj->setProperty("startId", startId);
@@ -268,7 +274,6 @@ void Player::moveCard(const EventMoveCard &event) {
         code = cards[event.id()].qcode();
 
     createMovingCard(code, event.startzone(), event.id(), event.targetzone());
-    startZone->removeCard(event.id());
 }
 
 void Player::playCard(const EventPlayCard &event) {
@@ -298,7 +303,6 @@ void Player::playCard(const EventPlayCard &event) {
 
 
     createMovingCard(code, "hand", event.handid(), targetZone, event.stageid());
-    mHand->removeCard(event.handid());
 }
 
 void Player::switchStagePositions(const EventSwitchStagePositions &event) {
@@ -358,6 +362,13 @@ void Player::setCardAttr(const EventSetCardAttr &event) {
     mStage->model().setAttr(event.stageid(), event.attr(), event.value());
 }
 
+void Player::setCardState(const EventSetCardState &event) {
+    if (event.stageid() >= 5)
+        return;
+
+    mStage->setCardState(event.stageid(), event.state());
+}
+
 void Player::counterStep() {
     if (mOpponent)
         return;
@@ -386,7 +397,6 @@ void Player::moveClockToWr() {
         if (i == 5)
             dontFinishAction = false;
         createMovingCard(clock->cards()[0].qcode(), "clock", 0, "wr", 0, false, dontFinishAction);
-        clock->removeCard(0);
     }
 }
 
@@ -413,7 +423,7 @@ void Player::switchPositions(int from, int to) {
 }
 
 void Player::sendFromStageToWr(int pos) {
-    createMovingCard(mStage->cards()[pos].qcode(), "stage", pos, "wr", 0, true);
+    createMovingCard(mStage->cards()[pos].qcode(), "stage", pos, "wr", 0, true, false, true);
 }
 
 void Player::testAction()

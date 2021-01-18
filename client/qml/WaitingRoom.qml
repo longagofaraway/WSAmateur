@@ -35,6 +35,7 @@ Card {
         waitingRoom.mSource = code;
         waitingRoom.mModel.addCard(code);
     }
+    function removeCard(index) { waitingRoom.mModel.removeCard(index); }
 
     function getXForNewCard() { return waitingRoom.x; }
     function getYForNewCard() { return waitingRoom.y; }

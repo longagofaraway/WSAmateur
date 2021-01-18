@@ -36,6 +36,7 @@ public:
     std::unique_ptr<ServerCard> takeTopCard();
     std::unique_ptr<ServerCard> takeCardFromPos(int pos);
     ServerCard* card(int index);
+    ServerCard* topCard();
     bool hasCardWithColor(char color) const;
     void shuffle();
 };

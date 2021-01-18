@@ -124,6 +124,7 @@ ListView {
     }
 
     function addCard(code) { level.mModel.addCard(code); }
+    function removeCard(index) { level.mModel.removeCard(index); }
     function getXForNewCard() { return opponent ? level.x : level.x; }
     function getYForNewCard() {
         if (opponent)

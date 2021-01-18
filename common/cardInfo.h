@@ -14,12 +14,6 @@ enum class CardType {
     Event
 };
 
-enum class CardState {
-    Standing,
-    Rested,
-    Reversed
-};
-
 class CardInfo
 {
     int mLevel;

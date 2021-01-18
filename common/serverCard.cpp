@@ -21,11 +21,7 @@ void ServerCard::setPos(int pos) {
 }
 
 int ServerCard::pos() const {
-    int position = mPosition;
-    if (mRow == BackStage)
-        position += 3;
-
-    return position;
+    return mPosition;
 }
 
 void ServerCard::addSoulBuff(int delta, int duration) {

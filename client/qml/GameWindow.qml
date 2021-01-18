@@ -68,6 +68,17 @@ Item {
                 gGame.testAction();
             }
         }
+        SequentialAnimation {
+            id: waitAnim
+            PauseAnimation { id: waitAnimPause; }
+            ScriptAction { script: gGame.actionComplete() }
+        }
+
+        function pause(pauseDuration) {
+            gGame.startAction();
+            waitAnimPause.duration = pauseDuration;
+            waitAnim.start();
+        }
 
         function changeState() {
             if (mainButton.state === "")

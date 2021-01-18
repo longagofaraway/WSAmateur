@@ -4,3 +4,9 @@ enum CardAttribute {
     AttrPower = 0;
     AttrSoul = 1;
 }
+
+enum CardState {
+    StateStanding = 0;
+    StateRested = 1;
+    StateReversed = 2;
+}

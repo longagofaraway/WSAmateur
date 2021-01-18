@@ -40,6 +40,7 @@ public:
     // and can start during other actions
     Q_INVOKABLE void actionComplete();
     Q_INVOKABLE void uiActionComplete();
+    Q_INVOKABLE void startAction() { mActionInProgress = true; }
     Q_INVOKABLE void startUiAction() { mUiActionInProgress = true; }
     Q_INVOKABLE void sendMulliganFinished();
     Q_INVOKABLE void sendClockPhaseFinished();
@@ -61,7 +62,6 @@ public:
     QQmlContext* context() const;
 
     void sendGameCommand(const google::protobuf::Message &command, int playerId);
-    void startAction() { mActionInProgress = true; }
 
     void startTurn(bool opponent);
     void clockPhase();

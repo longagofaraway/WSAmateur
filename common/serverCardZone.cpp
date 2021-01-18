@@ -66,6 +66,13 @@ ServerCard *ServerCardZone::card(int index) {
     return mCards[index].get();
 }
 
+ServerCard *ServerCardZone::topCard() {
+    if (mCards.empty())
+        return nullptr;
+
+    return mCards[mCards.size() - 1].get();
+}
+
 bool ServerCardZone::hasCardWithColor(char color) const {
     for (auto &card: mCards) {
         if (card->color() == color)

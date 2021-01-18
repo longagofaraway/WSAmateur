@@ -5,3 +5,4 @@ message EventMainPhase {}
 message EventClimaxPhase {}
 message EventAttackDeclarationStep {}
 message EventCounterStep {}
+message EventEncorePhase {}

@@ -29,7 +29,7 @@ class ServerPlayer
     int mId;
     bool mReady = false;
     bool mMulliganFinished = false;
-    bool mStartingPlayer = false;
+    bool mActive = false;
     std::unique_ptr<DeckList> mDeck;
     std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>> mZones;
     std::vector<ExpectedCommand> mExpectedCommands;
@@ -46,9 +46,9 @@ public:
     bool ready() const { return mReady; }
     void setReady(bool ready) { mReady = ready; }
     bool mulliganFinished() const { return mMulliganFinished; }
-    bool startingPlayer() const { return mStartingPlayer; }
-    void setStartingPlayer() { mStartingPlayer = true; }
-    ServerCard* battleOpponent(int pos) const;
+    bool active() const { return mActive; }
+    void setActive(bool active) { mActive = active; }
+    ServerCard* battleOpponent(ServerCard *card) const;
     ServerCard* attackingCard() const { return mAttackingCard; }
     void setAttackingCard(ServerCard *card) { mAttackingCard = card; }
     AttackType attackType() const { return mAttackType; }
@@ -82,12 +82,15 @@ public:
     void switchPositions(const CommandSwitchStagePositions &cmd);
     bool canPlay(ServerCard *card);
     void climaxPhase();
-    void attackPhase();
+    void endOfAttack();
+    void attackDeclarationStep();
     void declareAttack(const CommandDeclareAttack &cmd);
-    void addSoulBuff(int pos, int delta, int duration = 1);
     void triggerStep(int pos);
     void counterStep();
     void damageStep();
     void levelUp();
     void performLevelUp(const CommandLevelUp& cmd);
+
+    void addSoulBuff(int pos, int delta, int duration = 1);
+    void setCardState(int id, CardState state);
 };

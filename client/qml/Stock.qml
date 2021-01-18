@@ -46,4 +46,5 @@ ListView {
        return stock.y + (stock.count ? (stock.count - 1) : 0) * mMargin;
    }
    function addCard(code, targetId) { stock.mModel.addCard(); }
+   function removeCard(index) { stock.mModel.removeCard(index); }
 }

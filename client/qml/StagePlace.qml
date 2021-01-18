@@ -11,6 +11,7 @@ ListView {
     property StageCard mStageCard: null
     property bool mTooltipsDisabled: false
     property var mStageRect
+    property bool mTapped: false
 
     width: root.cardWidth; height: root.cardHeight
     y: {
@@ -98,6 +99,7 @@ ListView {
 
                 anchors.fill: parent
                 hoverEnabled: true
+                rotation: mTapped ? 90 : 0
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 drag.target: (stage.opponent || !stage.mDragEnabled) ? undefined : mStageCard
                 drag.onActiveChanged: {
@@ -221,7 +223,13 @@ ListView {
     }
     function attackDeclared() {
         mStageCard.tap();
-        let modelIndex = stage.mModel.index(mIndex, 0);
-        stage.mModel.setData(modelIndex, true, CardModel.SelectedRole);
+        mTapped = true;
+        gGame.pause(500);
+    }
+    function setCardState(state) {
+        if (state === 0 || state === 2)
+            mTapped = false;
+        else mTapped = true;
+        mStageCard.setCardState(state);
     }
 }
