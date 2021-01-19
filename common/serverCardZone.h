@@ -16,6 +16,7 @@ enum class ZoneType {
 
 class ServerCardZone
 {
+protected:
     ServerPlayer *mPlayer;
     std::string mName;
     ZoneType mType;
@@ -23,6 +24,7 @@ class ServerCardZone
 
 public:
     ServerCardZone(ServerPlayer *player, const std::string_view name, ZoneType type);
+    virtual ~ServerCardZone(){}
 
     int count() const { return static_cast<int>(mCards.size()); }
     const std::string& name() const { return mName; }
@@ -30,9 +32,9 @@ public:
     void addCard(std::shared_ptr<CardInfo> info);
     void addCard(int pos);
     ServerCard* addCard(std::unique_ptr<ServerCard> card);
-    std::unique_ptr<ServerCard> swapCards(std::unique_ptr<ServerCard> card, int pos);
-    void swapCards(int pos1, int pos2);
-    std::unique_ptr<ServerCard> takeCard(int index);
+    virtual std::unique_ptr<ServerCard> putOnStage(std::unique_ptr<ServerCard> card, int pos);
+    virtual void switchPositions(int pos1, int pos2);
+    virtual std::unique_ptr<ServerCard> takeCard(int index);
     std::unique_ptr<ServerCard> takeTopCard();
     std::unique_ptr<ServerCard> takeCardFromPos(int pos);
     ServerCard* card(int index);

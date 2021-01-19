@@ -21,6 +21,7 @@ class CommandPlayCard;
 class CommandSwitchStagePositions;
 class CommandDeclareAttack;
 class CommandLevelUp;
+class CommandEncoreCharacter;
 
 class ServerPlayer
 {
@@ -67,6 +68,7 @@ public:
     ServerCardZone* addZone(std::string_view name, ZoneType type = ZoneType::PublicZone);
     ServerCardZone* zone(std::string_view name);
     void setupZones();
+    void createStage();
     void startGame();
     void startTurn();
     void dealStartingHand();
@@ -89,7 +91,11 @@ public:
     void counterStep();
     void damageStep();
     void levelUp();
-    void performLevelUp(const CommandLevelUp& cmd);
+    void performLevelUp(const CommandLevelUp &cmd);
+    void encoreStep();
+    void encoreCharacter(const CommandEncoreCharacter &cmd);
+    void endEncore();
+    void endPhase();
 
     void addSoulBuff(int pos, int delta, int duration = 1);
     void setCardState(int id, CardState state);

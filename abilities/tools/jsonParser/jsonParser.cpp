@@ -1,6 +1,6 @@
 #include "jsonParser.h"
 
-#include <exception>
+#include <stdexcept>
 
 #include <QFile>
 #include <QJsonArray>

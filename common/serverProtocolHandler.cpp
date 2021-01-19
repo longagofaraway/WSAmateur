@@ -54,6 +54,8 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
     if (!game)
         return;
 
+    locker.unlock();
+
     QMutexLocker gameLocker(&game->mGameMutex);
 
     auto player = game->player(mPlayerId);

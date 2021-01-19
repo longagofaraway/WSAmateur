@@ -13,6 +13,7 @@
 #include "serverCardZone.h"
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
+#include "serverStage.h"
 
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
     : mGame(game), mClient(client), mId(id) { }
@@ -57,6 +58,14 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandLevelUp levelUpCmd;
         cmd.command().UnpackTo(&levelUpCmd);
         performLevelUp(levelUpCmd);
+    } else if (cmd.command().Is<CommandEncoreCharacter>()) {
+        CommandEncoreCharacter encoreCmd;
+        cmd.command().UnpackTo(&encoreCmd);
+        encoreCharacter(encoreCmd);
+    } else if (cmd.command().Is<CommandEndTurn>()) {
+        endEncore();
+    } else if (cmd.command().Is<CommandEncoreStep>()) {
+        mGame->encoreStep();
     }
 }
 
@@ -97,17 +106,19 @@ void ServerPlayer::setupZones() {
     addZone("climax");
     addZone("level");
     addZone("res");
-    auto stage = addZone("stage");
+    createStage();
 
     for (auto &card: mDeck->cards()) {
         auto cardInfo = CardDatabase::get().getCard(card.code);
         for (int i = 0; i < card.count; ++i)
             deck->addCard(cardInfo);
     }
-    for (int i = 0; i < 5; ++i)
-        stage->addCard(i);
 
     deck->shuffle();
+}
+
+void ServerPlayer::createStage() {
+    mZones.emplace("stage", std::make_unique<ServerStage>(this));
 }
 
 void ServerPlayer::startGame() {
@@ -116,13 +127,22 @@ void ServerPlayer::startGame() {
 }
 
 void ServerPlayer::startTurn() {
-    EventStartTurn event;
-    sendToBoth(event);
+    sendToBoth(EventStartTurn());
+
+    auto stage = zone("stage");
+    for (int i = 0; i < 5; ++i) {
+        auto card = stage->card(i);
+        if (card && card->state() != StateStanding) {
+            EventSetCardState event;
+            event.set_stageid(i);
+            event.set_state(StateStanding);
+            sendToBoth(event);
+        }
+    }
 
     drawCards(1);
 
-    EventClockPhase ev;
-    sendToBoth(ev);
+    sendToBoth(EventClockPhase());
 
     addExpectedCommand(CommandClockPhase::GetDescriptor()->name());
 }
@@ -200,7 +220,7 @@ void ServerPlayer::moveCards(std::string_view startZoneName,  const std::vector<
         moveCard(startZoneName, sortedIds[i], targetZoneName);
 }
 
-bool ServerPlayer::moveCard(std::string_view startZoneName,  int id, std::string_view targetZoneName) {
+bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName) {
     ServerCardZone *startZone = zone(startZoneName);
     if (!startZone)
         return false;
@@ -215,7 +235,6 @@ bool ServerPlayer::moveCard(std::string_view startZoneName,  int id, std::string
 
     ServerCard *card = targetZone->addCard(std::move(cardPtr));
 
-    std::string code;
     EventMoveCard eventPublic;
     eventPublic.set_id(static_cast<google::protobuf::uint32>(id));
     eventPublic.set_startzone(startZone->name());
@@ -251,8 +270,7 @@ void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
         drawCards(2);
     }
 
-    EventMainPhase ev;
-    sendToBoth(ev);
+    sendToBoth(EventMainPhase());
 
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
@@ -289,7 +307,7 @@ void ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
 
     auto card = hand->takeCard(cmd.handid());
 
-    auto oldStageCard = stage->swapCards(std::move(card), cmd.stageid());
+    auto oldStageCard = stage->putOnStage(std::move(card), cmd.stageid());
     auto cardInPlay = stage->card(cmd.stageid());
 
     EventPlayCard eventPublic;
@@ -301,7 +319,7 @@ void ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
-    if (!oldStageCard)
+    if (oldStageCard)
         zone("wr")->addCard(std::move(oldStageCard));
 
     auto stock = zone("stock");
@@ -336,7 +354,7 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
         || cmd.stageidto() >= stage->count())
         return;
 
-    stage->swapCards(cmd.stageidfrom(), cmd.stageidto());
+    stage->switchPositions(cmd.stageidfrom(), cmd.stageidto());
     EventSwitchStagePositions event;
     event.set_stageidfrom(cmd.stageidfrom());
     event.set_stageidto(cmd.stageidto());
@@ -347,7 +365,7 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
 bool ServerPlayer::canPlay(ServerCard *card) {
     if (mGame->phase() == Phase::Climax && card->type() != CardType::Climax)
         return false;
-    /*if (card->level() > mLevel)
+    if (card->level() > mLevel)
         return false;
     if (static_cast<int>(card->cost()) > zone("stock")->count())
         return false;
@@ -355,7 +373,7 @@ bool ServerPlayer::canPlay(ServerCard *card) {
         if (!zone("clock")->hasCardWithColor(card->color())
             && !zone("level")->hasCardWithColor(card->color()))
             return false;
-    }*/
+    }
     return true;
 }
 
@@ -364,12 +382,12 @@ void ServerPlayer::climaxPhase() {
     mGame->setPhase(Phase::Climax);
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
-    EventClimaxPhase event;
-    sendToBoth(event);
+    sendToBoth(EventClimaxPhase());
 }
 
 void ServerPlayer::endOfAttack() {
     setAttackingCard(nullptr);
+    sendToBoth(EventEndOfAttack());
     attackDeclarationStep();
 }
 
@@ -377,20 +395,21 @@ void ServerPlayer::attackDeclarationStep() {
     mGame->setPhase(Phase::AttackDeclarationStep);
     clearExpectedComands();
 
-    bool hasFrontRowChar = false;
+    bool canAttack = false;
+    auto stage = zone("stage");
     for (int i = 0; i < 3; ++i) {
-        if (zone("stage")->card(i)->cardPresent()) {
-            hasFrontRowChar = true;
+        if (stage->card(i) && stage->card(i)->state() == StateStanding) {
+            canAttack = true;
             break;
         }
     }
 
-    if (hasFrontRowChar) {
+    if (canAttack) {
         addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
-        EventAttackDeclarationStep event;
-        sendToBoth(event);
+        addExpectedCommand(CommandEncoreStep::GetDescriptor()->name());
+        sendToBoth(EventAttackDeclarationStep());
     } else {
-        mGame->encorePhase();
+        mGame->encoreStep();
     }
 }
 
@@ -410,7 +429,7 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
 
     AttackType type = cmd.attacktype();
     auto battleOpp = battleOpponent(attCard);
-    if (!battleOpp->cardPresent())
+    if (!battleOpp)
         type = AttackType::DirectAttack;
 
     setAttackType(type);
@@ -459,8 +478,7 @@ void ServerPlayer::triggerStep(int pos) {
 
 void ServerPlayer::counterStep() {
     addExpectedCommand(CommandTakeDamage::GetDescriptor()->name());
-    EventCounterStep event;
-    sendToBoth(event);
+    sendToBoth(EventCounterStep());
 }
 
 void ServerPlayer::damageStep() {
@@ -496,8 +514,7 @@ void ServerPlayer::damageStep() {
 void ServerPlayer::levelUp() {
     clearExpectedComands();
     addExpectedCommand(CommandLevelUp::GetDescriptor()->name());
-    EventLevelUp event;
-    sendToBoth(event);
+    sendToBoth(EventLevelUp());
 }
 
 void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
@@ -512,12 +529,82 @@ void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
 
     clearExpectedComands();
 
-    EventClockToWr event;
-    sendToBoth(event);
+    sendToBoth(EventClockToWr());
 
     if (mGame->phase() == Phase::DamageStep) {
         mGame->battleStep();
     }
+}
+
+void ServerPlayer::encoreStep() {
+    clearExpectedComands();
+
+    auto stage = zone("stage");
+    bool needEncore = false;
+    for (int i = 0; i < 5; ++i) {
+        auto card = stage->card(i);
+        if (card && card->state() == StateReversed) {
+            needEncore = true;
+            break;
+        }
+    }
+
+    if (needEncore) {
+        addExpectedCommand(CommandEncoreCharacter::GetDescriptor()->name());
+        addExpectedCommand(CommandEndTurn::GetDescriptor()->name());
+        sendToBoth(EventEncoreStep());
+    } else {
+        for (int i = 0; i < 5; ++i) {
+            auto card = stage->card(i);
+            if (card && card->state() == StateReversed) {
+                moveCard("stage", i, "wr");
+            }
+        }
+        if (mActive)
+            endEncore();
+    }
+}
+
+void ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
+    if (cmd.stageid() < 0 || cmd.stageid() >= 5)
+        return;
+
+    auto stage = zone("stage");
+    if (!stage->card(cmd.stageid())
+        || stage->card(cmd.stageid())->state() != StateReversed)
+        return;
+
+    moveCard("stage", cmd.stageid(), "wr");
+
+    bool needEncore = false;
+    for (int i = 0; i < 5; ++i) {
+        auto card = stage->card(i);
+        if (card && card->state() == StateReversed) {
+            needEncore = true;
+            break;
+        }
+    }
+
+    if (!needEncore)
+        endEncore();
+    else
+        sendToBoth(EventEncoreStep());
+}
+
+void ServerPlayer::endEncore() {
+    clearExpectedComands();
+    if (mActive)
+        mGame->opponentOfPlayer(mId)->encoreStep();
+
+    mGame->endPhase();
+}
+
+void ServerPlayer::endPhase() {
+    auto climax = zone("climax");
+    if (climax->count() > 0)
+        moveCard("climax", 0, "wr");
+
+    //discard from hand down to 7
 }
 
 void ServerPlayer::setCardState(int id, CardState state) {

@@ -1,6 +1,6 @@
 #include "deckList.h"
 
-#include <exception>
+#include <stdexcept>
 #include <QXmlStreamReader>
 
 #include <QDebug>

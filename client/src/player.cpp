@@ -27,7 +27,6 @@ Player::Player(int id, Game *game, bool opponent)
     auto hand = std::make_unique<Hand>(this, game);
     mHand = hand.get();
     mZones.emplace("hand", std::move(hand));
-
     auto wr = std::make_unique<WaitingRoom>(this, game);
     mZones.emplace("wr", std::move(wr));
     auto deck = std::make_unique<Deck>(this, game);
@@ -35,17 +34,13 @@ Player::Player(int id, Game *game, bool opponent)
     auto clock = std::make_unique<CommonCardZone>(this, game, "Clock");
     mZones.emplace("clock", std::move(clock));
     auto stock = std::make_unique<CommonCardZone>(this, game, "Stock");
-    stock->model().addCard();
-    stock->model().addCard();
     mZones.emplace("stock", std::move(stock));
     auto stage= std::make_unique<Stage>(this, game);
     mStage = stage.get();
     mZones.emplace("stage", std::move(stage));
     auto level = std::make_unique<CommonCardZone>(this, game, "Level");
-    level->model().addCard(std::string("IMC/W43-046"));
     mZones.emplace("level", std::move(level));
     auto climax = std::make_unique<CommonCardZone>(this, game, "Climax");
-    //climax->model().addCard(std::string("IMC/W43-127"));
     mZones.emplace("climax", std::move(climax));
     auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "ResolutionZone");
     mZones.emplace("res", std::move(resolutionZone));
@@ -103,6 +98,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         levelUp();
     } else if (event->event().Is<EventClockToWr>()) {
         moveClockToWr();
+    } else if (event->event().Is<EventEncoreStep>()) {
+        encoreStep();
+    } else if (event->event().Is<EventEndOfAttack>()) {
+        endOfAttack();
     }
 }
 
@@ -204,13 +203,16 @@ void Player::sendClimaxPhaseCommand() {
     // smth like that we are fcked;
     mHand->endMainPhase();
     mStage->endMainPhase();
-    CommandClimaxPhase cmd;
-    sendGameCommand(cmd);
+    sendGameCommand(CommandClimaxPhase());
 }
 
 void Player::sendTakeDamageCommand() {
-    CommandTakeDamage cmd;
-    sendGameCommand(cmd);
+    sendGameCommand(CommandTakeDamage());
+}
+
+void Player::sendEncoreCommand() {
+    mStage->endAttackPhase();
+    sendGameCommand(CommandEncoreStep());
 }
 
 void Player::setInitialHand(const EventInitialHand &event) {
@@ -400,11 +402,29 @@ void Player::moveClockToWr() {
     }
 }
 
+void Player::endOfAttack() {
+    mStage->unhighlightAttacker();
+}
+
+void Player::encoreStep() {
+    mGame->encoreStep();
+    mStage->encoreStep();
+}
+
 void Player::cardSelectedForLevelUp(int index) {
     mGame->endLevelUp();
 
     CommandLevelUp cmd;
     cmd.set_clockid(index);
+    sendGameCommand(cmd);
+}
+
+void Player::sendEncore(int pos) {
+    mGame->pauseEncoreStep();
+    mStage->deactivateEncoreStep();
+
+    CommandEncoreCharacter cmd;
+    cmd.set_stageid(pos);
     sendGameCommand(cmd);
 }
 
@@ -429,5 +449,14 @@ void Player::sendFromStageToWr(int pos) {
 void Player::testAction()
 {
     //createMovingCard("IMC/W43-046", "hand", 1, "res", 0, true);
-    createMovingCard("IMC/W43-046", "deck", 1, "res", 0, true);
+    if (mStage->cards()[0].cardPresent()) {
+        createMovingCard(mStage->cards()[0].qcode(), "stage", 0, "wr");
+    }
+}
+
+void Player::playCards() {
+    /*auto cards = mStage->cards();
+    for (int i = 0; i < 5; ++i) {
+        if (!cards[i].cardPresent())
+    }*/
 }

@@ -11,7 +11,8 @@ Item {
     property CardModel mModel: innerModel
     signal switchPositions(int from, int to)
     signal sendToWr(int pos)
-    signal declareAttack(int pos, bool sideAttack);
+    signal declareAttack(int pos, bool sideAttack)
+    signal encoreCharacter(int pos)
     property var mPositions: [{ x: stage1.x, y: stage1.y },
                               { x: stage2.x, y: stage2.y },
                               { x: stage3.x, y: stage3.y },
@@ -56,12 +57,6 @@ Item {
     function getXForCard(pos) { return mPositions[pos].x; }
     function getYForCard(pos) { return mPositions[pos].y; }
     function addCard(code, pos, startZone, startPos) {
-        if (startZone === "hand") {
-            if (mStagePlaces[pos].mStageCard !== null)
-                mStagePlaces[pos].sendToWr();
-            mStagePlaces[pos].setCard(code);
-            return;
-        }
         if (startZone === "stage") {
             mStagePlaces[pos].swapCards(startPos);
             if (mStagePlaces[pos].mStageCard !== null) {
@@ -73,5 +68,9 @@ Item {
 
             return;
         }
+        if (mStagePlaces[pos].mStageCard !== null)
+            mStagePlaces[pos].sendToWr();
+        mStagePlaces[pos].setCard(code);
     }
+    function removeCard(pos) { mStagePlaces[pos].removeCard(pos); }
 }

@@ -162,6 +162,10 @@ void Game::sendTakeDamageCommand() {
     mPlayer->sendTakeDamageCommand();
 }
 
+void Game::sendEncoreCommand() {
+    mPlayer->sendEncoreCommand();
+}
+
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
 QQmlContext* Game::context() const { return qmlContext(parentItem()); }
 
@@ -222,6 +226,14 @@ void Game::endLevelUp() {
     QMetaObject::invokeMethod(this, "endLevelUp");
 }
 
+void Game::encoreStep() {
+    QMetaObject::invokeMethod(this, "encoreStep");
+}
+
+void Game::pauseEncoreStep() {
+    QMetaObject::invokeMethod(this, "pauseEncoreStep");
+}
+
 
 
 void Game::testAction() {
@@ -242,6 +254,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         cmd.set_count(0);
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventMainPhase>()) {
+
         CommandPlayCard cmd;
         cmd.set_handid(0);
         sendGameCommand(cmd, mOpponent->id());

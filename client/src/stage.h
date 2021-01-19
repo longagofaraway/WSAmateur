@@ -24,8 +24,11 @@ public:
     void mainPhase();
     void endMainPhase();
     void attackDeclarationStep();
-    void highlightAttackers();
+    void highlightAttackers(bool highlight);
     void unhighlightAttacker();
     void attackDeclared(int pos);
     void setCardState(int pos, CardState state);
+    void endAttackPhase();
+    void encoreStep();
+    void deactivateEncoreStep();
 };

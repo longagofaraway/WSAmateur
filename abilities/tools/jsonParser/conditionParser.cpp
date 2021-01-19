@@ -1,5 +1,7 @@
 #include "jsonParser.h"
 
+#include <stdexcept>
+
 #include <QJsonObject>
 
 template<typename T>

@@ -3,3 +3,4 @@ syntax = "proto3";
 message CommandClimaxPhase {}
 message CommandAttackPhase {}
 message CommandTakeDamage {}
+message CommandEncoreStep {}

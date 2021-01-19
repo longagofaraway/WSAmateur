@@ -23,3 +23,9 @@ message CommandDeclareAttack {
 message CommandLevelUp {
     sint32 clockId = 1;
 }
+
+message CommandEncoreCharacter {
+    sint32 stageId = 1;
+}
+
+message CommandEndTurn {}

@@ -33,7 +33,6 @@ public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
     ServerCard(int pos, ServerCardZone *zone);
 
-    bool cardPresent() const { return !mCode.empty(); }
     void setPos(int pos);
     int pos() const;
     void setZone(ServerCardZone *zone) { mZone = zone; }

@@ -36,7 +36,7 @@ void Stage::attackDeclarationStep() {
     mQmlObject->setProperty("state", "attack");
     mQmlObject->connect(mQmlObject, SIGNAL(declareAttack(int, bool)), mPlayer, SLOT(sendAttackDeclaration(int, bool)));
     unhighlightAttacker();
-    highlightAttackers();
+    highlightAttackers(true);
 }
 
 void Stage::unhighlightAttacker() {
@@ -49,11 +49,11 @@ void Stage::unhighlightAttacker() {
     }
 }
 
-void Stage::highlightAttackers() {
+void Stage::highlightAttackers(bool highlight) {
     auto &cards = mCardsModel.cards();
     for (int i = 0; i < 3; ++i) {
         if (cards[i].cardPresent() && cards[i].state() == StateStanding)
-            mCardsModel.setGlow(i, true);
+            mCardsModel.setGlow(i, highlight);
     }
 }
 
@@ -93,4 +93,34 @@ int qmlCardState(CardState state) {
 void Stage::setCardState(int pos, CardState state) {
     mCardsModel.setState(pos, StateRested);
     QMetaObject::invokeMethod(mQmlObject, "setCardState", Q_ARG(QVariant, pos), Q_ARG(QVariant, qmlCardState(state)));
+}
+
+void Stage::endAttackPhase() {
+    mQmlObject->disconnect(mQmlObject, SIGNAL(declareAttack(int, bool)), mPlayer, SLOT(sendAttackDeclaration(int, bool)));
+    mQmlObject->setProperty("state", "");
+    unhighlightAttacker();
+    highlightAttackers(false);
+}
+
+void Stage::encoreStep() {
+    unhighlightAttacker();
+    auto &cards = mCardsModel.cards();
+    for (int i = 0; i < 5; ++i) {
+        if (cards[i].cardPresent() && cards[i].state() == StateReversed) {
+            mCardsModel.setGlow(i, true);
+        }
+    }
+    mQmlObject->setProperty("state", "encore");
+    mQmlObject->connect(mQmlObject, SIGNAL(encoreCharacter(int)), mPlayer, SLOT(sendEncore(int)));
+}
+
+void Stage::deactivateEncoreStep() {
+    auto &cards = mCardsModel.cards();
+    for (int i = 0; i < 5; ++i) {
+        if (cards[i].cardPresent()) {
+            mCardsModel.setGlow(i, false);
+        }
+    }
+    mQmlObject->setProperty("state", "");
+    mQmlObject->disconnect(mQmlObject, SIGNAL(encoreCharacter(int)), mPlayer, SLOT(sendEncore(int)));
 }

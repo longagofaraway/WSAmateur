@@ -38,7 +38,7 @@ Item {
         anchors.bottomMargin: 5
         text: mHelpText
         color: "black"
-        font.pointSize: 14
+        font.pointSize: 12
         font.bold: false
     }
     }

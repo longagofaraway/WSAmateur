@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+#include <stdexcept>
+
 #include <QObject>
 
 class CommandContainer;

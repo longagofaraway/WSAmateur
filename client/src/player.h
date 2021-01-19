@@ -55,8 +55,11 @@ public:
     void mainPhaseFinished();
     void sendClimaxPhaseCommand();
     void sendTakeDamageCommand();
+    void sendEncoreCommand();
 
+    //test section
     void testAction();
+    void playCards();
 
 private:
     void createMovingCard(const QString &code, const std::string &startZone, int startId,
@@ -79,6 +82,8 @@ private:
     void counterStep();
     void levelUp();
     void moveClockToWr();
+    void endOfAttack();
+    void encoreStep();
 
 public slots:
     void cardPlayed(int handId, int stageId);
@@ -86,4 +91,5 @@ public slots:
     void sendFromStageToWr(int pos);
     void sendAttackDeclaration(int pos, bool sideAttack);
     void cardSelectedForLevelUp(int index);
+    void sendEncore(int pos);
 };

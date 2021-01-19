@@ -10,11 +10,13 @@ set(commonSources
     serverGame.cpp
     serverPlayer.cpp
     serverProtocolHandler.cpp
+    serverStage.cpp
     attributeChange.h
     cardDatabase.h
     cardInfo.h
     commands.h
     connection.h
+    coroutineTask.h
     deckList.h
     server.h
     serverCard.h
@@ -22,6 +24,7 @@ set(commonSources
     serverGame.h
     serverPlayer.h
     serverProtocolHandler.h
+    serverStage.h
     )
 
 add_library(wsamateurCommon STATIC ${commonSources})

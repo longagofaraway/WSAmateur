@@ -46,7 +46,8 @@ public:
     Phase phase() const { return mCurrentPhase; }
     void setPhase(Phase phase) { mCurrentPhase = phase; }
     void battleStep();
-    void encorePhase();
+    void encoreStep();
+    void endPhase();
 
     void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 };

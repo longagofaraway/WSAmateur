@@ -4,5 +4,6 @@ message EventClockPhase {}
 message EventMainPhase {}
 message EventClimaxPhase {}
 message EventAttackDeclarationStep {}
+message EventEndOfAttack {}
 message EventCounterStep {}
-message EventEncorePhase {}
+message EventEncoreStep {}

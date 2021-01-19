@@ -167,7 +167,10 @@ ListView {
                 onClicked: {
                     if (stage.state === "attack" && model.glow) {
                         destroyCardInfo();
-                        declareAttack(mouse.button === Qt.LeftButton ? false : true);
+                        stage.declareAttack(mIndex, mouse.button === Qt.LeftButton ? false : true);
+                    } else if (stage.state === "encore" && model.glow) {
+                        destroyCardInfo();
+                        stage.encoreCharacter(mIndex);
                     }
                 }
 
@@ -215,12 +218,16 @@ ListView {
         createStageCard(code);
         stage.mModel.setCard(mIndex, code);
     }
+    function removeCard(pos) {
+        mStageRect.color = "#30FFFFFF";
+        mStageCard.destroy();
+        let index = stage.mModel.index(mIndex, 0);
+        stage.mModel.setData(index, "", CardModel.CodeRole);
+    }
+
     function swapCards(from) { stage.mModel.swapCards(from, mIndex); }
     function sendToWr() { stage.sendToWr(mIndex); }
 
-    function declareAttack(sideAttack) {
-        stage.declareAttack(mIndex, sideAttack);
-    }
     function attackDeclared() {
         mStageCard.tap();
         mTapped = true;

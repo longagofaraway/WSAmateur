@@ -35,7 +35,13 @@ Card {
         waitingRoom.mSource = code;
         waitingRoom.mModel.addCard(code);
     }
-    function removeCard(index) { waitingRoom.mModel.removeCard(index); }
+    function removeCard(index) {
+        waitingRoom.mModel.removeCard(index);
+        if (handView.mModel.count > 0) {
+            let modelIndex = handView.mModel.index(index, 0);
+            waitingRoom.mSource = handView.mModel.data(modelIndex, CardModel.CodeRole);
+        }
+    }
 
     function getXForNewCard() { return waitingRoom.x; }
     function getYForNewCard() { return waitingRoom.y; }

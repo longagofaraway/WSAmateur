@@ -124,13 +124,13 @@ void ServerGame::battleStep() {
     //at the beginning of battle step, check timing
 
     auto attCard = attPlayer->attackingCard();
-    if (!attCard->cardPresent()) {
+    if (!attCard) {
         attPlayer->endOfAttack();
         return;
     }
 
     auto battleOpponent = attPlayer->battleOpponent(attCard);
-    if (!battleOpponent->cardPresent()) {
+    if (!battleOpponent) {
         attPlayer->endOfAttack();
         return;
     }
@@ -145,8 +145,18 @@ void ServerGame::battleStep() {
     }
 }
 
-void ServerGame::encorePhase() {
-    EventEncorePhase event;
+void ServerGame::encoreStep() {
+    auto turnPlayer = activePlayer();
+    opponentOfPlayer(turnPlayer->id())->clearExpectedComands();
+    turnPlayer->encoreStep();
+}
 
+void ServerGame::endPhase() {
+    auto turnPlayer = activePlayer();
+    turnPlayer->endPhase();
+    turnPlayer->setActive(false);
+    auto opp = opponentOfPlayer(turnPlayer->id());
+    opp->setActive(true);
+    opp->startTurn();
 }
 

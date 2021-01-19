@@ -19,16 +19,13 @@ ServerCard* ServerCardZone::addCard(std::unique_ptr<ServerCard> card) {
     return mCards.emplace_back(std::move(card)).get();
 }
 
-std::unique_ptr<ServerCard> ServerCardZone::swapCards(std::unique_ptr<ServerCard> card, int pos) {
-    std::swap(mCards[pos], card);
-    mCards[pos]->setPos(pos);
-    return card;
+std::unique_ptr<ServerCard> ServerCardZone::putOnStage(std::unique_ptr<ServerCard>, int) {
+    assert(false);
+    return {};
 }
 
-void ServerCardZone::swapCards(int pos1, int pos2) {
-    std::swap(mCards[pos1], mCards[pos2]);
-    mCards[pos1]->setPos(pos1);
-    mCards[pos2]->setPos(pos2);
+void ServerCardZone::switchPositions(int, int) {
+    assert(false);
 }
 
 void ServerCardZone::shuffle() {
