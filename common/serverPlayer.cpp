@@ -132,12 +132,8 @@ void ServerPlayer::startTurn() {
     auto stage = zone("stage");
     for (int i = 0; i < 5; ++i) {
         auto card = stage->card(i);
-        if (card && card->state() != StateStanding) {
-            EventSetCardState event;
-            event.set_stageid(i);
-            event.set_state(StateStanding);
-            sendToBoth(event);
-        }
+        if (card && card->state() != StateStanding)
+            setCardState(card, StateStanding);
     }
 
     drawCards(1);
@@ -234,6 +230,9 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
         return false;
 
     ServerCard *card = targetZone->addCard(std::move(cardPtr));
+
+    if (startZoneName == "stage" && startZoneName != "stage")
+        card->reset();
 
     EventMoveCard eventPublic;
     eventPublic.set_id(static_cast<google::protobuf::uint32>(id));
@@ -392,7 +391,6 @@ void ServerPlayer::endOfAttack() {
 }
 
 void ServerPlayer::attackDeclarationStep() {
-    mGame->setPhase(Phase::AttackDeclarationStep);
     clearExpectedComands();
 
     bool canAttack = false;
@@ -405,6 +403,7 @@ void ServerPlayer::attackDeclarationStep() {
     }
 
     if (canAttack) {
+        mGame->setPhase(Phase::AttackDeclarationStep);
         addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
         addExpectedCommand(CommandEncoreStep::GetDescriptor()->name());
         sendToBoth(EventAttackDeclarationStep());
@@ -439,25 +438,25 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     sendToBoth(event);
 
     if (type == AttackType::DirectAttack)
-        addSoulBuff(cmd.stageid(), 1);
+        addAttributeBuff(AttrSoul, cmd.stageid(), 1);
     else if (type == AttackType::SideAttack)
-        addSoulBuff(cmd.stageid(), -battleOpp->level());
+        addAttributeBuff(AttrSoul, cmd.stageid(), -battleOpp->level());
 
     triggerStep(cmd.stageid());
 }
 
-void ServerPlayer::addSoulBuff(int pos, int delta, int duration) {
+void ServerPlayer::addAttributeBuff(CardAttribute attr, int pos, int delta, int duration) {
     auto stage = zone("stage");
     auto card = stage->card(pos);
     if (!card)
         return;
 
-    card->addSoulBuff(delta, duration);
+    card->addAttrBuff(attr, delta, duration);
 
     EventSetCardAttr event;
     event.set_stageid(pos);
-    event.set_attr(CardAttribute::AttrSoul);
-    event.set_value(card->soul());
+    event.set_attr(attr);
+    event.set_value(attr == AttrSoul ? card->soul() : card->power());
     sendToBoth(event);
 }
 
@@ -467,7 +466,7 @@ void ServerPlayer::triggerStep(int pos) {
     for (auto trigger: card->triggers()) {
         switch(trigger) {
         case Trigger::Soul:
-            addSoulBuff(pos, 1);
+            addAttributeBuff(AttrSoul, pos, 1);
             break;
         }
     }
@@ -521,13 +520,21 @@ void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
     if (cmd.clockid() > 6)
         return;
 
-    if (zone("clock")->count() < 7)
+    auto clock = zone("clock");
+    if (clock->count() < 7)
         return;
 
     if (!moveCard("clock", cmd.clockid(), "level"))
         return;
 
     clearExpectedComands();
+
+    mLevel++;
+    auto wr = zone("wr");
+    for (int i = 0; i < 6; ++i) {
+        auto card = clock->takeCard(0);
+        wr->addCard(std::move(card));
+    }
 
     sendToBoth(EventClockToWr());
 
@@ -554,14 +561,7 @@ void ServerPlayer::encoreStep() {
         addExpectedCommand(CommandEndTurn::GetDescriptor()->name());
         sendToBoth(EventEncoreStep());
     } else {
-        for (int i = 0; i < 5; ++i) {
-            auto card = stage->card(i);
-            if (card && card->state() == StateReversed) {
-                moveCard("stage", i, "wr");
-            }
-        }
-        if (mActive)
-            endEncore();
+        endEncore();
     }
 }
 
@@ -593,25 +593,70 @@ void ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
 
 void ServerPlayer::endEncore() {
     clearExpectedComands();
-    if (mActive)
+
+    auto stage = zone("stage");
+    for (int i = 0; i < 5; ++i) {
+        auto card = stage->card(i);
+        if (card && card->state() == StateReversed) {
+            moveCard("stage", i, "wr");
+        }
+    }
+
+    if (mActive) {
         mGame->opponentOfPlayer(mId)->encoreStep();
+        return;
+    }
 
     mGame->endPhase();
 }
 
 void ServerPlayer::endPhase() {
+    //if (mActive) {
+    //discard from hand down to 7
+    //}
+
     auto climax = zone("climax");
     if (climax->count() > 0)
         moveCard("climax", 0, "wr");
 
-    //discard from hand down to 7
+    endOfTurnEffectValidation();
 }
 
-void ServerPlayer::setCardState(int id, CardState state) {
+void ServerPlayer::setCardState(ServerCard *card, CardState state) {
+    card->setState(state);
+
     EventSetCardState event;
-    event.set_stageid(id);
+    event.set_stageid(card->pos());
     event.set_state(state);
     sendToBoth(event);
+}
+
+void ServerPlayer::endOfTurnEffectValidation() {
+    auto stage = zone("stage");
+    for (int i = 0; i < 5; ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+        int oldPower = card->power();
+        int oldSoul = card->soul();
+        card->validateBuffs();
+        if (oldPower != card->power()) {
+            EventSetCardAttr event;
+            event.set_stageid(i);
+            event.set_attr(AttrPower);
+            event.set_value(card->power());
+            sendToBoth(event);
+        }
+        if (oldSoul != card->soul()) {
+            EventSetCardAttr event;
+            event.set_stageid(i);
+            event.set_attr(AttrSoul);
+            event.set_value(card->soul());
+            sendToBoth(event);
+        }
+
+    }
+
 }
 
 ServerCard *ServerPlayer::battleOpponent(ServerCard *card) const {

@@ -11,10 +11,20 @@ Card {
     property int index
     property int power: 9000
     property int soul: 1
+    property string cardState: "Standing"
 
     Drag.active: dragActive
     Drag.hotSpot.x: root.cardWidth / 2
     Drag.hotSpot.y: root.cardHeight
+    rotation: {
+        if (cardState === "Standing")
+            return 0;
+        if (cardState === "Rested")
+            return -90;
+        if (cardState === "Reversed")
+            return -180;
+    }
+
     states: State {
         when: stageCard.dragActive
         PropertyChanges { target: stageCard; z: 100 }
@@ -106,18 +116,9 @@ Card {
         }
     }
 
-    function tap() { stageCard.rotation = -90; }
     function getGlowColor() { return cardOverGlow ? "#FFFFFF" : (selected ? "#FCDE01" : "#2BFDFF"); }
     function onCardEntered() { cardOverGlow = true; }
     function onCardExited() { cardOverGlow = false; }
-    function setCardState(state) {
-        if (state === 0)
-            stageCard.rotation = 0;
-        else if (state === 1)
-            stageCard.rotation = -90;
-        else if (state === 2)
-            stageCard.rotation = -180;
-    }
 
     function startAnimation(_x, _y) {
         aX.to = _x;

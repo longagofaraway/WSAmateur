@@ -39,7 +39,8 @@ public:
     Q_INVOKABLE void addCard(QString code);
     Q_INVOKABLE void setCard(int row, QString code);
     Q_INVOKABLE void swapCards(int from, int to);
-    Q_INVOKABLE void removeCard(int index);
+    Q_INVOKABLE void removeCard(int row);
+    Q_INVOKABLE void clearCard(int row);
 
     void setGlow(int row, bool glow);
     void setSelected(int row, bool selected);

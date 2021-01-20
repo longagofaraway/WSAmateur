@@ -21,6 +21,19 @@ void Card::init(const std::string &code) {
     mType = mInfo->type();
 }
 
+void Card::clear() {
+    mInfo.reset();
+    mCode = "";
+    mLevel = 0;
+    mCost = 0;
+    mSoul = 0;
+    mPower = 0;
+
+    mGlow = false;
+    mSelected = false;
+    mState = StateStanding;
+}
+
 QString Card::qstate() const {
     switch(mState) {
     case StateStanding:

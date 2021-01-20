@@ -132,8 +132,10 @@ void Player::mainPhase() {
 }
 
 void Player::attackDeclarationStep() {
-    if (mOpponent)
+    if (mOpponent) {
+        attackWithAll();
         return;
+    }
 
     mGame->attackDeclarationStep();
     mStage->attackDeclarationStep();
@@ -213,6 +215,11 @@ void Player::sendTakeDamageCommand() {
 void Player::sendEncoreCommand() {
     mStage->endAttackPhase();
     sendGameCommand(CommandEncoreStep());
+}
+
+void Player::sendEndTurnCommand() {
+    mStage->deactivateEncoreStep();
+    sendGameCommand(CommandEndTurn());
 }
 
 void Player::setInitialHand(const EventInitialHand &event) {
@@ -368,7 +375,7 @@ void Player::setCardState(const EventSetCardState &event) {
     if (event.stageid() >= 5)
         return;
 
-    mStage->setCardState(event.stageid(), event.state());
+    mStage->model().setState(event.stageid(), event.state());
 }
 
 void Player::counterStep() {
@@ -379,6 +386,7 @@ void Player::counterStep() {
 }
 
 void Player::levelUp() {
+    mLevel++;
     if  (mOpponent)
         return;
 
@@ -407,6 +415,9 @@ void Player::endOfAttack() {
 }
 
 void Player::encoreStep() {
+    if (mOpponent)
+        return;
+
     mGame->encoreStep();
     mStage->encoreStep();
 }
@@ -454,9 +465,36 @@ void Player::testAction()
     }
 }
 
-void Player::playCards() {
-    /*auto cards = mStage->cards();
-    for (int i = 0; i < 5; ++i) {
-        if (!cards[i].cardPresent())
-    }*/
+bool Player::playCards(CardModel &hand) {
+    auto &cards = mStage->cards();
+    for (int i = 0; i < 3; ++i) {
+        if (cards[i].cardPresent())
+            continue;
+        auto &handCards = hand.cards();
+        for (int j = 0; (size_t)j < handCards.size(); ++j) {
+            if (canPlay(handCards[j]) && handCards[j].type() != CardType::Climax) {
+                CommandPlayCard cmd;
+                cmd.set_handid(j);
+                cmd.set_stageid(i);
+                sendGameCommand(cmd);
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void Player::attackWithAll() {
+    auto &cards = mStage->cards();
+    for (int i = 0; i < 3; ++i) {
+        if (cards[i].cardPresent() && cards[i].state() == StateStanding) {
+            CommandDeclareAttack cmd;
+            cmd.set_attacktype(AttackType::FrontAttack);
+            cmd.set_stageid(i);
+            sendGameCommand(cmd);
+            return;
+        }
+    }
+
 }

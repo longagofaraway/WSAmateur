@@ -3,11 +3,11 @@
 #include "cardAttribute.pb.h"
 
 class AttributeChange {
+public:
     CardAttribute mAttr;
     int mValue;
     int mDuration;
 
-public:
     AttributeChange(CardAttribute attr, int delta, int duration)
         : mAttr(attr), mValue(delta), mDuration(duration) {}
 };

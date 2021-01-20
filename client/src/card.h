@@ -33,6 +33,7 @@ public:
     Card(const std::string &code);
 
     void init(const std::string &code);
+    void clear();
     bool cardPresent() const { return !mCode.empty(); }
 
     bool glow() const { return mGlow; }

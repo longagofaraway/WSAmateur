@@ -51,14 +51,23 @@ void CardModel::swapCards(int from, int to) {
     emit dataChanged(toIndex, toIndex, mRoles);
 }
 
-void CardModel::removeCard(int index) {
-    if (static_cast<size_t>(index) >= mCards.size())
+void CardModel::removeCard(int row) {
+    if (static_cast<size_t>(row) >= mCards.size())
         return;
 
-    beginRemoveRows(QModelIndex(), index, index);
-    mCards.erase(mCards.begin() + index);
+    beginRemoveRows(QModelIndex(), row, row);
+    mCards.erase(mCards.begin() + row);
     endRemoveRows();
     emit countChanged();
+}
+
+void CardModel::clearCard(int row) {
+    if (static_cast<size_t>(row) >= mCards.size())
+        return;
+
+    auto modelIndex = index(row);
+    mCards[row].clear();
+    emit dataChanged(modelIndex, modelIndex, mRoles);
 }
 
 void CardModel::setGlow(int row, bool glow) {

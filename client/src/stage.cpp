@@ -58,41 +58,21 @@ void Stage::highlightAttackers(bool highlight) {
 }
 
 void Stage::attackDeclared(int pos) {
-    QMetaObject::invokeMethod(mQmlObject, "attackDeclared", Q_ARG(QVariant, pos));
+    mGame->pause(500);
 
     mCardsModel.setSelected(pos, true);
+    mCardsModel.setState(pos, StateRested);
 
     if (mPlayer->isOpponent())
         return;
 
-    mCardsModel.setState(pos, StateRested);
-    mQmlObject->setProperty("state", "");
     mQmlObject->disconnect(mQmlObject, SIGNAL(declareAttack(int, bool)), mPlayer, SLOT(sendAttackDeclaration(int, bool)));
+    mQmlObject->setProperty("state", "");
     auto &cards = mCardsModel.cards();
     for (int i = 0; i < 3; ++i) {
         if (cards[i].cardPresent() && i != pos)
             mCardsModel.setGlow(i, false);
     }
-}
-
-namespace {
-int qmlCardState(CardState state) {
-    switch (state) {
-    case StateStanding:
-        return 0;
-    case StateRested:
-        return 1;
-    case StateReversed:
-        return 2;
-    }
-    assert(false);
-    return 0;
-}
-}
-
-void Stage::setCardState(int pos, CardState state) {
-    mCardsModel.setState(pos, StateRested);
-    QMetaObject::invokeMethod(mQmlObject, "setCardState", Q_ARG(QVariant, pos), Q_ARG(QVariant, qmlCardState(state)));
 }
 
 void Stage::endAttackPhase() {

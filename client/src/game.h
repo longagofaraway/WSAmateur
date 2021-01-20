@@ -48,6 +48,7 @@ public:
     Q_INVOKABLE void sendClimaxPhaseCommand();
     Q_INVOKABLE void sendTakeDamageCommand();
     Q_INVOKABLE void sendEncoreCommand();
+    Q_INVOKABLE void sendEndTurn();
     Q_INVOKABLE QQuickItem* getZone(QString name, bool opponent) {
         auto zoneName = name.toStdString();
         if (!opponent) {
@@ -61,6 +62,8 @@ public:
 
     QQmlEngine* engine() const;
     QQmlContext* context() const;
+
+    void pause(int ms);
 
     void sendGameCommand(const google::protobuf::Message &command, int playerId);
 

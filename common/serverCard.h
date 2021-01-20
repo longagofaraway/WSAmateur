@@ -33,6 +33,8 @@ public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
     ServerCard(int pos, ServerCardZone *zone);
 
+    void reset();
+
     void setPos(int pos);
     int pos() const;
     void setZone(ServerCardZone *zone) { mZone = zone; }
@@ -46,5 +48,6 @@ public:
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }
     const std::vector<Trigger>& triggers() { return mCardInfo->triggers(); }
-    void addSoulBuff(int delta, int duration);
+    void addAttrBuff(CardAttribute attr, int delta, int duration);
+    void validateBuffs();
 };

@@ -56,10 +56,12 @@ public:
     void sendClimaxPhaseCommand();
     void sendTakeDamageCommand();
     void sendEncoreCommand();
+    void sendEndTurnCommand();
 
     //test section
     void testAction();
-    void playCards();
+    bool playCards(CardModel &hand);
+    void attackWithAll();
 
 private:
     void createMovingCard(const QString &code, const std::string &startZone, int startId,

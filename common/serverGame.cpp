@@ -136,13 +136,15 @@ void ServerGame::battleStep() {
     }
 
     if (attCard->power() > battleOpponent->power()) {
-        opponent->setCardState(battleOpponent->pos(), StateReversed);
+        opponent->setCardState(battleOpponent, StateReversed);
     } else if (attCard->power() < battleOpponent->power()) {
-        attPlayer->setCardState(attCard->pos(), StateReversed);
+        attPlayer->setCardState(attCard, StateReversed);
     } else {
-        attPlayer->setCardState(attCard->pos(), StateReversed);
-        opponent->setCardState(battleOpponent->pos(), StateReversed);
+        attPlayer->setCardState(attCard, StateReversed);
+        opponent->setCardState(battleOpponent, StateReversed);
     }
+
+    attPlayer->endOfAttack();
 }
 
 void ServerGame::encoreStep() {
@@ -153,9 +155,9 @@ void ServerGame::encoreStep() {
 
 void ServerGame::endPhase() {
     auto turnPlayer = activePlayer();
+    auto opp = opponentOfPlayer(turnPlayer->id());
     turnPlayer->endPhase();
     turnPlayer->setActive(false);
-    auto opp = opponentOfPlayer(turnPlayer->id());
     opp->setActive(true);
     opp->startTurn();
 }

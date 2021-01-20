@@ -93,9 +93,9 @@ void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
         <comments></comments>
         <main>
             <card number="8" code="IMC/W43-127"/>
-            <card number="16" code="IMC/W43-046"/>
-            <card number="10" code="IMC/W43-009"/>
-            <card number="8" code="IMC/W43-111"/>
+            <card number="24" code="IMC/W43-046"/>
+            <card number="6" code="IMC/W43-009"/>
+            <card number="4" code="IMC/W43-111"/>
             <card number="8" code="IMC/W43-091"/>
         </main>
     </deck>)delim";
@@ -166,8 +166,16 @@ void Game::sendEncoreCommand() {
     mPlayer->sendEncoreCommand();
 }
 
+void Game::sendEndTurn() {
+    mPlayer->sendEndTurnCommand();
+}
+
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
 QQmlContext* Game::context() const { return qmlContext(parentItem()); }
+
+void Game::pause(int ms) {
+    QMetaObject::invokeMethod(this, "pause", Q_ARG(QVariant, ms));
+}
 
 Client* Game::getClientForPlayer(int playerId) {
     if (mClients.size() > 1)
@@ -241,10 +249,18 @@ void Game::testAction() {
     mOpponent->testAction();
 }
 
+
+#include "cardModel.h"
 void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
+    if (mOpponent->id() != event->playerid())
+        return;
+
+    static CardModel hand;
     if (event->event().Is<EventInitialHand>()) {
         EventInitialHand ev;
         event->event().UnpackTo(&ev);
+        for (int i = 0; i < ev.codes_size(); ++i)
+            hand.addCard(ev.codes(i));
         CommandMulligan cmd;
         //cmd.add_ids(0);
         //cmd.add_ids(2);
@@ -254,19 +270,32 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         cmd.set_count(0);
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventMainPhase>()) {
-
-        CommandPlayCard cmd;
-        cmd.set_handid(0);
-        sendGameCommand(cmd, mOpponent->id());
-        CommandAttackPhase cmd2;
-        sendGameCommand(cmd2, mOpponent->id());
+        mOpponent->playCards(hand);
+        sendGameCommand(CommandAttackPhase(), mOpponent->id());
+    } else if (event->event().Is<EventPlayCard>()) {
+        EventPlayCard ev;
+        event->event().UnpackTo(&ev);
+        hand.removeCard(ev.handid());
+        sendGameCommand(CommandAttackPhase(), mOpponent->id());
+        //if (mOpponent->playCards(hand))
+        //    sendGameCommand(CommandAttackPhase(), mOpponent->id());
     } else if (event->event().Is<EventAttackDeclarationStep>()) {
-        CommandDeclareAttack cmd;
-        cmd.set_stageid(0);
-        cmd.set_attacktype(AttackType::FrontAttack);
-        sendGameCommand(cmd, mOpponent->id());
+        //mOpponent->attackWithAll();
     } else if (event->event().Is<EventCounterStep>()) {
         CommandTakeDamage cmd;
         sendGameCommand(cmd, mOpponent->id());
+    } else if (event->event().Is<EventLevelUp>()) {
+        CommandLevelUp cmd;
+        cmd.set_clockid(0);
+        sendGameCommand(cmd, mOpponent->id());
+    } else if (event->event().Is<EventEncoreStep>()) {
+        CommandEndTurn cmd;
+        sendGameCommand(cmd, mOpponent->id());
+    } else if (event->event().Is<EventMoveCard>()) {
+        EventMoveCard ev;
+        event->event().UnpackTo(&ev);
+        if (ev.startzone() == "deck" && ev.targetzone() == "hand") {
+            hand.addCard(ev.code());
+        }
     }
 }

@@ -49,8 +49,6 @@ Item {
     }
 
     function attackPhase() { state = "attack"; }
-    function attackDeclared(pos) { mStagePlaces[pos].attackDeclared(); }
-    function setCardState(pos, state) { mStagePlaces[pos].setCardState(state); }
 
     function getXForNewCard(pos) { return mPositions[pos].x; }
     function getYForNewCard(pos) { return mPositions[pos].y; }

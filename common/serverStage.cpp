@@ -7,6 +7,11 @@ ServerStage::ServerStage(ServerPlayer *player)
         mCards.emplace_back(nullptr);
 }
 
+ServerCard *ServerStage::addCard(std::unique_ptr<ServerCard>) {
+    assert(false);
+    return nullptr;
+}
+
 std::unique_ptr<ServerCard> ServerStage::takeCard(int index) {
     if (static_cast<size_t>(index) >= mCards.size())
         return {};

@@ -99,7 +99,7 @@ ListView {
 
                 anchors.fill: parent
                 hoverEnabled: true
-                rotation: mTapped ? 90 : 0
+                rotation: (model.state === "Rested") ? 90 : 0
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 drag.target: (stage.opponent || !stage.mDragEnabled) ? undefined : mStageCard
                 drag.onActiveChanged: {
@@ -112,6 +112,7 @@ ListView {
                 Binding { target: mStageCard; property: "selected"; value: model.selected }
                 Binding { target: mStageCard; property: "power"; value: model.power }
                 Binding { target: mStageCard; property: "soul"; value: model.soul }
+                Binding { target: mStageCard; property: "cardState"; value: model.state }
                 onReleased: {
                     if (!stagePlaceMouseArea.drag.active)
                         return;
@@ -221,22 +222,9 @@ ListView {
     function removeCard(pos) {
         mStageRect.color = "#30FFFFFF";
         mStageCard.destroy();
-        let index = stage.mModel.index(mIndex, 0);
-        stage.mModel.setData(index, "", CardModel.CodeRole);
+        stage.mModel.clearCard(pos);
     }
 
     function swapCards(from) { stage.mModel.swapCards(from, mIndex); }
     function sendToWr() { stage.sendToWr(mIndex); }
-
-    function attackDeclared() {
-        mStageCard.tap();
-        mTapped = true;
-        gGame.pause(500);
-    }
-    function setCardState(state) {
-        if (state === 0 || state === 2)
-            mTapped = false;
-        else mTapped = true;
-        mStageCard.setCardState(state);
-    }
 }

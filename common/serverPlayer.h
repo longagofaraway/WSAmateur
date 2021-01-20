@@ -97,6 +97,8 @@ public:
     void endEncore();
     void endPhase();
 
-    void addSoulBuff(int pos, int delta, int duration = 1);
-    void setCardState(int id, CardState state);
+    void addAttributeBuff(CardAttribute attr, int pos, int delta, int duration = 1);
+    void setCardState(ServerCard *card, CardState state);
+
+    void endOfTurnEffectValidation();
 };

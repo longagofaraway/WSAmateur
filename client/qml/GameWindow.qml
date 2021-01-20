@@ -238,12 +238,14 @@ Item {
 
         function pauseEncoreStep() {
             mainButton.clicked.disconnect(endTurn);
+            startHelpTextDestruction();
             mainButton.state = "waiting";
         }
 
         function endTurn() {
             mainButton.clicked.disconnect(endTurn);
-            gGame.sendEndGame();
+            gGame.sendEndTurn();
+            startHelpTextDestruction();
             mainButton.state = "waiting";
         }
     }
