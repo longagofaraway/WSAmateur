@@ -1,4 +1,5 @@
-import QtQuick 2.0
+import QtQuick 2.12
+import QtQml 2.12
 
 import wsamateur.cardModel 1.0
 
@@ -14,6 +15,8 @@ Card {
                 waitingRoom.visible = false;
             else if (!waitingRoom.visible)
                 waitingRoom.visible = true;
+            climaxCountText.text = mModel.climaxCount();
+            cardCountText.text = mModel.nonClimaxCount();
         }
     }
 
@@ -30,6 +33,64 @@ Card {
         return root.height * 0.75;
     }
     z: 1
+
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        onEntered: wrOverlay.opacity = 1
+        onExited: wrOverlay.opacity = 0
+    }
+
+    Rectangle {
+        id: wrOverlay
+        anchors.fill: parent
+        color: "#80000000"
+        opacity: 0
+
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        Column {
+            id: thisColumn
+            anchors.centerIn: wrOverlay
+            spacing: 10
+
+            Row {
+                anchors.horizontalCenter: thisColumn.horizontalCenter
+                spacing: 5
+
+                Text {
+                    id: cardCountText
+                    text: "0"
+                    color: "white"
+                    font.pointSize: 21
+                    font.family: "Souvenir LT"
+                }
+                Image {
+                    source: "qrc:///resources/images/deckCount"
+                    width: 32 * 0.8
+                    height: 44 * 0.8
+                }
+            }
+            Row {
+                id: thisRow
+                spacing: 5
+
+                Text {
+                    id: climaxCountText
+                    text: "0"
+                    color: "white"
+                    font.pointSize: 21
+                    font.family: "Souvenir LT"
+                }
+                Image {
+                    anchors.verticalCenter: thisRow.verticalCenter
+                    source: "qrc:///resources/images/wrClimaxCount"
+                    width: 41 * 0.8
+                    height: 29 * 0.8
+                }
+            }
+        }
+    }
 
     function addCard(code) {
         waitingRoom.mSource = code;

@@ -23,6 +23,41 @@ Card {
     }
     z: 1
 
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        onEntered: deckOverlay.opacity = 1
+        onExited: deckOverlay.opacity = 0
+    }
+
+    Rectangle {
+        id: deckOverlay
+        anchors.fill: parent
+        color: "#80000000"
+        opacity: 0
+
+        rotation: opponent ? 180 : 0
+
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+
+        Row {
+            anchors.centerIn: deckOverlay
+            spacing: 5
+
+            Text {
+                text: String(mModel.count)
+                color: "white"
+                font.pointSize: 21
+                font.family: "Souvenir LT"
+            }
+            Image {
+                source: "qrc:///resources/images/deckCount"
+                width: 32 * 0.8
+                height: 44 * 0.8
+            }
+        }
+    }
+
     function addCard(code) { deck.mModel.addCard(code); }
     function removeCard(index) { deck.mModel.removeCard(index); }
 

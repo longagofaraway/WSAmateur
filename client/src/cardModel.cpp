@@ -70,6 +70,22 @@ void CardModel::clearCard(int row) {
     emit dataChanged(modelIndex, modelIndex, mRoles);
 }
 
+int CardModel::climaxCount() {
+    int count = 0;
+    for (const auto &card: mCards)
+        if (card.type() == CardType::Climax)
+            ++count;
+    return count;
+}
+
+int CardModel::nonClimaxCount() {
+    int count = 0;
+    for (const auto &card: mCards)
+        if (card.type() != CardType::Climax)
+            ++count;
+    return count;
+}
+
 void CardModel::setGlow(int row, bool glow) {
     auto index = createIndex(row, 0);
     setData(index, glow, GlowRole);

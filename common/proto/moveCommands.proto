@@ -11,10 +11,15 @@ message CommandClockPhase {
 
 message CommandPlayCard {
     sint32 handId = 1;
-	sint32 stageId = 2;
+    sint32 stageId = 2;
 }
 
 message CommandSwitchStagePositions {
     sint32 stageIdFrom = 1;
     sint32 stageIdTo = 2;
+}
+
+message CommandChooseCard {
+    repeated sint32 ids = 1;
+    string zone = 2;
 }

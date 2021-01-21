@@ -35,6 +35,8 @@
         <file>resources/images/btn_state.png</file>
         <file>resources/images/hourglass.png</file>
         <file>resources/images/soul.png</file>
+        <file>resources/images/deckCount.png</file>
+        <file>resources/images/wrClimaxCount.png</file>
         <file>qml/ResolutionZone.qml</file>
         <file>qml/CardGlow.qml</file>
     </qresource>

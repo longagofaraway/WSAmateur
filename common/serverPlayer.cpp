@@ -611,9 +611,9 @@ void ServerPlayer::endEncore() {
 }
 
 void ServerPlayer::endPhase() {
-    //if (mActive) {
-    //discard from hand down to 7
-    //}
+    if (mActive) {
+        //discard to 7
+    }
 
     auto climax = zone("climax");
     if (climax->count() > 0)
@@ -654,9 +654,7 @@ void ServerPlayer::endOfTurnEffectValidation() {
             event.set_value(card->soul());
             sendToBoth(event);
         }
-
     }
-
 }
 
 ServerCard *ServerPlayer::battleOpponent(ServerCard *card) const {
