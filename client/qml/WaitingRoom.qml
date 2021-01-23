@@ -12,10 +12,12 @@ Card {
     Connections {
         target: mModel
         onCountChanged: {
-            if (mModel.count == 0)
+            if (mModel.count == 0) {
                 waitingRoom.visible = false;
-            else if (!waitingRoom.visible)
+                mView.visible = false;
+            } else if (!waitingRoom.visible) {
                 waitingRoom.visible = true;
+            }
             climaxCountText.text = mModel.climaxCount();
             cardCountText.text = mModel.nonClimaxCount();
         }
@@ -41,21 +43,21 @@ Card {
         onEntered: wrOverlay.opacity = 1
         onExited: wrOverlay.opacity = 0
         onClicked: {
-            if (mView !== null) {
-                mView.destroy();
-                mView = null;
+            if (mView === null) {
+                let comp = Qt.createComponent("CardsView.qml");
+                mView = comp.createObject(gGame);
+                mView.mModel = mModel;
+                if (waitingRoom.opponent) {
+                    mView.anchors.left = waitingRoom.right;
+                    mView.y = waitingRoom.y;
+                } else {
+                    mView.anchors.right = waitingRoom.left;
+                }
+                mView.mOpponent = opponent;
+                mView.closeSignal.connect(() => mView.visible = !mView.visible);
                 return;
             }
-            let comp = Qt.createComponent("CardsView.qml");
-            mView = comp.createObject(gGame);
-            mView.mModel = mModel;
-            if (waitingRoom.opponent) {
-                mView.anchors.left = waitingRoom.right;
-                mView.y = waitingRoom.y;
-            } else {
-                mView.anchors.right = waitingRoom.left;
-            }
-            mView.destroySignal.connect(destroyView);
+            mView.visible = !mView.visible;
         }
     }
 
@@ -107,14 +109,6 @@ Card {
                     height: 29 * 0.8
                 }
             }
-        }
-    }
-
-    function destroyView() {
-        if (mView !== null) {
-            mView.destroySignal.disconnect(destroyView);
-            mView.destroy();
-            mView = null;
         }
     }
 

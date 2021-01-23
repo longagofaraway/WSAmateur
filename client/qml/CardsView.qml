@@ -8,9 +8,10 @@ Rectangle {
     property CardModel mModel
     property bool mIsDeckView: false
     property real mColumnMaxHeight: root.height * 0.5 - header.height
-    signal destroySignal()
+    property bool mOpponent: false
+    signal closeSignal()
 
-    y: root.height * 0.47
+    y: root.height * 0.33
     width: header.width + header.anchors.leftMargin + closeBtn.width + closeBtn.anchors.rightMargin * 2//Math.max(row.width + 20, header.width + closeBtn.width * 2 + 20)
     height: {
         const calcHeight = calculateViewHeight();
@@ -20,8 +21,9 @@ Rectangle {
     }
     radius: 5
     border.width: 1
-    color: "#564747"
-    z: 60
+    //color: "#A0564747"
+    color: "#40000000"
+    z: 160
 
     Text {
         id: header
@@ -32,11 +34,19 @@ Rectangle {
             else
                 return row.width + 20 - (closeBtn.width + closeBtn.anchors.rightMargin * 2);
         }
-        anchors.left: cardsView.left
-        anchors.leftMargin: 5
-        text: mIsDeckView ? "Deck" : "Waiting Room"
-        color: "white"
+        anchors {
+            left: cardsView.left
+            leftMargin: 5
+            top: cardsView.top
+            topMargin: 3
+        }
+        text: {
+            let txt = mOpponent ? "Opponent's " : " ";
+            return txt + (mIsDeckView ? "Deck" : "Waiting Room");
+        }
+        font.family: "Futura Bk BT"
         font.pointSize: 20
+        color: "white"
         horizontalAlignment: Text.AlignHCenter
     }
     Image {
@@ -54,7 +64,7 @@ Rectangle {
             hoverEnabled: true
             onEntered: closeBtn.source = "qrc:///resources/images/closeButtonHighlighted"
             onExited: closeBtn.source = "qrc:///resources/images/closeButton"
-            onClicked: destroySignal()
+            onClicked: closeSignal()
         }
     }
 
