@@ -1,9 +1,19 @@
 import QtQuick 2.12
+import QtQml 2.12
 import QtQml.Models 2.12
+
+import wsamateur.cardModel 1.0
 
 ListView {
     id: thisListView
-    height: maxHeight()
+
+    property CardModel mModel
+    property var num
+    property var predicate
+    property real effectiveHeight: contentHeight + topMargin + bottomMargin
+    property CardInfoFrame cardTextFrame: null
+
+    height: Math.min(effectiveHeight, cardsView.mColumnMaxHeight)
     width: contentWidth + leftMargin + rightMargin
     spacing: -root.cardHeight * 0.7
     clip: true
@@ -13,20 +23,12 @@ ListView {
     topMargin: root.cardHeight * 0.1 * 0.5
     bottomMargin: root.cardHeight * 0.1 * 0.5
     visible: count
-
-    function maxHeight() {
-        let point = root.mapFromItem(thisListView, x, y);
-        let allHeight = contentHeight + topMargin + bottomMargin;
-        if (point.y + allHeight > root.height)
-            return root.height - point.y;
-        return allHeight;
-    }
-
-    property var num
-    property var predicate
+    interactive: effectiveHeight > cardsView.mColumnMaxHeight
 
     model: DelegateModel {
-        model: listModel
+        id: listDelegate
+
+        model: mModel
 
         groups: [
             DelegateModelGroup {
@@ -67,10 +69,9 @@ ListView {
 
                 Card {
                     id: cardImgDelegate
-                    source: img
+                    mSource: model.code;
                     anchors.centerIn: cardDelegate
-
-                    property CardInfoFrame cardTextFrame: null
+                    Component.onDestruction: destroyTextFrame(cardImgDelegate)
 
                     states: State {
                         name: "hovered"
@@ -103,29 +104,29 @@ ListView {
         }
     }
 
-    function createTextFrame(frameParent) {
+    function createTextFrame(cardObject) {
         let comp = Qt.createComponent("CardInfoFrame.qml");
         let incubator = comp.incubateObject(root, { visible: false }, Qt.Asynchronous);
         let createdCallback = function(status) {
             if (status === Component.Ready) {
-                if (frameParent.state !== "hovered") {
+                if (cardObject.state !== "hovered") {
                     incubator.object.destroy();
                     return;
                 }
-                if (frameParent.cardTextFrame !== null)
-                    frameParent.cardTextFrame.destroy();
+                if (thisListView.cardTextFrame !== null)
+                    thisListView.cardTextFrame.destroy();
                 let textFrame = incubator.object;
 
                 let listViewMappedPoint = root.mapFromItem(thisListView, thisListView.x, thisListView.y);
-                let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
+                let cardMappedPoint = root.mapFromItem(cardObject, cardObject.x, cardObject.y);
                 textFrame.x = cardMappedPoint.x - textFrame.width;
                 let scaleOffset = root.cardHeight * 0.1 * 0.5;
-                textFrame.y = listViewMappedPoint.y + frameParent.y - scaleOffset;
+                textFrame.y = listViewMappedPoint.y + cardObject.y - scaleOffset;
 
                 if (textFrame.y + textFrame.height > root.height)
                     textFrame.y -= textFrame.y + textFrame.height - root.height;
                 textFrame.visible = true;
-                frameParent.cardTextFrame = textFrame;
+                thisListView.cardTextFrame = textFrame;
             }
         }
         if (incubator.status !== Component.Ready) {
@@ -136,9 +137,9 @@ ListView {
     }
 
     function destroyTextFrame(frameParent) {
-        if (frameParent.cardTextFrame !== null) {
-            frameParent.cardTextFrame.destroy();
-            frameParent.cardTextFrame = null;
+        if (thisListView.cardTextFrame !== null) {
+            thisListView.cardTextFrame.destroy();
+            thisListView.cardTextFrame = null;
         }
     }
 }

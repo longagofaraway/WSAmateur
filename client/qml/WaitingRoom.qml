@@ -8,6 +8,7 @@ Card {
     property bool opponent
     property bool hidden: false
     property CardModel mModel: innerModel
+    property CardsView mView: null
     Connections {
         target: mModel
         onCountChanged: {
@@ -39,6 +40,23 @@ Card {
         hoverEnabled: true
         onEntered: wrOverlay.opacity = 1
         onExited: wrOverlay.opacity = 0
+        onClicked: {
+            if (mView !== null) {
+                mView.destroy();
+                mView = null;
+                return;
+            }
+            let comp = Qt.createComponent("CardsView.qml");
+            mView = comp.createObject(gGame);
+            mView.mModel = mModel;
+            if (waitingRoom.opponent) {
+                mView.anchors.left = waitingRoom.right;
+                mView.y = waitingRoom.y;
+            } else {
+                mView.anchors.right = waitingRoom.left;
+            }
+            mView.destroySignal.connect(destroyView);
+        }
     }
 
     Rectangle {
@@ -72,7 +90,7 @@ Card {
                 }
             }
             Row {
-                id: thisRow
+                anchors.horizontalCenter: thisColumn.horizontalCenter
                 spacing: 5
 
                 Text {
@@ -83,12 +101,20 @@ Card {
                     font.family: "Souvenir LT"
                 }
                 Image {
-                    anchors.verticalCenter: thisRow.verticalCenter
+                    anchors.verticalCenter: parent.verticalCenter
                     source: "qrc:///resources/images/wrClimaxCount"
                     width: 41 * 0.8
                     height: 29 * 0.8
                 }
             }
+        }
+    }
+
+    function destroyView() {
+        if (mView !== null) {
+            mView.destroySignal.disconnect(destroyView);
+            mView.destroy();
+            mView = null;
         }
     }
 

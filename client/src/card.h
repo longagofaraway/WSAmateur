@@ -41,8 +41,9 @@ public:
     void setGlow(bool glow) { mGlow = glow; }
     void setSelected(bool selected) { mSelected = selected; }
     char color() const { return mColor; }
-    int level() const { return mLevel; }
     int cost() const { return mCost; }
+    int level() const { return mLevel; }
+    void setLevel(int level) { mLevel = level; }
     int power() const { return mPower; }
     void setPower(int power) { mPower = power; }
     int soul() const { return mSoul; }

@@ -37,6 +37,9 @@
         <file>resources/images/soul.png</file>
         <file>resources/images/deckCount.png</file>
         <file>resources/images/wrClimaxCount.png</file>
+        <file>resources/images/closeButton.png</file>
+        <file>resources/images/closeButtonHighlighted.png</file>
+		
         <file>qml/ResolutionZone.qml</file>
         <file>qml/CardGlow.qml</file>
     </qresource>

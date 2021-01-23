@@ -23,7 +23,8 @@ public:
         TypeRole,
         StateRole,
         PowerRole,
-        SoulRole
+        SoulRole,
+        LevelRole
     };
     Q_ENUM(CardRoles)
     static QVector<int> mRoles;

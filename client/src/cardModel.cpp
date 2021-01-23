@@ -4,7 +4,8 @@
 
 
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
-    mRoles = QVector<int>() << CodeRole << GlowRole << SelectedRole << TypeRole << StateRole << PowerRole << SoulRole;
+    mRoles = QVector<int>() << CodeRole << GlowRole << SelectedRole << TypeRole
+                            << StateRole << PowerRole << SoulRole << LevelRole;
 }
 
 void CardModel::addCard() {
@@ -133,6 +134,9 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
     case PowerRole:
         card.setPower(value.toInt());
         break;
+    case LevelRole:
+        card.setLevel(value.toInt());
+        break;
     default:
         return false;
     }
@@ -165,6 +169,8 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
         return card.power();
     case SoulRole:
         return card.soul();
+    case LevelRole:
+        return card.level();
     default:
         return QVariant();
     }
@@ -181,6 +187,7 @@ QHash<int, QByteArray> CardModel::roleNames() const {
         (*roles)[StateRole] = "state";
         (*roles)[PowerRole] = "power";
         (*roles)[SoulRole] = "soul";
+        (*roles)[LevelRole] = "level";
     }
     return *roles;
 }

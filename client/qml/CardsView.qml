@@ -1,73 +1,104 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 
+import wsamateur.cardModel 1.0
+
 Rectangle {
-    width: row.width + 20
-    height: calculateViewHeight() + 20
+    id: cardsView
+    property CardModel mModel
+    property bool mIsDeckView: false
+    property real mColumnMaxHeight: root.height * 0.5 - header.height
+    signal destroySignal()
+
+    y: root.height * 0.47
+    width: header.width + header.anchors.leftMargin + closeBtn.width + closeBtn.anchors.rightMargin * 2//Math.max(row.width + 20, header.width + closeBtn.width * 2 + 20)
+    height: {
+        const calcHeight = calculateViewHeight();
+        if (calcHeight > root.height * 0.5)
+            return root.height * 0.5 + 20;
+        return calcHeight + 20;
+    }
     radius: 5
     border.width: 1
     color: "#564747"
+    z: 60
 
-    property ListModel listModel: ListModel {
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc"; }
-        ListElement { type: "char"; level: 0; img: "qrc:///resources/images/imc0" }
-        ListElement { type: "char"; level: 3; img: "qrc:///resources/images/imc3" }
-        ListElement { type: "climax"; level: 0; img: "qrc:///resources/images/imc4" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc" }
-        ListElement { type: "char"; level: 0; img: "qrc:///resources/images/imc0" }
-        ListElement { type: "char"; level: 3; img: "qrc:///resources/images/imc3" }
-        ListElement { type: "climax"; level: 0; img: "qrc:///resources/images/imc4" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc2" }
-        ListElement { type: "char"; level: 1; img: "qrc:///resources/images/imc" }
+    Text {
+        id: header
+        width: {
+            const minViewWidth = contentWidth + header.anchors.leftMargin + closeBtn.width + closeBtn.anchors.rightMargin * 2;
+            if (minViewWidth > row.width + 20)
+                return contentWidth;
+            else
+                return row.width + 20 - (closeBtn.width + closeBtn.anchors.rightMargin * 2);
+        }
+        anchors.left: cardsView.left
+        anchors.leftMargin: 5
+        text: mIsDeckView ? "Deck" : "Waiting Room"
+        color: "white"
+        font.pointSize: 20
+        horizontalAlignment: Text.AlignHCenter
+    }
+    Image {
+        id: closeBtn
+        anchors {
+            right: cardsView.right
+            rightMargin: 5
+            top: cardsView.top
+            topMargin: 5
+        }
+        source: "qrc:///resources/images/closeButton"
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: closeBtn.source = "qrc:///resources/images/closeButtonHighlighted"
+            onExited: closeBtn.source = "qrc:///resources/images/closeButton"
+            onClicked: destroySignal()
+        }
     }
 
     Row {
         id: row
         anchors {
-            left: parent.left
-            top: parent.top
-            leftMargin: 10
-            topMargin: 10
+            horizontalCenter: parent.horizontalCenter
+            top: header.bottom
+            topMargin: 5
         }
         spacing: -root.cardWidth * 0.1
 
         CardsViewColumn {
             id: col1
+            mModel: cardsView.mModel
             predicate: function(entry) {
-                if (entry.level === 0 && entry.type === "char")
+                if (entry.level === 0 && entry.type === "Char")
                     return true;
                 return false;
             }
         }
-
         CardsViewColumn {
             id: col2
+            mModel: cardsView.mModel
             predicate: function(entry) {
-                if (entry.level === 1 && entry.type === "char")
+                if (entry.level === 1 && entry.type === "Char")
                     return true;
                 return false;
             }
         }
         CardsViewColumn {
             id: col3
+            mModel: cardsView.mModel
             predicate: function(entry) {
-                if ((entry.level === 2 || entry.level === 3) && entry.type === "char")
+                if ((entry.level === 2 || entry.level === 3) && entry.type === "Char")
                     return true;
                 return false;
             }
         }
         CardsViewColumn {
             id: col4
+            mModel: cardsView.mModel
             predicate: function(entry) {
-                if (entry.type === "climax" || entry.type === "event")
+                if (entry.type === "Climax" || entry.type === "Event")
                     return true;
                 return false;
             }
@@ -82,6 +113,6 @@ Rectangle {
             max = col3.height;
         if (col4.height > max)
             max = col4.height;
-        return max;
+        return max + header.height;
     }
 }

@@ -28,6 +28,16 @@ Player::Player(int id, Game *game, bool opponent)
     mHand = hand.get();
     mZones.emplace("hand", std::move(hand));
     auto wr = std::make_unique<WaitingRoom>(this, game);
+    /*wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));*/
     mZones.emplace("wr", std::move(wr));
     auto deck = std::make_unique<Deck>(this, game);
     mZones.emplace("deck", std::move(deck));
