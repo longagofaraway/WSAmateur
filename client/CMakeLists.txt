@@ -37,12 +37,8 @@ find_package(Qt5 COMPONENTS Quick REQUIRED)
 
 add_executable(WSAmateur ${clientSources} qml.qrc)
 
-if (MSVC)
-    target_compile_options(WSAmateur PRIVATE "/wd4251")
-endif()
-
 target_compile_features(WSAmateur PRIVATE cxx_std_17)
 target_compile_definitions(WSAmateur
-  PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
+    PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(WSAmateur PRIVATE wsamateurCommon
-  PRIVATE Qt5::Core Qt5::Quick)
+    PRIVATE Qt5::Core Qt5::Quick)

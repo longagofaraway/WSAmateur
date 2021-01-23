@@ -1,6 +1,6 @@
-import QtQuick 2.12
-import QtQml.Models 2.12
-import QtGraphicalEffects 1.12
+import QtQuick 2.15
+import QtQml.Models 2.15
+import QtGraphicalEffects 1.15
 
 import wsamateur.cardModel 1.0
 
@@ -22,7 +22,13 @@ ListView {
     width: length
     height: root.cardHeight
     x: root.width / 2 - length / 2
-    y: {
+    y: calculateY()
+    orientation: ListView.Horizontal
+    spacing: -root.cardWidth  / 3
+    interactive: false
+    z: 50
+
+    function calculateY() {
         if (opponent) {
             var base = 0;
             var multp = 1;
@@ -32,35 +38,51 @@ ListView {
         }
         return base - root.cardHeight / 2 + 10 * multp;
     }
-    orientation: ListView.Horizontal
-    spacing: -root.cardWidth  / 3
-    interactive: false
-    z: 50
 
-    states: State {
-        name: "mulligan"
-        ParentChange {
-            target: handView
-            parent: root
-        }
-        PropertyChanges {
-            target: handView
-            scale: 1.5
-            y: root.height / 2 - root.cardHeight / 2
-            z: 100
-            selectable: true
-        }
-    }
-
-    transitions: Transition {
-        SequentialAnimation {
-            ScriptAction { script: gGame.startUiAction(); }
-            ParallelAnimation {
-                NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
-                NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
+    // states don't work with reparenting in this case
+    SequentialAnimation {
+        id: mMulliganAnim
+        ScriptAction { script: gGame.startUiAction(); }
+        PropertyAction { target: handView; property: "parent"; value: root }
+        ParallelAnimation {
+            NumberAnimation {
+                target: handView;
+                property: "y";
+                to: root.height / 2 - root.cardHeight / 2;
+                easing.type: Easing.OutExpo;
+                duration: 300
             }
-            ScriptAction { script: gGame.uiActionComplete(); }
+            NumberAnimation {
+                target: handView;
+                property: "scale";
+                to: 1.5;
+                easing.type: Easing.OutExpo;
+                duration: 300
+            }
         }
+        ScriptAction { script: gGame.uiActionComplete(); }
+    }
+    SequentialAnimation {
+        id: mEndMulliganAnim
+        ScriptAction { script: gGame.startUiAction(); }
+        PropertyAction { target: handView; property: "parent"; value: gGame }
+        ParallelAnimation {
+            NumberAnimation {
+                target: handView;
+                property: "y";
+                to: calculateY()
+                easing.type: Easing.OutExpo;
+                duration: 300
+            }
+            NumberAnimation {
+                target: handView;
+                property: "scale";
+                to: 1;
+                easing.type: Easing.OutExpo;
+                duration: 300
+            }
+        }
+        ScriptAction { script: gGame.uiActionComplete(); }
     }
 
     function getAngle(index, middle) {
@@ -386,6 +408,16 @@ ListView {
             cardDelegate.cardTextFrame.destroy();
             cardDelegate.cardTextFrame = null;
         }
+    }
+
+    function mulligan() {
+        handView.state = "mulligan";
+        mMulliganAnim.start();
+    }
+
+    function endMulligan() {
+        handView.state = "";
+        mEndMulliganAnim.start();
     }
 
     function clockPhase() {

@@ -11,7 +11,7 @@ Card {
     property CardsView mView: null
     Connections {
         target: mModel
-        onCountChanged: {
+        function onCountChanged() {
             if (mModel.count == 0) {
                 waitingRoom.visible = false;
                 mView.visible = false;

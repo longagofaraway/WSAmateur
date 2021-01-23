@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QObject>
@@ -9,6 +11,7 @@
 
 #include "abilities.h"
 
+Number parseNumber(const QJsonObject &json);
 template<typename T>
 std::vector<T> parseArray(const QJsonArray &json, T(*parseType)(const QJsonObject &json)) {
     if (!json.count())
@@ -33,7 +36,6 @@ T parseNumberType(const QJsonObject &json) {
 
 Multiplier parseMultiplier(const QJsonObject &json);
 Place parsePlace(const QJsonObject &json);
-Number parseNumber(const QJsonObject &json);
 AsnCard parseCard(const QJsonObject &json);
 Target parseTarget(const QJsonObject &json);
 Condition parseCondition(const QJsonObject &json);

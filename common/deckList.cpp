@@ -9,7 +9,7 @@ void DeckList::readCards(QXmlStreamReader &xml) {
     while (!xml.atEnd()) {
         xml.readNext();
         if(xml.isStartElement()) {
-            if (xml.name() == "card") {
+            if (xml.name() == QString("card")) {
                 int number = xml.attributes().value("number").toInt();
                 if (!number)
                     throw std::runtime_error("deck parsing error");
@@ -28,16 +28,16 @@ DeckList::DeckList(const std::string &deck)
     while (!xml.atEnd()) {
         xml.readNext();
         if (xml.isStartElement()) {
-            if (xml.name() != "deck")
+            if (xml.name() != QString("deck"))
                 return;
             while (!xml.atEnd()) {
                 xml.readNext();
                 if (xml.isStartElement()) {
-                    if (xml.name() == "deckname")
+                    if (xml.name() == QString("deckname"))
                         mName = xml.readElementText().toStdString();
-                    else if (xml.name() == "comments")
+                    else if (xml.name() == QString("comments"))
                         mComments = xml.readElementText().toStdString();
-                    else if (xml.name() == "main")
+                    else if (xml.name() == QString("main"))
                         readCards(xml);
                 }
             }

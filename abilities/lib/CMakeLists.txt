@@ -26,7 +26,3 @@ target_include_directories(wsamateurAbilities
 )
 
 target_compile_features(wsamateurAbilities PRIVATE cxx_std_17)
-
-#if (MSVC)
-#    target_compile_options(wsamateurAbilities PRIVATE "/wd4251")
-#endif()

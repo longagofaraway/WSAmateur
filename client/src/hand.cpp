@@ -8,16 +8,6 @@
 
 Hand::Hand(Player *player, Game *game)
     : mPlayer(player), mGame(game) {
-    /*mCardsModel = {
-        new HandCard("IMC/W43-111", false),
-        new HandCard("IMC/W43-009", false),
-        new HandCard("IMC/W43-046", true),
-        new HandCard("IMC/W43-127", false),
-        new HandCard("IMC/W43-091", false),
-        new HandCard("IMC/W43-046", false),
-        new HandCard("IMC/W43-009", false)
-    };*/
-
     QQmlComponent component(mGame->engine(), "qrc:/qml/Hand.qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame);
     context->setContextProperty("innerModel", QVariant::fromValue(&mCardsModel));
@@ -41,12 +31,13 @@ void Hand::addCard(const std::string &code) {
 }
 
 void Hand::startMulligan() {
-    mQmlHand->setState("mulligan");
+    QMetaObject::invokeMethod(mQmlHand, "mulligan");
     mQmlHand->connect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForMulligan(bool)));
 }
 
 void Hand::endMulligan() {
-    mQmlHand->setState("");
+    //mQmlHand->setState("");
+    QMetaObject::invokeMethod(mQmlHand, "endMulligan");
     mQmlHand->disconnect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForMulligan(bool)));
 }
 

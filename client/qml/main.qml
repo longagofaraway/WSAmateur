@@ -12,20 +12,6 @@ Window {
     height: 480
     title: qsTr("Hello World")
 
-    /*Image {
-        id: backgroundImg
-        anchors.fill: parent
-        source: "qrc:///resources/background.jpg"
-        fillMode: Image.PreserveAspectCrop
-    }
-
-    ColorOverlay {
-        id: colorOverlay
-        anchors.fill: backgroundImg
-        source: backgroundImg
-        color: "#B0000000"
-    }*/
-
     Loader {
         id: mainLoader
         anchors.fill: parent

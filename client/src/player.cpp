@@ -112,6 +112,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         encoreStep();
     } else if (event->event().Is<EventEndOfAttack>()) {
         endOfAttack();
+    } else if (event->event().Is<EventRefresh>()) {
+        refresh();
     }
 }
 
@@ -430,6 +432,15 @@ void Player::encoreStep() {
 
     mGame->encoreStep();
     mStage->encoreStep();
+}
+
+void Player::refresh() {
+    auto wr = zone("wr");
+    auto deck = zone("deck");
+    for (int i = wr->model().count() - 1; i >= 0; --i) {
+        wr->model().removeCard(i);
+        deck->model().addCard();
+    }
 }
 
 void Player::cardSelectedForLevelUp(int index) {

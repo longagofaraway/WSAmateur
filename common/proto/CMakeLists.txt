@@ -27,11 +27,7 @@ target_include_directories(wsamateurProto
         ${Protobuf_INCLUDE_DIRS}
 )
 
-target_compile_features(wsamateurProto PRIVATE cxx_std_17)
-
-if (MSVC)
-    target_compile_options(wsamateurProto PRIVATE "/wd4251" "/wd4244")
-endif()
+target_compile_features(wsamateurProto PRIVATE cxx_std_20)
 
 set(wsamateurProto_LIBS ${PROTOBUF_LIBRARIES})
 if (UNIX)

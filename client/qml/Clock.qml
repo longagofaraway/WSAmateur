@@ -1,4 +1,4 @@
-import QtQuick 2.12
+import QtQuick 2.15
 
 import wsamateur.cardModel 1.0
 
@@ -21,18 +21,6 @@ ListView {
     orientation: ListView.Horizontal
     interactive: false
 
-    transitions: Transition {
-        SequentialAnimation {
-            ScriptAction { script: gGame.startUiAction(); }
-            ParallelAnimation {
-                NumberAnimation { property: "x"; easing.type: Easing.OutExpo; duration: 300 }
-                NumberAnimation { property: "y"; easing.type: Easing.OutExpo; duration: 300 }
-                NumberAnimation { property: "scale"; easing.type: Easing.OutExpo; duration: 300 }
-            }
-            ScriptAction { script: gGame.uiActionComplete(); }
-        }
-    }
-
     displaced: Transition {
         NumberAnimation { properties: "x,y"; duration: 200 }
     }
@@ -50,9 +38,13 @@ ListView {
 
             onEntered: {
                 cardImgDelegate.state = "hovered";
+                mUnhoverAnim.stop();
+                mHoverAnim.start();
             }
             onExited: {
                 cardImgDelegate.state = "";
+                mHoverAnim.stop();
+                mUnhoverAnim.start();
             }
             onClicked: {
                 if (clockView.state === "levelup" && model.index < 7) {
@@ -72,26 +64,20 @@ ListView {
                 anchors.centerIn: cardDelegate
                 Component.onDestruction: destroyTextFrame(cardImgDelegate)
 
-                states: State {
-                    name: "hovered"
-                    PropertyChanges {
-                        target: cardImgDelegate
-                        z: 100
-                    }
-                    ParentChange {
-                        target: cardImgDelegate
-                        parent: clockView.contentItem
-                        scale: 0.8
-                    }
-                    StateChangeScript {
-                        name: "textFrame"
-                        script: createTextFrame(cardImgDelegate);
-                    }
+                SequentialAnimation {
+                    id: mHoverAnim
+                    PropertyAction { target: cardImgDelegate; property: "parent"; value: clockView.contentItem }
+                    PropertyAction { target: cardImgDelegate; property: "z"; value: 100 }
+                    PropertyAction { target: cardImgDelegate; property: "scale"; value: 0.8 }
+                    PropertyAction { target: cardImgDelegate; property: "x"; value: model.index * root.cardWidth * (1 - mMarginModifier) }
+                    ScriptAction { script: createTextFrame(cardImgDelegate); }
                 }
-
-                transitions: Transition {
-                    from: "hovered"
-                    to: ""
+                SequentialAnimation {
+                    id: mUnhoverAnim
+                    PropertyAction { target: cardImgDelegate; property: "parent"; value: cardDelegate }
+                    PropertyAction { target: cardImgDelegate; property: "z"; value: 0 }
+                    PropertyAction { target: cardImgDelegate; property: "scale"; value: 1 }
+                    PropertyAction { target: cardImgDelegate; property: "x"; value: 0 }
                     ScriptAction { script: destroyTextFrame(cardImgDelegate); }
                 }
 

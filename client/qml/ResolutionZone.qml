@@ -30,8 +30,16 @@ ListView {
             height: root.cardHeight
             hoverEnabled: true
 
-            onEntered: cardImgDelegate.state = "hovered";
-            onExited: cardImgDelegate.state = "";
+            onEntered: {
+                cardImgDelegate.state = "hovered";
+                mUnhoverAnim.stop();
+                mHoverAnim.start();
+            }
+            onExited: {
+                cardImgDelegate.state = "";
+                mHoverAnim.stop();
+                mUnhoverAnim.start();
+            }
 
             Card {
                 id: cardImgDelegate
@@ -42,26 +50,20 @@ ListView {
                 anchors.centerIn: cardDelegate
                 Component.onDestruction: destroyTextFrame(cardImgDelegate)
 
-                states: State {
-                    name: "hovered"
-                    PropertyChanges {
-                        target: cardImgDelegate
-                        z: 100
-                    }
-                    ParentChange {
-                        target: cardImgDelegate
-                        parent: zone.contentItem
-                        scale: 1.1
-                    }
-                    StateChangeScript {
-                        name: "textFrame"
-                        script: createTextFrame(cardImgDelegate);
-                    }
+                SequentialAnimation {
+                    id: mHoverAnim
+                    PropertyAction { target: cardImgDelegate; property: "parent"; value: zone.contentItem }
+                    PropertyAction { target: cardImgDelegate; property: "z"; value: 100 }
+                    PropertyAction { target: cardImgDelegate; property: "scale"; value: 1.1 }
+                    PropertyAction { target: cardImgDelegate; property: "x"; value: model.index * root.cardWidth * (1 - mMarginModifier) }
+                    ScriptAction { script: createTextFrame(cardImgDelegate); }
                 }
-
-                transitions: Transition {
-                    from: "hovered"
-                    to: ""
+                SequentialAnimation {
+                    id: mUnhoverAnim
+                    PropertyAction { target: cardImgDelegate; property: "parent"; value: cardDelegate }
+                    PropertyAction { target: cardImgDelegate; property: "z"; value: 0 }
+                    PropertyAction { target: cardImgDelegate; property: "scale"; value: 1 }
+                    PropertyAction { target: cardImgDelegate; property: "x"; value: 0 }
                     ScriptAction { script: destroyTextFrame(cardImgDelegate); }
                 }
             }

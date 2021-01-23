@@ -25,7 +25,13 @@ Item {
             name: "oppTurn"
             PropertyChanges { target: oppText; visible: true }
             PropertyChanges { target: hourglass; visible: false }
+        },
+        State {
+            name: "waiting"
+            PropertyChanges { target: oppText; visible: false }
+            PropertyChanges { target: hourglass; visible: true }
         }
+
     ]
     Image {
         id: btnNormal

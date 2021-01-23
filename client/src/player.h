@@ -86,6 +86,7 @@ private:
     void moveClockToWr();
     void endOfAttack();
     void encoreStep();
+    void refresh();
 
 public slots:
     void cardPlayed(int handId, int stageId);

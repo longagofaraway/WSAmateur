@@ -10,9 +10,7 @@
 #include "phaseEvent.pb.h"
 
 ServerGame::ServerGame(int id, std::string description)
-    : mId(id), mNextPlayerId(0), mDescription(description) {
-
-}
+    : mId(id), mNextPlayerId(0), mDescription(description) {}
 
 void ServerGame::sendPublicEvent(const ::google::protobuf::Message &event, int senderId) {
     for (auto &playersEntry: mPlayers) {

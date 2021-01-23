@@ -27,20 +27,19 @@ set(commonSources
     serverStage.h
     )
 
+find_package(Qt5 COMPONENTS Quick REQUIRED)
+
 add_library(wsamateurCommon STATIC ${commonSources})
 
 target_include_directories(wsamateurCommon
     INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
-        ${Qt5Core_INCLUDE_DIRS}
+        ${QtCore_INCLUDE_DIRS}
 )
 
-target_compile_features(wsamateurCommon PRIVATE cxx_std_17)
+target_compile_features(wsamateurCommon PRIVATE cxx_std_20)
 
-if (MSVC)
-    target_compile_options(wsamateurCommon PRIVATE "/wd4251")
-endif()
-
-target_link_libraries(wsamateurCommon PUBLIC wsamateurProto)
+target_link_libraries(wsamateurCommon PUBLIC wsamateurProto
+    PRIVATE Qt5::Core)
 

@@ -30,7 +30,7 @@ void AsyncImageResponse::run() {
 }
 
 bool AsyncImageResponse::loadFromDisk() {
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     appData += "/downloadedPics";
 
     auto start = mId.indexOf('/');

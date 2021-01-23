@@ -9,6 +9,7 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
+#include "coroutineTask.h"
 #include "cardDatabase.h"
 #include "serverCardZone.h"
 #include "serverGame.h"

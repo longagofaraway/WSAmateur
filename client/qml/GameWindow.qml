@@ -80,15 +80,6 @@ Item {
             waitAnim.start();
         }
 
-        function changeState() {
-            if (mainButton.state === "")
-                mainButton.state = "active";
-            else if (mainButton.state === "active")
-                mainButton.state = "oppTurn";
-            else
-                mainButton.state = "";
-        }
-
         function createHelpText(mainText, subText) {
             let comp = Qt.createComponent("HelpText.qml");
             mHelpText = comp.createObject(gGame);

@@ -11,6 +11,7 @@ message GameEvent {
 
 message EventStartTurn { }
 message EventLevelUp {}
+message EventRefresh {}
 message EventDeclareAttack {
     sint32 stageId = 1;
     AttackType attackType = 2;
