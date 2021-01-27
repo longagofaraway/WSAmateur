@@ -31,7 +31,6 @@ Item {
             PropertyChanges { target: oppText; visible: false }
             PropertyChanges { target: hourglass; visible: true }
         }
-
     ]
     Image {
         id: btnNormal

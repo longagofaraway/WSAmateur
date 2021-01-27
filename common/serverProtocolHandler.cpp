@@ -62,9 +62,6 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
     if (!player)
         return;
 
-    if (!player->expectsCommand(cmd))
-        return;
-
     player->processGameCommand(cmd);
 }
 

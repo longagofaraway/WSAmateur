@@ -6,12 +6,13 @@
 #include <google/protobuf/message.h>
 
 #include "attackType.pb.h"
+#include "gameCommand.pb.h"
 
+#include "coroutineTask.h"
 #include "commands.h"
 #include "deckList.h"
 #include "serverCardZone.h"
 
-class GameCommand;
 class ServerGame;
 class ServerProtocolHandler;
 
@@ -37,7 +38,6 @@ class ServerPlayer
 
     ServerCard *mAttackingCard = nullptr;
     AttackType mAttackType;
-
     int mLevel = 0;
 
 public:
@@ -92,9 +92,8 @@ public:
     void damageStep();
     void levelUp();
     void performLevelUp(const CommandLevelUp &cmd);
-    void encoreStep();
+    Resumable encoreStep();
     void encoreCharacter(const CommandEncoreCharacter &cmd);
-    void endEncore();
     void endPhase();
 
     void addAttributeBuff(CardAttribute attr, int pos, int delta, int duration = 1);

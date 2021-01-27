@@ -9,7 +9,6 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
-#include "coroutineTask.h"
 #include "cardDatabase.h"
 #include "serverCardZone.h"
 #include "serverGame.h"
@@ -20,6 +19,14 @@ ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int 
     : mGame(game), mClient(client), mId(id) { }
 
 void ServerPlayer::processGameCommand(GameCommand &cmd) {
+    if (!expectsCommand(cmd))
+        return;
+
+    if (mGame->taskInProgress()) {
+        mGame->passCmdToTask(cmd);
+        return;
+    }
+
     if (cmd.command().Is<CommandSetDeck>()) {
         CommandSetDeck setDeckCmd;
         cmd.command().UnpackTo(&setDeckCmd);
@@ -63,10 +70,8 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandEncoreCharacter encoreCmd;
         cmd.command().UnpackTo(&encoreCmd);
         encoreCharacter(encoreCmd);
-    } else if (cmd.command().Is<CommandEndTurn>()) {
-        endEncore();
     } else if (cmd.command().Is<CommandEncoreStep>()) {
-        mGame->encoreStep();
+        mGame->startAsyncTask(mGame->encoreStep());
     }
 }
 
@@ -409,7 +414,7 @@ void ServerPlayer::attackDeclarationStep() {
         addExpectedCommand(CommandEncoreStep::GetDescriptor()->name());
         sendToBoth(EventAttackDeclarationStep());
     } else {
-        mGame->encoreStep();
+        mGame->startAsyncTask(mGame->encoreStep());
     }
 }
 
@@ -544,25 +549,45 @@ void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
     }
 }
 
-void ServerPlayer::encoreStep() {
+Resumable ServerPlayer::encoreStep() {
     clearExpectedComands();
 
     auto stage = zone("stage");
-    bool needEncore = false;
-    for (int i = 0; i < 5; ++i) {
-        auto card = stage->card(i);
-        if (card && card->state() == StateReversed) {
-            needEncore = true;
-            break;
+    auto needEncore = [stage]() {
+        for (int i = 0; i < 5; ++i) {
+            auto card = stage->card(i);
+            if (card && card->state() == StateReversed)
+                return true;
         }
-    }
+        return false;
+    };
 
-    if (needEncore) {
+    if (needEncore()) {
         addExpectedCommand(CommandEncoreCharacter::GetDescriptor()->name());
         addExpectedCommand(CommandEndTurn::GetDescriptor()->name());
-        sendToBoth(EventEncoreStep());
-    } else {
-        endEncore();
+
+        while (true) {
+            sendToBoth(EventEncoreStep());
+            auto cmd = co_await waitForCommand();
+
+            if (cmd.command().Is<CommandEncoreCharacter>()) {
+                CommandEncoreCharacter encoreCmd;
+                cmd.command().UnpackTo(&encoreCmd);
+                encoreCharacter(encoreCmd);
+                if (!needEncore())
+                    break;
+            } else if (cmd.command().Is<CommandEndTurn>()) {
+                for (int i = 0; i < 5; ++i) {
+                    auto card = stage->card(i);
+                    if (card && card->state() == StateReversed) {
+                        moveCard("stage", i, "wr");
+                    }
+                }
+                break;
+            }
+        }
+
+        clearExpectedComands();
     }
 }
 
@@ -577,38 +602,7 @@ void ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
 
     moveCard("stage", cmd.stageid(), "wr");
 
-    bool needEncore = false;
-    for (int i = 0; i < 5; ++i) {
-        auto card = stage->card(i);
-        if (card && card->state() == StateReversed) {
-            needEncore = true;
-            break;
-        }
-    }
-
-    if (!needEncore)
-        endEncore();
-    else
-        sendToBoth(EventEncoreStep());
-}
-
-void ServerPlayer::endEncore() {
-    clearExpectedComands();
-
-    auto stage = zone("stage");
-    for (int i = 0; i < 5; ++i) {
-        auto card = stage->card(i);
-        if (card && card->state() == StateReversed) {
-            moveCard("stage", i, "wr");
-        }
-    }
-
-    if (mActive) {
-        mGame->opponentOfPlayer(mId)->encoreStep();
-        return;
-    }
-
-    mGame->endPhase();
+    // ...
 }
 
 void ServerPlayer::endPhase() {

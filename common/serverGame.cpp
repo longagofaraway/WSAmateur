@@ -12,6 +12,16 @@
 ServerGame::ServerGame(int id, std::string description)
     : mId(id), mNextPlayerId(0), mDescription(description) {}
 
+void ServerGame::startAsyncTask(Resumable &&task) {
+    if (!task.resume())
+        setTask(std::move(task));
+}
+
+void ServerGame::passCmdToTask(const GameCommand &cmd) {
+    if (mTask->passCommand(cmd))
+        mTask.reset();
+}
+
 void ServerGame::sendPublicEvent(const ::google::protobuf::Message &event, int senderId) {
     for (auto &playersEntry: mPlayers) {
         if (playersEntry.first == senderId)
@@ -145,10 +155,15 @@ void ServerGame::battleStep() {
     attPlayer->endOfAttack();
 }
 
-void ServerGame::encoreStep() {
+Resumable ServerGame::encoreStep() {
     auto turnPlayer = activePlayer();
-    opponentOfPlayer(turnPlayer->id())->clearExpectedComands();
-    turnPlayer->encoreStep();
+    auto opponent = opponentOfPlayer(turnPlayer->id());
+    opponent->clearExpectedComands();
+
+    co_await turnPlayer->encoreStep();
+    co_await opponent->encoreStep();
+
+    endPhase();
 }
 
 void ServerGame::endPhase() {
