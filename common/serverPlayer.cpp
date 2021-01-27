@@ -43,7 +43,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandClockPhase>()) {
         CommandClockPhase clockCmd;
         cmd.command().UnpackTo(&clockCmd);
-        processClockPhaseResult(clockCmd);
+        mGame->startAsyncTask(processClockPhaseResult(clockCmd));
     } else if (cmd.command().Is<CommandPlayCard>()) {
         CommandPlayCard playCmd;
         cmd.command().UnpackTo(&playCmd);
@@ -61,11 +61,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         cmd.command().UnpackTo(&declareAttackCmd);
         declareAttack(declareAttackCmd);
     } else if (cmd.command().Is<CommandTakeDamage>()) {
-        damageStep();
-    } else if (cmd.command().Is<CommandLevelUp>()) {
-        CommandLevelUp levelUpCmd;
-        cmd.command().UnpackTo(&levelUpCmd);
-        performLevelUp(levelUpCmd);
+        mGame->startAsyncTask(damageStep());
     } else if (cmd.command().Is<CommandEncoreCharacter>()) {
         CommandEncoreCharacter encoreCmd;
         cmd.command().UnpackTo(&encoreCmd);
@@ -236,7 +232,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
 
     ServerCard *card = targetZone->addCard(std::move(cardPtr));
 
-    if (startZoneName == "stage" && startZoneName != "stage")
+    if (startZoneName == "stage" && targetZoneName != "stage")
         card->reset();
 
     EventMoveCard eventPublic;
@@ -270,10 +266,11 @@ void ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
         refresh();
 }
 
-void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
+Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
     if (cmd.count()) {
         moveCard("hand", cmd.cardid(), "clock");
-        //check for levelup
+        if (zone("clock")->count() >= 7)
+            co_await levelUp();
         drawCards(2);
     }
 
@@ -490,12 +487,12 @@ void ServerPlayer::counterStep() {
     sendToBoth(EventCounterStep());
 }
 
-void ServerPlayer::damageStep() {
+Resumable ServerPlayer::damageStep() {
     mGame->setPhase(Phase::DamageStep);
     clearExpectedComands();
     auto attCard = mGame->opponentOfPlayer(mId)->attackingCard();
     if (!attCard)
-        return;
+        co_return;
 
     auto resZone = zone("res");
     bool canceled = false;
@@ -503,7 +500,7 @@ void ServerPlayer::damageStep() {
         moveTopDeck("res");
         auto card = resZone->topCard();
         if (!card)
-            return;
+            co_return;
         if (card->type() == CardType::Climax) {
             canceled = true;
             break;
@@ -513,30 +510,33 @@ void ServerPlayer::damageStep() {
     while (resZone->card(0))
         moveCard("res", 0, canceled ? "wr" : "clock");
 
-    if (zone("clock")->count() >= 7) {
-        levelUp();
-        return;
-    }
+    if (zone("clock")->count() >= 7)
+        co_await levelUp();
 
     mGame->battleStep();
 }
 
-void ServerPlayer::levelUp() {
+Resumable ServerPlayer::levelUp() {
     clearExpectedComands();
     addExpectedCommand(CommandLevelUp::GetDescriptor()->name());
     sendToBoth(EventLevelUp());
-}
 
-void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
-    if (cmd.clockid() > 6)
-        return;
+    auto cmd = co_await waitForCommand();
+
+    if (!cmd.command().Is<CommandLevelUp>())
+        co_return;
+
+    CommandLevelUp lvlCmd;
+    cmd.command().UnpackTo(&lvlCmd);
+    if (lvlCmd.clockid() > 6)
+        co_return;
 
     auto clock = zone("clock");
     if (clock->count() < 7)
-        return;
+        co_return;
 
-    if (!moveCard("clock", cmd.clockid(), "level"))
-        return;
+    if (!moveCard("clock", lvlCmd.clockid(), "level"))
+        co_return;
 
     clearExpectedComands();
 
@@ -548,10 +548,6 @@ void ServerPlayer::performLevelUp(const CommandLevelUp& cmd) {
     }
 
     sendToBoth(EventClockToWr());
-
-    if (mGame->phase() == Phase::DamageStep) {
-        mGame->battleStep();
-    }
 }
 
 Resumable ServerPlayer::encoreStep() {

@@ -77,7 +77,7 @@ public:
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName);
     bool moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName);
     void moveTopDeck(std::string_view targetZoneName);
-    void processClockPhaseResult(const CommandClockPhase &cmd);
+    Resumable processClockPhaseResult(CommandClockPhase cmd);
     void playCard(const CommandPlayCard &cmd);
     void playCharacter(const CommandPlayCard &cmd);
     void playClimax(int handIndex);
@@ -89,9 +89,8 @@ public:
     void declareAttack(const CommandDeclareAttack &cmd);
     void triggerStep(int pos);
     void counterStep();
-    void damageStep();
-    void levelUp();
-    void performLevelUp(const CommandLevelUp &cmd);
+    Resumable damageStep();
+    Resumable levelUp();
     Resumable encoreStep();
     void encoreCharacter(const CommandEncoreCharacter &cmd);
     Resumable endPhase();
