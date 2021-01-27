@@ -35,4 +35,5 @@ public:
     void mainPhase();
     void endMainPhase();
     void discardCard();
+    void deactivateDiscarding();
 };

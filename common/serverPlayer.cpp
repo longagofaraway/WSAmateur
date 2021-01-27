@@ -185,6 +185,8 @@ void ServerPlayer::dealStartingHand() {
     EventInitialHand eventPublic(eventPrivate);
     for (int i = 0; i < 5; ++i) {
         auto card = deck->takeTopCard();
+        if (!card)
+            continue;
         auto code = eventPrivate.add_codes();
         *code = card->code();
         hand->addCard(std::move(card));
@@ -208,11 +210,8 @@ void ServerPlayer::mulligan(const CommandMulligan &cmd) {
 }
 
 void ServerPlayer::drawCards(int number) {
-    auto deck = zone("deck");
-
-    for (int i = 0; i < number; ++i) {
-        moveCard("deck", deck->count() - 1, "hand");
-    }
+    for (int i = 0; i < number; ++i)
+        moveTopDeck("hand");
 }
 
 void ServerPlayer::moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName) {
@@ -266,12 +265,15 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
 void ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
     auto deck = zone("deck");
     moveCard("deck", deck->count() - 1, targetZoneName);
-    // check for refresh
+
+    if (deck->count() == 0)
+        refresh();
 }
 
 void ServerPlayer::processClockPhaseResult(const CommandClockPhase &cmd) {
     if (cmd.count()) {
         moveCard("hand", cmd.cardid(), "clock");
+        //check for levelup
         drawCards(2);
     }
 
@@ -469,6 +471,8 @@ void ServerPlayer::addAttributeBuff(CardAttribute attr, int pos, int delta, int 
 void ServerPlayer::triggerStep(int pos) {
     moveTopDeck("res");
     auto card = zone("res")->card(0);
+    if (!card)
+        return;
     for (auto trigger: card->triggers()) {
         switch(trigger) {
         case Trigger::Soul:
@@ -498,7 +502,8 @@ void ServerPlayer::damageStep() {
     for (int i = 0; i < attCard->soul(); ++i) {
         moveTopDeck("res");
         auto card = resZone->topCard();
-        assert(card);
+        if (!card)
+            return;
         if (card->type() == CardType::Climax) {
             canceled = true;
             break;
@@ -630,6 +635,23 @@ Resumable ServerPlayer::endPhase() {
         moveCard("climax", 0, "wr");
 
     endOfTurnEffectValidation();
+}
+
+void ServerPlayer::refresh() {
+    auto deck = zone("deck");
+    auto wr = zone("wr");
+    int count = wr->count();
+    if (!count)
+        // game ends
+        return;
+    for (int i = 0; i < count; ++i) {
+        auto card = wr->takeTopCard();
+        deck->addCard(std::move(card));
+    }
+    deck->shuffle();
+    sendToBoth(EventRefresh());
+
+    //resolve refresh point
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {

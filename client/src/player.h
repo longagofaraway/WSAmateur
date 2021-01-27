@@ -44,6 +44,7 @@ public:
     }
     bool activePlayer() const { return mActivePlayer; }
     void setActivePlayer(bool active) { mActivePlayer = active; }
+    void setDeck(const std::string &deck);
 
     int id() const { return mId; }
     CardZone* zone(std::string_view name) const;

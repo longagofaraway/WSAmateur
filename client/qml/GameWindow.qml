@@ -88,12 +88,14 @@ Item {
         }
 
         function startHelpTextDestruction() {
+            gGame.startUiAction();
             mHelpText.startDestroy();
         }
 
         function destroyHelpText() {
             mHelpText.destroy();
             mHelpText = null;
+            gGame.uiActionComplete();
         }
 
         function startMulligan(firstTurn) {

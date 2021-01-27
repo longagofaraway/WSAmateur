@@ -66,3 +66,7 @@ void Hand::discardCard() {
     mQmlHand->connect(mQmlHand, SIGNAL(cardChosen(int)), mPlayer, SLOT(sendDiscardCard(int)));
 }
 
+void Hand::deactivateDiscarding() {
+    mQmlHand->disconnect(mQmlHand, SIGNAL(cardChosen(int)), mPlayer, SLOT(sendDiscardCard(int)));
+}
+

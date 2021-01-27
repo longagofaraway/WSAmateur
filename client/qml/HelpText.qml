@@ -46,6 +46,7 @@ Item {
     NumberAnimation on opacity { to: 1; duration: 100 }
     SequentialAnimation {
         id: destroyAnim
+        alwaysRunToEnd: true
         NumberAnimation { target: thisItem; id: anim; property: "opacity"; to: 0; duration: 100; }
         ScriptAction { script: gGame.destroyHelpText() }
     }

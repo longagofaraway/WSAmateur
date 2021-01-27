@@ -17,6 +17,8 @@ class QQmlContext;
 class LocalServer;
 class Client;
 
+extern std::string gDeck;
+
 class Game : public QQuickItem
 {
     Q_OBJECT

@@ -15,6 +15,19 @@
 #include <QTimer>
 #include <QDebug>
 
+std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
+    <deck version="1">
+    <deckname>Vivid Green 2</deckname>
+    <comments></comments>
+    <main>
+        <card number="4" code="IMC/W43-127"/>
+        <card number="8" code="IMC/W43-046"/>
+        <card number="1" code="IMC/W43-009"/>
+        <card number="1" code="IMC/W43-111"/>
+        <card number="4" code="IMC/W43-091"/>
+    </main>
+</deck>)delim";
+
 Game::Game() {
     qRegisterMetaType<std::shared_ptr<EventGameJoined>>("std::shared_ptr<EventGameJoined>");
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
@@ -87,21 +100,10 @@ void Game::localGameCreated(const std::shared_ptr<EventGameJoined> event) {
 void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
     mOpponent = std::make_unique<Player>(event->playerid(), this, true);
 
-    std::string deck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
-        <deck version="1">
-        <deckname>Vivid Green 2</deckname>
-        <comments></comments>
-        <main>
-            <card number="8" code="IMC/W43-127"/>
-            <card number="24" code="IMC/W43-046"/>
-            <card number="6" code="IMC/W43-009"/>
-            <card number="4" code="IMC/W43-111"/>
-            <card number="8" code="IMC/W43-091"/>
-        </main>
-    </deck>)delim";
-
+    mPlayer->setDeck(gDeck);
+    mOpponent->setDeck(gDeck);
     CommandSetDeck cmd;
-    cmd.set_deck(deck);
+    cmd.set_deck(gDeck);
     CommandReadyToStart cmd2;
     cmd2.set_ready(true);
     for (auto &client: mClients) {
@@ -267,8 +269,10 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
     if (event->event().Is<EventInitialHand>()) {
         EventInitialHand ev;
         event->event().UnpackTo(&ev);
-        for (int i = 0; i < ev.codes_size(); ++i)
+        for (int i = 0; i < ev.codes_size(); ++i) {
+            mOpponent->zone("deck")->model().removeCard(mOpponent->zone("deck")->model().count());
             hand.addCard(ev.codes(i));
+        }
         CommandMulligan cmd;
         //cmd.add_ids(0);
         //cmd.add_ids(2);

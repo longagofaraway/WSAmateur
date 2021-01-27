@@ -7,8 +7,6 @@
 
 Deck::Deck(Player *player, Game *game)
     : mPlayer(player), mGame(game) {
-    mCardsModel.addCards(50);
-
     QQmlComponent component(mGame->engine(), "qrc:/qml/Deck.qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame);
     context->setContextProperty("innerModel", QVariant::fromValue(&mCardsModel));
@@ -17,5 +15,4 @@ Deck::Deck(Player *player, Game *game)
     mQmlObject->setParentItem(mGame);
     mQmlObject->setParent(mGame);
     mQmlObject->setProperty("opponent", player->isOpponent());
-
 }

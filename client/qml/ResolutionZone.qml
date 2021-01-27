@@ -104,6 +104,10 @@ ListView {
                     textFrame.y = cardMappedPoint.y;
                 }
 
+                if (frameParent.state !== "hovered") {
+                    textFrame.destroy();
+                    return;
+                }
                 textFrame.visible = true;
                 frameParent.cardTextFrame = textFrame;
             }

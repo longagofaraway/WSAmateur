@@ -7,6 +7,15 @@ Card {
     property bool opponent
     property bool hidden: true
     property CardModel mModel: innerModel
+    Connections {
+        target: mModel
+        function onCountChanged() {
+            if (mModel.count == 0)
+                deck.visible = false;
+            else if (mModel.count > 0 && !deck.visible)
+                deck.visible = true;
+        }
+    }
 
     mSource: "cardback"
     rotation: opponent ? 180 : 0

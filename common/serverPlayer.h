@@ -95,6 +95,7 @@ public:
     Resumable encoreStep();
     void encoreCharacter(const CommandEncoreCharacter &cmd);
     Resumable endPhase();
+    void refresh();
 
     void addAttributeBuff(CardAttribute attr, int pos, int delta, int duration = 1);
     void setCardState(ServerCard *card, CardState state);

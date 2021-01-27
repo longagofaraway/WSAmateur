@@ -15,6 +15,7 @@
 #include "cardDatabase.h"
 #include "commonCardZone.h"
 #include "deck.h"
+#include "deckList.h"
 #include "game.h"
 #include "hand.h"
 #include "stage.h"
@@ -54,6 +55,18 @@ Player::Player(int id, Game *game, bool opponent)
     mZones.emplace("climax", std::move(climax));
     auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "ResolutionZone");
     mZones.emplace("res", std::move(resolutionZone));
+}
+
+void Player::setDeck(const std::string &deck) {
+    DeckList decklist(deck);
+    int cardCount = 0;
+    for (auto &card: decklist.cards()) {
+        auto cardInfo = CardDatabase::get().getCard(card.code);
+        for (int i = 0; i < card.count; ++i)
+            cardCount++;
+    }
+
+    zone("deck")->model().addCards(cardCount);
 }
 
 CardZone* Player::zone(std::string_view name) const {
@@ -194,6 +207,7 @@ void Player::clockPhaseFinished() {
         if (cards[i].selected()) {
             cmd.set_count(1);
             cmd.set_cardid(i);
+            break;
         }
     }
 
@@ -237,12 +251,17 @@ void Player::sendEndTurnCommand() {
 }
 
 void Player::setInitialHand(const EventInitialHand &event) {
+    auto deck = zone("deck");
     if (!event.codes_size()) {
-        for (int i = 0; i < event.count(); ++i)
+        for (int i = 0; i < event.count(); ++i) {
+            deck->model().removeCard(deck->model().count() - 1);
             mHand->addCard();
+        }
     } else {
-        for (int i = 0; i < event.codes_size(); ++i)
+        for (int i = 0; i < event.codes_size(); ++i) {
+            deck->model().removeCard(deck->model().count() - 1);
             mHand->addCard(event.codes(i));
+        }
     }
 
     if (mOpponent)
@@ -446,6 +465,9 @@ void Player::refresh() {
 }
 
 void Player::discardTo7() {
+    if (mOpponent)
+        return;
+
     mGame->discardTo7();
     mHand->discardCard();
 }
@@ -469,6 +491,8 @@ void Player::sendEncore(int pos) {
 
 void Player::sendDiscardCard(int id) {
     mGame->clearHelpText();
+    mHand->deactivateDiscarding();
+
     CommandMoveCard cmd;
     cmd.set_startid(id);
     cmd.set_startzone("hand");
