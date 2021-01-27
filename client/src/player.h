@@ -89,6 +89,7 @@ private:
     void encoreStep();
     void refresh();
     void discardTo7();
+    void endGame(bool victory);
 
 public slots:
     void cardPlayed(int handId, int stageId);

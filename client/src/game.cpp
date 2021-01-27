@@ -20,11 +20,11 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="4" code="IMC/W43-127"/>
-        <card number="8" code="IMC/W43-046"/>
-        <card number="1" code="IMC/W43-009"/>
-        <card number="1" code="IMC/W43-111"/>
-        <card number="4" code="IMC/W43-091"/>
+        <card number="8" code="IMC/W43-127"/>
+        <card number="26" code="IMC/W43-046"/>
+        <card number="4" code="IMC/W43-009"/>
+        <card number="4" code="IMC/W43-111"/>
+        <card number="8" code="IMC/W43-091"/>
     </main>
 </deck>)delim";
 
@@ -250,6 +250,16 @@ void Game::discardTo7() {
 
 void Game::clearHelpText() {
     QMetaObject::invokeMethod(this, "clearHelpText");
+}
+
+void Game::endGame(bool victory) {
+    QMetaObject::invokeMethod(this, "endGame", Q_ARG(QVariant, victory));
+
+    disconnect(mClients.front().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
+               this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
+    disconnect(mClients.back().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
+               this, SLOT(processGameEventByOpponent(const std::shared_ptr<GameEvent>)));
+    mEventQueue.clear();
 }
 
 

@@ -24,6 +24,7 @@ enum class Phase {
 class ServerGame
 {
     int mId;
+    bool mGameEnded = false;
     int mNextPlayerId;
     std::string mDescription;
     std::unordered_map<int, std::unique_ptr<ServerPlayer>> mPlayers;
@@ -39,7 +40,10 @@ public:
     bool taskInProgress() const { return mTask.has_value(); }
     void startAsyncTask(Resumable&& task);
     void passCmdToTask(const GameCommand &cmd);
+    void deleteTask() { mTask.reset(); }
 
+    bool ended() const { return mGameEnded; }
+    void setEnded() { mGameEnded = true; }
     std::unordered_map<int, std::unique_ptr<ServerPlayer>>& players() {
         return mPlayers;
     }

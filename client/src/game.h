@@ -81,6 +81,7 @@ public:
     void pauseEncoreStep();
     void discardTo7();
     void clearHelpText();
+    void endGame(bool victory);
 
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);

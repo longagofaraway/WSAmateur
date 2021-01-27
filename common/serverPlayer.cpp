@@ -69,6 +69,13 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandEncoreStep>()) {
         mGame->startAsyncTask(mGame->encoreStep());
     }
+
+    if (mGame->ended()) {
+        clearExpectedComands();
+        mGame->opponentOfPlayer(mId)->clearExpectedComands();
+        if (mGame->taskInProgress())
+            mGame->deleteTask();
+    }
 }
 
 void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event, int playerId) {
@@ -518,6 +525,11 @@ Resumable ServerPlayer::damageStep() {
 
 Resumable ServerPlayer::levelUp() {
     clearExpectedComands();
+
+    if (zone("level")->count() == 3) {
+        sendEndGame(false);
+        co_await std::suspend_always();
+    }
     addExpectedCommand(CommandLevelUp::GetDescriptor()->name());
     sendToBoth(EventLevelUp());
 
@@ -637,9 +649,10 @@ void ServerPlayer::refresh() {
     auto deck = zone("deck");
     auto wr = zone("wr");
     int count = wr->count();
-    if (!count)
-        // game ends
+    if (!count) {
+        sendEndGame(false);
         return;
+    }
     for (int i = 0; i < count; ++i) {
         auto card = wr->takeTopCard();
         deck->addCard(std::move(card));
@@ -648,6 +661,18 @@ void ServerPlayer::refresh() {
     sendToBoth(EventRefresh());
 
     //resolve refresh point
+}
+
+void ServerPlayer::sendEndGame(bool victory) {
+    mGame->setEnded();
+
+    EventGameEnded event;
+    event.set_victory(victory);
+    sendGameEvent(event);
+
+    EventGameEnded eventOpp;
+    eventOpp.set_victory(!victory);
+    sendGameEvent(eventOpp, mGame->opponentOfPlayer(mId)->id());
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {

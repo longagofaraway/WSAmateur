@@ -39,8 +39,8 @@
         <file>resources/images/wrClimaxCount.png</file>
         <file>resources/images/closeButton.png</file>
         <file>resources/images/closeButtonHighlighted.png</file>
-		
         <file>qml/ResolutionZone.qml</file>
         <file>qml/CardGlow.qml</file>
+        <file>qml/EndOfGame.qml</file>
     </qresource>
 </RCC>

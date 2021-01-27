@@ -28,3 +28,7 @@ message EventSetCardState {
     sint32 stageid = 1;
     CardState state = 2;
 }
+
+message EventGameEnded {
+    bool victory = 1;
+}

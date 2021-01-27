@@ -129,6 +129,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         refresh();
     } else if (event->event().Is<EventDiscardDownTo7>()) {
         discardTo7();
+    } else if (event->event().Is<EventGameEnded>()) {
+        EventGameEnded ev;
+        event->event().UnpackTo(&ev);
+        endGame(ev.victory());
     }
 }
 
@@ -470,6 +474,10 @@ void Player::discardTo7() {
 
     mGame->discardTo7();
     mHand->discardCard();
+}
+
+void Player::endGame(bool victory) {
+    mGame->endGame(victory);
 }
 
 void Player::cardSelectedForLevelUp(int index) {

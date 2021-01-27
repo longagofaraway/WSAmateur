@@ -145,6 +145,14 @@ Item {
             indicator.startAnimation();
         }
 
+        function endGame(victory) {
+            mainButton.state = "waiting";
+            let comp = Qt.createComponent("EndOfGame.qml");
+            let indicator = comp.createObject(gGame);
+            indicator.victory = victory;
+            indicator.startAnimation();
+        }
+
         function clockPhase() {
             createHelpText("Choose up to 1 card to send to Clock");
             mainButton.state = "active";
