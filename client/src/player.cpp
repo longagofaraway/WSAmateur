@@ -114,6 +114,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         endOfAttack();
     } else if (event->event().Is<EventRefresh>()) {
         refresh();
+    } else if (event->event().Is<EventDiscardDownTo7>()) {
+        discardTo7();
     }
 }
 
@@ -443,6 +445,11 @@ void Player::refresh() {
     }
 }
 
+void Player::discardTo7() {
+    mGame->discardTo7();
+    mHand->discardCard();
+}
+
 void Player::cardSelectedForLevelUp(int index) {
     mGame->endLevelUp();
 
@@ -457,6 +464,15 @@ void Player::sendEncore(int pos) {
 
     CommandEncoreCharacter cmd;
     cmd.set_stageid(pos);
+    sendGameCommand(cmd);
+}
+
+void Player::sendDiscardCard(int id) {
+    mGame->clearHelpText();
+    CommandMoveCard cmd;
+    cmd.set_startid(id);
+    cmd.set_startzone("hand");
+    cmd.set_targetzone("wr");
     sendGameCommand(cmd);
 }
 

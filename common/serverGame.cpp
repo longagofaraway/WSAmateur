@@ -163,15 +163,8 @@ Resumable ServerGame::encoreStep() {
     co_await turnPlayer->encoreStep();
     co_await opponent->encoreStep();
 
-    endPhase();
-}
-
-void ServerGame::endPhase() {
-    auto turnPlayer = activePlayer();
-    auto opp = opponentOfPlayer(turnPlayer->id());
-    turnPlayer->endPhase();
+    co_await turnPlayer->endPhase();
     turnPlayer->setActive(false);
-    opp->setActive(true);
-    opp->startTurn();
+    opponent->setActive(true);
+    opponent->startTurn();
 }
-

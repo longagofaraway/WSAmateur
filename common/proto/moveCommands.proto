@@ -23,3 +23,10 @@ message CommandChooseCard {
     repeated sint32 ids = 1;
     string zone = 2;
 }
+
+message CommandMoveCard {
+    sint32 startId = 1;
+    string startZone = 2;
+    sint32 targetId = 3;
+    string targetZone = 4;
+}

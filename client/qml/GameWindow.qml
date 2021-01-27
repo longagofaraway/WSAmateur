@@ -239,6 +239,15 @@ Item {
             startHelpTextDestruction();
             mainButton.state = "waiting";
         }
+
+        function discardTo7() {
+            createHelpText("Discard cards from your hand down to 7");
+            mainButton.state = "waiting";
+        }
+
+        function clearHelpText() {
+            startHelpTextDestruction();
+        }
     }
 
     Button {

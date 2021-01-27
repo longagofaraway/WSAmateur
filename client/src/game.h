@@ -77,6 +77,8 @@ public:
     void endLevelUp();
     void encoreStep();
     void pauseEncoreStep();
+    void discardTo7();
+    void clearHelpText();
 
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);

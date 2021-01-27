@@ -55,7 +55,6 @@ public:
     void setPhase(Phase phase) { mCurrentPhase = phase; }
     void battleStep();
     Resumable encoreStep();
-    void endPhase();
 
     void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 

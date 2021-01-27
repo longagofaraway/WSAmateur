@@ -605,9 +605,24 @@ void ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
     // ...
 }
 
-void ServerPlayer::endPhase() {
+Resumable ServerPlayer::endPhase() {
+    clearExpectedComands();
     if (mActive) {
-        //discard to 7
+        auto hand = zone("hand");
+        while (hand->count() > 7) {
+            sendToBoth(EventDiscardDownTo7());
+            addExpectedCommand(CommandMoveCard::GetDescriptor()->name());
+            auto cmd = co_await waitForCommand();
+
+            if (cmd.command().Is<CommandMoveCard>()) {
+                CommandMoveCard moveCmd;
+                cmd.command().UnpackTo(&moveCmd);
+                if (moveCmd.startzone() != "hand" || moveCmd.targetzone() != "wr")
+                    continue;
+                moveCard("hand", moveCmd.startid(), "wr");
+            }
+        }
+        clearExpectedComands();
     }
 
     auto climax = zone("climax");

@@ -13,7 +13,7 @@ ServerCard *ServerStage::addCard(std::unique_ptr<ServerCard>) {
 }
 
 std::unique_ptr<ServerCard> ServerStage::takeCard(int index) {
-    if (static_cast<size_t>(index) >= mCards.size())
+    if (index >= static_cast<int>(mCards.size()) || index < 0)
         return {};
 
     auto card = std::move(mCards[index]);

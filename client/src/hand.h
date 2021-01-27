@@ -34,4 +34,5 @@ public:
     void endClockPhase();
     void mainPhase();
     void endMainPhase();
+    void discardCard();
 };

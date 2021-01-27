@@ -242,6 +242,14 @@ void Game::pauseEncoreStep() {
     QMetaObject::invokeMethod(this, "pauseEncoreStep");
 }
 
+void Game::discardTo7() {
+    QMetaObject::invokeMethod(this, "discardTo7");
+}
+
+void Game::clearHelpText() {
+    QMetaObject::invokeMethod(this, "clearHelpText");
+}
+
 
 
 void Game::testAction() {
@@ -297,5 +305,11 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         if (ev.startzone() == "deck" && ev.targetzone() == "hand") {
             hand.addCard(ev.code());
         }
+    } else if (event->event().Is<EventDiscardDownTo7>()) {
+        CommandMoveCard cmd;
+        cmd.set_startid(0);
+        cmd.set_startzone("hand");
+        cmd.set_targetzone("wr");
+        sendGameCommand(cmd, mOpponent->id());
     }
 }

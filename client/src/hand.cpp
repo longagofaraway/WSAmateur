@@ -36,7 +36,6 @@ void Hand::startMulligan() {
 }
 
 void Hand::endMulligan() {
-    //mQmlHand->setState("");
     QMetaObject::invokeMethod(mQmlHand, "endMulligan");
     mQmlHand->disconnect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForMulligan(bool)));
 }
@@ -60,5 +59,10 @@ void Hand::endMainPhase() {
     mQmlHand->setProperty("state", "");
     QMetaObject::invokeMethod(mQmlHand, "glowAllCards", Q_ARG(QVariant, false));
     mQmlHand->disconnect(mQmlHand, SIGNAL(cardPlayed(int, int)), mPlayer, SLOT(cardPlayed(int, int)));
+}
+
+void Hand::discardCard() {
+    QMetaObject::invokeMethod(mQmlHand, "discardCard");
+    mQmlHand->connect(mQmlHand, SIGNAL(cardChosen(int)), mPlayer, SLOT(sendDiscardCard(int)));
 }
 

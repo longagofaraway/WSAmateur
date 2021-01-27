@@ -10,6 +10,7 @@ ListView {
     signal cardSelected(bool selected)
     signal moveFinished()
     signal cardPlayed(int handId, int stageId)
+    signal cardChosen(int id)
     property bool opponent
     property bool hidden: opponent
     property real length: getHandLength(count)
@@ -113,6 +114,8 @@ ListView {
 
             property CardInfoFrame cardTextFrame: null
             property int visualIndex: DelegateModel.itemsIndex
+
+            Component.onDestruction: destroyTextFrame(cardDelegate)
 
             width: root.cardWidth
             height: root.cardHeight
@@ -257,6 +260,12 @@ ListView {
                                 unglowUnselected();
                             else
                                 glowAllCards(true);
+                        } else if (handView.state === "choosing") {
+                            if (!model.glow)
+                                return;
+                            cardChosen(model.index);
+                            glowAllCards(false);
+                            handView.state = "";
                         }
                     }
 
@@ -428,6 +437,11 @@ ListView {
     function endClockPhase() {
         handView.state = "";
         glowAllCards(false);
+    }
+
+    function discardCard() {
+        handView.state = "choosing";
+        glowAllCards(true);
     }
 
     function glowAllCards(glow) {

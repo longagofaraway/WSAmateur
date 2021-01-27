@@ -87,6 +87,7 @@ private:
     void endOfAttack();
     void encoreStep();
     void refresh();
+    void discardTo7();
 
 public slots:
     void cardPlayed(int handId, int stageId);
@@ -95,4 +96,5 @@ public slots:
     void sendAttackDeclaration(int pos, bool sideAttack);
     void cardSelectedForLevelUp(int index);
     void sendEncore(int pos);
+    void sendDiscardCard(int id);
 };
