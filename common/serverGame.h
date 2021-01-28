@@ -48,7 +48,7 @@ public:
         return mPlayers;
     }
     ServerPlayer* player(int id);
-    ServerPlayer* activePlayer();
+    ServerPlayer* activePlayer(bool active = true);
     void addPlayer(ServerProtocolHandler *client);
     ServerPlayer* opponentOfPlayer(int id) const;
     void setStartingPlayer();
@@ -57,6 +57,7 @@ public:
     void endMulligan();
     Phase phase() const { return mCurrentPhase; }
     void setPhase(Phase phase) { mCurrentPhase = phase; }
+    Resumable damageStep();
     void battleStep();
     Resumable encoreStep();
 

@@ -100,25 +100,25 @@ void ServerGame::endMulligan() {
     }
 }
 
-ServerPlayer* ServerGame::activePlayer() {
+
+ServerPlayer* ServerGame::activePlayer(bool active) {
     for (auto &pEntry: mPlayers) {
-        if (pEntry.second->active())
+        if (pEntry.second->active() == active)
             return pEntry.second.get();
     }
     assert(false);
     return nullptr;
 }
 
-void ServerGame::battleStep() {
-    ServerPlayer *attPlayer = nullptr;
-    ServerPlayer *opponent = nullptr;
-    for (auto &pEntry: mPlayers) {
-        if (pEntry.second->active())
-            attPlayer = pEntry.second.get();
-        else
-            opponent = pEntry.second.get();
-    }
+Resumable ServerGame::damageStep() {
+    auto defPlayer = activePlayer(false);
+    co_await defPlayer->damageStep();
+    battleStep();
+}
 
+void ServerGame::battleStep() {
+    ServerPlayer *attPlayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
     if (!attPlayer || !opponent)
         return;
 

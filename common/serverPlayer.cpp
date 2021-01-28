@@ -61,7 +61,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         cmd.command().UnpackTo(&declareAttackCmd);
         declareAttack(declareAttackCmd);
     } else if (cmd.command().Is<CommandTakeDamage>()) {
-        mGame->startAsyncTask(damageStep());
+        mGame->startAsyncTask(mGame->damageStep());
     } else if (cmd.command().Is<CommandEncoreCharacter>()) {
         CommandEncoreCharacter encoreCmd;
         cmd.command().UnpackTo(&encoreCmd);
@@ -486,7 +486,10 @@ void ServerPlayer::triggerStep(int pos) {
     }
     moveCard("res", 0, "stock");
 
-    mGame->opponentOfPlayer(mId)->counterStep();
+    if (attackType() == FrontAttack)
+        mGame->opponentOfPlayer(mId)->counterStep();
+    else
+        mGame->startAsyncTask(mGame->damageStep());
 }
 
 void ServerPlayer::counterStep() {
@@ -506,8 +509,10 @@ Resumable ServerPlayer::damageStep() {
     for (int i = 0; i < attCard->soul(); ++i) {
         moveTopDeck("res");
         auto card = resZone->topCard();
+        // it should be the end of the game since deck AND wr is empty
+        // or some unrecoverable error, so halt execution
         if (!card)
-            co_return;
+            co_await std::suspend_always();
         if (card->type() == CardType::Climax) {
             canceled = true;
             break;
@@ -519,8 +524,6 @@ Resumable ServerPlayer::damageStep() {
 
     if (zone("clock")->count() >= 7)
         co_await levelUp();
-
-    mGame->battleStep();
 }
 
 Resumable ServerPlayer::levelUp() {
@@ -672,7 +675,7 @@ void ServerPlayer::sendEndGame(bool victory) {
 
     EventGameEnded eventOpp;
     eventOpp.set_victory(!victory);
-    sendGameEvent(eventOpp, mGame->opponentOfPlayer(mId)->id());
+    mGame->opponentOfPlayer(mId)->sendGameEvent(eventOpp);
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {
