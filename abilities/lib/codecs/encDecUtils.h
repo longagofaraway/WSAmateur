@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <stdint.h>
 
 inline uint32_t zzenc_32(int32_t n) {
     return ((uint32_t)n << 1) ^ (n >> 31);

@@ -33,7 +33,7 @@ RevealCard decodeRevealCard(Iterator &it, Iterator end) {
 
 MoveCard decodeMoveCard(Iterator &it, Iterator end) {
     MoveCard e;
-    e.executor = decodeEnum<AsnPlayer>(it, end);
+    e.executor = decodeEnum<Player>(it, end);
     e.target = decodeTarget(it, end);
     e.from = decodePlace(it, end);
     e.to = decodeArray(it, end, decodePlace);
@@ -113,7 +113,7 @@ DealDamage decodeDealDamage(Iterator &it, Iterator end) {
 CannotUseBackupOrEvent decodeCannotUseBackupOrEvent(Iterator &it, Iterator end) {
     CannotUseBackupOrEvent e;
     e.what = decodeEnum<BackupOrEvent>(it, end);
-    e.player = decodeEnum<AsnPlayer>(it, end);
+    e.player = decodeEnum<Player>(it, end);
     return e;
 }
 
@@ -176,7 +176,7 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         e.effect = decodePerformEffect(it, end);
         break;
     case EffectType::MoveWrToDeck:
-        e.effect = MoveWrToDeck{ decodeEnum<AsnPlayer>(it, end) };
+        e.effect = MoveWrToDeck{ decodeEnum<Player>(it, end) };
         break;
     case EffectType::FlipOver:
         e.effect = decodeFlipOver(it, end);

@@ -4,6 +4,8 @@
 
 #include <QJsonObject>
 
+using namespace asn;
+
 AttributeGain parseAttributeGain(const QJsonObject &json) {
     if (!json.contains("target") || !json["target"].isObject())
         throw std::runtime_error("no target in AttributeGain");
@@ -83,9 +85,9 @@ MoveCard parseMoveCard(const QJsonObject &json) {
 
     MoveCard e;
     if (json.contains("executor"))
-        e.executor = static_cast<AsnPlayer>(json["executor"].toInt());
+        e.executor = static_cast<Player>(json["executor"].toInt());
     else
-        e.executor = AsnPlayer::Player;
+        e.executor = Player::Player;
     e.target = parseTarget(json["target"].toObject());
     e.from = parsePlace(json["from"].toObject());
     e.to = parseArray(json["to"].toArray(), parsePlace);
@@ -250,7 +252,7 @@ CannotUseBackupOrEvent parseCannotUseBackupOrEvent(const QJsonObject &json) {
 
     CannotUseBackupOrEvent e;
     e.what = static_cast<BackupOrEvent>(json["what"].toInt());
-    e.player = static_cast<AsnPlayer>(json["player"].toInt());
+    e.player = static_cast<Player>(json["player"].toInt());
 
     return e;
 }
@@ -332,7 +334,7 @@ Effect parseEffect(const QJsonObject &json) {
         e.effect = parsePerformEffect(json["effect"].toObject());
         break;
     case EffectType::MoveWrToDeck:
-        e.effect = MoveWrToDeck{ static_cast<AsnPlayer>(json["effect"].toInt()) };
+        e.effect = MoveWrToDeck{ static_cast<Player>(json["effect"].toInt()) };
         break;
     case EffectType::FlipOver:
         e.effect = parseFlipOver(json["effect"].toObject());

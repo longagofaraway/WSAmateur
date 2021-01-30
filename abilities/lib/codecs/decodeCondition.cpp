@@ -10,10 +10,10 @@ ConditionIsCard decodeConditionIsCard(Iterator &it, Iterator end) {
 ConditionHaveCard decodeConditionHaveCard(Iterator &it, Iterator end) {
     ConditionHaveCard c;
     c.invert = decodeBool(it, end);
-    c.who = decodeEnum<AsnPlayer>(it, end);
+    c.who = decodeEnum<Player>(it, end);
     c.howMany = decodeNumber(it, end);
     c.whichCards = decodeCard(it, end);
-    c.where = decodeEnum<AsnZone>(it, end);
+    c.where = decodeEnum<Zone>(it, end);
     c.excludingThis = decodeBool(it, end);
     return c;
 }

@@ -27,6 +27,7 @@ std::string printEventAbility(const EventAbility a) {
     return s;
 }
 
+namespace asn {
 std::string printAbility(const Ability &a) {
     switch (a.type) {
     case AbilityType::Auto:
@@ -36,4 +37,5 @@ std::string printAbility(const Ability &a) {
     }
 
     return "";
+}
 }

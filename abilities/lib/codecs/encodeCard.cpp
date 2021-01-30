@@ -37,6 +37,6 @@ void encodeCardSpecifier(const CardSpecifier &c, Buf &buf) {
     }
 }
 
-void encodeCard(const AsnCard &t, Buf &buf) {
+void encodeCard(const Card &t, Buf &buf) {
     encodeArray(t.cardSpecifiers, buf, encodeCardSpecifier);
 }

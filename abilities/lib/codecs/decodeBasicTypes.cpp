@@ -35,7 +35,7 @@ Multiplier decodeMultiplier(Iterator &it, Iterator end) {
     m.type = decodeEnum<MultiplierType>(it, end);
     if (m.type == MultiplierType::ForEach)
         m.forEach = std::make_shared<Target>(decodeTarget(it, end));
-    m.zone = decodeEnum<AsnZone>(it, end);
+    m.zone = decodeEnum<Zone>(it, end);
 
     return m;
 }
@@ -55,7 +55,7 @@ Place decodePlace(Iterator &it, Iterator end) {
     Place p;
 
     p.pos = decodeEnum<Position>(it, end);
-    p.zone = decodeEnum<AsnZone>(it, end);
+    p.zone = decodeEnum<Zone>(it, end);
     p.owner = decodeEnum<Owner>(it, end);
 
     return p;

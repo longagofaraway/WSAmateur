@@ -6,6 +6,8 @@
 #include "basicTypes.h"
 #include "number.h"
 
+namespace asn {
+
 enum class TargetType : uint8_t {
     ThisCard = 1,
     ChosenCards,
@@ -29,10 +31,12 @@ enum class TargetMode : uint8_t {
 struct TargetSpecificCards {
     TargetMode mode;
     Number number;
-    AsnCard cards;
+    Card cards;
 };
 
 struct Target {
     TargetType type;
     std::optional<TargetSpecificCards> targetSpecification;
 };
+
+}

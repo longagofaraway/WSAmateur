@@ -7,6 +7,8 @@
 #include "basicTypes.h"
 #include "number.h"
 
+namespace asn {
+
 enum class CardSpecifierType : uint8_t {
     CardType = 1,
     Owner,
@@ -81,7 +83,8 @@ struct CardSpecifier {
     > specifier;
 };
 
-// asn - ability syntax notation
-struct AsnCard {
+struct Card {
     std::vector<CardSpecifier> cardSpecifiers;
 };
+
+}

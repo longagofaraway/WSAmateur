@@ -140,7 +140,9 @@ Ability decodeAbility(Iterator &it, Iterator end) {
     return a;
 }
 
+namespace asn {
 Ability decodeAbility(const std::vector<uint8_t> &buf) {
     auto it = buf.begin();
-    return decodeAbility(it, buf.end());
+    return ::decodeAbility(it, buf.end());
+}
 }

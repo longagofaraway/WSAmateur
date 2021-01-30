@@ -54,7 +54,7 @@ std::string printChooseCard(const ChooseCard &e) {
         if (target.type == TargetType::SpecificCards) {
             const auto &spec = *target.targetSpecification;
             if (spec.number.mod == NumModifier::ExactMatch) {
-                if (e.placeType == PlaceType::SpecificPlace && e.place->zone == AsnZone::Stage) {
+                if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
                     s += printDigit(spec.number.value);
                     s += " of ";
                     plural = true;
@@ -66,7 +66,7 @@ std::string printChooseCard(const ChooseCard &e) {
         }
     }
 
-    if (e.placeType == PlaceType::SpecificPlace && e.place->zone != AsnZone::Stage) {
+    if (e.placeType == PlaceType::SpecificPlace && e.place->zone != Zone::Stage) {
         s += "in ";
         if (e.place->owner == Owner::Player)
             s += "your ";

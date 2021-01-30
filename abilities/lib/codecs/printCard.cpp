@@ -1,6 +1,6 @@
 #include "print.h"
 
-std::string printCard(const AsnCard &c, bool plural) {
+std::string printCard(const Card &c, bool plural) {
     std::string s;
 
     if (c.cardSpecifiers.size() == 1 && c.cardSpecifiers[0].type == CardSpecifierType::CardType

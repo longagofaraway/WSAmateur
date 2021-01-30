@@ -7,6 +7,8 @@
 #include "number.h"
 #include "target.h"
 
+namespace asn {
+
 struct Ability;
 struct Effect;
 
@@ -17,7 +19,7 @@ enum class PlaceType : uint8_t {
 
 struct ChooseCard {
     std::vector<Target> targets;
-    std::vector<AsnCard> excluding;
+    std::vector<Card> excluding;
     PlaceType placeType;
     std::optional<Place> place;
 };
@@ -56,7 +58,7 @@ enum class RevealType : uint8_t {
 struct RevealCard {
     RevealType type;
     Number number;
-    std::optional<AsnCard> card;
+    std::optional<Card> card;
 };
 
 enum class Order : uint8_t {
@@ -66,7 +68,7 @@ enum class Order : uint8_t {
 };
 
 struct MoveCard {
-    AsnPlayer executor;
+    Player executor;
     Target target;
     Place from;
     std::vector<Place> to;
@@ -93,7 +95,7 @@ struct PerformEffect {
 
 struct SearchTarget {
     Number number;
-    std::vector<AsnCard> cards;
+    std::vector<Card> cards;
 };
 
 struct SearchCard {
@@ -101,12 +103,12 @@ struct SearchCard {
 };
 
 struct MoveWrToDeck {
-    AsnPlayer executor;
+    Player executor;
 };
 
 struct FlipOver {
     Number number;
-    AsnCard forEach;
+    Card forEach;
     std::vector<Effect> effect;
 };
 
@@ -139,7 +141,7 @@ enum class BackupOrEvent : uint8_t {
 
 struct CannotUseBackupOrEvent {
     BackupOrEvent what;
-    AsnPlayer player;
+    Player player;
 };
 
 struct SwapCards {
@@ -242,3 +244,5 @@ struct Effect {
         HardcodedEffect
     > effect;
 };
+
+}

@@ -5,8 +5,8 @@ PhaseTrigger decodePhaseTrigger(Iterator &it, Iterator end) {
     PhaseTrigger t;
 
     t.state = decodeEnum<PhaseState>(it, end);
-    t.phase = decodeEnum<AsnPhase>(it, end);
-    t.player = decodeEnum<AsnPlayer>(it, end);
+    t.phase = decodeEnum<Phase>(it, end);
+    t.player = decodeEnum<Player>(it, end);
 
     return t;
 }
@@ -15,8 +15,8 @@ ZoneChangeTrigger decodeZoneChangeTrigger(Iterator &it, Iterator end) {
     ZoneChangeTrigger t;
 
     t.target = decodeArray<Target>(it, end, decodeTarget);
-    t.from = decodeEnum<AsnZone>(it, end);
-    t.to = decodeEnum<AsnZone>(it, end);
+    t.from = decodeEnum<Zone>(it, end);
+    t.to = decodeEnum<Zone>(it, end);
 
     return t;
 }

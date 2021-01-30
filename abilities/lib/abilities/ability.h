@@ -9,6 +9,8 @@
 #include "effect.h"
 #include "trigger.h"
 
+namespace asn {
+
 enum class AbilityType : uint8_t {
     Cont = 1,
     Auto,
@@ -66,3 +68,5 @@ struct Ability {
     AbilityType type;
     std::variant<AutoAbility, ContAbility, ActAbility, EventAbility> ability;
 };
+
+}

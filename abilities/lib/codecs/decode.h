@@ -6,6 +6,7 @@
 #include "encDecUtils.h"
 
 using Iterator = std::vector<uint8_t>::const_iterator;
+using namespace asn;
 
 class DecodeException : public std::runtime_error
 {
@@ -67,7 +68,7 @@ Effect decodeEffect(Iterator &it, Iterator end);
 Trigger decodeTrigger(Iterator &it, Iterator end);
 std::string decodeString(Iterator &it, Iterator end);
 Number decodeNumber(Iterator &it, Iterator end);
-AsnCard decodeCard(Iterator &it, Iterator end);
+Card decodeCard(Iterator &it, Iterator end);
 Target decodeTarget(Iterator &it, Iterator end);
 Place decodePlace(Iterator &it, Iterator end);
 Condition decodeCondition(Iterator &it, Iterator end);

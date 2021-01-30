@@ -7,6 +7,8 @@
 #include "asnCard.h"
 #include "target.h"
 
+namespace asn {
+
 struct Condition;
 
 struct ConditionAnd {
@@ -19,15 +21,15 @@ struct ConditionOr {
 
 struct ConditionIsCard{
     Target target;
-    std::vector<AsnCard> neededCard; // array here instead of ORing conditions
+    std::vector<Card> neededCard; // array here instead of ORing conditions
 };
 
 struct ConditionHaveCard {
     bool invert;
-    AsnPlayer who;
+    Player who;
     Number howMany;
-    AsnCard whichCards;
-    AsnZone where;
+    Card whichCards;
+    Zone where;
     bool excludingThis;
 };
 
@@ -46,12 +48,12 @@ struct ConditionDuringTurn {
 
 struct ConditionCheckOpenedCards {
     Number number;
-    AsnCard card;
+    Card card;
 };
 
 struct ConditionRevealCard {
      Number number;
-     AsnCard card;
+     Card card;
 };
 
 struct ConditionPlayersLevel {
@@ -88,3 +90,5 @@ struct Condition {
         ConditionOr
     > cond;
 };
+
+}

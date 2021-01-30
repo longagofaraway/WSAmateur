@@ -1,5 +1,6 @@
 #pragma once
 
+namespace asn {
 
 enum class State : uint8_t {
     Standing = 1,
@@ -12,13 +13,13 @@ enum class Owner : uint8_t {
     Opponent
 };
 
-enum class AsnPlayer : uint8_t {
+enum class Player : uint8_t {
     Player = 1,
     Opponent,
     Both
 };
 
-enum class AsnZone : uint8_t {
+enum class Zone : uint8_t {
     Stage = 1,
     WaitingRoom,
     Deck,
@@ -44,6 +45,8 @@ enum class Position : uint8_t {
 
 struct Place {
     Position pos;
-    AsnZone zone;
+    Zone zone;
     Owner owner;
 };
+
+}

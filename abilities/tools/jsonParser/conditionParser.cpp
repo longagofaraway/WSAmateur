@@ -4,6 +4,8 @@
 
 #include <QJsonObject>
 
+using namespace asn;
+
 template<typename T>
 T parseConditionAndOr(const QJsonObject &json) {
     if (!json.contains("cond") || !json["cond"].isArray())
@@ -43,10 +45,10 @@ ConditionHaveCard parseConditionHaveCard(const QJsonObject &json) {
 
     ConditionHaveCard c;
     c.invert = json["invert"].toBool();
-    c.who = static_cast<AsnPlayer>(json["who"].toInt());
+    c.who = static_cast<Player>(json["who"].toInt());
     c.howMany = parseNumber(json["howMany"].toObject());
     c.whichCards = parseCard(json["whichCards"].toObject());
-    c.where = static_cast<AsnZone>(json["who"].toInt());
+    c.where = static_cast<Zone>(json["who"].toInt());
     c.excludingThis = json["excludingThis"].toBool();
 
     return c;

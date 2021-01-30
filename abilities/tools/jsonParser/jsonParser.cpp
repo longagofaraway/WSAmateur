@@ -12,6 +12,8 @@
 #include <QJsonParseError>
 #include <QDebug>
 
+using namespace asn;
+
 Ability gA;
 std::vector<uint8_t> gBuf;
 
@@ -27,7 +29,7 @@ Multiplier parseMultiplier(const QJsonObject &json) {
 
     Multiplier m;
     m.type = static_cast<MultiplierType>(json["type"].toInt());
-    m.zone = static_cast<AsnZone>(json["zone"].toInt());
+    m.zone = static_cast<Zone>(json["zone"].toInt());
     if (m.type == MultiplierType::ForEach)
         m.forEach = std::make_shared<Target>(parseTarget(json["forEachOf"].toObject()));
 
@@ -44,7 +46,7 @@ Place parsePlace(const QJsonObject &json) {
 
     Place p;
     p.pos = static_cast<Position>(json["pos"].toInt());
-    p.zone = static_cast<AsnZone>(json["zone"].toInt());
+    p.zone = static_cast<Zone>(json["zone"].toInt());
     if (json.contains("owner"))
         p.owner = static_cast<Owner>(json["owner"].toInt());
     else
@@ -114,11 +116,11 @@ CardSpecifier parseCardSpecifier(const QJsonObject &json) {
     return c;
 }
 
-AsnCard parseCard(const QJsonObject &json) {
+Card parseCard(const QJsonObject &json) {
     if (!json.contains("cardSpecifiers") || !json["cardSpecifiers"].isArray())
         throw std::runtime_error("no cardSpecifiers");
 
-    AsnCard c;
+    Card c;
     c.cardSpecifiers = parseArray(json["cardSpecifiers"].toArray(), parseCardSpecifier);
     return c;
 }
@@ -163,8 +165,8 @@ ZoneChangeTrigger parseZoneChangeTrigger(const QJsonObject &json) {
 
     ZoneChangeTrigger t;
     t.target = parseArray(json["target"].toArray(), parseTarget);
-    t.from = static_cast<AsnZone>(json["from"].toInt());
-    t.to = static_cast<AsnZone>(json["to"].toInt());
+    t.from = static_cast<Zone>(json["from"].toInt());
+    t.to = static_cast<Zone>(json["to"].toInt());
 
     return t;
 }
@@ -179,8 +181,8 @@ PhaseTrigger parsePhaseTrigger(const QJsonObject &json) {
 
     PhaseTrigger p;
     p.state = static_cast<PhaseState>(json["state"].toInt());
-    p.phase = static_cast<AsnPhase>(json["phase"].toInt());
-    p.player = static_cast<AsnPlayer>(json["turnPlayer"].toInt());
+    p.phase = static_cast<Phase>(json["phase"].toInt());
+    p.player = static_cast<Player>(json["turnPlayer"].toInt());
 
     return p;
 }
@@ -383,7 +385,7 @@ QString JsonParser::printEncodedAbility() {
     gBuf = encodeAbility(gA);
     std::stringstream ss;
     for (size_t i = 0; i < gBuf.size(); ++i)
-        ss << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(gBuf[i]) << " ";
+        ss << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(gBuf[i]) << ((i != gBuf.size() - 1) ? ", " : "");
     auto str = ss.str();
     return QString(str.c_str());
 }

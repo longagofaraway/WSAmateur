@@ -3,6 +3,8 @@
 #include <memory>
 #include <optional>
 
+namespace asn {
+
 struct Target;
 
 enum class MultiplierType : uint8_t {
@@ -15,7 +17,7 @@ struct Multiplier {
     MultiplierType type;
     // shared_ptr to break circular dependecy
     std::shared_ptr<Target> forEach;
-    AsnZone zone;
+    Zone zone;
 };
 
 enum class NumModifier : uint8_t {
@@ -31,3 +33,5 @@ struct Number {
     int8_t value;
     std::optional<Multiplier> multiplier;
 };
+
+}

@@ -39,8 +39,8 @@ CardSpecifier decodeCardSpecifier(Iterator &it, Iterator end) {
     return c;
 }
 
-AsnCard decodeCard(Iterator &it, Iterator end) {
-    AsnCard c;
+Card decodeCard(Iterator &it, Iterator end) {
+    Card c;
     c.cardSpecifiers = decodeArray<CardSpecifier>(it, end, decodeCardSpecifier);
     return c;
 }

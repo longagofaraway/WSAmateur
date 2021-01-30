@@ -7,9 +7,9 @@ std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
 
     if (t.target[0].type == TargetType::ThisCard)
         s += "When this card is placed ";
-    if (t.to == AsnZone::Stage)
+    if (t.to == Zone::Stage)
         s += "on stage ";
-    if (t.from == AsnZone::Hand)
+    if (t.from == Zone::Hand)
         s += "from your hand, ";
 
     return s;

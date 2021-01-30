@@ -3,6 +3,7 @@
 #include "abilities.h"
 
 using Buf = std::vector<uint8_t>;
+using namespace asn;
 
 inline void toBufLE(uint32_t val, Buf &buf) {
     for (int i = 0; i < sizeof(val); ++i)
@@ -15,7 +16,7 @@ void encodeTarget(const Target &t, Buf &buf);
 void encodeNumber(const Number &n, Buf &buf);
 void encodePlace(const Place &c, Buf &buf);
 void encodeString(const std::string &str, Buf &buf);
-void encodeCard(const AsnCard &t, Buf &buf);
+void encodeCard(const Card &t, Buf &buf);
 void encodeEffect(const Effect &t, Buf &buf);
 void encodeCondition(const Condition &c, Buf &buf);
 void encodeMultiplier(const Multiplier &m, Buf &buf);

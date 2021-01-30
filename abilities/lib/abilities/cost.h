@@ -5,6 +5,9 @@
 
 #include "effect.h"
 
+namespace asn {
+
+
 enum class CostType : uint8_t {
     Stock = 1,
     Effects
@@ -23,3 +26,5 @@ struct CostItem {
 struct Cost {
     std::vector<CostItem> items;
 };
+
+}

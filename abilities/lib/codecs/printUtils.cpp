@@ -20,17 +20,17 @@ std::string printTrait(const std::string &trait) {
     return '<' + trait + '>';
 }
 
-std::string printZone(AsnZone zone) {
+std::string printZone(Zone zone) {
     switch (zone) {
-    case AsnZone::Clock: return "clock";
-    case AsnZone::Deck: return "deck";
-    case AsnZone::Hand: return "hand";
-    case AsnZone::Level: return "level zone";
-    case AsnZone::Memory: return "memory";
-    case AsnZone::Stage: return "stage";
-    case AsnZone::Stock: return "stock";
-    case AsnZone::WaitingRoom: return "waiting room";
-    case AsnZone::Climax: return "climax zone";
+    case Zone::Clock: return "clock";
+    case Zone::Deck: return "deck";
+    case Zone::Hand: return "hand";
+    case Zone::Level: return "level zone";
+    case Zone::Memory: return "memory";
+    case Zone::Stage: return "stage";
+    case Zone::Stock: return "stock";
+    case Zone::WaitingRoom: return "waiting room";
+    case Zone::Climax: return "climax zone";
     default: throw PrintingException();
     }
 }

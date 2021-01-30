@@ -4,6 +4,8 @@
 
 #include "abilities.h"
 
+using namespace asn;
+
 namespace {
 QString generateName() {
     return QUuid::createUuid().toString();

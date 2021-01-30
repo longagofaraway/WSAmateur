@@ -3,6 +3,8 @@
 #include "basicTypes.h"
 #include "target.h"
 
+namespace asn {
+
 enum class TriggerType : uint8_t {
     OnZoneChange = 1,
     OnPlay,
@@ -19,11 +21,11 @@ enum class TriggerType : uint8_t {
 
 struct ZoneChangeTrigger {
     std::vector<Target> target;
-    AsnZone from;
-    AsnZone to;
+    Zone from;
+    Zone to;
 };
 
-enum class AsnPhase {
+enum class Phase {
     DrawPhase = 1,
     ClimaxPhase,
     AttackPhase
@@ -35,13 +37,13 @@ enum class PhaseState {
 };
 
 struct PhaseTrigger {
-    AsnPhase phase;
+    Phase phase;
     PhaseState state;
-    AsnPlayer player;
+    Player player;
 };
 
 struct TriggerRevealTrigger {
-    AsnCard card;
+    Card card;
 };
 
 struct OnPlayTrigger {
@@ -52,7 +54,7 @@ struct OnAttackTrigger {
 };
 
 struct BattleOpponentReversedTrigger {
-    AsnCard card;
+    Card card;
 };
 
 struct Trigger {
@@ -67,3 +69,5 @@ struct Trigger {
         BattleOpponentReversedTrigger
     > trigger;
 };
+
+}

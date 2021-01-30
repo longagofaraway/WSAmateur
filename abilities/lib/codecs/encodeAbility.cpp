@@ -72,12 +72,14 @@ void encodeEventAbility(const EventAbility &a, Buf &buf) {
     encodeArray(a.effects, buf, encodeEffect);
 }
 
+namespace asn {
 Buf encodeAbility(const Ability &a) {
     std::vector<uint8_t> buf;
 
-    encodeAbility(a, buf);
+    ::encodeAbility(a, buf);
 
     return buf;
+}
 }
 
 void encodeAbility(const Ability &a, Buf &buf) {
