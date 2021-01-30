@@ -2,6 +2,8 @@
 
 #include <exception>
 
+using namespace asn;
+
 class PrintingException : public std::exception {};
 
 std::string printDigit(int8_t value) {

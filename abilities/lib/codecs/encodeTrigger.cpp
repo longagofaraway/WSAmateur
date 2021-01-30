@@ -1,5 +1,7 @@
 #include "encode.h"
 
+using namespace asn;
+
 void encodeZoneChangeTrigger(const ZoneChangeTrigger &t, Buf &buf) {
     encodeArray(t.target, buf, encodeTarget);
     buf.push_back(static_cast<uint8_t>(t.from));

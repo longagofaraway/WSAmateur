@@ -2,6 +2,8 @@
 
 #include "encDecUtils.h"
 
+using namespace asn;
+
 void encodeCardSpecifier(const CardSpecifier &c, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(c.type));
     switch (c.type) {

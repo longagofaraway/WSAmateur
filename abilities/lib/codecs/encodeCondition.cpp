@@ -1,5 +1,7 @@
 #include "encode.h"
 
+using namespace asn;
+
 void encodeConditionIsCard(const ConditionIsCard &c, Buf &buf) {
     encodeTarget(c.target, buf);
     encodeArray(c.neededCard, buf, encodeCard);

@@ -1,5 +1,6 @@
 #include "decode.h"
 
+using namespace asn;
 
 PhaseTrigger decodePhaseTrigger(Iterator &it, Iterator end) {
     PhaseTrigger t;

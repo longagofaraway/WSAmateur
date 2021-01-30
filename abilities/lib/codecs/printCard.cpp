@@ -1,5 +1,7 @@
 #include "print.h"
 
+using namespace asn;
+
 std::string printCard(const Card &c, bool plural) {
     std::string s;
 

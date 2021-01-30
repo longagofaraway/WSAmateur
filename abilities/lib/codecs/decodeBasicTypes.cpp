@@ -1,5 +1,7 @@
 #include "decode.h"
 
+using namespace asn;
+
 TargetSpecificCards decodeTargetSpecificCards(Iterator &it, Iterator end) {
     TargetSpecificCards t;
     t.mode = decodeEnum<TargetMode>(it, end);

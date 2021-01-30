@@ -4,6 +4,7 @@
 #include <QMetaObject>
 #include <QQuickItem>
 
+#include "abilities.pb.h"
 #include "cardAttribute.pb.h"
 #include "gameCommand.pb.h"
 #include "gameEvent.pb.h"
@@ -133,6 +134,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventGameEnded ev;
         event->event().UnpackTo(&ev);
         endGame(ev.victory());
+    } else if (event->event().Is<EventAbilityActivated>()) {
+        EventAbilityActivated ev;
+        event->event().UnpackTo(&ev);
+        activateAbilities(ev);
     }
 }
 
@@ -478,6 +483,10 @@ void Player::discardTo7() {
 
 void Player::endGame(bool victory) {
     mGame->endGame(victory);
+}
+
+void Player::activateAbilities(const EventAbilityActivated &event) {
+
 }
 
 void Player::cardSelectedForLevelUp(int index) {

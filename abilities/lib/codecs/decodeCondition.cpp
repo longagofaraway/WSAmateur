@@ -1,5 +1,7 @@
 #include "decode.h"
 
+using namespace asn;
+
 ConditionIsCard decodeConditionIsCard(Iterator &it, Iterator end) {
     ConditionIsCard c;
     c.target = decodeTarget(it, end);

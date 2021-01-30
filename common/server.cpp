@@ -4,10 +4,14 @@
 #include "lobbyCommand.pb.h"
 #include "serverMessage.pb.h"
 
+#include "globalAbilities/globalAbilities.h"
+
 Server::Server() : mNextGameId(0)
 {
     qRegisterMetaType<std::shared_ptr<CommandContainer>>("std::shared_ptr<CommandContainer>");
     qRegisterMetaType<std::shared_ptr<ServerMessage>>("std::shared_ptr<ServerMessage>");
+
+    decodeGlobalAbilities();
 }
 
 int Server::nextGameId() {

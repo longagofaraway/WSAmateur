@@ -2,6 +2,8 @@
 
 #include "encDecUtils.h"
 
+using namespace asn;
+
 void encodeAttributeGain(const AttributeGain &e, Buf &buf) {
     encodeTarget(e.target, buf);
     buf.push_back(static_cast<uint8_t>(e.type));

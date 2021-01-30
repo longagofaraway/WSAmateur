@@ -3,23 +3,23 @@
 #include "abilities.h"
 
 using Buf = std::vector<uint8_t>;
-using namespace asn;
 
 inline void toBufLE(uint32_t val, Buf &buf) {
     for (int i = 0; i < sizeof(val); ++i)
         buf.push_back((val >> (i * 8)) & 0xFF);
 }
 
-void encodeAbility(const Ability &a, Buf &buf);
-void encodeTrigger(const Trigger &t, Buf &buf);
-void encodeTarget(const Target &t, Buf &buf);
-void encodeNumber(const Number &n, Buf &buf);
-void encodePlace(const Place &c, Buf &buf);
+void encodeAbility(const asn::Ability &a, Buf &buf);
+void encodeTrigger(const asn::Trigger &t, Buf &buf);
+void encodeTarget(const asn::Target &t, Buf &buf);
+void encodeNumber(const asn::Number &n, Buf &buf);
+void encodePlace(const asn::Place &c, Buf &buf);
 void encodeString(const std::string &str, Buf &buf);
-void encodeCard(const Card &t, Buf &buf);
-void encodeEffect(const Effect &t, Buf &buf);
-void encodeCondition(const Condition &c, Buf &buf);
-void encodeMultiplier(const Multiplier &m, Buf &buf);
+void encodeCard(const asn::Card &t, Buf &buf);
+void encodeEffect(const asn::Effect &t, Buf &buf);
+void encodeCondition(const asn::Condition &c, Buf &buf);
+void encodeMultiplier(const asn::Multiplier &m, Buf &buf);
+void encodeChooseCard(const asn::ChooseCard &m, Buf &buf);
 
 template<typename T>
 void encodeArray(const std::vector<T> &array, Buf &buf, void(*encodeType)(const T&, Buf&)) {

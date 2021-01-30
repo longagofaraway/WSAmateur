@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "abilities.pb.h"
 #include "gameCommand.pb.h"
 #include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
@@ -9,11 +10,15 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
+#include <abilities.h>
+
 #include "cardDatabase.h"
 #include "serverCardZone.h"
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
 #include "serverStage.h"
+
+extern std::unordered_map<Trigger, asn::Ability> gTriggerAbilities;
 
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
     : mGame(game), mClient(client), mId(id) { }
@@ -59,7 +64,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandDeclareAttack>()) {
         CommandDeclareAttack declareAttackCmd;
         cmd.command().UnpackTo(&declareAttackCmd);
-        declareAttack(declareAttackCmd);
+        mGame->startAsyncTask(declareAttack(declareAttackCmd));
     } else if (cmd.command().Is<CommandTakeDamage>()) {
         mGame->startAsyncTask(mGame->damageStep());
     } else if (cmd.command().Is<CommandEncoreCharacter>()) {
@@ -425,13 +430,13 @@ void ServerPlayer::attackDeclarationStep() {
 }
 
 bool isCenterStagePosition(int pos) { return pos >= 3 ? false : true; }
-void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
+Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     auto stage = zone("stage");
     if (!isCenterStagePosition(cmd.stageid()))
-        return;
+        co_return;
     auto attCard = stage->card(cmd.stageid());
     if (attCard->state() != StateStanding)
-        return;
+        co_return;
 
     clearExpectedComands();
 
@@ -454,7 +459,7 @@ void ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     else if (type == AttackType::SideAttack)
         addAttributeBuff(AttrSoul, cmd.stageid(), -battleOpp->level());
 
-    triggerStep(cmd.stageid());
+    co_await triggerStep(cmd.stageid());
 }
 
 void ServerPlayer::addAttributeBuff(CardAttribute attr, int pos, int delta, int duration) {
@@ -472,16 +477,26 @@ void ServerPlayer::addAttributeBuff(CardAttribute attr, int pos, int delta, int 
     sendToBoth(event);
 }
 
-void ServerPlayer::triggerStep(int pos) {
+Resumable ServerPlayer::triggerStep(int pos) {
     moveTopDeck("res");
     auto card = zone("res")->card(0);
+    // end of game
     if (!card)
-        return;
+        co_await std::suspend_always();
     for (auto trigger: card->triggers()) {
         switch(trigger) {
         case Trigger::Soul:
             addAttributeBuff(AttrSoul, pos, 1);
             break;
+        case Trigger::Door:
+            EventAbilityActivated event;
+            auto ab = event.add_abs();
+            ab->set_zone("res");
+            ab->set_type(ProtoAbilityType::ProtoClimaxTrigger);
+            ab->set_cardid(0);
+            ab->set_id(static_cast<::google::protobuf::int32>(asn::TriggerIcon::Door));
+            sendToBoth(event);
+            co_await playAbility(gTriggerAbilities[trigger]);
         }
     }
     moveCard("res", 0, "stock");
@@ -489,7 +504,7 @@ void ServerPlayer::triggerStep(int pos) {
     if (attackType() == FrontAttack)
         mGame->opponentOfPlayer(mId)->counterStep();
     else
-        mGame->startAsyncTask(mGame->damageStep());
+        co_await mGame->damageStep();
 }
 
 void ServerPlayer::counterStep() {

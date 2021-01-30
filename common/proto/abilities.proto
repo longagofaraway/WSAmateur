@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+enum ProtoAbilityType {
+    ProtoClimaxTrigger = 0;
+    ProtoGlobal = 1;
+    ProtoCard = 2;
+}
+
+message ProtoAbility {
+    ProtoAbilityType type = 1;
+    string zone = 2;
+    sint32 cardId = 3;
+	sint32 id = 4;
+}
+
+message EventAbilityActivated {
+    repeated ProtoAbility abs = 1;
+}
+
+message CommandIgnoreEffect {}
+message EventChooseCard {
+    bytes effect = 1;
+}
+
+message CommandChooseCard {
+    repeated sint32 ids = 1;
+    string zone = 2;
+}
+

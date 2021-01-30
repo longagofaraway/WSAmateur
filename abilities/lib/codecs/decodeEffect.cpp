@@ -1,5 +1,7 @@
 #include "decode.h"
 
+using namespace asn;
+
 AttributeGain decodeAttributeGain(Iterator &it, Iterator end) {
     AttributeGain e;
     e.target = decodeTarget(it, end);

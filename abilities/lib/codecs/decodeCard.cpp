@@ -1,5 +1,7 @@
 #include "decode.h"
 
+using namespace asn;
+
 CardSpecifier decodeCardSpecifier(Iterator &it, Iterator end) {
     CardSpecifier c;
 

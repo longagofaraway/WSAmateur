@@ -2,6 +2,8 @@
 
 #include <string>
 
+using namespace asn;
+
 std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
     std::string s;
 

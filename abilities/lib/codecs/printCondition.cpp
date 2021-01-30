@@ -1,5 +1,6 @@
 #include "print.h"
 
+using namespace asn;
 
 std::string printConditionIsCard(const ConditionIsCard &c) {
     std::string s = "If ";

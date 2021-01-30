@@ -2,6 +2,8 @@
 
 #include <string>
 
+using namespace asn;
+
 namespace {
     Number gChosenCardsNumber;
 }

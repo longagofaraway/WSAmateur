@@ -4,6 +4,7 @@ set(commonSources
     cardDatabase.cpp
     cardInfo.cpp
     deckList.cpp
+    playAbility.cpp
     server.cpp
     serverCard.cpp
     serverCardZone.cpp
@@ -25,6 +26,8 @@ set(commonSources
     serverPlayer.h
     serverProtocolHandler.h
     serverStage.h
+    globalAbilities/globalAbilities.h
+    globalAbilities/globalAbilities.cpp
     )
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
@@ -40,6 +43,6 @@ target_include_directories(wsamateurCommon
 
 target_compile_features(wsamateurCommon PRIVATE cxx_std_20)
 
-target_link_libraries(wsamateurCommon PUBLIC wsamateurProto
+target_link_libraries(wsamateurCommon PUBLIC wsamateurProto wsamateurAbilities
     PRIVATE Qt5::Core)
 

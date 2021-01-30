@@ -16,6 +16,7 @@ class EventSwitchStagePositions;
 class EventDeclareAttack;
 class EventSetCardAttr;
 class EventSetCardState;
+class EventAbilityActivated;
 
 class Game;
 class GameEvent;
@@ -90,6 +91,8 @@ private:
     void refresh();
     void discardTo7();
     void endGame(bool victory);
+
+    void activateAbilities(const EventAbilityActivated &event);
 
 public slots:
     void cardPlayed(int handId, int stageId);

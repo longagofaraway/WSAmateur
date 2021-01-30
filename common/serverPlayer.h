@@ -8,6 +8,7 @@
 #include "attackType.pb.h"
 #include "gameCommand.pb.h"
 
+#include "abilities.h"
 #include "coroutineTask.h"
 #include "commands.h"
 #include "deckList.h"
@@ -23,6 +24,18 @@ class CommandSwitchStagePositions;
 class CommandDeclareAttack;
 class CommandLevelUp;
 class CommandEncoreCharacter;
+
+struct ChosenCard {
+    std::string zone;
+    int id;
+    ChosenCard(const std::string &zone, int id)
+        : zone(zone), id(id) {}
+};
+
+struct AbilityContext {
+    bool mandatory = true;
+    std::vector<ChosenCard> chosenCards;
+};
 
 class ServerPlayer
 {
@@ -86,8 +99,8 @@ public:
     void climaxPhase();
     void endOfAttack();
     void attackDeclarationStep();
-    void declareAttack(const CommandDeclareAttack &cmd);
-    void triggerStep(int pos);
+    Resumable declareAttack(const CommandDeclareAttack &cmd);
+    Resumable triggerStep(int pos);
     void counterStep();
     Resumable damageStep();
     Resumable levelUp();
@@ -101,4 +114,15 @@ public:
     void setCardState(ServerCard *card, CardState state);
 
     void endOfTurnEffectValidation();
+
+// playing abilities
+private:
+    AbilityContext mContext;
+
+    Resumable playAbility(const asn::Ability &a);
+    Resumable playEventAbility(const asn::EventAbility &a);
+    Resumable playEffect(const asn::Effect &e);
+    Resumable playNonMandatory(const asn::NonMandatory &e);
+    Resumable playChooseCard(const asn::ChooseCard &e);
+    void playMoveCard(const asn::MoveCard &e);
 };

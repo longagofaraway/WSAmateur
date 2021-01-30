@@ -2,13 +2,11 @@
 
 #include "abilities.h"
 
-using namespace asn;
-
 std::string printDigit(int8_t value);
 std::string printTrait(const std::string &trait);
-std::string printCard(const Card &c, bool plural);
-std::string printCondition(const Condition &c);
-std::string printTrigger(const Trigger &t);
-std::string printEffect(const Effect &e);
-std::string printZone(Zone zone);
-std::string printEffects(const std::vector<Effect> &effects);
+std::string printCard(const asn::Card &c, bool plural);
+std::string printCondition(const asn::Condition &c);
+std::string printTrigger(const asn::Trigger &t);
+std::string printEffect(const asn::Effect &e);
+std::string printZone(asn::Zone zone);
+std::string printEffects(const std::vector<asn::Effect> &effects);

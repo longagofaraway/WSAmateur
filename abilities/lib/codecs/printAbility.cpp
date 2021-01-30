@@ -1,5 +1,7 @@
 #include "print.h"
 
+using namespace asn;
+
 std::string printAutoAbility(const AutoAbility a) {
     std::string s = "[A] ";
 
@@ -27,7 +29,6 @@ std::string printEventAbility(const EventAbility a) {
     return s;
 }
 
-namespace asn {
 std::string printAbility(const Ability &a) {
     switch (a.type) {
     case AbilityType::Auto:
@@ -37,5 +38,4 @@ std::string printAbility(const Ability &a) {
     }
 
     return "";
-}
 }

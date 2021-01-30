@@ -2,6 +2,8 @@
 
 #include "encDecUtils.h"
 
+using namespace asn;
+
 void encodeTargetSpecificCards(const TargetSpecificCards &t, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(t.mode));
     encodeNumber(t.number, buf);

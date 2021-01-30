@@ -2,6 +2,8 @@
 
 #include "encDecUtils.h"
 
+using namespace asn;
+
 void encodeCostItem(const CostItem &c, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(c.type));
     if (c.type == CostType::Stock)
@@ -72,14 +74,12 @@ void encodeEventAbility(const EventAbility &a, Buf &buf) {
     encodeArray(a.effects, buf, encodeEffect);
 }
 
-namespace asn {
 Buf encodeAbility(const Ability &a) {
     std::vector<uint8_t> buf;
 
-    ::encodeAbility(a, buf);
+    encodeAbility(a, buf);
 
     return buf;
-}
 }
 
 void encodeAbility(const Ability &a, Buf &buf) {
