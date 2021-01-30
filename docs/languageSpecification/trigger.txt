@@ -6,7 +6,7 @@ Trigger {
     BattleOpponentReversedTrigger,
     TriggerRevealTrigger,
     OnPlayTrigger,
-	OnAttackTrigger,
+    OnAttackTrigger,
     Nothing
   }
 }
@@ -31,7 +31,7 @@ KGL/S79-016 - When your Opponent uses BRAINSTORM and the effect puts at least 1 
 card in the Waiting Room,
 
 ZoneChangeTrigger {
-  target Array of Target,  // target are ORed
+  target Array of Target,  // targets are ORed
   from Zone,
   to Zone
 }

@@ -13,7 +13,7 @@ std::string printAttributeGain(const AttributeGain &e) {
     case TargetType::ChosenCards:
         if (gChosenCardsNumber.mod == NumModifier::ExactMatch &&
             gChosenCardsNumber.value == 1) {
-            res += "and that character gets ";
+            res += "that character gets ";
         }
         break;
     }
@@ -44,38 +44,81 @@ std::string printAttributeGain(const AttributeGain &e) {
 }
 
 std::string printChooseCard(const ChooseCard &e) {
-    std::string res;
+    std::string s;
 
-    res += "choose ";
+    s += "choose ";
 
+    bool plural = false;
     if (e.targets.size() == 1) {
         const auto &target = e.targets[0];
         if (target.type == TargetType::SpecificCards) {
             const auto &spec = *target.targetSpecification;
             if (spec.number.mod == NumModifier::ExactMatch) {
-                res += printDigit(spec.number.value);
-                res += " of ";
-                gChosenCardsNumber = spec.number;
+                if (e.placeType == PlaceType::SpecificPlace && e.place->zone == AsnZone::Stage) {
+                    s += printDigit(spec.number.value);
+                    s += " of ";
+                    plural = true;
+                }
             }
 
-            res += printCard(spec.cards, true);
-
-            res += ", ";
+            gChosenCardsNumber = spec.number;
+            s += printCard(spec.cards, plural) + " ";
         }
     }
 
-    return res;
+    if (e.placeType == PlaceType::SpecificPlace && e.place->zone != AsnZone::Stage) {
+        s += "in ";
+        if (e.place->owner == Owner::Player)
+            s += "your ";
+        s += printZone(e.place->zone) + " ";
+    }
+
+    return s;
 }
 
 std::string printRevealCard(const RevealCard &e) {
-    std::string s = "Reveal ";
+    std::string s = "reveal ";
 
     if (e.type == RevealType::TopDeck) {
         if (e.number.mod == NumModifier::ExactMatch) {
             if (e.number.value == 1)
-                s += "the top card of your deck. ";
+                s += "the top card of your deck ";
         }
     }
+
+    return s;
+}
+
+std::string printNonMandatory(const NonMandatory &e) {
+    std::string s = "you may ";
+
+
+    s += printEffects(e.effect);
+
+    if (e.ifYouDo.size() || e.ifYouDont.size())
+        s[s.size() - 1] = '.';
+
+    s += printEffects(e.ifYouDo);
+    s += printEffects(e.ifYouDont);
+
+    return s;
+}
+
+std::string printMoveCard(const MoveCard &e) {
+    std::string s = "put ";
+
+    if (e.target.type == TargetType::ChosenCards) {
+        if ((gChosenCardsNumber.mod == NumModifier::ExactMatch ||
+            gChosenCardsNumber.mod == NumModifier::UpTo) &&
+            gChosenCardsNumber.value == 1) {
+            s += "it ";
+        }
+    }
+
+    s += "in ";
+    if (e.to[0].owner == Owner::Player)
+        s += "your ";
+    s += printZone(e.to[0].zone) + " ";
 
     return s;
 }
@@ -95,6 +138,12 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::RevealCard:
         s += printRevealCard(std::get<RevealCard>(e.effect));
+        break;
+    case EffectType::NonMandatory:
+        s += printNonMandatory(std::get<NonMandatory>(e.effect));
+        break;
+    case EffectType::MoveCard:
+        s += printMoveCard(std::get<MoveCard>(e.effect));
         break;
     }
 

@@ -1,21 +1,38 @@
 #include "print.h"
 
 std::string printAutoAbility(const AutoAbility a) {
-    std::string res = "[A] ";
+    std::string s = "[A] ";
 
-    res += printTrigger(a.trigger);
+    s += printTrigger(a.trigger);
 
-    for (const auto &effect : a.effects) {
-        res += printEffect(effect);
+    s += printEffects(a.effects);
+
+    s[4] = std::toupper(s[4]);
+    return s;
+}
+
+std::string printEventAbility(const EventAbility a) {
+    std::string s = "";
+
+    s += printEffects(a.effects);
+
+    if (s.size()) {
+        s[0] = std::toupper(s[0]);
+        if (s[s.size() - 1] == ' ')
+            s.pop_back();
+        if (s[s.size() - 1] == ',')
+            s.pop_back();
+        s.push_back('.');
     }
-
-    return res;
+    return s;
 }
 
 std::string printAbility(const Ability &a) {
     switch (a.type) {
     case AbilityType::Auto:
         return printAutoAbility(std::get<AutoAbility>(a.ability));
+    case AbilityType::Event:
+        return printEventAbility(std::get<EventAbility>(a.ability));
     }
 
     return "";

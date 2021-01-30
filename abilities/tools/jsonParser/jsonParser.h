@@ -46,5 +46,7 @@ class JsonParser : public QQuickItem {
     Q_OBJECT
 public:
     Q_INVOKABLE QString createAbility(QString json);
+    Q_INVOKABLE QString printEncodedAbility();
+    Q_INVOKABLE QString printDecodedAbility();
     Q_INVOKABLE QString initialText();
 };

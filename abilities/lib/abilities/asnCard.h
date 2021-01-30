@@ -53,8 +53,16 @@ struct CostSpecifier {
 };
 
 enum class TriggerIcon : uint8_t {
-    Treasure = 1,
-    Book = 2
+    Soul = 1,
+    Wind,
+    Pool,
+    Door,
+    Book,
+    Shot,
+    Treasure,
+    Gate,
+    Standby,
+    Choice
 };
 
 struct CardSpecifier {

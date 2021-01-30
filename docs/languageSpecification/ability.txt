@@ -31,10 +31,9 @@ enum Keyword {
 enum AbilityItem {
   cost = 1,
   trigger = 2,
-  condition = 3,
-  effect = 4,
-  keyword = 5,
-  activation = 6
+  effect = 3,
+  keyword = 4,
+  activation = 5
 }
 
 AutoAbility {

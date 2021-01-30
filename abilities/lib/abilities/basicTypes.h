@@ -26,7 +26,8 @@ enum class AsnZone : uint8_t {
     Hand,
     Memory,
     Stock,
-    Level
+    Level,
+    Climax
 };
 
 enum class Position : uint8_t {

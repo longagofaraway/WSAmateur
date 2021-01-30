@@ -91,22 +91,6 @@ enum ValueType {
   multiplier = 2
 }
 
-Multiplier {
-  type MultiplierType,
-  forEachOf Choice {
-    Target,
-    Nothing
-  },
-  zone Zone
-}
-
-enum MultiplierType {
-  forEach = 1,
-  timesLevel = 2,
-  markersPutInWrThisWay = 3
-}
-
-
 ChooseCard {
   targets Array of Target,
   excluding Array of Card,

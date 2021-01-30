@@ -1,5 +1,8 @@
 #include "jsonParser.h"
 
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 
 #include <QFile>
@@ -8,6 +11,9 @@
 #include <QJsonObject>
 #include <QJsonParseError>
 #include <QDebug>
+
+Ability gA;
+std::vector<uint8_t> gBuf;
 
 Target parseTarget(const QJsonObject &json);
 
@@ -285,6 +291,51 @@ AutoAbility parseAutoAbility(const QJsonObject &json) {
     return a;
 }
 
+ContAbility parseContAbility(const QJsonObject &json) {
+    if (json.contains("keyword") && !json["keyword"].isArray())
+        throw std::runtime_error("wrong keyword");
+    if (!json.contains("effects") || !json["effects"].isArray())
+        throw std::runtime_error("no effects");
+
+    ContAbility a;
+    a.effects = parseArray(json["effects"].toArray(), parseEffect);
+    if (json.contains("keyword"))
+        a.keywords = parseKeywords(json["keyword"].toArray());
+
+    return a;
+}
+
+ActAbility parseActAbility(const QJsonObject &json) {
+    if (!json.contains("effects") || !json["effects"].isArray())
+        throw std::runtime_error("no effects");
+    if (!json.contains("cost") || !json["cost"].isObject())
+        throw std::runtime_error("no cost");
+    if (json.contains("keyword") && !json["keyword"].isArray())
+        throw std::runtime_error("wrong keyword");
+
+    ActAbility a;
+    a.effects = parseArray(json["effects"].toArray(), parseEffect);
+    a.cost = parseCost(json["cost"].toObject());
+    if (json.contains("keyword"))
+        a.keywords = parseKeywords(json["keyword"].toArray());
+
+    return a;
+}
+
+EventAbility parseEventAbility(const QJsonObject &json) {
+    if (json.contains("keyword") && !json["keyword"].isArray())
+        throw std::runtime_error("wrong keyword");
+    if (!json.contains("effects") || !json["effects"].isArray())
+        throw std::runtime_error("no effects");
+
+    EventAbility a;
+    a.effects = parseArray(json["effects"].toArray(), parseEffect);
+    if (json.contains("keyword"))
+        a.keywords = parseKeywords(json["keyword"].toArray());
+
+    return a;
+}
+
 Ability parseAbility(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no ability type");
@@ -296,6 +347,15 @@ Ability parseAbility(const QJsonObject &json) {
     switch (ability.type) {
     case AbilityType::Auto:
         ability.ability = parseAutoAbility(json["ability"].toObject());
+        break;
+    case AbilityType::Cont:
+        ability.ability = parseContAbility(json["ability"].toObject());
+        break;
+    case AbilityType::Act:
+        ability.ability = parseActAbility(json["ability"].toObject());
+        break;
+    case AbilityType::Event:
+        ability.ability = parseEventAbility(json["ability"].toObject());
         break;
     default:
         throw std::runtime_error("wrong ability type");
@@ -310,13 +370,26 @@ QString JsonParser::createAbility(QString json) {
     if (doc.isNull())
         return error.errorString();
 
-    Ability a;
     try {
-        a = parseAbility(doc.object());
+        gA = parseAbility(doc.object());
     } catch (const std::exception &e) {
         return QString(e.what());
     }
 
+    return QString(printAbility(gA).c_str());
+}
+
+QString JsonParser::printEncodedAbility() {
+    gBuf = encodeAbility(gA);
+    std::stringstream ss;
+    for (size_t i = 0; i < gBuf.size(); ++i)
+        ss << "0x" << std::setw(2) << std::setfill('0') << std::hex << int(gBuf[i]) << " ";
+    auto str = ss.str();
+    return QString(str.c_str());
+}
+
+QString JsonParser::printDecodedAbility() {
+    Ability a = decodeAbility(gBuf);
     return QString(printAbility(a).c_str());
 }
 

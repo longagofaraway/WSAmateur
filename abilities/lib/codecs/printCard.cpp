@@ -3,6 +3,10 @@
 std::string printCard(const AsnCard &c, bool plural) {
     std::string s;
 
+    if (c.cardSpecifiers.size() == 1 && c.cardSpecifiers[0].type == CardSpecifierType::CardType
+            && !plural)
+        s += "a ";
+
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Owner) {
             if (std::get<Owner>(cardSpec.specifier) == Owner::Player)

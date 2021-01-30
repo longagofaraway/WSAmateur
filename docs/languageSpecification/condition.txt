@@ -8,7 +8,9 @@ Condition {
     ConditionDuringTurn,
     ConditionCheckOpenedCards,
     ConditionRevealCard,
-    ConditionPlayersLevel
+    ConditionPlayersLevel,
+    ConditionAnd,
+    ConditionOr
   }
 }
 
@@ -28,6 +30,9 @@ enum ConditionType {
 }
 
 ConditionAnd {
+  cond Array of Condition
+}
+ConditionOr {
   cond Array of Condition
 }
 

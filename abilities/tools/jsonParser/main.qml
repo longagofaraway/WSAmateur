@@ -8,18 +8,20 @@ Window {
     id: root
     visible: true
     width: 640
-    height: 480
+    height: 580
     title: qsTr("jsonParser")
 
     JsonParser {
         id: jsonParser
     }
 
+    Column {
+        id: col
+        anchors.horizontalCenter: root.contentItem.horizontalCenter
     TextArea {
         id: textBox
-        height: root.height *  0.7
+        height: 250
         width: root.width * 0.8
-        anchors.horizontalCenter: root.contentItem.horizontalCenter
         verticalAlignment: TextInput.AlignTop
         Component.onCompleted: {
             textBox.text = jsonParser.initialText();
@@ -28,22 +30,32 @@ Window {
 
     Button {
         id: btn
-        anchors.top: textBox.bottom
-        anchors.topMargin: 5
-        anchors.horizontalCenter: root.contentItem.horizontalCenter
+        anchors.horizontalCenter: col.horizontalCenter
         text: "Parse"
         onClicked: {
             resultBox.text = jsonParser.createAbility(textBox.text);
+            hexBox.text = jsonParser.printEncodedAbility();
+            fromBinBox.text = jsonParser.printDecodedAbility();
         }
     }
 
     TextArea {
         id: resultBox
-        anchors.top: btn.bottom
-        anchors.topMargin: 5
-        height: root.height * 0.2
+        height: 100
         width: root.width * 0.8
-        anchors.horizontalCenter: root.contentItem.horizontalCenter
         verticalAlignment: TextInput.AlignTop
+    }
+    TextArea {
+        id: hexBox
+        height: 100
+        width: root.width * 0.8
+        verticalAlignment: TextInput.AlignTop
+    }
+    TextArea {
+        id: fromBinBox
+        height: 50
+        width: root.width * 0.8
+        verticalAlignment: TextInput.AlignTop
+    }
     }
 }

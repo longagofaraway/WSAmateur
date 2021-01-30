@@ -30,8 +30,16 @@ CostSpecifier {
 }
 
 enum TriggerIcon {
-  treasure = 1,
-  book = 2
+  soul = 1,
+  wind = 2,
+  pool = 3,
+  door = 4,
+  book = 5,
+  shot = 6,
+  treasure = 7,
+  gate = 8,
+  standby = 9,
+  choice = 10
 }
 
 Number {
@@ -48,6 +56,21 @@ NumModifier {
   upTo = 2,
   atLeast = 3,
   multiplier = 4
+}
+
+Multiplier {
+  type MultiplierType,
+  forEachOf Choice {
+    Target,
+    Nothing
+  },
+  zone Zone
+}
+
+enum MultiplierType {
+  forEach = 1,
+  timesLevel = 2,
+  markersPutInWrThisWay = 3
 }
 
 Place {

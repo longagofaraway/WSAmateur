@@ -19,7 +19,6 @@ enum class AbilityType : uint8_t {
 enum class AbilityItem : uint8_t {
     Cost = 1,
     Trigger,
-    Condition,
     Effect,
     Keyword,
     Activation

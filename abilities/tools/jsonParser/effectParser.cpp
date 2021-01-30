@@ -297,12 +297,15 @@ Replay parseReplay(const QJsonObject &json) {
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
-    if (!json.contains("condition") || !json["condition"].isObject())
-        throw std::runtime_error("no condition in effect");
+    if (json.contains("condition") && !json["condition"].isObject())
+        throw std::runtime_error("wrong condition type");
 
     Effect e;
     e.type = static_cast<EffectType>(json["type"].toInt());
-    e.cond = parseCondition(json["condition"].toObject());
+    if (json.contains("condition"))
+        e.cond = parseCondition(json["condition"].toObject());
+    else
+        e.cond.type = ConditionType::NoCondition;
     switch (e.type) {
     case EffectType::AttributeGain:
         e.effect = parseAttributeGain(json["effect"].toObject());
