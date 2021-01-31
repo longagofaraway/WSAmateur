@@ -18,6 +18,7 @@
 #include "deck.h"
 #include "deckList.h"
 #include "game.h"
+#include "globalAbilities/globalAbilities.h"
 #include "hand.h"
 #include "stage.h"
 #include "waitingRoom.h"
@@ -56,6 +57,7 @@ Player::Player(int id, Game *game, bool opponent)
     mZones.emplace("climax", std::move(climax));
     auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "ResolutionZone");
     mZones.emplace("res", std::move(resolutionZone));
+    mAbilityList = std::make_unique<ActivatedAbilities>(this, game);
 }
 
 void Player::setDeck(const std::string &deck) {
@@ -486,7 +488,47 @@ void Player::endGame(bool victory) {
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
+    for (int i = 0; i < event.abilities_size(); ++i) {
+        auto protoa = event.abilities(i);
+        auto zoneptr = zone(protoa.zone());
+        if (!zoneptr)
+            return;
+        const auto &cards = zoneptr->cards();
+        if (protoa.cardid() < 0)
+            return;
 
+        bool nocard = false;
+        if (static_cast<size_t>(protoa.cardid()) > cards.size() ||
+            cards[protoa.cardid()].code() != protoa.cardcode())
+            nocard = true;
+
+        ActivatedAbility a;
+        a.type = protoa.type();
+        a.zone = protoa.zone();
+        a.cardId = protoa.cardid();
+        a.id = protoa.id();
+        if (nocard) {
+            auto cardInfo = CardDatabase::get().getCard(protoa.cardcode());
+            if (!cardInfo)
+                return;
+
+            a.code = cardInfo->code();
+            //if (protoa.type() == ProtoAbilityType::ProtoCard)
+                //a.text =
+        } else {
+            a.code = protoa.cardcode();
+            //if (protoa.type() == ProtoAbilityType::ProtoCard)
+                //a.text =
+        }
+        if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger)
+            a.text = printAbility(globalAbility(static_cast<Trigger>(protoa.id())));
+
+        if (event.abilities_size() > 1) {
+            a.btnActive = true;
+            a.btnText = "Play";
+        }
+        mAbilityList->addAbility(a);
+    }
 }
 
 void Player::cardSelectedForLevelUp(int index) {

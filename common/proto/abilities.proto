@@ -9,12 +9,13 @@ enum ProtoAbilityType {
 message ProtoAbility {
     ProtoAbilityType type = 1;
     string zone = 2;
-    sint32 cardId = 3;
-	sint32 id = 4;
+	string cardCode = 3;
+    sint32 cardId = 4;
+	sint32 id = 5;
 }
 
 message EventAbilityActivated {
-    repeated ProtoAbility abs = 1;
+    repeated ProtoAbility abilities = 1;
 }
 
 message CommandIgnoreEffect {}

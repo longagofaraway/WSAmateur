@@ -1,20 +1,32 @@
+#include "globalAbilities.h"
+
 #include <unordered_map>
 #include <vector>
 
-#include "abilities.h"
 #include "../cardInfo.h"
 
-std::unordered_map<Trigger, asn::Ability> gTriggerAbilities;
 
-static std::unordered_map<Trigger, std::vector<uint8_t>> triggerAbilities = {
+namespace {
+std::unordered_map<Trigger, asn::Ability> gTriggerAbilities;
+std::unordered_map<Trigger, std::vector<uint8_t>> gTriggerBinAbilities = {
     { Trigger::Door, {
           #include "door"
       }
     }
 };
+bool gAbilitiesDecoded = false;
+}
 
 void decodeGlobalAbilities() {
     gTriggerAbilities.clear();
-    for (const auto &pair: triggerAbilities)
+    for (const auto &pair: gTriggerBinAbilities)
         gTriggerAbilities.emplace(pair.first, decodeAbility(pair.second));
+    gAbilitiesDecoded = true;
+}
+
+asn::Ability globalAbility(Trigger trigger) {
+    if (!gAbilitiesDecoded)
+        decodeGlobalAbilities();
+
+    return gTriggerAbilities.at(trigger);
 }

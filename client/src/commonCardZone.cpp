@@ -5,8 +5,6 @@
 #include "player.h"
 #include "game.h"
 
-#include <QDebug>
-
 CommonCardZone::CommonCardZone(Player *player, Game *game, std::string_view name)
     : mPlayer(player), mGame(game) {
     QQmlComponent component(mGame->engine(), "qrc:/qml/" + QString::fromStdString(std::string(name)) + ".qml");

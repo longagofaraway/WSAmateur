@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include <QString>
 
 #include "cardAttribute.pb.h"
 
+#include "abilities.h"
 #include "cardInfo.h"
 
 class Card {
@@ -19,8 +21,9 @@ class Card {
     int mPower;
     int mSoul;
     CardType mType;
-
     CardState mState = StateStanding;
+    std::vector<asn::Ability> mTempAbilities;
+    //std::vector<
 
     std::shared_ptr<CardInfo> mInfo;
 
@@ -54,4 +57,5 @@ public:
     QString qstate() const;
     QString qtype() const;
     QString qcode() const { return QString::fromStdString(mCode); }
+    std::string code() const { return mCode; }
 };

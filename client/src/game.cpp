@@ -20,8 +20,8 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="8" code="IMC/W43-127"/>
-        <card number="26" code="IMC/W43-046"/>
+        <card number="20" code="IMC/W43-127"/>
+        <card number="14" code="IMC/W43-046"/>
         <card number="4" code="IMC/W43-009"/>
         <card number="4" code="IMC/W43-111"/>
         <card number="8" code="IMC/W43-091"/>

@@ -25,6 +25,18 @@ CardDatabase::CardDatabase() {
     info2->setTraits({ "Music" });
     mDb.emplace(info2->code(), info2);
 
+    auto info100500 = std::make_shared<CardInfo>();
+    info100500->setCode("KGL/S79-055");
+    info100500->setLevel(0);
+    info100500->setCost(0);
+    info100500->setSoul(1);
+    info100500->setPower(1500);
+    info100500->setName("prru");
+    info100500->setType(CardType::Character);
+    info100500->setColor('R');
+    info100500->setTraits({ "Music" });
+    mDb.emplace(info100500->code(), info100500);
+
     auto info3 = std::make_shared<CardInfo>();
     info3->setCode("IMC/W43-111");
     info3->setLevel(1);

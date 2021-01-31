@@ -42,5 +42,8 @@
         <file>qml/ResolutionZone.qml</file>
         <file>qml/CardGlow.qml</file>
         <file>qml/EndOfGame.qml</file>
+        <file>resources/images/background.jpg</file>
+        <file>qml/ActivatedAbility.qml</file>
+        <file>qml/ActivatedAbilityList.qml</file>
     </qresource>
 </RCC>

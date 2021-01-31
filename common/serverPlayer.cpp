@@ -13,12 +13,11 @@
 #include <abilities.h>
 
 #include "cardDatabase.h"
+#include "globalAbilities/globalAbilities.h"
 #include "serverCardZone.h"
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
 #include "serverStage.h"
-
-extern std::unordered_map<Trigger, asn::Ability> gTriggerAbilities;
 
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
     : mGame(game), mClient(client), mId(id) { }
@@ -490,13 +489,14 @@ Resumable ServerPlayer::triggerStep(int pos) {
             break;
         case Trigger::Door:
             EventAbilityActivated event;
-            auto ab = event.add_abs();
+            auto ab = event.add_abilities();
             ab->set_zone("res");
             ab->set_type(ProtoAbilityType::ProtoClimaxTrigger);
             ab->set_cardid(0);
-            ab->set_id(static_cast<::google::protobuf::int32>(asn::TriggerIcon::Door));
+            ab->set_id(static_cast<::google::protobuf::int32>(trigger));
+            ab->set_cardcode(card->code());
             sendToBoth(event);
-            co_await playAbility(gTriggerAbilities[trigger]);
+            co_await playAbility(globalAbility(trigger));
         }
     }
     moveCard("res", 0, "stock");

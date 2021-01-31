@@ -145,7 +145,7 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
     return true;
 }
 
-int CardModel::rowCount(const QModelIndex &) const {
+int CardModel::rowCount(const QModelIndex&) const {
     return static_cast<int>(mCards.size());
 }
 

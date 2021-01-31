@@ -52,6 +52,7 @@ Item {
 
         anchors.fill: parent
 
+
         MainButton {
             id: mainButton
             x: root.width * 0.75
@@ -65,7 +66,10 @@ Item {
             mText: "test"
             state: "active"
             onClicked: {
-                gGame.testAction();
+                lview.effectsModel.append({ effectText: "You can't take damage from your opponent character's AUTO effects.", source: "KGL/S79-055" });
+                lview.effectsModel.append({ effectText: "You can't take damage from your opponent character's AUTO effects.", source: "KGL/S79-055" });
+                lview.effectsModel.append({ effectText: "You can't take damage from your opponent character's AUTO effects.", source: "KGL/S79-055" });
+                //gGame.testAction();
             }
         }
         SequentialAnimation {

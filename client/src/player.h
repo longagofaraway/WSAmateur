@@ -6,6 +6,7 @@
 
 #include <google/protobuf/message.h>
 
+#include "activatedAbilities.h"
 #include "cardZone.h"
 
 class EventInitialHand;
@@ -34,6 +35,7 @@ private:
     Hand *mHand;
     Stage *mStage;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
+    std::unique_ptr<ActivatedAbilities> mAbilityList;
 
     int mLevel = 0;
 

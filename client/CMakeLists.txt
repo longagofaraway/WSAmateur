@@ -1,4 +1,6 @@
 set(clientSources
+    src/abilityModel.cpp
+    src/activatedAbilities.cpp
     src/card.cpp
     src/cardModel.cpp
     src/cardZone.cpp
@@ -16,6 +18,8 @@ set(clientSources
     src/player.cpp
     src/stage.cpp
     src/waitingRoom.cpp
+    src/abilityModel.h
+    src/activatedAbilities.h
     src/card.h
     src/cardModel.h
     src/cardZone.h

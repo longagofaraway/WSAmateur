@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include "abilityModel.h"
 #include "cardModel.h"
 #include "game.h"
 #include "imageProvider.h"
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<Game>("wsamateur.game", 1, 0, "Game");
     qmlRegisterType<CardModel>("wsamateur.cardModel", 1, 0, "CardModel");
+    qmlRegisterType<AbilityModel>("wsamateur.abilityModel", 1, 0, "AbilityModel");
 
     QQmlApplicationEngine engine;
 

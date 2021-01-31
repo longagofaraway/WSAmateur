@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "abilities.h"
+
 enum class Trigger {
     Soul,
     Door
@@ -26,7 +28,8 @@ class CardInfo
     std::string mName;
     std::vector<std::string> mTraits;
     std::vector<Trigger> mTriggers;
-    //std::vector<Ability> mAbilities;
+    std::vector<asn::Ability> mAbilities;
+    std::vector<std::string> mText;
 
 public:
     CardInfo();
@@ -40,9 +43,7 @@ public:
     int soul() const { return mSoul; }
     void setSoul(int soul) { mSoul = soul; }
     char color() const { return mColor; }
-    void setColor(char color) {
-        mColor = color;
-    }
+    void setColor(char color) { mColor = color; }
     CardType type() const { return mType; }
     void setType(CardType type) { mType = type; }
     const std::string& code() const { return mCode; }
