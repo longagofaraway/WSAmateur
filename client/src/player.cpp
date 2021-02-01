@@ -140,6 +140,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventAbilityActivated ev;
         event->event().UnpackTo(&ev);
         activateAbilities(ev);
+    } else if (event->event().Is<EventChooseCard>()) {
+        EventChooseCard ev;
+        event->event().UnpackTo(&ev);
+        chooseCard(ev);
     }
 }
 
@@ -487,6 +491,10 @@ void Player::endGame(bool victory) {
     mGame->endGame(victory);
 }
 
+void Player::chooseCard(const EventChooseCard &event) {
+    auto effectBuf = event.effect();
+}
+
 void Player::activateAbilities(const EventAbilityActivated &event) {
     for (int i = 0; i < event.abilities_size(); ++i) {
         auto protoa = event.abilities(i);
@@ -526,6 +534,9 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         if (event.abilities_size() > 1) {
             a.btnActive = true;
             a.btnText = "Play";
+            a.active = false;
+        } else {
+            a.active = true;
         }
         mAbilityList->addAbility(a);
     }
@@ -580,9 +591,13 @@ void Player::sendFromStageToWr(int pos) {
 void Player::testAction()
 {
     //createMovingCard("IMC/W43-046", "hand", 1, "res", 0, true);
-    if (mStage->cards()[0].cardPresent()) {
-        createMovingCard(mStage->cards()[0].qcode(), "stage", 0, "wr");
-    }
+    ActivatedAbility a;
+    a.active = true;
+    a.btnActive = true;
+    a.btnText = "Cancel";
+    a.code = "IMC/W43-009";
+    a.text = "AUTO [(1) Put the top card of your deck in your clock & put a card from yo";
+    mAbilityList->addAbility(a);
 }
 
 bool Player::playCards(CardModel &hand) {

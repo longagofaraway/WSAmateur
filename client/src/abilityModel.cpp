@@ -26,6 +26,8 @@ QVariant AbilityModel::data(const QModelIndex &index, int role) const {
         return ab.btnActive;
     case ButtonTextRole:
         return ab.btnText;
+    case ActiveRole:
+        return ab.active;
     default:
         return QVariant();
     }
@@ -39,6 +41,7 @@ QHash<int, QByteArray> AbilityModel::roleNames() const {
         (*roles)[TextRole] = "text";
         (*roles)[ButtonActiveRole] = "btnActive";
         (*roles)[ButtonTextRole] = "btnText";
+        (*roles)[ActiveRole] = "active";
     }
     return *roles;
 }

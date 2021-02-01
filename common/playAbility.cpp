@@ -43,6 +43,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
 
     EventChooseCard ev;
     ev.set_effect(buf.data(), buf.size());
+    ev.set_mandatory(mContext.mandatory);
     sendToBoth(ev);
 
     clearExpectedComands();

@@ -13,5 +13,5 @@ ActivatedAbilities::ActivatedAbilities(Player *player, Game *game) {
     mQmlObject = qobject_cast<QQuickItem*>(obj);
     mQmlObject->setParentItem(game);
     mQmlObject->setParent(game);
-    mQmlObject->setProperty("opponent", player->isOpponent());
+    mQmlObject->setProperty("mOpponent", player->isOpponent());
 }

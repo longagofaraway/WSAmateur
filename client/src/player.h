@@ -18,6 +18,7 @@ class EventDeclareAttack;
 class EventSetCardAttr;
 class EventSetCardState;
 class EventAbilityActivated;
+class EventChooseCard;
 
 class Game;
 class GameEvent;
@@ -93,6 +94,7 @@ private:
     void refresh();
     void discardTo7();
     void endGame(bool victory);
+    void chooseCard(const EventChooseCard &event);
 
     void activateAbilities(const EventAbilityActivated &event);
 

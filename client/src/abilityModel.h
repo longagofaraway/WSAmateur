@@ -17,6 +17,7 @@ struct ActivatedAbility {
     std::string code;
     std::string text;
 
+    bool active = false;
     bool btnActive = false;
     QString btnText;
 };
@@ -32,7 +33,8 @@ public:
         CodeRole = Qt::UserRole + 1,
         TextRole,
         ButtonActiveRole,
-        ButtonTextRole
+        ButtonTextRole,
+        ActiveRole
     };
     AbilityModel() : QAbstractListModel(nullptr) {}
 

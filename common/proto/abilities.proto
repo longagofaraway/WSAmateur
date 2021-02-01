@@ -21,6 +21,7 @@ message EventAbilityActivated {
 message CommandIgnoreEffect {}
 message EventChooseCard {
     bytes effect = 1;
+    bool mandatory = 2;
 }
 
 message CommandChooseCard {

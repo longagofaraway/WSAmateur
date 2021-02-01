@@ -24,6 +24,11 @@
         <file>qml/StageCard.qml</file>
         <file>qml/Level.qml</file>
         <file>qml/Climax.qml</file>
+        <file>qml/ResolutionZone.qml</file>
+        <file>qml/CardGlow.qml</file>
+        <file>qml/EndOfGame.qml</file>
+        <file>qml/ActivatedAbility.qml</file>
+        <file>qml/ActivatedAbilityList.qml</file>
         <file>resources/background.jpg</file>
         <file>resources/images/imc.jpg</file>
         <file>resources/images/imc0.jpg</file>
@@ -39,11 +44,6 @@
         <file>resources/images/wrClimaxCount.png</file>
         <file>resources/images/closeButton.png</file>
         <file>resources/images/closeButtonHighlighted.png</file>
-        <file>qml/ResolutionZone.qml</file>
-        <file>qml/CardGlow.qml</file>
-        <file>qml/EndOfGame.qml</file>
-        <file>resources/images/background.jpg</file>
-        <file>qml/ActivatedAbility.qml</file>
-        <file>qml/ActivatedAbilityList.qml</file>
+        <file>resources/images/abbg.png</file>
     </qresource>
 </RCC>
