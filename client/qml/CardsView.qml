@@ -75,7 +75,7 @@ Rectangle {
             top: header.bottom
             topMargin: 5
         }
-        spacing: -root.cardWidth * 0.1
+        spacing: -root.cardWidth * 0.2
 
         CardsViewColumn {
             id: col1

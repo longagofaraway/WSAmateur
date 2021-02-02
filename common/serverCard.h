@@ -4,6 +4,7 @@
 
 #include "cardAttribute.pb.h"
 
+#include "abilities/basicTypes.h"
 #include "attributeChange.h"
 #include "cardInfo.h"
 

@@ -1,6 +1,7 @@
 add_subdirectory(proto)
 
 set(commonSources
+    abilityUtils.cpp
     cardDatabase.cpp
     cardInfo.cpp
     deckList.cpp
@@ -12,6 +13,7 @@ set(commonSources
     serverPlayer.cpp
     serverProtocolHandler.cpp
     serverStage.cpp
+    abilityUtils.h
     attributeChange.h
     cardDatabase.h
     cardInfo.h

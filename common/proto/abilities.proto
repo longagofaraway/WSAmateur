@@ -18,7 +18,7 @@ message EventAbilityActivated {
     repeated ProtoAbility abilities = 1;
 }
 
-message CommandIgnoreEffect {}
+message CommandCancelEffect {}
 message EventChooseCard {
     bytes effect = 1;
     bool mandatory = 2;

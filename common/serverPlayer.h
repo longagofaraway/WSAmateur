@@ -34,6 +34,7 @@ struct ChosenCard {
 
 struct AbilityContext {
     bool mandatory = true;
+    bool canceled = false;
     std::vector<ChosenCard> chosenCards;
 };
 

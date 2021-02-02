@@ -13,6 +13,7 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
+#include "abilityUtils.h"
 #include "cardDatabase.h"
 #include "commonCardZone.h"
 #include "deck.h"
@@ -23,6 +24,8 @@
 #include "stage.h"
 #include "waitingRoom.h"
 
+#include "codecs/decode.h"
+
 #include <QDebug>
 
 Player::Player(int id, Game *game, bool opponent)
@@ -31,7 +34,7 @@ Player::Player(int id, Game *game, bool opponent)
     mHand = hand.get();
     mZones.emplace("hand", std::move(hand));
     auto wr = std::make_unique<WaitingRoom>(this, game);
-    /*wr->model().addCard(std::string("IMC/W43-127"));
+    wr->model().addCard(std::string("IMC/W43-127"));
     wr->model().addCard(std::string("IMC/W43-111"));
     wr->model().addCard(std::string("IMC/W43-046"));
     wr->model().addCard(std::string("IMC/W43-091"));
@@ -40,7 +43,7 @@ Player::Player(int id, Game *game, bool opponent)
     wr->model().addCard(std::string("IMC/W43-009"));
     wr->model().addCard(std::string("IMC/W43-009"));
     wr->model().addCard(std::string("IMC/W43-009"));
-    wr->model().addCard(std::string("IMC/W43-009"));*/
+    wr->model().addCard(std::string("IMC/W43-009"));
     mZones.emplace("wr", std::move(wr));
     auto deck = std::make_unique<Deck>(this, game);
     mZones.emplace("deck", std::move(deck));
@@ -491,8 +494,53 @@ void Player::endGame(bool victory) {
     mGame->endGame(victory);
 }
 
+namespace {
+asn::ChooseCard decodeChooseCard(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.begin();
+    return ::decodeChooseCard(it, binbuf.end());
+}
+}
 void Player::chooseCard(const EventChooseCard &event) {
-    auto effectBuf = event.effect();
+    auto effect = decodeChooseCard(event.effect());
+    if (effect.placeType != asn::PlaceType::SpecificPlace ||
+        effect.place->owner != asn::Owner::Player ||
+        effect.targets.size() != 1 ||
+        effect.targets[0].type != asn::TargetType::SpecificCards ||
+        effect.targets[0].targetSpecification->number.mod != asn::NumModifier::ExactMatch ||
+        effect.targets[0].targetSpecification->number.value != 1) {
+        assert(false);
+        return;
+    }
+
+    const auto &specs = effect.targets[0].targetSpecification->cards.cardSpecifiers;
+    auto from = zone(asnZoneToString(effect.place->zone));
+    const auto &cards = from->cards();
+    int eligible = 0;
+    for (int i = 0; i < from->model().count(); ++i) {
+        if (!cards[i].cardPresent())
+            continue;
+        for (const auto &spec: specs) {
+            switch (spec.type) {
+            case asn::CardSpecifierType::CardType:
+                if (std::get<CardType>(spec.specifier) != cards[i].type())
+                    continue;
+                break;
+            }
+            from->model().setGlow(i, true);
+            eligible++;
+        }
+    }
+    if (eligible) {
+        QMetaObject::invokeMethod(from->visualItem(), "openView");
+        if (event.mandatory()) {
+            auto ab = mAbilityList->activeAbility();
+            ab.btnActive = true;
+            ab.btnText = "Cancel";
+        }
+    } else {
+        sendGameCommand(CommandCancelEffect());
+    }
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
@@ -540,6 +588,8 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         }
         mAbilityList->addAbility(a);
     }
+    if (mAbilityList->count())
+        mGame->pause(250);
 }
 
 void Player::cardSelectedForLevelUp(int index) {

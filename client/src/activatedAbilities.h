@@ -14,6 +14,8 @@ class ActivatedAbilities
 public:
     ActivatedAbilities(Player *player, Game *game);
 
+    ActivatedAbility& activeAbility() { return mModel.activeAbility(); }
     void addAbility(const ActivatedAbility &a) { mModel.addAbility(a); }
+    int count() const { return mModel.count(); }
 };
 

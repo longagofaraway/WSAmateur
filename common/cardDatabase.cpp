@@ -8,7 +8,7 @@ CardDatabase::CardDatabase() {
     info->setSoul(1);
     info->setPower(4000);
     info->setName("prr");
-    info->setType(CardType::Character);
+    info->setType(CardType::Char);
     info->setColor('Y');
     info->setTraits({ "Music", "Happy Happy" });
     mDb.emplace(info->code(), info);
@@ -20,7 +20,7 @@ CardDatabase::CardDatabase() {
     info2->setSoul(1);
     info2->setPower(1500);
     info2->setName("prru");
-    info2->setType(CardType::Character);
+    info2->setType(CardType::Char);
     info2->setColor('R');
     info2->setTraits({ "Music" });
     mDb.emplace(info2->code(), info2);
@@ -32,7 +32,7 @@ CardDatabase::CardDatabase() {
     info100500->setSoul(1);
     info100500->setPower(1500);
     info100500->setName("prru");
-    info100500->setType(CardType::Character);
+    info100500->setType(CardType::Char);
     info100500->setColor('R');
     info100500->setTraits({ "Music" });
     mDb.emplace(info100500->code(), info100500);
@@ -44,7 +44,7 @@ CardDatabase::CardDatabase() {
     info3->setSoul(1);
     info3->setPower(5000);
     info3->setName("prru");
-    info3->setType(CardType::Character);
+    info3->setType(CardType::Char);
     info3->setColor('B');
     info3->setTraits({ "Music" });
     mDb.emplace(info3->code(), info3);
@@ -56,7 +56,7 @@ CardDatabase::CardDatabase() {
     info4->setSoul(2);
     info4->setPower(10000);
     info4->setName("prru");
-    info4->setType(CardType::Character);
+    info4->setType(CardType::Char);
     info4->setColor('B');
     info4->setTraits({ "Music" });
     info4->setTriggers({ Trigger::Soul });

@@ -301,7 +301,7 @@ void ServerPlayer::playCard(const CommandPlayCard &cmd) {
     if (!cardPtr)
         return;
 
-    if (cardPtr->type() == CardType::Character)
+    if (cardPtr->type() == CardType::Char)
         playCharacter(cmd);
     else if (cardPtr->type() == CardType::Climax)
         playClimax(cmd.handid());

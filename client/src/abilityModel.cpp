@@ -2,6 +2,13 @@
 
 #include "abilityModel.h"
 
+ActivatedAbility& AbilityModel::activeAbility() {
+    for (auto &ab: mAbilities) {
+        if (ab.active)
+            return ab;
+    }
+}
+
 void AbilityModel::addAbility(const ActivatedAbility &a) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     mAbilities.push_back(a);

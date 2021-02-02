@@ -38,6 +38,7 @@ public:
     };
     AbilityModel() : QAbstractListModel(nullptr) {}
 
+    ActivatedAbility& activeAbility();
     void addAbility(const ActivatedAbility &a);
 
     //bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;

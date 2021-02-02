@@ -10,11 +10,12 @@ enum class Trigger {
     Door
 };
 
-enum class CardType {
+using asn::CardType;
+/*enum class CardType {
     Character,
     Climax,
     Event
-};
+};*/
 
 class CardInfo
 {
@@ -44,7 +45,7 @@ public:
     void setSoul(int soul) { mSoul = soul; }
     char color() const { return mColor; }
     void setColor(char color) { mColor = color; }
-    CardType type() const { return mType; }
+    asn::CardType type() const { return mType; }
     void setType(CardType type) { mType = type; }
     const std::string& code() const { return mCode; }
     void setCode(const std::string &code) { mCode = code; }

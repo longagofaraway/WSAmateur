@@ -49,7 +49,7 @@ QString Card::qstate() const {
 
 QString Card::qtype() const {
     switch(mType) {
-    case CardType::Character:
+    case CardType::Char:
         return QString("Char");
     case CardType::Climax:
         return QString("Climax");

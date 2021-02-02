@@ -1,35 +1,9 @@
 #include "abilities.pb.h"
 
+#include "abilityUtils.h"
 #include "serverPlayer.h"
 #include "codecs/encode.h"
 
-namespace {
-std::string_view asnZoneToString(asn::Zone zone) {
-    switch (zone) {
-    case asn::Zone::Climax:
-        return "climax";
-    case asn::Zone::Clock:
-        return "clock";
-    case asn::Zone::Deck:
-        return "deck";
-    case asn::Zone::Hand:
-        return "hand";
-    case asn::Zone::Level:
-        return "level";
-    case asn::Zone::Memory:
-        return "memory";
-    case asn::Zone::Stage:
-        return "stage";
-    case asn::Zone::Stock:
-        return "stock";
-    case asn::Zone::WaitingRoom:
-        return "wr";
-    default:
-        assert(false);
-        return "";
-    }
-}
-}
 
 Resumable ServerPlayer::playNonMandatory(const asn::NonMandatory &e) {
     mContext.mandatory = false;
@@ -48,12 +22,12 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
 
     clearExpectedComands();
     addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
-    if (!mContext.mandatory)
-        addExpectedCommand(CommandIgnoreEffect::GetDescriptor()->name());
+    addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
     while (true) {
         auto cmd = co_await waitForCommand();
-        if (cmd.command().Is<CommandIgnoreEffect>()) {
+        if (cmd.command().Is<CommandCancelEffect>()) {
+            mContext.canceled = true;
             co_return;
         } else if (cmd.command().Is<CommandChooseCard>()) {
             CommandChooseCard chooseCmd;
@@ -70,7 +44,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
                      spec->number.value > chooseCmd.ids_size()))
                 continue;
             }
-            //add checks
+            //TODO: add checks
             for (int i = 0; i < chooseCmd.ids_size(); ++i)
                 mContext.chosenCards.push_back(ChosenCard(chooseCmd.zone(), chooseCmd.ids(i)));
             break;

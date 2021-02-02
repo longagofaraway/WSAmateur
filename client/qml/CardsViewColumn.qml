@@ -18,10 +18,10 @@ ListView {
     spacing: -root.cardHeight * 0.7
     clip: true
     contentWidth: root.cardWidth
-    leftMargin: root.cardWidth * 0.1 * 0.5
-    rightMargin: root.cardWidth * 0.1 * 0.5
-    topMargin: root.cardHeight * 0.1 * 0.5
-    bottomMargin: root.cardHeight * 0.1 * 0.5
+    leftMargin: root.cardWidth * 0.1 //* 0.5
+    rightMargin: root.cardWidth * 0.1 //* 0.5
+    topMargin: root.cardHeight * 0.1 //* 0.5
+    bottomMargin: root.cardHeight * 0.1 //* 0.5
     visible: count
     interactive: effectiveHeight > cardsView.mColumnMaxHeight
 
@@ -66,6 +66,10 @@ ListView {
                 onPressed: {
                     cardImgDelegate.state = "";
                 }
+                onClicked: {
+                    if (!model.glow)
+                        return;
+                }
 
                 Card {
                     id: cardImgDelegate
@@ -98,6 +102,11 @@ ListView {
                         from: "hovered"
                         to: ""
                         ScriptAction { script: destroyTextFrame(cardImgDelegate); }
+                    }
+
+                    CardGlow {
+                        glow: model.glow
+                        selected: model.selected
                     }
                 }
             }

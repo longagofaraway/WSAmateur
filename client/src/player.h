@@ -94,8 +94,8 @@ private:
     void refresh();
     void discardTo7();
     void endGame(bool victory);
-    void chooseCard(const EventChooseCard &event);
 
+    void chooseCard(const EventChooseCard &event);
     void activateAbilities(const EventAbilityActivated &event);
 
 public slots:
