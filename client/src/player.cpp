@@ -441,11 +441,8 @@ void Player::levelUp() {
     if  (mOpponent)
         return;
 
-    mGame->levelUp();
-
-    auto visualClock = zone("clock")->visualItem();
-    QMetaObject::invokeMethod(visualClock, "levelUp");
-    visualClock->connect(visualClock, SIGNAL(cardSelected(int)), this, SLOT(cardSelectedForLevelUp(int)));
+    mGame->showText("Level up", "(Choose a card in clock to send to level zone)");
+    QMetaObject::invokeMethod(zone("clock")->visualItem(), "levelUp");
 }
 
 void Player::moveClockToWr() {
@@ -593,7 +590,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
 }
 
 void Player::cardSelectedForLevelUp(int index) {
-    mGame->endLevelUp();
+    mGame->hideText();
 
     CommandLevelUp cmd;
     cmd.set_clockid(index);

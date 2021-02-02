@@ -20,11 +20,11 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="20" code="IMC/W43-127"/>
-        <card number="14" code="IMC/W43-046"/>
+        <card number="1" code="IMC/W43-127"/>
+        <card number="21" code="IMC/W43-046"/>
         <card number="4" code="IMC/W43-009"/>
         <card number="4" code="IMC/W43-111"/>
-        <card number="8" code="IMC/W43-091"/>
+        <card number="20" code="IMC/W43-091"/>
     </main>
 </deck>)delim";
 
@@ -132,14 +132,6 @@ void Game::processGameEventFromQueue() {
         QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
 }
 
-void Game::cardSelectedForMulligan(bool selected) {
-    QMetaObject::invokeMethod(this, "changeCardCountForMulligan", Q_ARG(QVariant, selected));
-}
-
-void Game::cardSelectedForClock(bool selected) {
-    QMetaObject::invokeMethod(this, "changeCardCountForClock", Q_ARG(QVariant, selected));
-}
-
 void Game::cardMoveFinished() {
     sender()->deleteLater();
 }
@@ -177,6 +169,14 @@ QQmlContext* Game::context() const { return qmlContext(parentItem()); }
 
 void Game::pause(int ms) {
     QMetaObject::invokeMethod(this, "pause", Q_ARG(QVariant, ms));
+}
+
+void Game::showText(QString mainText, QString subText) {
+    QMetaObject::invokeMethod(this, "showText", Q_ARG(QVariant, mainText), Q_ARG(QVariant, subText));
+}
+
+void Game::hideText() {
+    QMetaObject::invokeMethod(this, "hideText");
 }
 
 Client* Game::getClientForPlayer(int playerId) {
@@ -226,14 +226,6 @@ void Game::attackDeclarationStepFinished() {
 
 void Game::counterStep() {
     QMetaObject::invokeMethod(this, "counterStep");
-}
-
-void Game::levelUp() {
-    QMetaObject::invokeMethod(this, "levelUp");
-}
-
-void Game::endLevelUp() {
-    QMetaObject::invokeMethod(this, "endLevelUp");
 }
 
 void Game::encoreStep() {

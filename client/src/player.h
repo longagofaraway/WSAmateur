@@ -42,10 +42,10 @@ private:
 
 public:
     Player(int id, Game *game, bool opponent);
+    Player(const Player&) = delete;
+    Player& operator=(const Player&) = delete;
 
-    bool isOpponent() {
-        return mOpponent;
-    }
+    bool isOpponent() { return mOpponent; }
     bool activePlayer() const { return mActivePlayer; }
     void setActivePlayer(bool active) { mActivePlayer = active; }
     void setDeck(const std::string &deck);
@@ -62,6 +62,9 @@ public:
     void sendTakeDamageCommand();
     void sendEncoreCommand();
     void sendEndTurnCommand();
+
+    Q_INVOKABLE void cardPlayed(int handId, int stageId);
+    Q_INVOKABLE void cardSelectedForLevelUp(int index);
 
     //test section
     void testAction();
@@ -99,11 +102,9 @@ private:
     void activateAbilities(const EventAbilityActivated &event);
 
 public slots:
-    void cardPlayed(int handId, int stageId);
     void switchPositions(int from, int to);
     void sendFromStageToWr(int pos);
     void sendAttackDeclaration(int pos, bool sideAttack);
-    void cardSelectedForLevelUp(int index);
     void sendEncore(int pos);
     void sendDiscardCard(int id);
 };

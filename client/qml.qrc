@@ -4,7 +4,6 @@
         <file>qml/Card.qml</file>
         <file>qml/StagePlace.qml</file>
         <file>qml/objectCreation.js</file>
-        <file>qml/TopDeck.qml</file>
         <file>qml/Hand.qml</file>
         <file>qml/Stock.qml</file>
         <file>qml/CardInfoFrame.qml</file>

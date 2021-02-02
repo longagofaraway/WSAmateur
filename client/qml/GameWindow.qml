@@ -65,7 +65,7 @@ Item {
             mText: "test"
             state: "active"
             onClicked: {
-                gGame.testAction();
+                //gGame.testAction();
             }
         }
         SequentialAnimation {
@@ -73,6 +73,8 @@ Item {
             PauseAnimation { id: waitAnimPause; }
             ScriptAction { script: gGame.actionComplete() }
         }
+
+        function getPlayer(opp) { return opp ? gGame.opponent : gGame.player; }
 
         function pause(pauseDuration) {
             gGame.startAction();
@@ -221,13 +223,11 @@ Item {
             gGame.sendTakeDamageCommand();
         }
 
-        function levelUp() {
-            createHelpText("Level up", "(Choose a card in clock to send to level zone)");
+        function showText(mainText, subText) {
+            createHelpText(mainText, subText);
         }
 
-        function endLevelUp() {
-            startHelpTextDestruction();
-        }
+        function hideText() { startHelpTextDestruction(); }
 
         function encoreStep() {
             createHelpText("Choose characters to encore");

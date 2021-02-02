@@ -5,7 +5,6 @@ import wsamateur.cardModel 1.0
 ListView {
     id: clockView
 
-    signal cardSelected(int index)
     property bool opponent
     property bool hidden: false
     property CardModel mModel: innerModel
@@ -51,7 +50,7 @@ ListView {
                     clockView.state = "";
                     model.selected = !model.selected;
                     glow7Cards(false);
-                    cardSelected(model.index);
+                    gGame.getPlayer(opponent).cardSelectedForLevelUp(model.index);
                 }
             }
 

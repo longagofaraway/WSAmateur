@@ -22,6 +22,8 @@ extern std::string gDeck;
 class Game : public QQuickItem
 {
     Q_OBJECT
+    Q_PROPERTY(Player *player READ player CONSTANT FINAL)
+    Q_PROPERTY(Player *opponent READ opponent CONSTANT FINAL)
 
 private:
     std::unique_ptr<Player> mPlayer;
@@ -33,9 +35,14 @@ private:
     bool mUiActionInProgress = false;
     std::deque<std::shared_ptr<GameEvent>> mEventQueue;
 
+
 public:
     Game();
     ~Game();
+
+    //accessing players from qml
+    Player* player() { return mPlayer.get(); }
+    Player* opponent() { return mOpponent.get(); }
 
     // actions - network initiated ui actions
     // ui actions - user initiated ui actions, they cannot be delayed
@@ -66,6 +73,8 @@ public:
     QQmlContext* context() const;
 
     void pause(int ms);
+    void showText(QString mainText, QString subText);
+    void hideText();
 
     void sendGameCommand(const google::protobuf::Message &command, int playerId);
 
@@ -75,8 +84,6 @@ public:
     void attackDeclarationStep();
     void attackDeclarationStepFinished();
     void counterStep();
-    void levelUp();
-    void endLevelUp();
     void encoreStep();
     void pauseEncoreStep();
     void discardTo7();
@@ -90,8 +97,6 @@ public slots:
     void processGameEventFromQueue();
     void processGameEventByOpponent(const std::shared_ptr<GameEvent> event);
 
-    void cardSelectedForMulligan(bool selected);
-    void cardSelectedForClock(bool selected);
     void cardMoveFinished();
 
 private:

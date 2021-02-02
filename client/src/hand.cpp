@@ -32,41 +32,33 @@ void Hand::addCard(const std::string &code) {
 
 void Hand::startMulligan() {
     QMetaObject::invokeMethod(mQmlHand, "mulligan");
-    mQmlHand->connect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForMulligan(bool)));
 }
 
 void Hand::endMulligan() {
     QMetaObject::invokeMethod(mQmlHand, "endMulligan");
-    mQmlHand->disconnect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForMulligan(bool)));
 }
 
 void Hand::clockPhase() {
     QMetaObject::invokeMethod(mQmlHand, "clockPhase");
-    mQmlHand->connect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForClock(bool)));
 }
 
 void Hand::endClockPhase() {
     QMetaObject::invokeMethod(mQmlHand, "endClockPhase");
-    mQmlHand->disconnect(mQmlHand, SIGNAL(cardSelected(bool)), mGame, SLOT(cardSelectedForClock(bool)));
 }
 
 void Hand::mainPhase() {
     mQmlHand->setProperty("state", "main");
-    mQmlHand->connect(mQmlHand, SIGNAL(cardPlayed(int, int)), mPlayer, SLOT(cardPlayed(int, int)));
 }
 
 void Hand::endMainPhase() {
     mQmlHand->setProperty("state", "");
     QMetaObject::invokeMethod(mQmlHand, "glowAllCards", Q_ARG(QVariant, false));
-    mQmlHand->disconnect(mQmlHand, SIGNAL(cardPlayed(int, int)), mPlayer, SLOT(cardPlayed(int, int)));
 }
 
 void Hand::discardCard() {
     QMetaObject::invokeMethod(mQmlHand, "discardCard");
-    mQmlHand->connect(mQmlHand, SIGNAL(cardChosen(int)), mPlayer, SLOT(sendDiscardCard(int)));
 }
 
 void Hand::deactivateDiscarding() {
-    mQmlHand->disconnect(mQmlHand, SIGNAL(cardChosen(int)), mPlayer, SLOT(sendDiscardCard(int)));
 }
 

@@ -7,10 +7,6 @@ import wsamateur.cardModel 1.0
 ListView {
     id: handView
 
-    signal cardSelected(bool selected)
-    signal moveFinished()
-    signal cardPlayed(int handId, int stageId)
-    signal cardChosen(int id)
     property bool opponent
     property bool hidden: opponent
     property real length: getHandLength(count)
@@ -250,12 +246,12 @@ ListView {
                     onClicked: {
                         if (handView.state === "mulligan") {
                             model.glow = !model.glow;
-                            cardSelected(model.glow);
+                            gGame.changeCardCountForMulligan(model.glow);
                         } else if (handView.state === "clock") {
                             if (!model.glow)
                                 return;
                             model.selected = !model.selected;
-                            cardSelected(model.selected);
+                            gGame.changeCardCountForClock(model.selected);
                             if (model.selected)
                                 unglowUnselected();
                             else
@@ -263,7 +259,7 @@ ListView {
                         } else if (handView.state === "choosing") {
                             if (!model.glow)
                                 return;
-                            cardChosen(model.index);
+                            gGame.getPlayer(opponent).sendDiscardCard(model.index);
                             glowAllCards(false);
                             handView.state = "";
                         }
@@ -305,7 +301,7 @@ ListView {
                             return;
                         handView.dragIndex = -1;
                         if (root.stageDropTarget !== undefined) {
-                            cardPlayed(model.index, root.stageDropTarget.mIndex);
+                            gGame.getPlayer(opponent).cardPlayed(model.index, root.stageDropTarget.mIndex);
                             if (root.stageDropTarget.mStageCard !== null)
                                 root.stageDropTarget.sendToWr();
                             root.stageDropTarget.setCard(model.code);

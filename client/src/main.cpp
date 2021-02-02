@@ -4,6 +4,7 @@
 #include "abilityModel.h"
 #include "cardModel.h"
 #include "game.h"
+#include "player.h"
 #include "imageProvider.h"
 
 int main(int argc, char *argv[])
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<Game>("wsamateur.game", 1, 0, "Game");
+    qmlRegisterAnonymousType<Player>("wsamateur.player", 1);
     qmlRegisterType<CardModel>("wsamateur.cardModel", 1, 0, "CardModel");
     qmlRegisterType<AbilityModel>("wsamateur.abilityModel", 1, 0, "AbilityModel");
 
