@@ -2,6 +2,10 @@
 
 #include <cassert>
 
+#include <QByteArray>
+
+#include "abilities.pb.h"
+
 std::string_view asnZoneToString(asn::Zone zone) {
     switch (zone) {
     case asn::Zone::Climax:
@@ -26,4 +30,13 @@ std::string_view asnZoneToString(asn::Zone zone) {
         assert(false);
         return "";
     }
+}
+
+uint32_t abilityHash(const ProtoAbility &a) {
+    std::string buf = a.zone();
+    buf += a.cardcode();
+    buf += std::to_string(a.cardid());
+    buf += std::to_string(a.type());
+    buf += std::to_string(a.abilityid());
+    return qChecksum(buf.data(), static_cast<uint>(buf.size()));
 }

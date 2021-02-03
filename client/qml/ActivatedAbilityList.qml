@@ -10,8 +10,12 @@ ListView {
     property AbilityModel mModel: innerModel
 
     z: 160
-    x: 280
-    y: (gGame.height - contentHeight) / 2
+    x: gGame.width * (mOpponent ? 0.71 : 0.12)
+    y: {
+        if (mOpponent)
+            return gGame.height * 0.2;
+        return (gGame.height - contentHeight) / 2;
+    }
     width: 300
     height: contentHeight
     interactive: false
@@ -32,4 +36,10 @@ ListView {
         NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
     }
     Behavior on y { NumberAnimation { duration: 200 } }
+    remove: Transition {
+        id: removeTrans
+        NumberAnimation { property: "x"; to: -100; duration: 200 }
+        NumberAnimation { property: "y"; from: 0; to: -removeTrans.ViewTransition.item.height / 2; duration: 200 }
+        NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 200 }
+    }
 }

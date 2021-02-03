@@ -22,7 +22,6 @@
 #include "globalAbilities/globalAbilities.h"
 #include "hand.h"
 #include "stage.h"
-#include "waitingRoom.h"
 
 #include "codecs/decode.h"
 
@@ -33,8 +32,8 @@ Player::Player(int id, Game *game, bool opponent)
     auto hand = std::make_unique<Hand>(this, game);
     mHand = hand.get();
     mZones.emplace("hand", std::move(hand));
-    auto wr = std::make_unique<WaitingRoom>(this, game);
-    wr->model().addCard(std::string("IMC/W43-127"));
+    auto wr = std::make_unique<CommonCardZone>(this, game, "WaitingRoom");
+    /*wr->model().addCard(std::string("IMC/W43-127"));
     wr->model().addCard(std::string("IMC/W43-111"));
     wr->model().addCard(std::string("IMC/W43-046"));
     wr->model().addCard(std::string("IMC/W43-091"));
@@ -43,7 +42,7 @@ Player::Player(int id, Game *game, bool opponent)
     wr->model().addCard(std::string("IMC/W43-009"));
     wr->model().addCard(std::string("IMC/W43-009"));
     wr->model().addCard(std::string("IMC/W43-009"));
-    wr->model().addCard(std::string("IMC/W43-009"));
+    wr->model().addCard(std::string("IMC/W43-009"));*/
     mZones.emplace("wr", std::move(wr));
     auto deck = std::make_unique<Deck>(this, game);
     mZones.emplace("deck", std::move(deck));
@@ -146,7 +145,13 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
     } else if (event->event().Is<EventChooseCard>()) {
         EventChooseCard ev;
         event->event().UnpackTo(&ev);
-        chooseCard(ev);
+        processChooseCard(ev);
+    } else if (event->event().Is<EventAbilityResolved>()) {
+        abilityResolved();
+    } else if (event->event().Is<EventPlayAbility>()) {
+        EventPlayAbility ev;
+        event->event().UnpackTo(&ev);
+        opponentPlayingAbility(ev);
     }
 }
 
@@ -498,7 +503,11 @@ asn::ChooseCard decodeChooseCard(const std::string &buf) {
     return ::decodeChooseCard(it, binbuf.end());
 }
 }
-void Player::chooseCard(const EventChooseCard &event) {
+
+void Player::processChooseCard(const EventChooseCard &event) {
+    if (mOpponent)
+        return;
+
     auto effect = decodeChooseCard(event.effect());
     if (effect.placeType != asn::PlaceType::SpecificPlace ||
         effect.place->owner != asn::Owner::Player ||
@@ -529,13 +538,14 @@ void Player::chooseCard(const EventChooseCard &event) {
         }
     }
     if (eligible) {
-        QMetaObject::invokeMethod(from->visualItem(), "openView");
-        if (event.mandatory()) {
-            auto ab = mAbilityList->activeAbility();
-            ab.btnActive = true;
-            ab.btnText = "Cancel";
-        }
+        mAbilityList->ability(mAbilityList->activeId()).effect = effect;
+        if (effect.place->zone == asn::Zone::WaitingRoom ||
+            effect.place->zone == asn::Zone::Deck)
+            QMetaObject::invokeMethod(from->visualItem(), "openView", Q_ARG(QVariant, true));
+        if (!event.mandatory())
+            mAbilityList->activateCancel(mAbilityList->activeId(), true);
     } else {
+        mGame->pause(800);
         sendGameCommand(CommandCancelEffect());
     }
 }
@@ -556,10 +566,11 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
             nocard = true;
 
         ActivatedAbility a;
+        a.uniqueId = protoa.uniqueid();
         a.type = protoa.type();
         a.zone = protoa.zone();
         a.cardId = protoa.cardid();
-        a.id = protoa.id();
+        a.abilityId = protoa.abilityid();
         if (nocard) {
             auto cardInfo = CardDatabase::get().getCard(protoa.cardcode());
             if (!cardInfo)
@@ -574,11 +585,11 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
                 //a.text =
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger)
-            a.text = printAbility(globalAbility(static_cast<Trigger>(protoa.id())));
+            a.text = printAbility(globalAbility(static_cast<Trigger>(protoa.abilityid())));
 
         if (event.abilities_size() > 1) {
-            a.btnActive = true;
-            a.btnText = "Play";
+            if (!mOpponent)
+                a.playBtnActive = true;
             a.active = false;
         } else {
             a.active = true;
@@ -595,6 +606,72 @@ void Player::cardSelectedForLevelUp(int index) {
     CommandLevelUp cmd;
     cmd.set_clockid(index);
     sendGameCommand(cmd);
+}
+
+void Player::playAbility(int index) {
+    const auto &ab = mAbilityList->ability(index);
+    if (ab.active) {
+        sendGameCommand(CommandPlayEffect());
+    } else {
+        mAbilityList->setActive(index, true);
+        CommandPlayAbility cmd;
+        cmd.set_uniqueid(ab.uniqueId);
+        sendGameCommand(cmd);
+    }
+}
+
+void Player::doneChoosing() {
+    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    if (std::holds_alternative<asn::ChooseCard>(effect)) {
+        auto &ef = std::get<asn::ChooseCard>(effect);
+        if (ef.placeType == asn::PlaceType::SpecificPlace &&
+            ef.place->zone == asn::Zone::WaitingRoom) {
+            QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
+        }
+    }
+}
+
+void Player::abilityResolved() {
+    mGame->pause(500);
+    mAbilityList->removeActiveAbility();
+}
+
+void Player::opponentPlayingAbility(const EventPlayAbility &event) {
+    if (mOpponent)
+        mAbilityList->setActiveByUniqueId(event.uniqueid(), true);
+}
+
+void Player::cancelAbility(int) {
+    doneChoosing();
+    sendGameCommand(CommandCancelEffect());
+}
+
+void Player::chooseCard(int, QString qzone) {
+    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    if (!std::holds_alternative<asn::ChooseCard>(effect))
+        return;
+
+    auto &ef = std::get<asn::ChooseCard>(effect);
+    assert(ef.targets.size() == 1);
+    if (ef.targets[0].type != asn::TargetType::SpecificCards)
+        return;
+
+    auto pzone = zone(qzone.toStdString());
+    int num = pzone->numOfSelectedCards();
+
+    if (ef.targets[0].targetSpecification->number.value != num)
+        return;
+
+    CommandChooseCard cmd;
+    cmd.set_zone(qzone.toStdString());
+    const auto &cards = pzone->cards();
+    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
+        if (cards[i].selected()) {
+            cmd.add_ids(i);
+        }
+    }
+    sendGameCommand(cmd);
+    doneChoosing();
 }
 
 void Player::sendEncore(int pos) {
@@ -640,8 +717,8 @@ void Player::testAction()
     //createMovingCard("IMC/W43-046", "hand", 1, "res", 0, true);
     ActivatedAbility a;
     a.active = true;
-    a.btnActive = true;
-    a.btnText = "Cancel";
+    a.playBtnActive = false;
+    a.cancelBtnActive = true;
     a.code = "IMC/W43-009";
     a.text = "AUTO [(1) Put the top card of your deck in your clock & put a card from yo";
     mAbilityList->addAbility(a);

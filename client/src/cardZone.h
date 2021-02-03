@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "card.h"
+#include "cardModel.h"
 
 class QQuickItem;
 
@@ -10,11 +11,15 @@ class CardModel;
 
 class CardZone
 {
+protected:
+    CardModel mCardsModel;
+
 public:
     virtual ~CardZone() {}
 
     virtual QQuickItem* visualItem() const = 0;
-    virtual std::vector<Card>& cards() = 0;
-    virtual void removeCard(int index) = 0;
-    virtual CardModel& model() = 0;
+    virtual int numOfSelectedCards();
+    virtual std::vector<Card>& cards() { return mCardsModel.cards(); }
+    virtual CardModel& model() { return mCardsModel; }
+    virtual void removeCard(int index) { mCardsModel.removeCard(index); }
 };

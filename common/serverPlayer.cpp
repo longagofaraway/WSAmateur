@@ -12,6 +12,7 @@
 
 #include <abilities.h>
 
+#include "abilityUtils.h"
 #include "cardDatabase.h"
 #include "globalAbilities/globalAbilities.h"
 #include "serverCardZone.h"
@@ -493,10 +494,13 @@ Resumable ServerPlayer::triggerStep(int pos) {
             ab->set_zone("res");
             ab->set_type(ProtoAbilityType::ProtoClimaxTrigger);
             ab->set_cardid(0);
-            ab->set_id(static_cast<::google::protobuf::int32>(trigger));
+            ab->set_abilityid(static_cast<::google::protobuf::int32>(trigger));
             ab->set_cardcode(card->code());
+            auto uniqueId = abilityHash(*ab);
+            ab->set_uniqueid(uniqueId);
             sendToBoth(event);
             co_await playAbility(globalAbility(trigger));
+            sendToBoth(EventAbilityResolved());
         }
     }
     moveCard("res", 0, "stock");

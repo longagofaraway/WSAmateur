@@ -18,10 +18,10 @@ ListView {
     spacing: -root.cardHeight * 0.7
     clip: true
     contentWidth: root.cardWidth
-    leftMargin: root.cardWidth * 0.1 //* 0.5
-    rightMargin: root.cardWidth * 0.1 //* 0.5
-    topMargin: root.cardHeight * 0.1 //* 0.5
-    bottomMargin: root.cardHeight * 0.1 //* 0.5
+    leftMargin: root.cardWidth * 0.1
+    rightMargin: root.cardWidth * 0.1
+    topMargin: root.cardHeight * 0.1
+    bottomMargin: root.cardHeight * 0.1
     visible: count
     interactive: effectiveHeight > cardsView.mColumnMaxHeight
 
@@ -69,6 +69,8 @@ ListView {
                 onClicked: {
                     if (!model.glow)
                         return;
+                    model.selected = !model.selected;
+                    gGame.getPlayer(false).chooseCard(model.index, "wr");
                 }
 
                 Card {

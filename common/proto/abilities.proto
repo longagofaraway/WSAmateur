@@ -11,14 +11,25 @@ message ProtoAbility {
     string zone = 2;
 	string cardCode = 3;
     sint32 cardId = 4;
-	sint32 id = 5;
+	sint32 abilityId = 5;
+	uint32 uniqueId = 6;
 }
 
 message EventAbilityActivated {
     repeated ProtoAbility abilities = 1;
 }
 
+message CommandPlayAbility {
+    uint32 uniqueId = 1;
+}
+message EventPlayAbility {
+    uint32 uniqueId = 1;
+}
+message CommandPlayEffect {}
 message CommandCancelEffect {}
+message EventAbilityResolved {
+    uint32 uniqueId = 1;
+}
 message EventChooseCard {
     bytes effect = 1;
     bool mandatory = 2;

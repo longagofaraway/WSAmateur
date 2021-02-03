@@ -17,7 +17,6 @@ set(clientSources
     src/main.cpp
     src/player.cpp
     src/stage.cpp
-    src/waitingRoom.cpp
     src/abilityModel.h
     src/activatedAbilities.h
     src/card.h
@@ -34,8 +33,7 @@ set(clientSources
     src/localServer.h
     src/localServerConnection.h
     src/player.h
-    src/stage.h
-    src/waitingRoom.h)
+    src/stage.h)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 

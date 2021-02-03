@@ -4,8 +4,6 @@ import QtGraphicalEffects 1.12
 Rectangle {
     id: activatedAbility
 
-    property color btnColor: "#4A5366"
-
     color: "#00000000"
     width: 300
     height: cardImg.height + effectText.contentHeight - 5
@@ -37,42 +35,23 @@ Rectangle {
                     id: header
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "Ability"
-                    font.pointSize: 20
+                    font.pointSize: 16
                     font.family: "Futura Bk BT"
                 }
 
-                Rectangle {
-                    id: btnRect
+                AbilityButton {
+                    isPlayButton: true
                     anchors.horizontalCenter: controlPanel.horizontalCenter
-                    y: (controlPanel.height + header.contentHeight - height - 8) / 2
+                    y: model.cancelBtnActive ? (header.contentHeight + 4) :
+                        ((controlPanel.height + header.contentHeight - height - 8) / 2)
                     width: controlPanel.width * 0.8
-                    height: 30
-                    radius: 20
-                    color: btnColor
-                    visible: model.btnActive
-                    layer.enabled: false
-                    layer.effect: Glow {
-                        samples: 12
-                        color: "#FCDE01"
-                    }
-
-                    Text {
-                        id: btnText
-                        anchors.centerIn: parent
-                        text: model.btnText
-                        color: "white"
-                        font.family: "Futura Bk BT"
-                        font.pointSize: 16
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onEntered: { if (!model.btnActive) return; btnRect.layer.enabled = true; }
-                        onExited: { if (!model.btnActive) return; btnRect.layer.enabled = false; }
-                        onPressed: { if (!model.btnActive) return; btnRect.color = "white"; btnText.color = btnColor; }
-                        onReleased: { if (!model.btnActive) return; btnRect.color = btnColor; btnText.color = "white"; }
-                    }
+                }
+                AbilityButton {
+                    isPlayButton: false
+                    anchors.horizontalCenter: controlPanel.horizontalCenter
+                    y: model.playBtnActive ? (header.contentHeight + height + 12) :
+                        ((controlPanel.height + header.contentHeight - height - 8) / 2)
+                    width: controlPanel.width * 0.8
                 }
             }
         }

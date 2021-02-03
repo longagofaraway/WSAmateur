@@ -65,7 +65,7 @@ Item {
             mText: "test"
             state: "active"
             onClicked: {
-                //gGame.testAction();
+                gGame.testAction();
             }
         }
         SequentialAnimation {
@@ -74,7 +74,7 @@ Item {
             ScriptAction { script: gGame.actionComplete() }
         }
 
-        function getPlayer(opp) { return opp ? gGame.opponent : gGame.player; }
+        function getPlayer(opp = false) { return opp ? gGame.opponent : gGame.player; }
 
         function pause(pauseDuration) {
             gGame.startAction();

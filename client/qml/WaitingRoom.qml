@@ -42,7 +42,7 @@ Card {
         hoverEnabled: true
         onEntered: wrOverlay.opacity = 1
         onExited: wrOverlay.opacity = 0
-        onClicked: openView()
+        onClicked: toggleView()
     }
 
     Rectangle {
@@ -96,7 +96,9 @@ Card {
         }
     }
 
-    function openView() {
+    function toggleView() { (mView === null) ? openView(true) : openView(!mView.visible); }
+
+    function openView(open) {
         if (mView === null) {
             let comp = Qt.createComponent("CardsView.qml");
             mView = comp.createObject(gGame);
@@ -111,7 +113,7 @@ Card {
             mView.closeSignal.connect(() => mView.visible = !mView.visible);
             return;
         }
-        mView.visible = !mView.visible;
+        mView.visible = open;
     }
 
     function addCard(code) {
@@ -120,9 +122,9 @@ Card {
     }
     function removeCard(index) {
         waitingRoom.mModel.removeCard(index);
-        if (handView.mModel.count > 0) {
-            let modelIndex = handView.mModel.index(index, 0);
-            waitingRoom.mSource = handView.mModel.data(modelIndex, CardModel.CodeRole);
+        if (waitingRoom.mModel.count > 0) {
+            let modelIndex = waitingRoom.mModel.index(waitingRoom.mModel.count - 1, 0);
+            waitingRoom.mSource = waitingRoom.mModel.data(modelIndex, CardModel.CodeRole);
         }
     }
 

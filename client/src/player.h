@@ -19,6 +19,7 @@ class EventSetCardAttr;
 class EventSetCardState;
 class EventAbilityActivated;
 class EventChooseCard;
+class EventPlayAbility;
 
 class Game;
 class GameEvent;
@@ -65,6 +66,9 @@ public:
 
     Q_INVOKABLE void cardPlayed(int handId, int stageId);
     Q_INVOKABLE void cardSelectedForLevelUp(int index);
+    Q_INVOKABLE void playAbility(int index);
+    Q_INVOKABLE void cancelAbility(int index);
+    Q_INVOKABLE void chooseCard(int index, QString qzone);
 
     //test section
     void testAction();
@@ -98,8 +102,11 @@ private:
     void discardTo7();
     void endGame(bool victory);
 
-    void chooseCard(const EventChooseCard &event);
+    void processChooseCard(const EventChooseCard &event);
     void activateAbilities(const EventAbilityActivated &event);
+    void doneChoosing();
+    void abilityResolved();
+    void opponentPlayingAbility(const EventPlayAbility &event);
 
 public slots:
     void switchPositions(int from, int to);

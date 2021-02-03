@@ -18,10 +18,6 @@ Hand::Hand(Player *player, Game *game)
     mQmlHand->setProperty("opponent", player->isOpponent());
 }
 
-std::vector<Card> &Hand::cards() {
-    return mCardsModel.cards();
-}
-
 void Hand::addCard() {
     mCardsModel.addCard();
 }

@@ -45,7 +45,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
                 continue;
             }
             //TODO: add checks
-            for (int i = 0; i < chooseCmd.ids_size(); ++i)
+            for (int i = chooseCmd.ids_size() - 1; i >= 0; --i)
                 mContext.chosenCards.push_back(ChosenCard(chooseCmd.zone(), chooseCmd.ids(i)));
             break;
         }

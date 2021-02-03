@@ -44,5 +44,7 @@
         <file>resources/images/closeButton.png</file>
         <file>resources/images/closeButtonHighlighted.png</file>
         <file>resources/images/abbg.png</file>
+        <file>resources/images/wrbg.png</file>
+        <file>qml/AbilityButton.qml</file>
     </qresource>
 </RCC>

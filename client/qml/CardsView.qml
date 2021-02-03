@@ -21,8 +21,7 @@ Rectangle {
     }
     radius: 5
     border.width: 1
-    //color: "#A0564747"
-    color: "#40000000"
+    color: "#F0564747"
     z: 160
 
     Text {

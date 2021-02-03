@@ -1,15 +1,19 @@
 #pragma once
 
 #include <string>
+#include <variant>
 #include <vector>
 
 #include <QAbstractListModel>
 
 #include "abilities.pb.h"
 
+#include "abilities.h"
+
 struct ActivatedAbility {
+    uint32_t uniqueId;
     ProtoAbilityType type;
-    int id;
+    int abilityId;
 
     int cardId;
     std::string zone;
@@ -18,8 +22,12 @@ struct ActivatedAbility {
     std::string text;
 
     bool active = false;
-    bool btnActive = false;
-    QString btnText;
+    bool playBtnActive = false;
+    bool cancelBtnActive = false;
+    QString playBtnText;
+    QString cancelBtnText;
+
+    std::variant<std::monostate, asn::ChooseCard> effect;
 };
 
 class AbilityModel : public QAbstractListModel
@@ -32,19 +40,27 @@ public:
     enum AbilityRoles {
         CodeRole = Qt::UserRole + 1,
         TextRole,
-        ButtonActiveRole,
-        ButtonTextRole,
+        Button1ActiveRole,
+        Button2ActiveRole,
+        Button1TextRole,
+        Button2TextRole,
         ActiveRole
     };
     AbilityModel() : QAbstractListModel(nullptr) {}
 
-    ActivatedAbility& activeAbility();
+    int idByUniqueId(uint32_t uniqueId) const;
+    int activeId() const;
+    void setActive(int row, bool active);
+    ActivatedAbility& ability(int index) { return mAbilities.at(index); }
     void addAbility(const ActivatedAbility &a);
+    void removeAbility(int row);
+    void activatePlayButton(int row, bool active);
+    void activateCancelButton(int row, bool active);
 
-    //bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int count() const { return rowCount(); }
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
