@@ -117,6 +117,9 @@ void Player::playAbility(int index) {
         sendGameCommand(CommandPlayEffect());
     } else {
         mAbilityList->setActive(index, true);
+        for (int i = 0; i < mAbilityList->count(); ++i) {
+            mAbilityList->activatePlay(i, false);
+        }
         CommandPlayAbility cmd;
         cmd.set_uniqueid(ab.uniqueId);
         sendGameCommand(cmd);
