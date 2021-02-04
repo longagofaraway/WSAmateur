@@ -3,14 +3,18 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../cardInfo.h"
+#include <abilities.h>
 
 
 namespace {
-std::unordered_map<Trigger, asn::Ability> gTriggerAbilities;
-std::unordered_map<Trigger, std::vector<uint8_t>> gTriggerBinAbilities = {
-    { Trigger::Door, {
+std::unordered_map<asn::TriggerIcon, asn::Ability> gTriggerAbilities;
+std::unordered_map<asn::TriggerIcon, std::vector<uint8_t>> gTriggerBinAbilities = {
+    { asn::TriggerIcon::Door, {
           #include "door"
+      }
+    },
+    { asn::TriggerIcon::Choice, {
+          #include "choice"
       }
     }
 };
@@ -24,7 +28,7 @@ void decodeGlobalAbilities() {
     gAbilitiesDecoded = true;
 }
 
-asn::Ability globalAbility(Trigger trigger) {
+asn::Ability globalAbility(asn::TriggerIcon trigger) {
     if (!gAbilitiesDecoded)
         decodeGlobalAbilities();
 

@@ -5,8 +5,7 @@ using namespace asn;
 std::string printCard(const Card &c, bool plural) {
     std::string s;
 
-    if (c.cardSpecifiers.size() == 1 && c.cardSpecifiers[0].type == CardSpecifierType::CardType
-            && !plural)
+    if (!plural)
         s += "a ";
 
     for (const auto &cardSpec: c.cardSpecifiers) {
@@ -28,9 +27,20 @@ std::string printCard(const Card &c, bool plural) {
                 s += "character";
                 if (plural)
                     s += 's';
+                s += " ";
             }
         }
     }
+
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::TriggerIcon)
+            if (std::get<TriggerIcon>(cardSpec.specifier) == TriggerIcon::Soul)
+                s += "with a soul trigger ";
+    }
+
+
+    if (s[s.size() - 1] == ' ')
+        s.pop_back();
 
     return s;
 }

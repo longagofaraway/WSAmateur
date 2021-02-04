@@ -48,7 +48,7 @@ public:
     char color() const { return mCardInfo->color(); }
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }
-    const std::vector<Trigger>& triggers() { return mCardInfo->triggers(); }
+    const std::vector<TriggerIcon>& triggers() { return mCardInfo->triggers(); }
     void addAttrBuff(CardAttribute attr, int delta, int duration);
     void validateBuffs();
 };

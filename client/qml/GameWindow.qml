@@ -52,6 +52,10 @@ Item {
 
         anchors.fill: parent
 
+        /*ChoiceDialog {
+            anchors.centerIn: gGame
+        }*/
+
         MainButton {
             id: mainButton
             x: root.width * 0.75

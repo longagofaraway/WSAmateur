@@ -485,10 +485,11 @@ Resumable ServerPlayer::triggerStep(int pos) {
         co_await std::suspend_always();
     for (auto trigger: card->triggers()) {
         switch(trigger) {
-        case Trigger::Soul:
+        case TriggerIcon::Soul:
             addAttributeBuff(AttrSoul, pos, 1);
             break;
-        case Trigger::Door:
+        case TriggerIcon::Door:
+        case TriggerIcon::Choice:
             EventAbilityActivated event;
             auto ab = event.add_abilities();
             ab->set_zone("res");
@@ -500,7 +501,10 @@ Resumable ServerPlayer::triggerStep(int pos) {
             ab->set_uniqueid(uniqueId);
             sendToBoth(event);
             co_await playAbility(globalAbility(trigger));
-            sendToBoth(EventAbilityResolved());
+            EventAbilityResolved ev2;
+            ev2.set_uniqueid(uniqueId);
+            sendToBoth(ev2);
+            break;
         }
     }
     moveCard("res", 0, "stock");

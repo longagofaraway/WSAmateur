@@ -23,6 +23,7 @@
 
 #include <QDebug>
 
+#include <QQmlContext>
 Player::Player(int id, Game *game, bool opponent)
     : mId(id), mGame(game), mOpponent(opponent) {
     auto hand = std::make_unique<Hand>(this, game);
@@ -56,6 +57,7 @@ Player::Player(int id, Game *game, bool opponent)
     auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "ResolutionZone");
     mZones.emplace("res", std::move(resolutionZone));
     mAbilityList = std::make_unique<ActivatedAbilities>(this, game);
+    mChoiceDialog = std::make_unique<ChoiceDialog>(game);
 }
 
 void Player::setDeck(const std::string &deck) {
@@ -148,6 +150,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventPlayAbility ev;
         event->event().UnpackTo(&ev);
         makeAbilityActive(ev);
+    } else if (event->event().Is<EventChooseMoveDestination>()) {
+        EventChooseMoveDestination ev;
+        event->event().UnpackTo(&ev);
+        processMoveChoice(ev);
     }
 }
 
@@ -540,14 +546,16 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    //createMovingCard("IMC/W43-046", "hand", 1, "res", 0, true);
-    ActivatedAbility a;
+    std::vector<QString> data = { "Hand", "Stock" };
+    mChoiceDialog->setData("Choose where to put the card", data);
+    //mItem->setProperty("mModel", QVariant::fromValue(dataList));
+    /*ActivatedAbility a;
     a.active = true;
     a.playBtnActive = false;
     a.cancelBtnActive = true;
     a.code = "IMC/W43-009";
     a.text = "AUTO [(1) Put the top card of your deck in your clock & put a card from yo";
-    mAbilityList->addAbility(a);
+    mAbilityList->addAbility(a);*/
 }
 
 bool Player::playCards(CardModel &hand) {

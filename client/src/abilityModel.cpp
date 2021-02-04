@@ -43,7 +43,7 @@ int AbilityModel::rowCount(const QModelIndex&) const {
 }
 
 QVariant AbilityModel::data(const QModelIndex &index, int role) const {
-    if (index.row() < 0 || static_cast<size_t>(index.row()) >= mAbilities.size())
+    if (static_cast<size_t>(index.row()) >= mAbilities.size())
         return QVariant();
 
     const ActivatedAbility &ab = mAbilities[index.row()];
@@ -78,7 +78,7 @@ void AbilityModel::activateCancelButton(int row, bool active) {
 }
 
 bool AbilityModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (index.row() < 0 || static_cast<size_t>(index.row()) >= mAbilities.size())
+    if (static_cast<size_t>(index.row()) >= mAbilities.size())
         return false;
 
     ActivatedAbility &ab = mAbilities[index.row()];

@@ -4,6 +4,7 @@ set(clientSources
     src/card.cpp
     src/cardModel.cpp
     src/cardZone.cpp
+    src/choiceDialog.cpp
     src/client.cpp
     src/clientConnection.cpp
     src/commonCardZone.cpp
@@ -23,6 +24,7 @@ set(clientSources
     src/card.h
     src/cardModel.h
     src/cardZone.h
+    src/choiceDialog.h
     src/client.h
     src/clientConnection.h
     src/commonCardZone.h

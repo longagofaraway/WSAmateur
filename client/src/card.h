@@ -51,6 +51,7 @@ public:
     void setPower(int power) { mPower = power; }
     int soul() const { return mSoul; }
     void setSoul(int soul) { mSoul = soul; }
+    const std::vector<TriggerIcon>& triggers() const { return mInfo->triggers(); }
     CardType type() const { return mType; }
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }

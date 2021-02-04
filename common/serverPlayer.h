@@ -125,5 +125,5 @@ private:
     Resumable playEffect(const asn::Effect &e);
     Resumable playNonMandatory(const asn::NonMandatory &e);
     Resumable playChooseCard(const asn::ChooseCard &e);
-    void playMoveCard(const asn::MoveCard &e);
+    Resumable playMoveCard(const asn::MoveCard &e);
 };

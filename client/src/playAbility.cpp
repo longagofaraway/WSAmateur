@@ -13,6 +13,37 @@ asn::ChooseCard decodeChooseCard(const std::string &buf) {
     auto it = binbuf.begin();
     return ::decodeChooseCard(it, binbuf.end());
 }
+asn::MoveCard decodeMoveCard(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.begin();
+    return ::decodeMoveCard(it, binbuf.end());
+}
+
+bool checkCard(const std::vector<asn::CardSpecifier> specs, const Card &card) {
+    bool eligible = true;
+    for (const auto &spec: specs) {
+        switch (spec.type) {
+        case asn::CardSpecifierType::CardType:
+            if (std::get<CardType>(spec.specifier) != card.type())
+                eligible = false;
+            break;
+        case asn::CardSpecifierType::TriggerIcon:
+            bool found = false;
+            for (auto triggerIcon: card.triggers()) {
+                if (triggerIcon == std::get<TriggerIcon>(spec.specifier)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                eligible = false;
+            break;
+        }
+        if (!eligible)
+            return false;
+    }
+    return true;
+}
 }
 
 void Player::processChooseCard(const EventChooseCard &event) {
@@ -33,22 +64,17 @@ void Player::processChooseCard(const EventChooseCard &event) {
     const auto &specs = effect.targets[0].targetSpecification->cards.cardSpecifiers;
     auto from = zone(asnZoneToString(effect.place->zone));
     const auto &cards = from->cards();
-    int eligible = 0;
+    int eligibleCount = 0;
     for (int i = 0; i < from->model().count(); ++i) {
         if (!cards[i].cardPresent())
             continue;
-        for (const auto &spec: specs) {
-            switch (spec.type) {
-            case asn::CardSpecifierType::CardType:
-                if (std::get<CardType>(spec.specifier) != cards[i].type())
-                    continue;
-                break;
-            }
+
+        if (checkCard(specs, cards[i])) {
             from->model().setGlow(i, true);
-            eligible++;
+            eligibleCount++;
         }
     }
-    if (eligible) {
+    if (eligibleCount) {
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
         if (effect.place->zone == asn::Zone::WaitingRoom ||
             effect.place->zone == asn::Zone::Deck)
@@ -59,6 +85,26 @@ void Player::processChooseCard(const EventChooseCard &event) {
         mGame->pause(800);
         sendGameCommand(CommandCancelEffect());
     }
+}
+
+void Player::processMoveChoice(const EventChooseMoveDestination &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodeMoveCard(event.effect());
+    assert(effect.executor == asn::Player::Player);
+
+    if (effect.to.size() == 1)
+        return;
+
+    std::vector<QString> data;
+    for (const auto &to: effect.to) {
+        assert(to.owner == asn::Owner::Player);
+        assert(to.pos == asn::Position::NotSpecified);
+        data.push_back(asnZoneToReadableString(to.zone));
+    }
+
+    mChoiceDialog->setData("Choose where to put the card", data);
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
@@ -96,7 +142,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
                 //a.text =
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger)
-            a.text = printAbility(globalAbility(static_cast<Trigger>(protoa.abilityid())));
+            a.text = printAbility(globalAbility(static_cast<TriggerIcon>(protoa.abilityid())));
 
         if (event.abilities_size() > 1) {
             if (!mOpponent)
@@ -152,7 +198,8 @@ void Player::cancelAbility(int) {
 }
 
 void Player::chooseCard(int, QString qzone) {
-    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    int activeId = mAbilityList->activeId();
+    auto &effect = mAbilityList->ability(activeId).effect;
     if (!std::holds_alternative<asn::ChooseCard>(effect))
         return;
 
@@ -167,6 +214,8 @@ void Player::chooseCard(int, QString qzone) {
     if (ef.targets[0].targetSpecification->number.value != num)
         return;
 
+    mAbilityList->activateCancel(activeId, false);
+
     CommandChooseCard cmd;
     cmd.set_zone(qzone.toStdString());
     const auto &cards = pzone->cards();
@@ -177,4 +226,10 @@ void Player::chooseCard(int, QString qzone) {
     }
     sendGameCommand(cmd);
     doneChoosing();
+}
+
+void Player::sendChoice(int index) {
+    CommandChoice cmd;
+    cmd.set_choice(index);
+    sendGameCommand(cmd);
 }

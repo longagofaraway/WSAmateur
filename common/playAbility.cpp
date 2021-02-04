@@ -28,7 +28,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
         auto cmd = co_await waitForCommand();
         if (cmd.command().Is<CommandCancelEffect>()) {
             mContext.canceled = true;
-            co_return;
+            break;
         } else if (cmd.command().Is<CommandChooseCard>()) {
             CommandChooseCard chooseCmd;
             cmd.command().UnpackTo(&chooseCmd);
@@ -50,15 +50,43 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
             break;
         }
     }
+    clearExpectedComands();
 }
 
-void ServerPlayer::playMoveCard(const asn::MoveCard &e) {
+Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
     assert(e.executor == asn::Player::Player);
-    assert(e.to.size() == 1);
     assert(e.to[0].zone != asn::Zone::Stage);
+
     if (e.target.type == asn::TargetType::ChosenCards) {
+        int toIndex = 0;
+        if (!mContext.chosenCards.size())
+            co_return;
+
+        if (e.to.size() > 1) {
+            std::vector<uint8_t> buf;
+            encodeMoveCard(e, buf);
+            EventChooseMoveDestination ev;
+            ev.set_effect(buf.data(), buf.size());
+            sendToBoth(ev);
+
+            clearExpectedComands();
+            addExpectedCommand(CommandChoice::GetDescriptor()->name());
+
+            while (true) {
+                auto cmd = co_await waitForCommand();
+                if (cmd.command().Is<CommandChoice>()) {
+                    CommandChoice choiceCmd;
+                    cmd.command().UnpackTo(&choiceCmd);
+                    toIndex = choiceCmd.choice();
+                    if (static_cast<size_t>(toIndex) >= e.to.size())
+                        continue;
+                    break;
+                }
+            }
+            clearExpectedComands();
+        }
         for (const auto &card: mContext.chosenCards) {
-            moveCard(card.zone, card.id, asnZoneToString(e.to[0].zone));
+            moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone));
         }
     }
 }
@@ -72,7 +100,7 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
         co_await playChooseCard(std::get<asn::ChooseCard>(e.effect));
         break;
     case asn::EffectType::MoveCard:
-        playMoveCard(std::get<asn::MoveCard>(e.effect));
+        co_await playMoveCard(std::get<asn::MoveCard>(e.effect));
         break;
     default:
         assert(false);

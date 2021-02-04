@@ -20,10 +20,10 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="20" code="IMC/W43-127"/>
+        <card number="26" code="IMC/W43-127"/>
         <card number="21" code="IMC/W43-046"/>
-        <card number="4" code="IMC/W43-009"/>
-        <card number="4" code="IMC/W43-111"/>
+        <card number="20" code="IMC/W43-009"/>
+        <card number="1" code="IMC/W43-111"/>
         <card number="1" code="IMC/W43-091"/>
     </main>
 </deck>)delim";
@@ -258,7 +258,7 @@ void Game::endGame(bool victory) {
 
 void Game::testAction() {
     mPlayer->testAction();
-    mOpponent->testAction();
+    //mOpponent->testAction();
 }
 
 

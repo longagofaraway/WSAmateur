@@ -36,25 +36,3 @@ std::string printZone(Zone zone) {
     default: throw PrintingException();
     }
 }
-
-std::string printEffects(const std::vector<Effect> &effects) {
-    std::string s;
-
-    for (int i = 0; i < (int)effects.size(); ++i) {
-        if (i != 0 && effects[i].cond.type != ConditionType::NoCondition) {
-            s[s.size() - 1] = '.';
-            s.push_back(' ');
-        } else if (i != 0) {
-            if (i < (int)effects.size() - 1) {
-                s[s.size() - 1] = ',';
-                s.push_back(' ');
-            } else if (i == (int)effects.size() - 1) {
-                s[s.size() - 1] = ',';
-                s += " and ";
-            }
-        }
-        s += printEffect(effects[i]);
-    }
-
-    return s;
-}

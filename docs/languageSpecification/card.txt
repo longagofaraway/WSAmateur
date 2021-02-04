@@ -25,12 +25,13 @@ enum CardSpecifierType {
   owner = 2,
   trait = 3,
   exactName = 4,
-  level = 5, 
-  level is higher than your opponent's level = 6,
-  color = 7,
-  cost = 8,
-  triggerIcon = 9,
-  hasMarker = 10
+  nameContains = 5,
+  level = 6, 
+  level is higher than your opponent's level = 7,
+  color = 8,
+  cost = 9,
+  triggerIcon = 10,
+  hasMarker = 11
 }
 
 enum CardType {

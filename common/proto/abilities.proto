@@ -40,3 +40,10 @@ message CommandChooseCard {
     string zone = 2;
 }
 
+message EventChooseMoveDestination {
+    bytes effect = 1;
+}
+message CommandChoice {
+    sint32 choice = 1;
+}
+

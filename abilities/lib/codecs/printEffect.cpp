@@ -8,6 +8,28 @@ namespace {
     Number gChosenCardsNumber;
 }
 
+std::string printEffects(const std::vector<Effect> &effects) {
+    std::string s;
+
+    for (int i = 0; i < (int)effects.size(); ++i) {
+        if (i != 0 && effects[i].cond.type != ConditionType::NoCondition) {
+            s[s.size() - 1] = '.';
+            s.push_back(' ');
+        } else if (i != 0) {
+            if (i < (int)effects.size() - 1) {
+                s[s.size() - 1] = ',';
+                s.push_back(' ');
+            } else if (i == (int)effects.size() - 1) {
+                s[s.size() - 1] = ',';
+                s += " and ";
+            }
+        }
+        s += printEffect(effects[i]);
+    }
+
+    return s;
+}
+
 std::string printAttributeGain(const AttributeGain &e) {
     std::string res;
 
@@ -117,10 +139,14 @@ std::string printMoveCard(const MoveCard &e) {
         }
     }
 
-    s += "in ";
-    if (e.to[0].owner == Owner::Player)
-        s += "your ";
-    s += printZone(e.to[0].zone) + " ";
+    for (size_t i = 0; i < e.to.size(); ++i) {
+        if (i)
+            s += "or ";
+        s += "in ";
+        if (e.to[i].owner == Owner::Player)
+            s += "your ";
+        s += printZone(e.to[i].zone) + " ";
+    }
 
     return s;
 }

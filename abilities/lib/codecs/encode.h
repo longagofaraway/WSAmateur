@@ -20,6 +20,7 @@ void encodeEffect(const asn::Effect &t, Buf &buf);
 void encodeCondition(const asn::Condition &c, Buf &buf);
 void encodeMultiplier(const asn::Multiplier &m, Buf &buf);
 void encodeChooseCard(const asn::ChooseCard &m, Buf &buf);
+void encodeMoveCard(const asn::MoveCard &e, Buf &buf);
 
 template<typename T>
 void encodeArray(const std::vector<T> &array, Buf &buf, void(*encodeType)(const T&, Buf&)) {

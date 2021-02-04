@@ -75,7 +75,7 @@ ListView {
 
                 Card {
                     id: cardImgDelegate
-                    mSource: model.code;
+                    mSource: model.code
                     anchors.centerIn: cardDelegate
                     Component.onDestruction: destroyTextFrame(cardImgDelegate)
 

@@ -2,4 +2,4 @@
 #include "../cardInfo.h"
 
 void decodeGlobalAbilities();
-asn::Ability globalAbility(Trigger trigger);
+asn::Ability globalAbility(asn::TriggerIcon trigger);

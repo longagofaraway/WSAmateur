@@ -8,6 +8,7 @@
 
 #include "activatedAbilities.h"
 #include "cardZone.h"
+#include "choiceDialog.h"
 
 class EventInitialHand;
 class EventDrawCard;
@@ -20,6 +21,7 @@ class EventSetCardState;
 class EventAbilityActivated;
 class EventChooseCard;
 class EventPlayAbility;
+class EventChooseMoveDestination;
 
 class Game;
 class GameEvent;
@@ -38,6 +40,7 @@ private:
     Stage *mStage;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
     std::unique_ptr<ActivatedAbilities> mAbilityList;
+    std::unique_ptr<ChoiceDialog> mChoiceDialog;
 
     int mLevel = 0;
 
@@ -69,6 +72,7 @@ public:
     Q_INVOKABLE void playAbility(int index);
     Q_INVOKABLE void cancelAbility(int index);
     Q_INVOKABLE void chooseCard(int index, QString qzone);
+    Q_INVOKABLE void sendChoice(int index);
 
     //test section
     void testAction();
@@ -103,6 +107,7 @@ private:
     void endGame(bool victory);
 
     void processChooseCard(const EventChooseCard &event);
+    void processMoveChoice(const EventChooseMoveDestination &event);
     void activateAbilities(const EventAbilityActivated &event);
     void doneChoosing();
     void abilityResolved();
