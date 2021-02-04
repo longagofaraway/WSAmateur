@@ -106,7 +106,7 @@ private:
     void activateAbilities(const EventAbilityActivated &event);
     void doneChoosing();
     void abilityResolved();
-    void opponentPlayingAbility(const EventPlayAbility &event);
+    void makeAbilityActive(const EventPlayAbility &event);
 
 public slots:
     void switchPositions(int from, int to);

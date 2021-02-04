@@ -15,6 +15,7 @@ set(clientSources
     src/localServer.cpp
     src/localServerConnection.cpp
     src/main.cpp
+    src/playAbility.cpp
     src/player.cpp
     src/stage.cpp
     src/abilityModel.h
