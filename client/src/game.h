@@ -35,6 +35,7 @@ private:
     bool mUiActionInProgress = false;
     std::deque<std::shared_ptr<GameEvent>> mEventQueue;
 
+    asn::Phase mCurrentPhase = asn::Phase::NotSpecified;
 
 public:
     Game();
@@ -78,6 +79,8 @@ public:
 
     void sendGameCommand(const google::protobuf::Message &command, int playerId);
 
+    asn::Phase phase() const { return mCurrentPhase; }
+    void setPhase(asn::Phase phase) { mCurrentPhase = phase; }
     void startTurn(bool opponent);
     void clockPhase();
     void mainPhase();

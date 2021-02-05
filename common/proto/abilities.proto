@@ -6,6 +6,11 @@ enum ProtoAbilityType {
     ProtoCard = 2;
 }
 
+enum ProtoOwner {
+    ProtoPlayer = 0;
+    ProtoOpponent = 1;
+}
+
 message ProtoAbility {
     ProtoAbilityType type = 1;
     string zone = 2;
@@ -22,11 +27,14 @@ message EventAbilityActivated {
 message CommandPlayAbility {
     uint32 uniqueId = 1;
 }
+
 message EventPlayAbility {
     uint32 uniqueId = 1;
 }
+
 message CommandPlayEffect {}
 message CommandCancelEffect {}
+
 message EventAbilityResolved {
     uint32 uniqueId = 1;
 }
@@ -38,11 +46,13 @@ message EventChooseCard {
 message CommandChooseCard {
     repeated sint32 ids = 1;
     string zone = 2;
+    ProtoOwner owner = 3;
 }
 
 message EventChooseMoveDestination {
     bytes effect = 1;
 }
+
 message CommandChoice {
     sint32 choice = 1;
 }

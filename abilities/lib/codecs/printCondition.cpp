@@ -7,7 +7,7 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
 
     if (c.target.type == TargetType::MentionedCards ||
         c.target.type == TargetType::ChosenCards)
-        s += "that card is a ";
+        s += "that card is ";
 
     for (const auto &card: c.neededCard) {
         s += printCard(card, false);

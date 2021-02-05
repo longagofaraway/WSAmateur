@@ -58,7 +58,7 @@ Place decodePlace(Iterator &it, Iterator end) {
 
     p.pos = decodeEnum<Position>(it, end);
     p.zone = decodeEnum<Zone>(it, end);
-    p.owner = decodeEnum<Owner>(it, end);
+    p.owner = decodeEnum<Player>(it, end);
 
     return p;
 }

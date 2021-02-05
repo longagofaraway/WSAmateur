@@ -9,13 +9,6 @@ std::string printCard(const Card &c, bool plural) {
         s += "a ";
 
     for (const auto &cardSpec: c.cardSpecifiers) {
-        if (cardSpec.type == CardSpecifierType::Owner) {
-            if (std::get<Owner>(cardSpec.specifier) == Owner::Player)
-                s += "your ";
-        }
-    }
-
-    for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Trait) {
             s += printTrait(std::get<Trait>(cardSpec.specifier).value) + " ";
         }

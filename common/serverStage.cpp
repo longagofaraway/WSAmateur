@@ -27,6 +27,7 @@ std::unique_ptr<ServerCard> ServerStage::putOnStage(std::unique_ptr<ServerCard> 
 
     std::swap(mCards[pos], card);
     mCards[pos]->setPos(pos);
+    mCards[pos]->setZone(this);
     return card;
 }
 

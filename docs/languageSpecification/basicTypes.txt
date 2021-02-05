@@ -4,6 +4,7 @@ enum Owner {
 }
 
 enum Player {
+  notSpecified = 0,
   player = 1,
   opponent = 2,
   both = 3
@@ -42,6 +43,29 @@ enum TriggerIcon {
   choice = 10
 }
 
+enum Phase {
+  notSpecified = 0,
+  mulligan = 1,
+  standPhase = 2,
+  drawPhase = 3,
+  clockPhase = 4,
+  mainPhase = 5,
+  climaxPhase = 6,
+  attackPhase = 7,
+  endPhase = 8,
+  attackDeclarationStep = 9,
+  triggerStep = 10,
+  counterStep = 11,
+  damageStep = 12,
+  battleStep = 13,
+  encoreStep = 14
+}
+
+enum PhaseState {
+  start = 1,
+  end = 2
+}
+
 Number {
   mod NumModifier,
   value Int8,
@@ -76,7 +100,7 @@ enum MultiplierType {
 Place {
   pos Position,
   zone Zone,
-  owner Owner
+  owner Player
 }
 
 enum Zone {

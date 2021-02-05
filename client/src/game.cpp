@@ -22,7 +22,7 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <main>
         <card number="26" code="IMC/W43-127"/>
         <card number="21" code="IMC/W43-046"/>
-        <card number="20" code="IMC/W43-009"/>
+        <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-111"/>
         <card number="1" code="IMC/W43-091"/>
     </main>
@@ -197,13 +197,8 @@ void Game::sendGameCommand(const google::protobuf::Message &command, int playerI
 }
 
 void Game::startTurn(bool opponent) {
-    if (opponent) {
-        mOpponent->setActivePlayer(true);
-        mPlayer->setActivePlayer(false);
-    } else {
-        mOpponent->setActivePlayer(false);
-        mPlayer->setActivePlayer(true);
-    }
+    mOpponent->setActivePlayer(opponent);
+    mPlayer->setActivePlayer(!opponent);
     mActionInProgress = true;
     QMetaObject::invokeMethod(this, "startTurn", Q_ARG(QVariant, opponent));
 }
@@ -294,7 +289,10 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         //if (mOpponent->playCards(hand))
         //    sendGameCommand(CommandAttackPhase(), mOpponent->id());
     } else if (event->event().Is<EventAttackDeclarationStep>()) {
+        //timing problems
         //mOpponent->attackWithAll();
+
+        sendGameCommand(CommandEncoreStep(), mOpponent->id());
     } else if (event->event().Is<EventCounterStep>()) {
         CommandTakeDamage cmd;
         sendGameCommand(cmd, mOpponent->id());

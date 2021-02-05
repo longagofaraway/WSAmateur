@@ -1,6 +1,7 @@
 #include "abilities.pb.h"
 
 #include "abilityUtils.h"
+#include "serverGame.h"
 #include "serverPlayer.h"
 #include "codecs/encode.h"
 
@@ -46,7 +47,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
             }
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i)
-                mContext.chosenCards.push_back(ChosenCard(chooseCmd.zone(), chooseCmd.ids(i)));
+                mContext.chosenCards.push_back(ChosenCard(chooseCmd.zone(), chooseCmd.ids(i), chooseCmd.owner() == ProtoOwner::ProtoOpponent));
             break;
         }
     }
@@ -86,7 +87,8 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
             clearExpectedComands();
         }
         for (const auto &card: mContext.chosenCards) {
-            moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone));
+            auto owner = card.opponent ? mGame->opponentOfPlayer(mId) : this;
+            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone));
         }
     }
 }

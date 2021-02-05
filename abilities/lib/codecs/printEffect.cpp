@@ -1,5 +1,6 @@
 #include "print.h"
 
+#include <cassert>
 #include <string>
 
 using namespace asn;
@@ -72,27 +73,30 @@ std::string printChooseCard(const ChooseCard &e) {
 
     s += "choose ";
 
+    assert(e.targets.size() == 1);
     bool plural = false;
-    if (e.targets.size() == 1) {
-        const auto &target = e.targets[0];
-        if (target.type == TargetType::SpecificCards) {
-            const auto &spec = *target.targetSpecification;
-            if (spec.number.mod == NumModifier::ExactMatch) {
-                if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
-                    s += printDigit(spec.number.value);
-                    s += " of ";
-                    plural = true;
-                }
+    const auto &target = e.targets[0];
+    if (target.type == TargetType::SpecificCards) {
+        const auto &spec = *target.targetSpecification;
+        if (spec.number.mod == NumModifier::ExactMatch) {
+            if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
+                s += printDigit(spec.number.value);
+                s += " of ";
+                if (e.place->owner == Player::Player)
+                    s += "your ";
+                else if (e.place->owner == Player::Both)
+                    s += "your or your opponent's ";
+                plural = true;
             }
-
-            gChosenCardsNumber = spec.number;
-            s += printCard(spec.cards, plural) + " ";
         }
+
+        gChosenCardsNumber = spec.number;
+        s += printCard(spec.cards, plural) + " ";
     }
 
     if (e.placeType == PlaceType::SpecificPlace && e.place->zone != Zone::Stage) {
         s += "in ";
-        if (e.place->owner == Owner::Player)
+        if (e.place->owner == Player::Player)
             s += "your ";
         s += printZone(e.place->zone) + " ";
     }
@@ -143,8 +147,10 @@ std::string printMoveCard(const MoveCard &e) {
         if (i)
             s += "or ";
         s += "in ";
-        if (e.to[i].owner == Owner::Player)
+        if (e.to[i].owner == Player::Player)
             s += "your ";
+        else if (e.to[i].owner == Player::Both)
+            s += "its owner's ";
         s += printZone(e.to[i].zone) + " ";
     }
 

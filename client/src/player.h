@@ -28,7 +28,8 @@ class GameEvent;
 class Hand;
 class Stage;
 
-class Player : public QObject
+
+class  Player : public QObject
 {
     Q_OBJECT
 private:
@@ -43,6 +44,7 @@ private:
     std::unique_ptr<ChoiceDialog> mChoiceDialog;
 
     int mLevel = 0;
+    int mAttackingId = 0;
 
 public:
     Player(int id, Game *game, bool opponent);
@@ -71,7 +73,7 @@ public:
     Q_INVOKABLE void cardSelectedForLevelUp(int index);
     Q_INVOKABLE void playAbility(int index);
     Q_INVOKABLE void cancelAbility(int index);
-    Q_INVOKABLE void chooseCard(int index, QString qzone);
+    Q_INVOKABLE void chooseCard(int index, QString qzone, bool opponent = false);
     Q_INVOKABLE void sendChoice(int index);
 
     //test section
@@ -93,7 +95,7 @@ private:
     void attackDeclarationStep();
     void declareAttack(const EventDeclareAttack &event);
     void startTurn();
-    bool canPlay(Card &card);
+    bool canPlay(const Card &card) const;
     void playClimax();
     void setCardAttr(const EventSetCardAttr &event);
     void setCardState(const EventSetCardState &event);
@@ -111,6 +113,7 @@ private:
     void activateAbilities(const EventAbilityActivated &event);
     void doneChoosing();
     void abilityResolved();
+    void restoreUiState();
     void makeAbilityActive(const EventPlayAbility &event);
 
 public slots:

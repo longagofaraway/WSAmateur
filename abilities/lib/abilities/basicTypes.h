@@ -14,7 +14,8 @@ enum class Owner : uint8_t {
 };
 
 enum class Player : uint8_t {
-    Player = 1,
+    NotSpecified = 0,
+    Player,
     Opponent,
     Both
 };
@@ -46,7 +47,7 @@ enum class Position : uint8_t {
 struct Place {
     Position pos;
     Zone zone;
-    Owner owner;
+    Player owner;
 };
 
 }

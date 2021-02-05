@@ -110,10 +110,16 @@ ServerPlayer* ServerGame::activePlayer(bool active) {
     return nullptr;
 }
 
-Resumable ServerGame::damageStep() {
+Resumable ServerGame::continueFromDamageStep() {
+    auto attPlayer = activePlayer();
     auto defPlayer = activePlayer(false);
     co_await defPlayer->damageStep();
     battleStep();
+    attPlayer->endOfAttack();
+    if (attPlayer->canAttack())
+        attPlayer->attackDeclarationStep();
+    else
+        co_await encoreStep();
 }
 
 void ServerGame::battleStep() {
@@ -123,25 +129,20 @@ void ServerGame::battleStep() {
         return;
 
     if (attPlayer->attackType() == AttackType::SideAttack
-        || attPlayer->attackType() == AttackType::DirectAttack) {
-        attPlayer->endOfAttack();
+        || attPlayer->attackType() == AttackType::DirectAttack)
         return;
-    }
 
-    mCurrentPhase = Phase::BattleStep;
+    mCurrentPhase = ServerPhase::BattleStep;
     //at the beginning of battle step, check timing
 
     auto attCard = attPlayer->attackingCard();
-    if (!attCard) {
-        attPlayer->endOfAttack();
+    if (!attCard || attCard->zone()->name() != "stage")
         return;
-    }
 
     auto battleOpponent = attPlayer->battleOpponent(attCard);
-    if (!battleOpponent) {
-        attPlayer->endOfAttack();
+    if (!battleOpponent)
         return;
-    }
+
 
     if (attCard->power() > battleOpponent->power()) {
         opponent->setCardState(battleOpponent, StateReversed);
@@ -151,8 +152,6 @@ void ServerGame::battleStep() {
         attPlayer->setCardState(attCard, StateReversed);
         opponent->setCardState(battleOpponent, StateReversed);
     }
-
-    attPlayer->endOfAttack();
 }
 
 Resumable ServerGame::encoreStep() {

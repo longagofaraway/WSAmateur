@@ -6,6 +6,7 @@
 #include "codecs/decode.h"
 #include "game.h"
 #include "globalAbilities/globalAbilities.h"
+#include "hand.h"
 
 namespace {
 asn::ChooseCard decodeChooseCard(const std::string &buf) {
@@ -44,6 +45,34 @@ bool checkCard(const std::vector<asn::CardSpecifier> specs, const Card &card) {
     }
     return true;
 }
+
+void highlightAllCards(CardZone *zone, bool highlight) {
+    for (int i = 0; i < zone->model().count(); ++i)
+        zone->model().setGlow(i, highlight);
+}
+void selectAllCards(CardZone *zone, bool select) {
+    for (int i = 0; i < zone->model().count(); ++i)
+        zone->model().setSelected(i, select);
+}
+
+int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs) {
+    int eligibleCount = 0;
+    const auto &cards = zone->cards();
+    highlightAllCards(zone, false);
+    selectAllCards(zone, false);
+
+    for (int i = 0; i < zone->model().count(); ++i) {
+        if (!cards[i].cardPresent())
+            continue;
+
+        if (checkCard(specs, cards[i])) {
+            zone->model().setGlow(i, true);
+            eligibleCount++;
+        }
+    }
+
+    return eligibleCount;
+}
 }
 
 void Player::processChooseCard(const EventChooseCard &event) {
@@ -52,7 +81,6 @@ void Player::processChooseCard(const EventChooseCard &event) {
 
     auto effect = decodeChooseCard(event.effect());
     if (effect.placeType != asn::PlaceType::SpecificPlace ||
-        effect.place->owner != asn::Owner::Player ||
         effect.targets.size() != 1 ||
         effect.targets[0].type != asn::TargetType::SpecificCards ||
         effect.targets[0].targetSpecification->number.mod != asn::NumModifier::ExactMatch ||
@@ -62,23 +90,20 @@ void Player::processChooseCard(const EventChooseCard &event) {
     }
 
     const auto &specs = effect.targets[0].targetSpecification->cards.cardSpecifiers;
-    auto from = zone(asnZoneToString(effect.place->zone));
-    const auto &cards = from->cards();
     int eligibleCount = 0;
-    for (int i = 0; i < from->model().count(); ++i) {
-        if (!cards[i].cardPresent())
-            continue;
-
-        if (checkCard(specs, cards[i])) {
-            from->model().setGlow(i, true);
-            eligibleCount++;
-        }
+    if (effect.place->owner == asn::Player::Player || effect.place->owner == asn::Player::Both) {
+        auto from = zone(asnZoneToString(effect.place->zone));
+        eligibleCount += highlightEligibleCards(from, specs);
+    }
+    if (effect.place->owner == asn::Player::Opponent || effect.place->owner == asn::Player::Both) {
+        auto from = mGame->opponent()->zone(asnZoneToString(effect.place->zone));
+        eligibleCount += highlightEligibleCards(from, specs);
     }
     if (eligibleCount) {
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
-        if (effect.place->zone == asn::Zone::WaitingRoom ||
-            effect.place->zone == asn::Zone::Deck)
-            QMetaObject::invokeMethod(from->visualItem(), "openView", Q_ARG(QVariant, true));
+        if (effect.place->zone == asn::Zone::WaitingRoom &&
+            effect.place->owner == asn::Player::Player)
+            QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
         if (!event.mandatory())
             mAbilityList->activateCancel(mAbilityList->activeId(), true);
     } else {
@@ -99,7 +124,7 @@ void Player::processMoveChoice(const EventChooseMoveDestination &event) {
 
     std::vector<QString> data;
     for (const auto &to: effect.to) {
-        assert(to.owner == asn::Owner::Player);
+        assert(to.owner == asn::Player::Player);
         assert(to.pos == asn::Position::NotSpecified);
         data.push_back(asnZoneToReadableString(to.zone));
     }
@@ -176,9 +201,17 @@ void Player::doneChoosing() {
     auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
     if (std::holds_alternative<asn::ChooseCard>(effect)) {
         auto &ef = std::get<asn::ChooseCard>(effect);
-        if (ef.placeType == asn::PlaceType::SpecificPlace &&
-            ef.place->zone == asn::Zone::WaitingRoom) {
+        assert(ef.placeType == asn::PlaceType::SpecificPlace);
+        if (ef.place->zone == asn::Zone::WaitingRoom) {
             QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
+        }
+        if (ef.place->owner == asn::Player::Player || ef.place->owner == asn::Player::Both) {
+            auto from = zone(asnZoneToString(ef.place->zone));
+            highlightAllCards(from, false);
+        }
+        if (ef.place->owner == asn::Player::Opponent || ef.place->owner == asn::Player::Both) {
+            auto from = mGame->opponent()->zone(asnZoneToString(ef.place->zone));
+            highlightAllCards(from, false);
         }
     }
 }
@@ -186,6 +219,34 @@ void Player::doneChoosing() {
 void Player::abilityResolved() {
     mGame->pause(500);
     mAbilityList->removeActiveAbility();
+    if (!mAbilityList->count()) {
+        restoreUiState();
+    }
+}
+
+void Player::restoreUiState() {
+    if (mOpponent)
+        return;
+    switch (mGame->phase()) {
+    case asn::Phase::MainPhase: {
+        const auto &cards = mHand->cards();
+        for (int i = 0; i < mHand->model().count(); ++i) {
+            if (canPlay(cards[i]))
+                mHand->model().setGlow(i, true);
+        }
+        break;
+    }
+    case asn::Phase::AttackPhase: {
+        Player *activePlayer = mActivePlayer ? this : mGame->opponent();
+        auto pzone = activePlayer->zone("stage");
+        const auto &card = pzone->cards()[activePlayer->mAttackingId];
+        if (card.cardPresent() && card.state() == StateRested)
+            pzone->model().setSelected(activePlayer->mAttackingId, true);
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void Player::makeAbilityActive(const EventPlayAbility &event) {
@@ -197,7 +258,9 @@ void Player::cancelAbility(int) {
     sendGameCommand(CommandCancelEffect());
 }
 
-void Player::chooseCard(int, QString qzone) {
+void Player::chooseCard(int, QString qzone, bool opponent) {
+    if (!mAbilityList->count())
+        return;
     int activeId = mAbilityList->activeId();
     auto &effect = mAbilityList->ability(activeId).effect;
     if (!std::holds_alternative<asn::ChooseCard>(effect))
@@ -208,7 +271,12 @@ void Player::chooseCard(int, QString qzone) {
     if (ef.targets[0].type != asn::TargetType::SpecificCards)
         return;
 
-    auto pzone = zone(qzone.toStdString());
+    CardZone *pzone;
+    if (!opponent)
+        pzone = zone(qzone.toStdString());
+    else
+        pzone = mGame->opponent()->zone(qzone.toStdString());
+
     int num = pzone->numOfSelectedCards();
 
     if (ef.targets[0].targetSpecification->number.value != num)
@@ -218,6 +286,7 @@ void Player::chooseCard(int, QString qzone) {
 
     CommandChooseCard cmd;
     cmd.set_zone(qzone.toStdString());
+    cmd.set_owner(opponent ? ProtoOpponent : ProtoPlayer);
     const auto &cards = pzone->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {

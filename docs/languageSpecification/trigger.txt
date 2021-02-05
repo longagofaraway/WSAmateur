@@ -40,19 +40,7 @@ PhaseTrigger {
   state PhaseState
   phase Phase
   turnPlayer Player
-}
-
-enum Phase {
-  drawPhase = 1,
-  climaxPhase = 2,
-  attackPhase = 3,
-}
-
-enum PhaseState {
-  start = 1,
-  end = 2
-}
-  
+}  
 
 TriggerRevealTrigger {
   card Card

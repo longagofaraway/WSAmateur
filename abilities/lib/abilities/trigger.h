@@ -26,9 +26,21 @@ struct ZoneChangeTrigger {
 };
 
 enum class Phase {
-    DrawPhase = 1,
-    ClimaxPhase,
-    AttackPhase
+    NotSpecified = 0,
+    Mulligan = 1,
+    StandPhase = 2,
+    DrawPhase = 3,
+    ClockPhase = 4,
+    MainPhase = 5,
+    ClimaxPhase = 6,
+    AttackPhase = 7,
+    EndPhase = 8,
+    AttackDeclarationStep = 9,
+    TriggerStep = 10,
+    CounterStep = 11,
+    DamageStep = 12,
+    BattleStep = 13,
+    EncoreStep = 14
 };
 
 enum class PhaseState {

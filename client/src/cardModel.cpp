@@ -117,6 +117,8 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         return false;
 
     Card &card = mCards[index.row()];
+    if (!card.cardPresent())
+        return false;
 
     switch(role) {
     case GlowRole:

@@ -48,9 +48,9 @@ Place parsePlace(const QJsonObject &json) {
     p.pos = static_cast<Position>(json["pos"].toInt());
     p.zone = static_cast<Zone>(json["zone"].toInt());
     if (json.contains("owner"))
-        p.owner = static_cast<Owner>(json["owner"].toInt());
+        p.owner = static_cast<Player>(json["owner"].toInt());
     else
-        p.owner = Owner::Player;
+        p.owner = Player::Player;
 
     return p;
 }

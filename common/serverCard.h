@@ -39,6 +39,7 @@ public:
     void setPos(int pos);
     int pos() const;
     void setZone(ServerCardZone *zone) { mZone = zone; }
+    ServerCardZone* zone() const { return mZone; }
     const std::string& code() { return mCode; }
     int level() const { return mCardInfo->level(); }
     int cost() const { return mCardInfo->cost(); }

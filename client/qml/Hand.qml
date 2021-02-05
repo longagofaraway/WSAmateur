@@ -11,7 +11,6 @@ ListView {
     property bool hidden: opponent
     property real length: getHandLength(count)
     property int dragIndex: -1
-    property bool selectable: false
     property MulliganHeader mHeader: null
     property string moveDestination: "wr"
     property CardModel mModel: innerModel
@@ -256,19 +255,23 @@ ListView {
                                 unglowUnselected();
                             else
                                 glowAllCards(true);
-                        } else if (handView.state === "choosing") {
+                        } else if (handView.state === "discardTo7") {
                             if (!model.glow)
                                 return;
                             gGame.getPlayer(opponent).sendDiscardCard(model.index);
                             glowAllCards(false);
                             handView.state = "";
+                        } else if (handView.state !== "main") {
+                            if (!model.glow)
+                                return;
+                            model.selected = !model.selected;
+                            gGame.getPlayer().chooseCard(model.index, "hand", handView.opponent);
                         }
                     }
 
                     // we need manual drag because I couldn't adjust center of the card to the cursor
                     onPositionChanged: {
-                        if (handView.state !== "main" ||
-                            (handView.state === "main" && !model.glow))
+                        if (handView.state !== "main" || !model.glow)
                             return;
                         if (!dragActive) {
                             handView.dragIndex = cardDelegate.visualIndex;
@@ -436,7 +439,7 @@ ListView {
     }
 
     function discardCard() {
-        handView.state = "choosing";
+        handView.state = "discardTo7";
         glowAllCards(true);
     }
 
@@ -480,7 +483,10 @@ ListView {
         gGame.sendClimaxPhaseCommand();
     }
 
-    function addCard(code) { handView.mModel.addCard(code); }
+    function addCard(code) {
+        if (hidden) handView.mModel.addCard();
+        else handView.mModel.addCard(code);
+    }
     function removeCard(index) { handView.mModel.removeCard(index); }
 
     function getVisualIndexFromModelIndex(modelId) {

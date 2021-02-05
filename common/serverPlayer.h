@@ -28,8 +28,9 @@ class CommandEncoreCharacter;
 struct ChosenCard {
     std::string zone;
     int id;
-    ChosenCard(const std::string &zone, int id)
-        : zone(zone), id(id) {}
+    bool opponent;
+    ChosenCard(const std::string &zone, int id, bool opponent = false)
+        : zone(zone), id(id), opponent(opponent) {}
 };
 
 struct AbilityContext {
@@ -50,7 +51,7 @@ class ServerPlayer
     std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>> mZones;
     std::vector<ExpectedCommand> mExpectedCommands;
 
-    ServerCard *mAttackingCard = nullptr;
+    ServerCard* mAttackingCard = nullptr;
     AttackType mAttackType;
     int mLevel = 0;
 
@@ -64,7 +65,7 @@ public:
     bool active() const { return mActive; }
     void setActive(bool active) { mActive = active; }
     ServerCard* battleOpponent(ServerCard *card) const;
-    ServerCard* attackingCard() const { return mAttackingCard; }
+    ServerCard* attackingCard() { return mAttackingCard; }
     void setAttackingCard(ServerCard *card) { mAttackingCard = card; }
     AttackType attackType() const { return mAttackType; }
     void setAttackType(AttackType type) { mAttackType = type; }
@@ -98,7 +99,9 @@ public:
     void switchPositions(const CommandSwitchStagePositions &cmd);
     bool canPlay(ServerCard *card);
     void climaxPhase();
+    bool canAttack();
     void endOfAttack();
+    void startAttackPhase();
     void attackDeclarationStep();
     Resumable declareAttack(const CommandDeclareAttack &cmd);
     Resumable triggerStep(int pos);

@@ -11,12 +11,10 @@ void ServerCardZone::addCard(std::shared_ptr<CardInfo> info) {
     mCards.emplace_back(std::make_unique<ServerCard>(info, this));
 }
 
-void ServerCardZone::addCard(int pos) {
-    mCards.emplace_back(std::make_unique<ServerCard>(pos, this));
-}
-
 ServerCard* ServerCardZone::addCard(std::unique_ptr<ServerCard> card) {
-    return mCards.emplace_back(std::move(card)).get();
+    auto addedCard = mCards.emplace_back(std::move(card)).get();
+    addedCard->setZone(this);
+    return addedCard;
 }
 
 std::unique_ptr<ServerCard> ServerCardZone::putOnStage(std::unique_ptr<ServerCard>, int) {
@@ -57,7 +55,7 @@ std::unique_ptr<ServerCard> ServerCardZone::takeCardFromPos(int pos) {
 }
 
 ServerCard *ServerCardZone::card(int index) {
-    if (index >= static_cast<int>(mCards.size()) || index < 0)
+    if (static_cast<size_t>(index) >= mCards.size())
         return nullptr;
 
     return mCards[index].get();

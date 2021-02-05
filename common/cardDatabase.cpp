@@ -22,7 +22,6 @@ CardDatabase::CardDatabase() {
     info2->setName("prru");
     info2->setType(CardType::Char);
     info2->setColor('R');
-    info2->setTriggers({ TriggerIcon::Soul });
     info2->setTraits({ "Music" });
     mDb.emplace(info2->code(), info2);
 
@@ -73,7 +72,7 @@ CardDatabase::CardDatabase() {
     info5->setType(CardType::Climax);
     info5->setColor('B');
     info5->setTraits({ "Music" });
-    info5->setTriggers({ TriggerIcon::Choice });
+    info5->setTriggers({ TriggerIcon::Wind });
     mDb.emplace(info5->code(), info5);
 }
 

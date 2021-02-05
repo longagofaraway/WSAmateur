@@ -170,6 +170,7 @@ void Player::clockPhase() {
 }
 
 void Player::mainPhase() {
+    mGame->setPhase(asn::Phase::MainPhase);
     if (mOpponent)
         return;
 
@@ -184,8 +185,9 @@ void Player::mainPhase() {
 }
 
 void Player::attackDeclarationStep() {
+    mGame->setPhase(asn::Phase::AttackDeclarationStep);
     if (mOpponent) {
-        attackWithAll();
+        //attackWithAll();
         return;
     }
 
@@ -196,6 +198,8 @@ void Player::attackDeclarationStep() {
 void Player::declareAttack(const EventDeclareAttack &event) {
     if (event.stageid() >= 3)
         return;
+    mGame->setPhase(asn::Phase::AttackPhase);
+    mAttackingId = event.stageid();
     mStage->attackDeclared(event.stageid());
     if (!isOpponent())
         mGame->attackDeclarationStepFinished();
@@ -384,7 +388,7 @@ void Player::switchStagePositions(const EventSwitchStagePositions &event) {
             "stage", event.stageidto(), true);
 }
 
-bool Player::canPlay(Card &card) {
+bool Player::canPlay(const Card &card) const {
     if (card.level() > mLevel)
         return false;
     if (card.cost() > static_cast<int>(zone("stock")->cards().size()))
@@ -470,6 +474,7 @@ void Player::endOfAttack() {
 }
 
 void Player::encoreStep() {
+    mGame->setPhase(asn::Phase::EncoreStep);
     if (mOpponent)
         return;
 

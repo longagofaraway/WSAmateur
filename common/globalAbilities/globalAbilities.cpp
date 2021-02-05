@@ -16,6 +16,10 @@ std::unordered_map<asn::TriggerIcon, std::vector<uint8_t>> gTriggerBinAbilities 
     { asn::TriggerIcon::Choice, {
           #include "choice"
       }
+    },
+    { asn::TriggerIcon::Wind, {
+          #include "wind"
+      }
     }
 };
 bool gAbilitiesDecoded = false;

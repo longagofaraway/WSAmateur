@@ -30,7 +30,6 @@ public:
     const std::string& name() const { return mName; }
     ZoneType type() const { return mType; }
     void addCard(std::shared_ptr<CardInfo> info);
-    void addCard(int pos);
     virtual ServerCard* addCard(std::unique_ptr<ServerCard> card);
     virtual std::unique_ptr<ServerCard> putOnStage(std::unique_ptr<ServerCard> card, int pos);
     virtual void switchPositions(int pos1, int pos2);

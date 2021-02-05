@@ -60,13 +60,13 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandClimaxPhase>()) {
         climaxPhase();
     } else if (cmd.command().Is<CommandAttackPhase>()) {
-        attackDeclarationStep();
+        startAttackPhase();
     } else if (cmd.command().Is<CommandDeclareAttack>()) {
         CommandDeclareAttack declareAttackCmd;
         cmd.command().UnpackTo(&declareAttackCmd);
         mGame->startAsyncTask(declareAttack(declareAttackCmd));
     } else if (cmd.command().Is<CommandTakeDamage>()) {
-        mGame->startAsyncTask(mGame->damageStep());
+        mGame->startAsyncTask(mGame->continueFromDamageStep());
     } else if (cmd.command().Is<CommandEncoreCharacter>()) {
         CommandEncoreCharacter encoreCmd;
         cmd.command().UnpackTo(&encoreCmd);
@@ -379,7 +379,7 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
 }
 
 bool ServerPlayer::canPlay(ServerCard *card) {
-    if (mGame->phase() == Phase::Climax && card->type() != CardType::Climax)
+    if (mGame->phase() == ServerPhase::Climax && card->type() != CardType::Climax)
         return false;
     if (card->level() > mLevel)
         return false;
@@ -395,7 +395,7 @@ bool ServerPlayer::canPlay(ServerCard *card) {
 
 void ServerPlayer::climaxPhase() {
     // check timing at start of climax phase
-    mGame->setPhase(Phase::Climax);
+    mGame->setPhase(ServerPhase::Climax);
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
     sendToBoth(EventClimaxPhase());
@@ -404,29 +404,30 @@ void ServerPlayer::climaxPhase() {
 void ServerPlayer::endOfAttack() {
     setAttackingCard(nullptr);
     sendToBoth(EventEndOfAttack());
-    attackDeclarationStep();
 }
 
-void ServerPlayer::attackDeclarationStep() {
-    clearExpectedComands();
-
-    bool canAttack = false;
+bool ServerPlayer::canAttack() {
     auto stage = zone("stage");
     for (int i = 0; i < 3; ++i) {
         if (stage->card(i) && stage->card(i)->state() == StateStanding) {
-            canAttack = true;
-            break;
+            return true;
         }
     }
+    return false;
+}
 
-    if (canAttack) {
-        mGame->setPhase(Phase::AttackDeclarationStep);
-        addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
-        addExpectedCommand(CommandEncoreStep::GetDescriptor()->name());
-        sendToBoth(EventAttackDeclarationStep());
-    } else {
+void ServerPlayer::startAttackPhase() {
+    if (canAttack())
+        attackDeclarationStep();
+    else
         mGame->startAsyncTask(mGame->encoreStep());
-    }
+}
+
+void ServerPlayer::attackDeclarationStep() {
+    mGame->setPhase(ServerPhase::AttackDeclarationStep);
+    addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
+    addExpectedCommand(CommandEncoreStep::GetDescriptor()->name());
+    sendToBoth(EventAttackDeclarationStep());
 }
 
 bool isCenterStagePosition(int pos) { return pos >= 3 ? false : true; }
@@ -490,6 +491,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
             break;
         case TriggerIcon::Door:
         case TriggerIcon::Choice:
+        case TriggerIcon::Wind:
             EventAbilityActivated event;
             auto ab = event.add_abilities();
             ab->set_zone("res");
@@ -512,7 +514,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
     if (attackType() == FrontAttack)
         mGame->opponentOfPlayer(mId)->counterStep();
     else
-        co_await mGame->damageStep();
+        co_await mGame->continueFromDamageStep();
 }
 
 void ServerPlayer::counterStep() {
@@ -521,10 +523,13 @@ void ServerPlayer::counterStep() {
 }
 
 Resumable ServerPlayer::damageStep() {
-    mGame->setPhase(Phase::DamageStep);
+    mGame->setPhase(ServerPhase::DamageStep);
     clearExpectedComands();
     auto attCard = mGame->opponentOfPlayer(mId)->attackingCard();
     if (!attCard)
+        co_return;
+
+    if (attCard->zone()->name() != "stage")
         co_return;
 
     auto resZone = zone("res");
