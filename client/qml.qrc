@@ -6,7 +6,7 @@
         <file>qml/objectCreation.js</file>
         <file>qml/Hand.qml</file>
         <file>qml/Stock.qml</file>
-        <file>qml/CardInfoFrame.qml</file>
+        <file>qml/CardTextFrame.qml</file>
         <file>qml/CardsView.qml</file>
         <file>qml/CardsViewColumn.qml</file>
         <file>qml/Clock.qml</file>

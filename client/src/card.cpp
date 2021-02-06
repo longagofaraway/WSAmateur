@@ -19,6 +19,12 @@ void Card::init(const std::string &code) {
     mPower = mInfo->power();
     mColor = mInfo->color();
     mType = mInfo->type();
+
+    for (const auto &abBuf: mInfo->abilities())
+        mAbilities.emplace_back(decodeAbility(abBuf));
+
+    for (const auto &a: mAbilities)
+        mText.push_back(QString::fromStdString(printAbility(a)));
 }
 
 void Card::clear() {

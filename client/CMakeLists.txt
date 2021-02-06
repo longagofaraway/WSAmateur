@@ -36,7 +36,8 @@ set(clientSources
     src/localServer.h
     src/localServerConnection.h
     src/player.h
-    src/stage.h)
+    src/stage.h
+    src/textFrameModel.h)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 

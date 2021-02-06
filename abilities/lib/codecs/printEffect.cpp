@@ -172,6 +172,13 @@ std::string printMoveCard(const MoveCard &e) {
     return s;
 }
 
+std::string printDrawCard(const DrawCard &e) {
+    std::string s = "draw ";
+    if (e.value.mod == NumModifier::ExactMatch && e.value.value == 1)
+        s += "a card ";
+    return s;
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -194,6 +201,8 @@ std::string printEffect(const Effect &e) {
     case EffectType::MoveCard:
         s += printMoveCard(std::get<MoveCard>(e.effect));
         break;
+    case EffectType::DrawCard:
+        s += printDrawCard(std::get<DrawCard>(e.effect));
     }
 
     return s;

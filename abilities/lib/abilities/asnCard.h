@@ -57,7 +57,7 @@ struct CostSpecifier {
 enum class TriggerIcon : uint8_t {
     Soul = 1,
     Wind,
-    Pool,
+    Bag,
     Door,
     Book,
     Shot,

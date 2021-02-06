@@ -5,11 +5,6 @@
 
 #include "abilities.h"
 
-/*enum class Trigger {
-    Soul,
-    Door
-};*/
-
 using asn::TriggerIcon;
 using asn::CardType;
 
@@ -25,8 +20,7 @@ class CardInfo
     std::string mName;
     std::vector<std::string> mTraits;
     std::vector<TriggerIcon> mTriggers;
-    std::vector<asn::Ability> mAbilities;
-    std::vector<std::string> mText;
+    std::vector<std::vector<uint8_t>> mAbilities;
 
 public:
     CardInfo();
@@ -51,4 +45,6 @@ public:
     void setTraits(const std::vector<std::string> &traits) { mTraits = traits; }
     const std::vector<TriggerIcon>& triggers() const { return mTriggers; }
     void setTriggers(const std::vector<TriggerIcon> &triggers) { mTriggers = triggers; }
+    const std::vector<std::vector<uint8_t>>& abilities() const { return mAbilities; }
+    void addAbility(const std::vector<uint8_t> &ability) { mAbilities.push_back(ability); }
 };

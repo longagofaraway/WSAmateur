@@ -147,6 +147,13 @@ Look decodeLook(Iterator &it, Iterator end) {
     return e;
 }
 
+DrawCard decodeDrawCard(Iterator &it, Iterator end) {
+    DrawCard e;
+    e.executor = decodeEnum<Player>(it, end);
+    e.value = decodeNumber(it, end);
+    return e;
+}
+
 Effect decodeEffect(Iterator &it, Iterator end) {
     Effect e;
 
@@ -214,7 +221,7 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         e.effect = decodeReplay(it, end);
         break;
     case EffectType::DrawCard:
-        e.effect = DrawCard{ decodeNumber(it, end) };
+        e.effect = decodeDrawCard(it, end);
         break;
     case EffectType::Look:
         e.effect = decodeLook(it, end);

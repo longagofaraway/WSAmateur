@@ -168,6 +168,7 @@ struct Replay {
 };
 
 struct DrawCard {
+    Player executor;
     Number value;
 };
 

@@ -107,7 +107,7 @@ ListView {
 
             property string mCode: code
 
-            property CardInfoFrame cardTextFrame: null
+            property CardTextFrame cardTextFrame: null
             property int visualIndex: DelegateModel.itemsIndex
 
             Component.onDestruction: destroyTextFrame(cardDelegate)
@@ -378,7 +378,7 @@ ListView {
     }
 
     function createTextFrame(cardDelegate, cardImgDelegate) {
-        let comp = Qt.createComponent("CardInfoFrame.qml");
+        let comp = Qt.createComponent("CardTextFrame.qml");
         let incubator = comp.incubateObject(cardImgDelegate, { visible: false }, Qt.Asynchronous);
         let createdCallback = function(status) {
             if (status === Component.Ready) {

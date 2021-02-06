@@ -20,6 +20,11 @@ asn::MoveCard decodeMoveCard(const std::string &buf) {
     auto it = binbuf.begin();
     return ::decodeMoveCard(it, binbuf.end());
 }
+asn::DrawCard decodeDrawCard(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.begin();
+    return ::decodeDrawCard(it, binbuf.end());
+}
 
 bool checkCard(const std::vector<asn::CardSpecifier> specs, const Card &card) {
     bool eligible = true;
@@ -141,6 +146,21 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
     }
 }
 
+void Player::processDrawChoice(const EventDrawChoice &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodeDrawCard(event.effect());
+
+    auto header = printDrawCard(effect);
+    header[0] = std::toupper(header[0]);
+    header.push_back('?');
+    if (!event.mandatory()) {
+        std::vector<QString> data { "Yes", "No" };
+        mChoiceDialog->setData(QString::fromStdString(header), data);
+    }
+}
+
 void Player::activateAbilities(const EventAbilityActivated &event) {
     for (int i = 0; i < event.abilities_size(); ++i) {
         auto protoa = event.abilities(i);
@@ -168,15 +188,17 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
                 return;
 
             a.code = cardInfo->code();
-            //if (protoa.type() == ProtoAbilityType::ProtoCard)
-                //a.text =
+            if (protoa.type() == ProtoAbilityType::ProtoCard) {
+                const auto &abuf = cardInfo->abilities()[a.abilityId];
+                a.text = QString::fromStdString(printAbility(decodeAbility(abuf)));
+            }
         } else {
             a.code = protoa.cardcode();
-            //if (protoa.type() == ProtoAbilityType::ProtoCard)
-                //a.text =
+            if (protoa.type() == ProtoAbilityType::ProtoCard)
+                a.text = zone(a.zone)->cards()[a.cardId].text(a.abilityId);
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger)
-            a.text = printAbility(globalAbility(static_cast<TriggerIcon>(protoa.abilityid())));
+            a.text = QString::fromStdString(printAbility(globalAbility(static_cast<TriggerIcon>(protoa.abilityid()))));
 
         if (event.abilities_size() > 1) {
             if (!mOpponent)

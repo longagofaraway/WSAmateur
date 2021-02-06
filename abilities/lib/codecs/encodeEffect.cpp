@@ -113,6 +113,11 @@ void encodeLook(const Look &e, Buf &buf) {
     encodePlace(e.place, buf);
 }
 
+void encodeDrawCard(const DrawCard &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.executor));
+    encodeNumber(e.value, buf);
+}
+
 void encodeEffect(const Effect &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.type));
     encodeCondition(e.cond, buf);
@@ -179,7 +184,7 @@ void encodeEffect(const Effect &e, Buf &buf) {
         encodeReplay(std::get<Replay>(e.effect), buf);
         break;
     case EffectType::DrawCard:
-        encodeNumber(std::get<DrawCard>(e.effect).value, buf);
+        encodeDrawCard(std::get<DrawCard>(e.effect), buf);
         break;
     case EffectType::Look:
         encodeLook(std::get<Look>(e.effect), buf);

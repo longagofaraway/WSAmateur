@@ -131,4 +131,5 @@ private:
     Resumable playNonMandatory(const asn::NonMandatory &e);
     Resumable playChooseCard(const asn::ChooseCard &e);
     Resumable playMoveCard(const asn::MoveCard &e);
+    Resumable playDrawCard(const asn::DrawCard &e);
 };

@@ -54,7 +54,17 @@ message EventMoveChoice {
     bool mandatory = 2;
 }
 
+message EventDrawChoice {
+    bytes effect = 1;
+    bool mandatory = 2;
+}
+
 message CommandChoice {
     sint32 choice = 1;
+}
+
+message EventLookCard {
+    sint32 number = 1;
+    ProtoOwner owner = 2;
 }
 

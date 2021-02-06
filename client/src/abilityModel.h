@@ -19,7 +19,7 @@ struct ActivatedAbility {
     std::string zone;
 
     std::string code;
-    std::string text;
+    QString text;
 
     bool active = false;
     bool playBtnActive = false;

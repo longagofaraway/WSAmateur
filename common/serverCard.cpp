@@ -5,6 +5,10 @@ ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone)
     mCode = info->code();
     mPower = info->power();
     mSoul = info->soul();
+    mLevel = info->level();
+
+    for (const auto &abBuf: info->abilities())
+        mAbilities.emplace_back(decodeAbility(abBuf));
 }
 
 ServerCard::ServerCard(int pos, ServerCardZone *zone)
@@ -14,10 +18,13 @@ ServerCard::ServerCard(int pos, ServerCardZone *zone)
 
 void ServerCard::reset() {
     mBuffs.clear();
+    std::erase_if(mAbilities, [](const AbilityState& ab) { return !ab.permanent; });
+    std::for_each(mAbilities.begin(), mAbilities.end(), [](AbilityState& ab) { ab.activationTimes = 0; });
     mState = StateStanding;
 
     mPower = mCardInfo->power();
     mSoul = mCardInfo->soul();
+    mLevel = mCardInfo->level();
 }
 
 void ServerCard::setPos(int pos) {

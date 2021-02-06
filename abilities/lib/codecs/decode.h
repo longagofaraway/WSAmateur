@@ -72,5 +72,7 @@ asn::Target decodeTarget(Iterator &it, Iterator end);
 asn::Place decodePlace(Iterator &it, Iterator end);
 asn::Condition decodeCondition(Iterator &it, Iterator end);
 asn::Multiplier decodeMultiplier(Iterator &it, Iterator end);
+
 asn::ChooseCard decodeChooseCard(Iterator &it, Iterator end);
 asn::MoveCard decodeMoveCard(Iterator &it, Iterator end);
+asn::DrawCard decodeDrawCard(Iterator &it, Iterator end);

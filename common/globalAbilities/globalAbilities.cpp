@@ -24,6 +24,14 @@ std::unordered_map<asn::TriggerIcon, std::vector<uint8_t>> gTriggerBinAbilities 
     { asn::TriggerIcon::Treasure, {
           #include "treasure"
       }
+    },
+    { asn::TriggerIcon::Bag, {
+          #include "bag"
+      }
+    },
+    { asn::TriggerIcon::Book, {
+          #include "book"
+      }
     }
 };
 bool gAbilitiesDecoded = false;

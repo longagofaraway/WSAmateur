@@ -22,6 +22,7 @@ class EventAbilityActivated;
 class EventChooseCard;
 class EventPlayAbility;
 class EventMoveChoice;
+class EventDrawChoice;
 
 class Game;
 class GameEvent;
@@ -110,6 +111,7 @@ private:
 
     void processChooseCard(const EventChooseCard &event);
     void processMoveChoice(const EventMoveChoice &event);
+    void processDrawChoice(const EventDrawChoice &event);
     void activateAbilities(const EventAbilityActivated &event);
     void doneChoosing();
     void abilityResolved();

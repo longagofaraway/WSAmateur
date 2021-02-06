@@ -140,6 +140,37 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
     }
 }
 
+Resumable ServerPlayer::playDrawCard(const asn::DrawCard &e) {
+    bool confirmed = mContext.mandatory;
+    if (!mContext.mandatory) {
+        std::vector<uint8_t> buf;
+        encodeDrawCard(e, buf);
+
+        EventDrawChoice ev;
+        ev.set_effect(buf.data(), buf.size());
+        ev.set_mandatory(false);
+        sendToBoth(ev);
+
+        clearExpectedComands();
+        addExpectedCommand(CommandChoice::GetDescriptor()->name());
+
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandChoice>()) {
+                CommandChoice choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                // 0 is yes, so 'yes' will be the first on client's side
+                confirmed = !choiceCmd.choice();
+                break;
+            }
+        }
+        clearExpectedComands();
+    }
+    if (!confirmed)
+        co_return;
+    moveTopDeck("hand");
+}
+
 Resumable ServerPlayer::playEffect(const asn::Effect &e) {
     switch (e.type) {
     case asn::EffectType::NonMandatory:
@@ -150,6 +181,9 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
         break;
     case asn::EffectType::MoveCard:
         co_await playMoveCard(std::get<asn::MoveCard>(e.effect));
+        break;
+    case asn::EffectType::DrawCard:
+        co_await playDrawCard(std::get<asn::DrawCard>(e.effect));
         break;
     default:
         assert(false);

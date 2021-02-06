@@ -51,7 +51,7 @@ QVariant AbilityModel::data(const QModelIndex &index, int role) const {
     case CodeRole:
         return QString::fromStdString(ab.code);
     case TextRole:
-        return QString::fromStdString(ab.text);
+        return ab.text;
     case Button1ActiveRole:
         return ab.playBtnActive;
     case Button2ActiveRole:

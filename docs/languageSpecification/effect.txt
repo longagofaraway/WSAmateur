@@ -249,6 +249,7 @@ Replay {
 }
 
 DrawCard {
+  executor Player,
   number Number
 }
 

@@ -12,3 +12,4 @@ std::string printZone(asn::Zone zone);
 std::string printEffects(const std::vector<asn::Effect> &effects);
 
 std::string printMoveCard(const asn::MoveCard &e);
+std::string printDrawCard(const asn::DrawCard &e);

@@ -296,6 +296,22 @@ Replay parseReplay(const QJsonObject &json) {
     return e;
 }
 
+DrawCard parseDrawCard(const QJsonObject &json) {
+    if (json.contains("executor") && !json["executor"].isDouble())
+        throw std::runtime_error("wrong executor in DrawCard");
+    if (!json.contains("number") || !json["number"].isObject())
+        throw std::runtime_error("no number in DrawCard");
+
+    DrawCard e;
+    if (json.contains("executor"))
+        e.executor = static_cast<Player>(json["executor"].toInt());
+    else
+        e.executor = Player::Player;
+    e.value = parseNumber(json["number"].toObject());
+
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -370,7 +386,7 @@ Effect parseEffect(const QJsonObject &json) {
         e.effect = parseReplay(json["effect"].toObject());
         break;
     case EffectType::DrawCard:
-        e.effect = parseNumberType<DrawCard>(json["effect"].toObject());
+        e.effect = parseDrawCard(json["effect"].toObject());
         break;
     case EffectType::Look:
         e.effect = parseLook(json["effect"].toObject());

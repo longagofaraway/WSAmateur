@@ -15,12 +15,21 @@ enum StageRow {
     BackStage
 };
 
+struct AbilityState {
+    asn::Ability ability;
+    bool permanent = true;
+    int duration = 0;
+    int activationTimes = 0;
+    AbilityState(asn::Ability ab) : ability(ab) {}
+};
+
 class ServerCard
 {
     std::shared_ptr<CardInfo> mCardInfo;
     ServerCardZone *mZone;
     std::string mCode;
     std::vector<AttributeChange> mBuffs;
+    std::vector<AbilityState> mAbilities;
 
     // stage position
     StageRow mRow;
@@ -28,6 +37,7 @@ class ServerCard
 
     int mPower;
     int mSoul;
+    int mLevel;
     CardState mState = StateStanding;
 
 public:

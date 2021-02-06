@@ -23,7 +23,7 @@ ListView {
         MouseArea {
             id: cardDelegate
 
-            property CardInfoFrame cardTextFrame: null
+            property CardTextFrame cardTextFrame: null
 
             width: root.cardWidth
             height: root.cardHeight
@@ -47,7 +47,7 @@ ListView {
     }
 
     function createTextFrame(frameParent) {
-        let comp = Qt.createComponent("CardInfoFrame.qml");
+        let comp = Qt.createComponent("CardTextFrame.qml");
         let incubator = comp.incubateObject(root, { visible: false, z: 100 }, Qt.Asynchronous);
         let createdCallback = function(status) {
             if (status === Component.Ready) {

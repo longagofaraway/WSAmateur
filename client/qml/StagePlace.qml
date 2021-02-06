@@ -49,7 +49,7 @@ ListView {
         delegate: Rectangle {
             id: stageRect
 
-            property CardInfoFrame cardInfo: null
+            property CardTextFrame cardInfo: null
 
             width: root.cardWidth
             height: root.cardHeight
@@ -136,7 +136,7 @@ ListView {
                 onEntered: {
                     if (mStageCard === null || drag.active || mTooltipsDisabled)
                         return;
-                    let comp = Qt.createComponent("CardInfoFrame.qml");
+                    let comp = Qt.createComponent("CardTextFrame.qml");
                     let incubator = comp.incubateObject(root, { visible: false, z: 100 }, Qt.Asynchronous);
                     let createdCallback = function(status) {
                         if (status === Component.Ready) {

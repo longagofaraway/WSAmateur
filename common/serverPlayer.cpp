@@ -493,6 +493,8 @@ Resumable ServerPlayer::triggerStep(int pos) {
         case TriggerIcon::Choice:
         case TriggerIcon::Wind:
         case TriggerIcon::Treasure:
+        case TriggerIcon::Bag:
+        case TriggerIcon::Book:
             EventAbilityActivated event;
             auto ab = event.add_abilities();
             ab->set_zone("res");

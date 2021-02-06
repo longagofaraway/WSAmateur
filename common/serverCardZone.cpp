@@ -31,7 +31,7 @@ void ServerCardZone::shuffle() {
 }
 
 std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
-    if (index >= static_cast<int>(mCards.size()) || index < 0)
+    if (static_cast<size_t>(index) >= mCards.size())
         return {};
 
     auto card = std::move(mCards[index]);
