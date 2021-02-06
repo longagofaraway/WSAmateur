@@ -28,6 +28,8 @@
         <file>qml/EndOfGame.qml</file>
         <file>qml/ActivatedAbility.qml</file>
         <file>qml/ActivatedAbilityList.qml</file>
+        <file>qml/AbilityButton.qml</file>
+        <file>qml/ChoiceDialog.qml</file>
         <file>resources/background.jpg</file>
         <file>resources/images/imc.jpg</file>
         <file>resources/images/imc0.jpg</file>
@@ -44,8 +46,6 @@
         <file>resources/images/closeButton.png</file>
         <file>resources/images/closeButtonHighlighted.png</file>
         <file>resources/images/abbg.png</file>
-        <file>resources/images/wrbg.png</file>
-        <file>qml/AbilityButton.qml</file>
-        <file>qml/ChoiceDialog.qml</file>
+        <file>resources/images/textFrame.png</file>
     </qresource>
 </RCC>

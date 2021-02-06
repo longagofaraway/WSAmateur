@@ -20,11 +20,9 @@ void Card::init(const std::string &code) {
     mColor = mInfo->color();
     mType = mInfo->type();
 
+    mTextModel = std::make_unique<TextFrameModel>();
     for (const auto &abBuf: mInfo->abilities())
-        mAbilities.emplace_back(decodeAbility(abBuf));
-
-    for (const auto &a: mAbilities)
-        mText.push_back(QString::fromStdString(printAbility(a)));
+        mTextModel->addAbility(QString::fromStdString(printAbility(decodeAbility(abBuf))));
 }
 
 void Card::clear() {
@@ -38,6 +36,7 @@ void Card::clear() {
     mGlow = false;
     mSelected = false;
     mState = StateStanding;
+    mTextModel.reset();
 }
 
 QString Card::qstate() const {

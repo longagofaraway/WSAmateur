@@ -1,5 +1,3 @@
-#pragma once
-
 #include "abilityModel.h"
 
 int AbilityModel::idByUniqueId(uint32_t uniqueId) const {

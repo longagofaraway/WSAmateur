@@ -4,6 +4,8 @@ import QtGraphicalEffects 1.15
 
 import wsamateur.cardModel 1.0
 
+import wsamateur 1.0
+
 ListView {
     id: handView
 
@@ -231,7 +233,7 @@ ListView {
                         }
                         NumberAnimation { target: cardImgDelegate; property: "rotation"; to: 0; duration: 35 }
                     }
-                    ScriptAction { script: createTextFrame(cardDelegate, cardImgDelegate); }
+                    ScriptAction { script: createTextFrame(cardDelegate, cardImgDelegate, model.index); }
                 }
 
                 MouseArea {
@@ -377,7 +379,7 @@ ListView {
         NumberAnimation { duration: 200 }
     }
 
-    function createTextFrame(cardDelegate, cardImgDelegate) {
+    function createTextFrame(cardDelegate, cardImgDelegate, index) {
         let comp = Qt.createComponent("CardTextFrame.qml");
         let incubator = comp.incubateObject(cardImgDelegate, { visible: false }, Qt.Asynchronous);
         let createdCallback = function(status) {
@@ -400,6 +402,7 @@ ListView {
                 textFrame.anchors.top = cardImgDelegate.top;
                 if (textFrame.height * 0.66 > cardImgDelegate.height)
                     textFrame.anchors.topMargin = cardImgDelegate.height - textFrame.height * 0.66;
+                textFrame.mModel = handView.mModel.textModel(index);
                 textFrame.visible = true;
                 cardDelegate.cardTextFrame = textFrame;
             }

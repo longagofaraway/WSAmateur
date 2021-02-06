@@ -24,7 +24,8 @@ public:
         StateRole,
         PowerRole,
         SoulRole,
-        LevelRole
+        LevelRole,
+        TextModelRole
     };
     Q_ENUM(CardRoles)
     static QVector<int> mRoles;
@@ -44,6 +45,7 @@ public:
     Q_INVOKABLE void clearCard(int row);
     Q_INVOKABLE int climaxCount();
     Q_INVOKABLE int nonClimaxCount();
+    Q_INVOKABLE TextFrameModel* textModel(int row);
 
 
     void setGlow(int row, bool glow);

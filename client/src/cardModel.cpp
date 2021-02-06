@@ -87,6 +87,12 @@ int CardModel::nonClimaxCount() {
     return count;
 }
 
+TextFrameModel *CardModel::textModel(int row) {
+    if (static_cast<size_t>(row) >= mCards.size())
+        return nullptr;
+    return mCards[row].textModel();
+}
+
 void CardModel::setGlow(int row, bool glow) {
     auto index = createIndex(row, 0);
     setData(index, glow, GlowRole);
@@ -113,7 +119,7 @@ void CardModel::setAttr(int row, CardAttribute attr, int value) {
 }
 
 bool CardModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (index.row() < 0 || static_cast<size_t>(index.row()) >= mCards.size())
+    if (static_cast<size_t>(index.row()) >= mCards.size())
         return false;
 
     Card &card = mCards[index.row()];
@@ -152,7 +158,7 @@ int CardModel::rowCount(const QModelIndex&) const {
 }
 
 QVariant CardModel::data(const QModelIndex &index, int role) const {
-    if (index.row() < 0 || static_cast<size_t>(index.row()) >= mCards.size())
+    if (static_cast<size_t>(index.row()) >= mCards.size())
         return QVariant();
 
     const Card &card = mCards[index.row()];

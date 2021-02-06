@@ -19,6 +19,7 @@ set(clientSources
     src/playAbility.cpp
     src/player.cpp
     src/stage.cpp
+    src/textFrameModel.cpp
     src/abilityModel.h
     src/activatedAbilities.h
     src/card.h

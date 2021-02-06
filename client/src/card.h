@@ -9,6 +9,7 @@
 
 #include "abilities.h"
 #include "cardInfo.h"
+#include "textFrameModel.h"
 
 class Card {
     std::string mCode;
@@ -22,8 +23,8 @@ class Card {
     int mSoul;
     CardType mType;
     CardState mState = StateStanding;
-    std::vector<asn::Ability> mAbilities;
-    std::vector<QString> mText;
+
+    std::unique_ptr<TextFrameModel> mTextModel;
 
     std::shared_ptr<CardInfo> mInfo;
 
@@ -59,5 +60,6 @@ public:
     QString qtype() const;
     QString qcode() const { return QString::fromStdString(mCode); }
     std::string code() const { return mCode; }
-    QString text(int abilityId) const { return mText[abilityId]; }
+    QString text(int abilityId) const { return mTextModel->text(abilityId); }
+    TextFrameModel* textModel() { return mTextModel.get(); }
 };
