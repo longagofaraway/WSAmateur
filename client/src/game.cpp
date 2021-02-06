@@ -211,6 +211,10 @@ void Game::mainPhase() {
     QMetaObject::invokeMethod(this, "mainPhase");
 }
 
+void Game::pauseMainPhase() {
+    QMetaObject::invokeMethod(this, "pauseMainPhase");
+}
+
 void Game::attackDeclarationStep() {
     QMetaObject::invokeMethod(this, "attackDeclarationStep");
 }

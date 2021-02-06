@@ -116,6 +116,7 @@ private:
     void doneChoosing();
     void abilityResolved();
     void restoreUiState();
+    void stopUiInteractions();
     void makeAbilityActive(const EventPlayAbility &event);
 
 public slots:

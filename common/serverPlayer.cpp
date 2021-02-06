@@ -600,6 +600,10 @@ Resumable ServerPlayer::levelUp() {
 
 Resumable ServerPlayer::encoreStep() {
     clearExpectedComands();
+    // send for synchronization
+    EventPhaseEvent event;
+    event.set_phase(static_cast<int>(asn::Phase::EncoreStep));
+    sendToBoth(event);
 
     auto stage = zone("stage");
     auto needEncore = [stage]() {

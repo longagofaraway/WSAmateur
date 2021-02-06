@@ -183,6 +183,11 @@ Item {
             mainButton.clicked.connect(mainPhaseFinished);
         }
 
+        function pauseMainPhase() {
+            mainButton.clicked.disconnect(mainPhaseFinished);
+            mainButton.state = "waiting";
+        }
+
         function mainPhaseFinished() {
             mainButton.clicked.disconnect(mainPhaseFinished);
             mainButton.state = "waiting";

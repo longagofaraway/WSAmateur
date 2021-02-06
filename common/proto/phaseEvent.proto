@@ -7,3 +7,6 @@ message EventAttackDeclarationStep {}
 message EventEndOfAttack {}
 message EventCounterStep {}
 message EventEncoreStep {}
+message EventPhaseEvent {
+    sint32 phase = 1;
+}

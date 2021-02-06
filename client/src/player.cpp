@@ -158,6 +158,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventDrawChoice ev;
         event->event().UnpackTo(&ev);
         processDrawChoice(ev);
+    } else if (event->event().Is<EventPhaseEvent>()) {
+        EventPhaseEvent ev;
+        event->event().UnpackTo(&ev);
+        mGame->setPhase(static_cast<asn::Phase>(ev.phase()));
     }
 }
 
@@ -166,6 +170,7 @@ void Player::sendGameCommand(const google::protobuf::Message &command) {
 }
 
 void Player::clockPhase() {
+    mGame->setPhase(asn::Phase::ClockPhase);
     if (mOpponent)
         return;
 

@@ -8,6 +8,7 @@
 #include "game.h"
 #include "globalAbilities/globalAbilities.h"
 #include "hand.h"
+#include "stage.h"
 
 namespace {
 asn::ChooseCard decodeChooseCard(const std::string &buf) {
@@ -162,6 +163,7 @@ void Player::processDrawChoice(const EventDrawChoice &event) {
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
+    stopUiInteractions();
     for (int i = 0; i < event.abilities_size(); ++i) {
         auto protoa = event.abilities(i);
         auto zoneptr = zone(protoa.zone());
@@ -255,9 +257,25 @@ void Player::abilityResolved() {
     }
 }
 
+void Player::stopUiInteractions() {
+    if (mOpponent)
+        return;
+
+    switch (mGame->phase()) {
+    case asn::Phase::MainPhase:
+        mHand->endMainPhase();
+        mStage->endMainPhase();
+        mGame->pauseMainPhase();
+        break;
+    default:
+        break;
+    }
+}
+
 void Player::restoreUiState() {
     if (mOpponent)
         return;
+
     switch (mGame->phase()) {
     case asn::Phase::MainPhase: {
         const auto &cards = mHand->cards();
@@ -265,6 +283,10 @@ void Player::restoreUiState() {
             if (canPlay(cards[i]))
                 mHand->model().setGlow(i, true);
         }
+
+        mHand->mainPhase();
+        mStage->mainPhase();
+        mGame->mainPhase();
         break;
     }
     case asn::Phase::AttackPhase: {
