@@ -5,6 +5,13 @@ using namespace asn;
 std::string printCard(const Card &c, bool plural) {
     std::string s;
 
+    if (c.cardSpecifiers.empty()) {
+        s += "card";
+        if (plural)
+            s += "s";
+        return s;
+    }
+
     if (!plural)
         s += "a ";
 

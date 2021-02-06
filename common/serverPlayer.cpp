@@ -492,6 +492,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
         case TriggerIcon::Door:
         case TriggerIcon::Choice:
         case TriggerIcon::Wind:
+        case TriggerIcon::Treasure:
             EventAbilityActivated event;
             auto ab = event.add_abilities();
             ab->set_zone("res");
@@ -502,6 +503,8 @@ Resumable ServerPlayer::triggerStep(int pos) {
             auto uniqueId = abilityHash(*ab);
             ab->set_uniqueid(uniqueId);
             sendToBoth(event);
+            mContext = AbilityContext();
+            mContext.thisCard = CardImprint("res", 0);
             co_await playAbility(globalAbility(trigger));
             EventAbilityResolved ev2;
             ev2.set_uniqueid(uniqueId);

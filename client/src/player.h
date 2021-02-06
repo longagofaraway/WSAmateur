@@ -21,7 +21,7 @@ class EventSetCardState;
 class EventAbilityActivated;
 class EventChooseCard;
 class EventPlayAbility;
-class EventChooseMoveDestination;
+class EventMoveChoice;
 
 class Game;
 class GameEvent;
@@ -109,7 +109,7 @@ private:
     void endGame(bool victory);
 
     void processChooseCard(const EventChooseCard &event);
-    void processMoveChoice(const EventChooseMoveDestination &event);
+    void processMoveChoice(const EventMoveChoice &event);
     void activateAbilities(const EventAbilityActivated &event);
     void doneChoosing();
     void abilityResolved();

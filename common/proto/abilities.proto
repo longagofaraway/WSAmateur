@@ -49,8 +49,9 @@ message CommandChooseCard {
     ProtoOwner owner = 3;
 }
 
-message EventChooseMoveDestination {
+message EventMoveChoice {
     bytes effect = 1;
+    bool mandatory = 2;
 }
 
 message CommandChoice {

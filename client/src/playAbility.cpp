@@ -4,6 +4,7 @@
 #include "abilityUtils.h"
 #include "cardDatabase.h"
 #include "codecs/decode.h"
+#include "codecs/print.h"
 #include "game.h"
 #include "globalAbilities/globalAbilities.h"
 #include "hand.h"
@@ -112,24 +113,32 @@ void Player::processChooseCard(const EventChooseCard &event) {
     }
 }
 
-void Player::processMoveChoice(const EventChooseMoveDestination &event) {
+void Player::processMoveChoice(const EventMoveChoice &event) {
     if (mOpponent)
         return;
 
     auto effect = decodeMoveCard(event.effect());
     assert(effect.executor == asn::Player::Player);
 
-    if (effect.to.size() == 1)
-        return;
+    if (effect.to.size() > 1) {
+        std::vector<QString> data;
+        for (const auto &to: effect.to) {
+            assert(to.owner == asn::Player::Player);
+            assert(to.pos == asn::Position::NotSpecified);
+            data.push_back(asnZoneToReadableString(to.zone));
+        }
 
-    std::vector<QString> data;
-    for (const auto &to: effect.to) {
-        assert(to.owner == asn::Player::Player);
-        assert(to.pos == asn::Position::NotSpecified);
-        data.push_back(asnZoneToReadableString(to.zone));
+        mChoiceDialog->setData("Choose where to put the card", data);
+        return;
     }
 
-    mChoiceDialog->setData("Choose where to put the card", data);
+    auto header = printMoveCard(effect);
+    header[0] = std::toupper(header[0]);
+    header.push_back('?');
+    if (!event.mandatory()) {
+        std::vector<QString> data { "Yes", "No" };
+        mChoiceDialog->setData(QString::fromStdString(header), data);
+    }
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {

@@ -150,8 +150,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventPlayAbility ev;
         event->event().UnpackTo(&ev);
         makeAbilityActive(ev);
-    } else if (event->event().Is<EventChooseMoveDestination>()) {
-        EventChooseMoveDestination ev;
+    } else if (event->event().Is<EventMoveChoice>()) {
+        EventMoveChoice ev;
         event->event().UnpackTo(&ev);
         processMoveChoice(ev);
     }

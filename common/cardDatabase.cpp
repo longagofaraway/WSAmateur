@@ -72,7 +72,7 @@ CardDatabase::CardDatabase() {
     info5->setType(CardType::Climax);
     info5->setColor('B');
     info5->setTraits({ "Music" });
-    info5->setTriggers({ TriggerIcon::Wind });
+    info5->setTriggers({ TriggerIcon::Treasure });
     mDb.emplace(info5->code(), info5);
 }
 

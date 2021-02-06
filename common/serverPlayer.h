@@ -25,18 +25,20 @@ class CommandDeclareAttack;
 class CommandLevelUp;
 class CommandEncoreCharacter;
 
-struct ChosenCard {
+struct CardImprint {
     std::string zone;
-    int id;
-    bool opponent;
-    ChosenCard(const std::string &zone, int id, bool opponent = false)
+    int id = 0;
+    bool opponent = false;
+    CardImprint() = default;
+    CardImprint(const std::string &zone, int id, bool opponent = false)
         : zone(zone), id(id), opponent(opponent) {}
 };
 
 struct AbilityContext {
     bool mandatory = true;
     bool canceled = false;
-    std::vector<ChosenCard> chosenCards;
+    std::vector<CardImprint> chosenCards;
+    CardImprint thisCard;
 };
 
 class ServerPlayer

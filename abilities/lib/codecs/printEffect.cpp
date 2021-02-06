@@ -140,7 +140,22 @@ std::string printMoveCard(const MoveCard &e) {
             gChosenCardsNumber.mod == NumModifier::UpTo) &&
             gChosenCardsNumber.value == 1) {
             s += "it ";
+        } else {
+            s += "them ";
         }
+    } else if (e.target.type == TargetType::ThisCard) {
+        s += "this card ";
+    } else if(e.target.type == TargetType::SpecificCards) {
+        if (e.from.pos == Position::Top && e.target.targetSpecification->number.mod == NumModifier::ExactMatch &&
+            e.target.targetSpecification->number.value == 1) {
+            s += "the top ";
+            s += printCard(e.target.targetSpecification->cards, false) + " of ";
+        }
+        if (e.from.owner == Player::Player)
+            s += "your ";
+        else
+            s += "your opponent's";
+        s += printZone(e.from.zone) + " ";
     }
 
     for (size_t i = 0; i < e.to.size(); ++i) {
