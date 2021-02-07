@@ -5,6 +5,7 @@
 
 #include <google/protobuf/message.h>
 
+#include "abilities.pb.h"
 #include "attackType.pb.h"
 #include "gameCommand.pb.h"
 
@@ -26,12 +27,13 @@ class CommandLevelUp;
 class CommandEncoreCharacter;
 
 struct CardImprint {
+    ServerCard *card;
     std::string zone;
     int id = 0;
     bool opponent = false;
     CardImprint() = default;
-    CardImprint(const std::string &zone, int id, bool opponent = false)
-        : zone(zone), id(id), opponent(opponent) {}
+    CardImprint(const std::string &zone, int id, ServerCard *card = nullptr, bool opponent = false)
+        : card(card), zone(zone), id(id), opponent(opponent) {}
 };
 
 struct AbilityContext {
@@ -39,6 +41,13 @@ struct AbilityContext {
     bool canceled = false;
     std::vector<CardImprint> chosenCards;
     CardImprint thisCard;
+};
+
+struct TriggeredAbility {
+    CardImprint card;
+    ProtoAbilityType type;
+    int abilityId;
+    uint32_t uniqueId;
 };
 
 class ServerPlayer
@@ -95,8 +104,8 @@ public:
     bool moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName);
     void moveTopDeck(std::string_view targetZoneName);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
-    void playCard(const CommandPlayCard &cmd);
-    void playCharacter(const CommandPlayCard &cmd);
+    Resumable playCard(const CommandPlayCard &cmd);
+    Resumable playCharacter(const CommandPlayCard &cmd);
     void playClimax(int handIndex);
     void switchPositions(const CommandSwitchStagePositions &cmd);
     bool canPlay(ServerCard *card);
@@ -121,9 +130,14 @@ public:
 
     void endOfTurnEffectValidation();
 
-// playing abilities
 private:
+    // playing abilities
     AbilityContext mContext;
+    std::vector<TriggeredAbility> mQueue;
+
+    void checkOnPlacedFromHandToStage(ServerCard *card);
+
+    Resumable checkTiming();
 
     Resumable playAbility(const asn::Ability &a);
     Resumable playEventAbility(const asn::EventAbility &a);

@@ -52,7 +52,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandPlayCard>()) {
         CommandPlayCard playCmd;
         cmd.command().UnpackTo(&playCmd);
-        playCard(playCmd);
+        mGame->startAsyncTask(playCard(playCmd));
     } else if (cmd.command().Is<CommandSwitchStagePositions>()) {
         CommandSwitchStagePositions switchCmd;
         cmd.command().UnpackTo(&switchCmd);
@@ -296,30 +296,30 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
     //TODO activate ability
 }
 
-void ServerPlayer::playCard(const CommandPlayCard &cmd) {
+Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
     auto *hand = zone("hand");
     auto cardPtr = hand->card(cmd.handid());
     if (!cardPtr)
-        return;
+        co_return;
 
     if (cardPtr->type() == CardType::Char)
-        playCharacter(cmd);
+        co_await playCharacter(cmd);
     else if (cardPtr->type() == CardType::Climax)
         playClimax(cmd.handid());
 }
 
-void ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
+Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     ServerCardZone *hand = zone("hand");
     ServerCardZone *stage = zone("stage");
     if (cmd.stageid() >= stage->count())
-        return;
+        co_return;
 
     auto cardPtr = hand->card(cmd.handid());
     if (!cardPtr)
-        return;
+        co_return;
 
     if (!canPlay(cardPtr))
-        return;
+        co_return;
 
     auto card = hand->takeCard(cmd.handid());
 
@@ -341,6 +341,8 @@ void ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
+    checkOnPlacedFromHandToStage(cardInPlay);
+    co_await checkTiming();
 }
 
 void ServerPlayer::playClimax(int handIndex) {
@@ -507,6 +509,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
             sendToBoth(event);
             mContext = AbilityContext();
             mContext.thisCard = CardImprint("res", 0);
+            mContext.thisCard.card = card;
             co_await playAbility(globalAbility(trigger));
             EventAbilityResolved ev2;
             ev2.set_uniqueid(uniqueId);

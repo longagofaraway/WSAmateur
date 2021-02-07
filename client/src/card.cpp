@@ -1,5 +1,7 @@
 #include "card.h"
 
+#include <QQmlEngine>
+
 #include "cardDatabase.h"
 #include "cardInfo.h"
 
@@ -21,6 +23,8 @@ void Card::init(const std::string &code) {
     mType = mInfo->type();
 
     mTextModel = std::make_unique<TextFrameModel>();
+    // we will be returning this pointer via Q_INVOKABLE, so we must set ownership explicitly
+    QQmlEngine::setObjectOwnership(mTextModel.get(), QQmlEngine::CppOwnership);
     for (const auto &abBuf: mInfo->abilities())
         mTextModel->addAbility(QString::fromStdString(printAbility(decodeAbility(abBuf))));
 }

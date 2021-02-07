@@ -48,7 +48,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
             }
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i)
-                mContext.chosenCards.push_back(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+                mContext.chosenCards.push_back(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), nullptr, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
             break;
         }
     }
@@ -201,6 +201,99 @@ Resumable ServerPlayer::playAbility(const asn::Ability &a) {
     case asn::AbilityType::Event:
         co_await playEventAbility(std::get<asn::EventAbility>(a.ability));
         break;
+    default:
+        break;
+    }
+}
+
+void ServerPlayer::checkOnPlacedFromHandToStage(ServerCard *card) {
+    auto &abs = card->abilities();
+    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+        if (abs[i].ability.type != asn::AbilityType::Auto)
+            continue;
+        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        if (autoab.trigger.type != asn::TriggerType::OnZoneChange)
+            continue;
+        const auto &trig = std::get<asn::ZoneChangeTrigger>(autoab.trigger.trigger);
+        assert(trig.target.size() == 1);
+        if (trig.target[0].type != asn::TargetType::ThisCard)
+            continue;
+        if (trig.from != asn::Zone::Hand || trig.to != asn::Zone::Stage)
+            continue;
+        TriggeredAbility a;
+        a.card = CardImprint(card->zone()->name(), card->pos(), card);
+        a.type = ProtoCard;
+        a.abilityId = i;
+        mQueue.push_back(a);
+    }
+}
+
+Resumable ServerPlayer::checkTiming() {
+    // first play all rule actions
+    // then if only 1 ability in queue, play it
+    // otherwise wait for player to choose the ability
+    bool abilitiesSent = false;
+    while (mQueue.size()) {
+        bool ruleActionFound = false;
+        size_t j = 0;
+        for (; j < mQueue.size(); ++j) {
+            if (mQueue[j].type == ProtoAbilityType::ProtoRuleAction) {
+                //play rule action
+                //playAbility()
+                ruleActionFound = true;
+                break;
+            }
+        }
+        if (ruleActionFound) {
+            mQueue.erase(mQueue.begin() + j);
+            continue;
+        }
+
+        if (!abilitiesSent) {
+            EventAbilityActivated event;
+            for (size_t i = 0; i < mQueue.size(); ++i) {
+                auto ab = event.add_abilities();
+                ab->set_zone(mQueue[i].card.zone);
+                ab->set_type(mQueue[i].type);
+                ab->set_cardid(mQueue[i].card.id);
+                ab->set_abilityid(mQueue[i].abilityId);
+                ab->set_cardcode(mQueue[i].card.card->code());
+                mQueue[i].uniqueId = abilityHash(*ab);
+                ab->set_uniqueid(mQueue[i].uniqueId);
+            }
+            sendToBoth(event);
+            abilitiesSent = true;
+        }
+
+        uint32_t uniqueId;
+        if (mQueue.size() > 1) {
+            clearExpectedComands();
+            addExpectedCommand(CommandPlayAbility::GetDescriptor()->name());
+            while (true) {
+                auto cmd = co_await waitForCommand();
+                if (cmd.command().Is<CommandPlayAbility>()) {
+                    CommandPlayAbility choiceCmd;
+                    cmd.command().UnpackTo(&choiceCmd);
+                    uniqueId = choiceCmd.uniqueid();
+                    break;
+                }
+            }
+        } else {
+            uniqueId = mQueue[0].uniqueId;
+        }
+
+        j = 0;
+        for (; j < mQueue.size(); ++j) {
+            if (mQueue[j].uniqueId == uniqueId) {
+                auto &arr = mQueue[j].card.card->abilities();
+                co_await playAbility(arr[mQueue[j].abilityId].ability);
+                break;
+            }
+        }
+        EventAbilityResolved ev2;
+        ev2.set_uniqueid(uniqueId);
+        sendToBoth(ev2);
+        mQueue.erase(mQueue.begin() + j);
     }
 }
 

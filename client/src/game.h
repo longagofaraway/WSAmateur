@@ -84,6 +84,7 @@ public:
     void startTurn(bool opponent);
     void clockPhase();
     void mainPhase();
+    void pauseMainPhase();
     void attackDeclarationStep();
     void attackDeclarationStepFinished();
     void counterStep();

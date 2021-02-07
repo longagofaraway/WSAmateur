@@ -64,7 +64,5 @@ void ServerCard::validateBuffs() {
             }
         }
     }
-    mBuffs.erase(std::remove_if(mBuffs.begin(), mBuffs.end(),
-                                [](const AttributeChange &o){ return o.mDuration <= 0; }),
-                 mBuffs.end());
+    std::erase_if(mBuffs, [](const AttributeChange &o){ return o.mDuration <= 0; });
 }

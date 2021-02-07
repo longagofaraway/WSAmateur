@@ -4,6 +4,7 @@ enum ProtoAbilityType {
     ProtoClimaxTrigger = 0;
     ProtoGlobal = 1;
     ProtoCard = 2;
+    ProtoRuleAction = 3;
 }
 
 enum ProtoOwner {

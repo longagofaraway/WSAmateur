@@ -62,4 +62,5 @@ public:
     const std::vector<TriggerIcon>& triggers() { return mCardInfo->triggers(); }
     void addAttrBuff(CardAttribute attr, int delta, int duration);
     void validateBuffs();
+    std::vector<AbilityState>& abilities() { return mAbilities; }
 };
