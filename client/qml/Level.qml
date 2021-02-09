@@ -1,7 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 
-import wsamateur.cardModel 1.0
+import wsamateur 1.0
 
 ListView {
     id: level

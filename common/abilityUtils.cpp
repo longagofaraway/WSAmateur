@@ -4,6 +4,7 @@
 
 #include <QByteArray>
 
+#include "../client/src/card.h"
 #include "abilities.pb.h"
 
 std::string_view asnZoneToString(asn::Zone zone) {
@@ -65,4 +66,61 @@ uint32_t abilityHash(const ProtoAbility &a) {
     buf += std::to_string(a.type());
     buf += std::to_string(a.abilityid());
     return qChecksum(buf.data(), static_cast<uint>(buf.size()));
+}
+
+ProtoCardAttribute attrTypeToProto(asn::AttributeType t) {
+    switch (t) {
+    case asn::AttributeType::Soul:
+        return ProtoAttrSoul;
+    case asn::AttributeType::Power:
+        return ProtoAttrPower;
+    default:
+        assert(false);
+        return ProtoAttrSoul;
+    }
+}
+
+bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card) {
+    bool eligible = true;
+    for (const auto &spec: specs) {
+        switch (spec.type) {
+        case asn::CardSpecifierType::CardType:
+            if (std::get<asn::CardType>(spec.specifier) != card.type())
+                eligible = false;
+            break;
+        case asn::CardSpecifierType::TriggerIcon: {
+            bool found = false;
+            for (auto triggerIcon: card.triggers()) {
+                if (triggerIcon == std::get<asn::TriggerIcon>(spec.specifier)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                eligible = false;
+            break;
+        }
+        case asn::CardSpecifierType::Trait: {
+            bool found = false;
+            for (auto trait: card.traits()) {
+                if (trait == std::get<asn::Trait>(spec.specifier).value) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                eligible = false;
+            break;
+        }
+        case asn::CardSpecifierType::Owner:
+            // don't process here
+            break;
+        default:
+            assert(false);
+            break;
+        }
+        if (!eligible)
+            return false;
+    }
+    return true;
 }

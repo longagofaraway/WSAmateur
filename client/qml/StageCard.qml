@@ -12,6 +12,7 @@ Card {
     property int power: 9000
     property int soul: 1
     property string cardState: "Standing"
+    property string cardType
 
     Drag.active: dragActive
     Drag.hotSpot.x: root.cardWidth / 2

@@ -10,6 +10,15 @@
 
 class ServerCardZone;
 
+class CardBase {
+public:
+    virtual ~CardBase() = default;
+
+    virtual const std::vector<TriggerIcon>& triggers() const = 0;
+    virtual const std::vector<std::string>& traits() const = 0;
+    virtual CardType type() const = 0;
+};
+
 enum StageRow {
     CenterStage,
     BackStage
@@ -23,7 +32,7 @@ struct AbilityState {
     AbilityState(asn::Ability ab) : ability(ab) {}
 };
 
-class ServerCard
+class ServerCard : public CardBase
 {
     std::shared_ptr<CardInfo> mCardInfo;
     ServerCardZone *mZone;
@@ -55,12 +64,13 @@ public:
     int cost() const { return mCardInfo->cost(); }
     int power() const { return mPower; }
     int soul() const { return mSoul; }
-    CardType type() const { return mCardInfo->type(); }
+    CardType type() const override { return mCardInfo->type(); }
     char color() const { return mCardInfo->color(); }
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }
-    const std::vector<TriggerIcon>& triggers() { return mCardInfo->triggers(); }
-    void addAttrBuff(CardAttribute attr, int delta, int duration);
+    const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
+    const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
+    void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
 };

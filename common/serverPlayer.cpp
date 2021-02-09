@@ -458,14 +458,14 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     sendToBoth(event);
 
     if (type == AttackType::DirectAttack)
-        addAttributeBuff(AttrSoul, cmd.stageid(), 1);
+        addAttributeBuff(asn::AttributeType::Soul, cmd.stageid(), 1);
     else if (type == AttackType::SideAttack)
-        addAttributeBuff(AttrSoul, cmd.stageid(), -battleOpp->level());
+        addAttributeBuff(asn::AttributeType::Soul, cmd.stageid(), -battleOpp->level());
 
     co_await triggerStep(cmd.stageid());
 }
 
-void ServerPlayer::addAttributeBuff(CardAttribute attr, int pos, int delta, int duration) {
+void ServerPlayer::addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration) {
     auto stage = zone("stage");
     auto card = stage->card(pos);
     if (!card)
@@ -475,8 +475,8 @@ void ServerPlayer::addAttributeBuff(CardAttribute attr, int pos, int delta, int 
 
     EventSetCardAttr event;
     event.set_stageid(pos);
-    event.set_attr(attr);
-    event.set_value(attr == AttrSoul ? card->soul() : card->power());
+    event.set_attr(attrTypeToProto(attr));
+    event.set_value(attr == asn::AttributeType::Soul ? card->soul() : card->power());
     sendToBoth(event);
 }
 
@@ -489,7 +489,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
     for (auto trigger: card->triggers()) {
         switch(trigger) {
         case TriggerIcon::Soul:
-            addAttributeBuff(AttrSoul, pos, 1);
+            addAttributeBuff(asn::AttributeType::Soul, pos, 1);
             break;
         case TriggerIcon::Door:
         case TriggerIcon::Choice:
@@ -508,8 +508,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
             ab->set_uniqueid(uniqueId);
             sendToBoth(event);
             mContext = AbilityContext();
-            mContext.thisCard = CardImprint("res", 0);
-            mContext.thisCard.card = card;
+            mContext.thisCard = CardImprint("res", 0, card);
             co_await playAbility(globalAbility(trigger));
             EventAbilityResolved ev2;
             ev2.set_uniqueid(uniqueId);
@@ -739,14 +738,14 @@ void ServerPlayer::endOfTurnEffectValidation() {
         if (oldPower != card->power()) {
             EventSetCardAttr event;
             event.set_stageid(i);
-            event.set_attr(AttrPower);
+            event.set_attr(ProtoAttrPower);
             event.set_value(card->power());
             sendToBoth(event);
         }
         if (oldSoul != card->soul()) {
             EventSetCardAttr event;
             event.set_stageid(i);
-            event.set_attr(AttrSoul);
+            event.set_attr(ProtoAttrSoul);
             event.set_value(card->soul());
             sendToBoth(event);
         }

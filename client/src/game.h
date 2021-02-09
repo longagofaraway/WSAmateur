@@ -94,6 +94,13 @@ public:
     void clearHelpText();
     void endGame(bool victory);
 
+
+    enum ViewMode {
+        RevealMode,
+        LookMode
+    };
+    Q_ENUM(ViewMode)
+
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);
     void opponentJoined(const std::shared_ptr<EventGameJoined> event);

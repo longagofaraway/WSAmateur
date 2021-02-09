@@ -1,6 +1,6 @@
 import QtQuick 2.0
 
-import wsamateur.cardModel 1.0
+import wsamateur 1.0
 
 Card {
     id: deck

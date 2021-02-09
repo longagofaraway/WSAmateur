@@ -47,8 +47,17 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
                 continue;
             }
             //TODO: add checks
-            for (int i = chooseCmd.ids_size() - 1; i >= 0; --i)
-                mContext.chosenCards.push_back(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), nullptr, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+            for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
+                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? this : mGame->opponentOfPlayer(mId);
+                auto pzone = owner->zone(chooseCmd.zone());
+                if (!pzone)
+                    break;
+
+                auto card = pzone->card(chooseCmd.ids(i));
+                if (!card)
+                    break;
+                mContext.chosenCards.push_back(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+            }
             break;
         }
     }
@@ -171,7 +180,58 @@ Resumable ServerPlayer::playDrawCard(const asn::DrawCard &e) {
     moveTopDeck("hand");
 }
 
+void ServerPlayer::playRevealCard(const asn::RevealCard &e) {
+    if (e.type == asn::RevealType::TopDeck) {
+        if (e.number.mod == asn::NumModifier::ExactMatch) {
+            for (int i = 0; i < e.number.value; ++i) {
+                auto deck = zone("deck");
+                if (i >= deck->count())
+                    break;
+
+                EventRevealTopDeck event;
+                event.set_code(deck->card(deck->count() - i - 1)->code());
+                sendToBoth(event);
+                mContext.mentionedCards.push_back(CardImprint("deck", deck->count() - i - 1, deck->card(deck->count() - i - 1)));
+            }
+        }
+    }
+}
+
+void ServerPlayer::playAttributeGain(const asn::AttributeGain &e) {
+    if (e.target.type == asn::TargetType::ChosenCards) {
+        for (const auto &card: mContext.chosenCards)
+            addAttributeBuff(e.type, card.id, e.value, e.duration);
+    }
+}
+
+bool ServerPlayer::evaluateCondition(const asn::Condition &c) {
+    switch (c.type) {
+    case asn::ConditionType::NoCondition:
+        return true;
+    case asn::ConditionType::IsCard:
+        return evaluateConditionIsCard(std::get<asn::ConditionIsCard>(c.cond));
+    default:
+        assert(false);
+        return false;
+    }
+}
+
+bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
+    if (c.target.type == asn::TargetType::MentionedCards) {
+        for (const auto &card: mContext.mentionedCards) {
+            assert(card.card);
+            for (const auto &neededCard: c.neededCard)
+                if (checkCard(neededCard.cardSpecifiers, *card.card))
+                    return true;
+        }
+    }
+    return false;
+}
+
 Resumable ServerPlayer::playEffect(const asn::Effect &e) {
+    if (!evaluateCondition(e.cond))
+        co_return;
+
     switch (e.type) {
     case asn::EffectType::NonMandatory:
         co_await playNonMandatory(std::get<asn::NonMandatory>(e.effect));
@@ -185,6 +245,12 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::DrawCard:
         co_await playDrawCard(std::get<asn::DrawCard>(e.effect));
         break;
+    case asn::EffectType::RevealCard:
+        playRevealCard(std::get<asn::RevealCard>(e.effect));
+        break;
+    case asn::EffectType::AttributeGain:
+        playAttributeGain(std::get<asn::AttributeGain>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -196,8 +262,17 @@ Resumable ServerPlayer::playEventAbility(const asn::EventAbility &a) {
         co_await playEffect(effect);
 }
 
+Resumable ServerPlayer::playAutoAbility(const asn::AutoAbility &a) {
+    mContext.cost = a.cost;
+    for (const auto &effect: a.effects)
+        co_await playEffect(effect);
+}
+
 Resumable ServerPlayer::playAbility(const asn::Ability &a) {
     switch(a.type) {
+    case asn::AbilityType::Auto:
+        co_await playAutoAbility(std::get<asn::AutoAbility>(a.ability));
+        break;
     case asn::AbilityType::Event:
         co_await playEventAbility(std::get<asn::EventAbility>(a.ability));
         break;
@@ -229,6 +304,8 @@ void ServerPlayer::checkOnPlacedFromHandToStage(ServerCard *card) {
 }
 
 Resumable ServerPlayer::checkTiming() {
+    auto expectedCopy = mExpectedCommands;
+    clearExpectedComands();
     // first play all rule actions
     // then if only 1 ability in queue, play it
     // otherwise wait for player to choose the ability
@@ -285,6 +362,9 @@ Resumable ServerPlayer::checkTiming() {
         j = 0;
         for (; j < mQueue.size(); ++j) {
             if (mQueue[j].uniqueId == uniqueId) {
+                mContext = AbilityContext();
+                mContext.thisCard = mQueue[j].card;
+                // not a reliable way to get temporary ability (in case the card changed zone)
                 auto &arr = mQueue[j].card.card->abilities();
                 co_await playAbility(arr[mQueue[j].abilityId].ability);
                 break;
@@ -295,5 +375,6 @@ Resumable ServerPlayer::checkTiming() {
         sendToBoth(ev2);
         mQueue.erase(mQueue.begin() + j);
     }
+    mExpectedCommands = expectedCopy;
 }
 

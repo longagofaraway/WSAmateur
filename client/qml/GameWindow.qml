@@ -4,7 +4,7 @@ import QtQuick.Window 2.12
 import QtGraphicalEffects 1.12
 import QtQuick.Controls 1.1
 
-import wsamateur.game 1.0
+import wsamateur 1.0
 
 Item {
     id: root
@@ -51,10 +51,6 @@ Item {
         property HelpText mHelpText
 
         anchors.fill: parent
-
-        /*ChoiceDialog {
-            anchors.centerIn: gGame
-        }*/
 
         MainButton {
             id: mainButton

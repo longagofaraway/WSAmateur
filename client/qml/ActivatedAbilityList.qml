@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import QtQml.Models 2.12
 
-import wsamateur.abilityModel 1.0
+import wsamateur 1.0
 
 ListView {
     id: lview

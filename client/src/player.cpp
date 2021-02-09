@@ -3,6 +3,7 @@
 #include <QVariant>
 #include <QMetaObject>
 #include <QQuickItem>
+#include <QTimer>
 
 #include "abilities.pb.h"
 #include "cardAttribute.pb.h"
@@ -58,6 +59,8 @@ Player::Player(int id, Game *game, bool opponent)
     mZones.emplace("res", std::move(resolutionZone));
     mAbilityList = std::make_unique<ActivatedAbilities>(this, game);
     mChoiceDialog = std::make_unique<ChoiceDialog>(game);
+    auto orderedView = std::make_unique<CommonCardZone>(this, game, "OrderedCardsView");
+    mZones.emplace("view", std::move(orderedView));
 }
 
 void Player::setDeck(const std::string &deck) {
@@ -162,6 +165,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventPhaseEvent ev;
         event->event().UnpackTo(&ev);
         mGame->setPhase(static_cast<asn::Phase>(ev.phase()));
+    } else if (event->event().Is<EventRevealTopDeck>()) {
+        EventRevealTopDeck ev;
+        event->event().UnpackTo(&ev);
+        revealTopDeck(ev);
     }
 }
 
@@ -560,8 +567,9 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    std::vector<QString> data = { "Hand", "Stock" };
-    mChoiceDialog->setData("Choose where to put the card", data);
+    createMovingCard("IMC/W43-046", "deck", 0, "view", 0, false, false, true);
+    QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
+    //zone("view")->visualItem()->setProperty("mViewMode", Game::LookMode);
     //mItem->setProperty("mModel", QVariant::fromValue(dataList));
     /*ActivatedAbility a;
     a.active = true;

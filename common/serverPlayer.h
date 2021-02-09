@@ -40,7 +40,9 @@ struct AbilityContext {
     bool mandatory = true;
     bool canceled = false;
     std::vector<CardImprint> chosenCards;
+    std::vector<CardImprint> mentionedCards;
     CardImprint thisCard;
+    std::optional<asn::Cost> cost;
 };
 
 struct TriggeredAbility {
@@ -125,7 +127,7 @@ public:
     void refresh();
     void sendEndGame(bool victory);
 
-    void addAttributeBuff(CardAttribute attr, int pos, int delta, int duration = 1);
+    void addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration = 1);
     void setCardState(ServerCard *card, CardState state);
 
     void endOfTurnEffectValidation();
@@ -139,11 +141,17 @@ private:
 
     Resumable checkTiming();
 
+    bool evaluateCondition(const asn::Condition &c);
+    bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
+
     Resumable playAbility(const asn::Ability &a);
+    Resumable playAutoAbility(const asn::AutoAbility &a);
     Resumable playEventAbility(const asn::EventAbility &a);
     Resumable playEffect(const asn::Effect &e);
     Resumable playNonMandatory(const asn::NonMandatory &e);
     Resumable playChooseCard(const asn::ChooseCard &e);
     Resumable playMoveCard(const asn::MoveCard &e);
     Resumable playDrawCard(const asn::DrawCard &e);
+    void playRevealCard(const asn::RevealCard &e);
+    void playAttributeGain(const asn::AttributeGain &e);
 };

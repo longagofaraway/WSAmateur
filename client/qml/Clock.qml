@@ -1,6 +1,6 @@
 import QtQuick 2.15
 
-import wsamateur.cardModel 1.0
+import wsamateur 1.0
 
 ListView {
     id: clockView

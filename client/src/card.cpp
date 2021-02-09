@@ -65,6 +65,5 @@ QString Card::qtype() const {
     case CardType::Event:
         return QString("Event");
     }
-    assert(false);
     return "";
 }

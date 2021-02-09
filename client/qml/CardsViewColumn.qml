@@ -2,7 +2,7 @@ import QtQuick 2.12
 import QtQml 2.12
 import QtQml.Models 2.12
 
-import wsamateur.cardModel 1.0
+import wsamateur 1.0
 
 ListView {
     id: thisListView

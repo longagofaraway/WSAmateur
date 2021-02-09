@@ -109,14 +109,16 @@ private:
     void discardTo7();
     void endGame(bool victory);
 
+    void restoreUiState();
+    void stopUiInteractions();
+
+    void activateAbilities(const EventAbilityActivated &event);
+    void abilityResolved();
     void processChooseCard(const EventChooseCard &event);
     void processMoveChoice(const EventMoveChoice &event);
     void processDrawChoice(const EventDrawChoice &event);
-    void activateAbilities(const EventAbilityActivated &event);
+    void revealTopDeck(const EventRevealTopDeck &event);
     void doneChoosing();
-    void abilityResolved();
-    void restoreUiState();
-    void stopUiInteractions();
     void makeAbilityActive(const EventPlayAbility &event);
 
 public slots:

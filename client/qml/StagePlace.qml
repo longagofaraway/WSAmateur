@@ -2,7 +2,7 @@ import QtQuick 2.12
 import QtQml.Models 2.12
 import QtGraphicalEffects 1.12
 
-import wsamateur.cardModel 1.0
+import wsamateur 1.0
 
 ListView {
     id: stagePlace
@@ -68,7 +68,8 @@ ListView {
                     if (stage.opponent)
                         return;
                     if (drag.source.cardType === "Climax"
-                        || drag.source.cardType === "Event")
+                        || drag.source.cardType === "Event"
+                        || drag.source.cardType === undefined)
                         return;
                     if (drag.source.index === mIndex)
                         return;
@@ -113,6 +114,7 @@ ListView {
                 Binding { target: mStageCard; property: "power"; value: model.power }
                 Binding { target: mStageCard; property: "soul"; value: model.soul }
                 Binding { target: mStageCard; property: "cardState"; value: model.state }
+                Binding { target: mStageCard; property: "cardType"; value: model.type }
                 onReleased: {
                     if (!stagePlaceMouseArea.drag.active)
                         return;

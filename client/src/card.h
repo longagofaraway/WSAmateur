@@ -9,9 +9,10 @@
 
 #include "abilities.h"
 #include "cardInfo.h"
+#include "serverCard.h"
 #include "textFrameModel.h"
 
-class Card {
+class Card : public CardBase {
     std::string mCode;
     bool mGlow = false;
     bool mSelected = false;
@@ -52,8 +53,9 @@ public:
     void setPower(int power) { mPower = power; }
     int soul() const { return mSoul; }
     void setSoul(int soul) { mSoul = soul; }
-    const std::vector<TriggerIcon>& triggers() const { return mInfo->triggers(); }
-    CardType type() const { return mType; }
+    const std::vector<TriggerIcon>& triggers() const override { return mInfo->triggers(); }
+    const std::vector<std::string>& traits() const override { return mInfo->traits(); }
+    CardType type() const override { return mType; }
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }
     QString qstate() const;

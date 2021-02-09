@@ -2,8 +2,6 @@ import QtQuick 2.15
 import QtQml.Models 2.15
 import QtGraphicalEffects 1.15
 
-import wsamateur.cardModel 1.0
-
 import wsamateur 1.0
 
 ListView {

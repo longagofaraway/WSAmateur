@@ -8,6 +8,16 @@ CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
                             << StateRole << PowerRole << SoulRole << LevelRole;
 }
 
+void CardModel::clear() {
+    if (!mCards.size())
+        return;
+
+    beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    mCards.clear();
+    endRemoveRows();
+    emit countChanged();
+}
+
 void CardModel::addCard() {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     mCards.emplace_back(Card());
@@ -108,13 +118,17 @@ void CardModel::setState(int row, CardState state) {
     setData(index, static_cast<int>(state), StateRole);
 }
 
-void CardModel::setAttr(int row, CardAttribute attr, int value) {
+void CardModel::setAttr(int row, ProtoCardAttribute attr, int value) {
     auto index = createIndex(row, 0);
     int role;
-    if (attr == CardAttribute::AttrSoul)
+    if (attr == ProtoAttrSoul)
         role = SoulRole;
-    else
+    else if (attr == ProtoAttrPower)
         role = PowerRole;
+    else {
+        role = PowerRole;
+        assert(false);
+    }
     setData(index, value, role);
 }
 

@@ -47,5 +47,6 @@
         <file>resources/images/closeButtonHighlighted.png</file>
         <file>resources/images/abbg.png</file>
         <file>resources/images/textFrame.png</file>
+        <file>qml/OrderedCardsView.qml</file>
     </qresource>
 </RCC>

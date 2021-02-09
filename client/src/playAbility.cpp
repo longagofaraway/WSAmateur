@@ -27,32 +27,6 @@ asn::DrawCard decodeDrawCard(const std::string &buf) {
     return ::decodeDrawCard(it, binbuf.end());
 }
 
-bool checkCard(const std::vector<asn::CardSpecifier> specs, const Card &card) {
-    bool eligible = true;
-    for (const auto &spec: specs) {
-        switch (spec.type) {
-        case asn::CardSpecifierType::CardType:
-            if (std::get<CardType>(spec.specifier) != card.type())
-                eligible = false;
-            break;
-        case asn::CardSpecifierType::TriggerIcon:
-            bool found = false;
-            for (auto triggerIcon: card.triggers()) {
-                if (triggerIcon == std::get<TriggerIcon>(spec.specifier)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                eligible = false;
-            break;
-        }
-        if (!eligible)
-            return false;
-    }
-    return true;
-}
-
 void highlightAllCards(CardZone *zone, bool highlight) {
     for (int i = 0; i < zone->model().count(); ++i)
         zone->model().setGlow(i, highlight);
@@ -162,6 +136,13 @@ void Player::processDrawChoice(const EventDrawChoice &event) {
     }
 }
 
+void Player::revealTopDeck(const EventRevealTopDeck &event) {
+    zone("view")->visualItem()->setProperty("mViewMode", Game::RevealMode);
+
+    QString code = QString::fromStdString(event.code());
+    createMovingCard(code, "deck", 0, "view", 0, false, false, true);
+}
+
 void Player::activateAbilities(const EventAbilityActivated &event) {
     stopUiInteractions();
     for (int i = 0; i < event.abilities_size(); ++i) {
@@ -241,10 +222,12 @@ void Player::doneChoosing() {
         if (ef.place->owner == asn::Player::Player || ef.place->owner == asn::Player::Both) {
             auto from = zone(asnZoneToString(ef.place->zone));
             highlightAllCards(from, false);
+            selectAllCards(from, false);
         }
         if (ef.place->owner == asn::Player::Opponent || ef.place->owner == asn::Player::Both) {
             auto from = mGame->opponent()->zone(asnZoneToString(ef.place->zone));
             highlightAllCards(from, false);
+            selectAllCards(from, false);
         }
     }
 }
@@ -252,6 +235,10 @@ void Player::doneChoosing() {
 void Player::abilityResolved() {
     mGame->pause(500);
     mAbilityList->removeActiveAbility();
+    auto view = zone("view");
+    if (view->model().count())
+        QMetaObject::invokeMethod(view->visualItem(), "clear");
+        //view->model().clear();
     if (!mAbilityList->count()) {
         restoreUiState();
     }

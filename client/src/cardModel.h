@@ -43,6 +43,7 @@ public:
     Q_INVOKABLE void swapCards(int from, int to);
     Q_INVOKABLE void removeCard(int row);
     Q_INVOKABLE void clearCard(int row);
+    Q_INVOKABLE void clear();
     Q_INVOKABLE int climaxCount();
     Q_INVOKABLE int nonClimaxCount();
     Q_INVOKABLE TextFrameModel* textModel(int row);
@@ -51,7 +52,7 @@ public:
     void setGlow(int row, bool glow);
     void setSelected(int row, bool selected);
     void setState(int row, CardState state);
-    void setAttr(int row, CardAttribute attr, int value);
+    void setAttr(int row, ProtoCardAttribute attr, int value);
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int count() const { return rowCount(); }

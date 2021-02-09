@@ -1,13 +1,13 @@
 #pragma once
 
-#include "cardAttribute.pb.h"
+#include "abilities.h"
 
 class AttributeChange {
 public:
-    CardAttribute mAttr;
+    asn::AttributeType mAttr;
     int mValue;
     int mDuration;
 
-    AttributeChange(CardAttribute attr, int delta, int duration)
+    AttributeChange(asn::AttributeType attr, int delta, int duration)
         : mAttr(attr), mValue(delta), mDuration(duration) {}
 };

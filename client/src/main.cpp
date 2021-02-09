@@ -15,11 +15,11 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<Game>("wsamateur.game", 1, 0, "Game");
-    qmlRegisterAnonymousType<Player>("wsamateur.player", 1);
-    qmlRegisterType<CardModel>("wsamateur.cardModel", 1, 0, "CardModel");
-    qmlRegisterType<AbilityModel>("wsamateur.abilityModel", 1, 0, "AbilityModel");
-    qmlRegisterType<ChoiceDialogModel>("wsamateur.choiceDialogModel", 1, 0, "ChoiceDialogModel");
+    qmlRegisterType<Game>("wsamateur", 1, 0, "Game");
+    qmlRegisterAnonymousType<Player>("wsamateur", 1);
+    qmlRegisterType<CardModel>("wsamateur", 1, 0, "CardModel");
+    qmlRegisterType<AbilityModel>("wsamateur", 1, 0, "AbilityModel");
+    qmlRegisterType<ChoiceDialogModel>("wsamateur", 1, 0, "ChoiceDialogModel");
     qmlRegisterType<TextFrameModel>("wsamateur", 1, 0, "TextFrameModel");
 
     QQmlApplicationEngine engine;

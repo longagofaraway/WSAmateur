@@ -39,14 +39,17 @@ int ServerCard::pos() const {
     return mPosition;
 }
 
-void ServerCard::addAttrBuff(CardAttribute attr, int delta, int duration) {
+void ServerCard::addAttrBuff(asn::AttributeType attr, int delta, int duration) {
     mBuffs.emplace_back(attr, delta, duration);
     switch (attr) {
-    case AttrSoul:
+    case asn::AttributeType::Soul:
         mSoul += delta;
         break;
-    case AttrPower:
+    case asn::AttributeType::Power:
         mPower += delta;
+        break;
+    default:
+        assert(false);
         break;
     }
 }
@@ -55,11 +58,14 @@ void ServerCard::validateBuffs() {
     for (auto &buff: mBuffs) {
         if (--buff.mDuration == 0) {
             switch (buff.mAttr) {
-            case AttrSoul:
+            case asn::AttributeType::Soul:
                 mSoul -= buff.mValue;
                 break;
-            case AttrPower:
+            case asn::AttributeType::Power:
                 mPower -= buff.mValue;
+                break;
+            default:
+                assert(false);
                 break;
             }
         }

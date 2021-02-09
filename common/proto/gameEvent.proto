@@ -20,7 +20,7 @@ message EventDeclareAttack {
 
 message EventSetCardAttr {
     sint32 stageid = 1;
-    CardAttribute attr = 2;
+    ProtoCardAttribute attr = 2;
     sint32 value = 3;
 }
 

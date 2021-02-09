@@ -69,3 +69,7 @@ message EventLookCard {
     ProtoOwner owner = 2;
 }
 
+message EventRevealTopDeck {
+    string code = 1;
+}
+
