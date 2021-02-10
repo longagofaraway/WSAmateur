@@ -125,6 +125,7 @@ public:
     void encoreCharacter(const CommandEncoreCharacter &cmd);
     Resumable endPhase();
     void refresh();
+    void sendPhaseEvent(asn::Phase phase);
     void sendEndGame(bool victory);
 
     void addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration = 1);

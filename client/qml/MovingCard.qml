@@ -150,9 +150,7 @@ Card {
                 NumberAnimation { target: yRot; property: "angle"; from: -90; to: 0; duration: 100; }
             }
         }
-        ScriptAction { script: insertCard() }
-        PauseAnimation { duration: 800 }
-        ScriptAction { script: completeAction() }
+        ScriptAction { script: { insertCard(); completeAction(); } }
     }
 
     ParallelAnimation {

@@ -48,5 +48,6 @@
         <file>resources/images/abbg.png</file>
         <file>resources/images/textFrame.png</file>
         <file>qml/OrderedCardsView.qml</file>
+        <file>qml/AttributeChangeAnimation.qml</file>
     </qresource>
 </RCC>

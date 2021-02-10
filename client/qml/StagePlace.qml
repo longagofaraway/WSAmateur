@@ -197,6 +197,18 @@ ListView {
         PropertyAction { target: stagePlace; property: "mTooltipsDisabled"; value: false }
     }
 
+    function powerChangeAnim() {
+        if (mStageCard === null)
+            return;
+        mStageCard.powerChangeAnim();
+    }
+
+    function soulChangeAnim() {
+        if (mStageCard === null)
+            return;
+        mStageCard.soulChangeAnim();
+    }
+
     function createStageCardWithAnim(code, _x, _y) {
         createCardInternal(code, _x, _y);
         mStageCard.startAnimation(stagePlace.x, stagePlace.y);

@@ -17,6 +17,7 @@ public:
 
     QQuickItem* visualItem() const override { return mQmlObject; }
 
+    void setAttr(int row, ProtoCardAttribute attr, int value);
     void mainPhase();
     void endMainPhase();
     void attackDeclarationStep();

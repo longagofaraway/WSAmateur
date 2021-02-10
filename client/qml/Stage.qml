@@ -48,6 +48,8 @@ Item {
         x: root.width / 2 - root.cardWidth / 2 + root.width * 0.07;
     }
 
+    function powerChangeAnim(pos) { mStagePlaces[pos].powerChangeAnim(); }
+    function soulChangeAnim(pos) { mStagePlaces[pos].soulChangeAnim(); }
     function attackPhase() { state = "attack"; }
 
     function getXForNewCard(pos) { return mPositions[pos].x; }

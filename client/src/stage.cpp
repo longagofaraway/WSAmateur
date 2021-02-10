@@ -22,6 +22,21 @@ Stage::Stage(Player *player, Game *game)
     mQmlObject->connect(mQmlObject, SIGNAL(sendToWr(int)), mPlayer, SLOT(sendFromStageToWr(int)));
 }
 
+void Stage::setAttr(int row, ProtoCardAttribute attr, int value) {
+    mCardsModel.setAttr(row, attr, value);
+    switch (attr) {
+    case ProtoAttrPower:
+        QMetaObject::invokeMethod(mQmlObject, "powerChangeAnim", Q_ARG(QVariant, row));
+        break;
+    case ProtoAttrSoul:
+        QMetaObject::invokeMethod(mQmlObject, "soulChangeAnim", Q_ARG(QVariant, row));
+        break;
+    default:
+        assert(false);
+        break;
+    }
+}
+
 void Stage::mainPhase() {
     mQmlObject->connect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(switchPositions(int, int)));
     mQmlObject->setProperty("mDragEnabled", true);

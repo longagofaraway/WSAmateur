@@ -120,6 +120,7 @@ private:
     void revealTopDeck(const EventRevealTopDeck &event);
     void doneChoosing();
     void makeAbilityActive(const EventPlayAbility &event);
+    void conditionNotMet();
 
 public slots:
     void switchPositions(int from, int to);

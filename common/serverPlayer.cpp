@@ -481,6 +481,7 @@ void ServerPlayer::addAttributeBuff(asn::AttributeType attr, int pos, int delta,
 }
 
 Resumable ServerPlayer::triggerStep(int pos) {
+    sendPhaseEvent(asn::Phase::TriggerStep);
     moveTopDeck("res");
     auto card = zone("res")->card(0);
     // end of game
@@ -531,6 +532,7 @@ void ServerPlayer::counterStep() {
 
 Resumable ServerPlayer::damageStep() {
     mGame->setPhase(ServerPhase::DamageStep);
+
     clearExpectedComands();
     auto attCard = mGame->opponentOfPlayer(mId)->attackingCard();
     if (!attCard)
@@ -703,6 +705,12 @@ void ServerPlayer::refresh() {
     sendToBoth(EventRefresh());
 
     //resolve refresh point
+}
+
+void ServerPlayer::sendPhaseEvent(asn::Phase phase) {
+    EventPhaseEvent event;
+    event.set_phase(static_cast<int>(phase));
+    sendToBoth(event);
 }
 
 void ServerPlayer::sendEndGame(bool victory) {

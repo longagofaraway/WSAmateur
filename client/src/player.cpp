@@ -169,6 +169,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventRevealTopDeck ev;
         event->event().UnpackTo(&ev);
         revealTopDeck(ev);
+    } else if (event->event().Is<EventConditionNotMet>()) {
+        conditionNotMet();
     }
 }
 
@@ -360,7 +362,14 @@ void Player::moveCard(const EventMoveCard &event) {
     if (code.isEmpty())
         code = cards[event.id()].qcode();
 
-    createMovingCard(code, event.startzone(), event.id(), event.targetzone());
+    bool dontFinishAction = false;
+    if (event.targetzone() == "res" &&
+        (mGame->phase() == asn::Phase::DamageStep || mGame->phase() == asn::Phase::TriggerStep)) {
+        mGame->pause(800);
+        dontFinishAction = true;
+    }
+
+    createMovingCard(code, event.startzone(), event.id(), event.targetzone(), 0, false, dontFinishAction);
 }
 
 void Player::playCard(const EventPlayCard &event) {
@@ -446,7 +455,7 @@ void Player::setCardAttr(const EventSetCardAttr &event) {
     if (event.stageid() >= 5)
         return;
 
-    mStage->model().setAttr(event.stageid(), event.attr(), event.value());
+    mStage->setAttr(event.stageid(), event.attr(), event.value());
 }
 
 void Player::setCardState(const EventSetCardState &event) {
@@ -567,17 +576,10 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    createMovingCard("IMC/W43-046", "deck", 0, "view", 0, false, false, true);
-    QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
-    //zone("view")->visualItem()->setProperty("mViewMode", Game::LookMode);
-    //mItem->setProperty("mModel", QVariant::fromValue(dataList));
-    /*ActivatedAbility a;
-    a.active = true;
-    a.playBtnActive = false;
-    a.cancelBtnActive = true;
-    a.code = "IMC/W43-009";
-    a.text = "AUTO [(1) Put the top card of your deck in your clock & put a card from yo";
-    mAbilityList->addAbility(a);*/
+    //createMovingCard("IMC/W43-046", "deck", 0, "view", 0, false, false, true);
+    //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
+
+    QMetaObject::invokeMethod(zone("stage")->visualItem(), "powerChangeAnim", Q_ARG(QVariant, 0));
 }
 
 bool Player::playCards(CardModel &hand) {

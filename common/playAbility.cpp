@@ -229,8 +229,10 @@ bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
 }
 
 Resumable ServerPlayer::playEffect(const asn::Effect &e) {
-    if (!evaluateCondition(e.cond))
+    if (!evaluateCondition(e.cond)) {
+        sendToBoth(EventConditionNotMet());
         co_return;
+    }
 
     switch (e.type) {
     case asn::EffectType::NonMandatory:

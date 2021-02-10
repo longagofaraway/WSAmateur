@@ -73,3 +73,5 @@ message EventRevealTopDeck {
     string code = 1;
 }
 
+message EventConditionNotMet {}
+

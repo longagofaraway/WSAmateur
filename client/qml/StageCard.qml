@@ -32,6 +32,8 @@ Card {
     }
 
     Rectangle {
+        id: powerRect
+
         width: powerText.contentWidth + 10
         height: powerText.contentHeight + 6
         anchors.bottom: stageCard.bottom
@@ -47,6 +49,8 @@ Card {
         }
     }
     Rectangle {
+        id: soulRect
+
         width: soulImg.width + soulText.contentWidth + 10
         height: powerText.contentHeight + 6
         anchors.right: stageCard.right
@@ -115,6 +119,24 @@ Card {
             to: 0
             duration: 2000
         }
+    }
+
+    function powerChangeAnim() {
+        let comp = Qt.createComponent("AttributeChangeAnimation.qml");
+        let text = comp.createObject(powerRect);
+        text.text = power.toString();
+        text.anchors.centerIn = powerRect;
+        text.startAnim();
+    }
+
+    function soulChangeAnim() {
+        let comp = Qt.createComponent("AttributeChangeAnimation.qml");
+        let text = comp.createObject(soulRect);
+        text.text = soul.toString();
+        text.anchors.verticalCenter = soulRect.verticalCenter;
+        text.anchors.right = soulRect.right;
+        text.anchors.rightMargin = 3;
+        text.startAnim();
     }
 
     function getGlowColor() { return cardOverGlow ? "#FFFFFF" : (selected ? "#FCDE01" : "#2BFDFF"); }

@@ -140,7 +140,8 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
     zone("view")->visualItem()->setProperty("mViewMode", Game::RevealMode);
 
     QString code = QString::fromStdString(event.code());
-    createMovingCard(code, "deck", 0, "view", 0, false, false, true);
+    mGame->pause(400);
+    createMovingCard(code, "deck", 0, "view", 0, false, true, true);
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
@@ -291,6 +292,11 @@ void Player::restoreUiState() {
 
 void Player::makeAbilityActive(const EventPlayAbility &event) {
     mAbilityList->setActiveByUniqueId(event.uniqueid(), true);
+}
+
+void Player::conditionNotMet() {
+    if (zone("view")->model().count())
+        mGame->pause(900);
 }
 
 void Player::cancelAbility(int) {

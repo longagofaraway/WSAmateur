@@ -113,6 +113,8 @@ ServerPlayer* ServerGame::activePlayer(bool active) {
 Resumable ServerGame::continueFromDamageStep() {
     auto attPlayer = activePlayer();
     auto defPlayer = activePlayer(false);
+    attPlayer->sendPhaseEvent(asn::Phase::DamageStep);
+    defPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     co_await defPlayer->damageStep();
     battleStep();
     attPlayer->endOfAttack();
