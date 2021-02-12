@@ -114,10 +114,18 @@ SearchTarget parseSearchTarget(const QJsonObject &json) {
 
 SearchCard parseSearchCard(const QJsonObject &json) {
     if (!json.contains("targets") || !json["targets"].isArray())
-        throw std::runtime_error("no targets in effect");
+        throw std::runtime_error("no targets in SearchCard");
+    if (json.contains("place") && !json["place"].isObject())
+        throw std::runtime_error("wrong place in SearchCard");
 
     SearchCard e;
     e.targets = parseArray(json["targets"].toArray(), parseSearchTarget);
+    if (json.contains("place"))
+        e.place = parsePlace(json["from"].toObject());
+    else {
+        Place p { Position::NotSpecified, Zone::Deck, Player::Player };
+        e.place = p;
+    }
     return e;
 }
 

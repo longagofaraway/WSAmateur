@@ -100,6 +100,7 @@ struct SearchTarget {
 
 struct SearchCard {
     std::vector<SearchTarget> targets;
+    Place place;
 };
 
 struct MoveWrToDeck {

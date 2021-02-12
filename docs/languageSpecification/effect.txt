@@ -166,9 +166,11 @@ PerformEffect {
   effects Array of Effect
 }
 
-
+// almost the same as 'choose' effect, but it exists for translation purposes
+// usually it's 'search your deck' but you can also search your stock or who knows what else
 SearchCard {
-  targets Array of SearchTarget
+  targets Array of SearchTarget,
+  place Place
 }
 
 SearchTarget {
@@ -182,6 +184,7 @@ MoveWrToDeck {
 }
 
 
+// reveal 'number' cards from top deck, for each 'forEach' do 'effect'
 FlipOver {
   number Number,
   forEach Card,

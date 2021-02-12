@@ -53,6 +53,7 @@ SearchTarget decodeSearchTarget(Iterator &it, Iterator end) {
 SearchCard decodeSearchCard(Iterator &it, Iterator end) {
     SearchCard e;
     e.targets = decodeArray(it, end, decodeSearchTarget);
+    e.place = decodePlace(it, end);
     return e;
 }
 

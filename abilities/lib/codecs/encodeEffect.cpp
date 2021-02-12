@@ -44,6 +44,7 @@ void encodeSearchTarget(const SearchTarget &e, Buf &buf) {
 
 void encodeSearchCard(const SearchCard &e, Buf &buf) {
     encodeArray(e.targets, buf, encodeSearchTarget);
+    encodePlace(e.place, buf);
 }
 
 void encodePayCost(const PayCost &e, Buf &buf) {
