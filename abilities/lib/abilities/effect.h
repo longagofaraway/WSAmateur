@@ -177,6 +177,11 @@ struct HardcodedEffect {
     std::string cardName;
 };
 
+struct Shuffle {
+    Zone zone;
+    Player owner;
+};
+
 
 enum class EffectType : uint8_t {
     AttributeGain = 1,
@@ -213,7 +218,8 @@ enum class EffectType : uint8_t {
     Replay,
     SideAttackWithoutPenalty,
     Standby,
-    HardcodedEffects
+    HardcodedEffects,
+    Shuffle
 };
 
 struct Effect {
@@ -243,7 +249,8 @@ struct Effect {
         PerformReplay,
         Replay,
         DrawCard,
-        HardcodedEffect
+        HardcodedEffect,
+        Shuffle
     > effect;
 };
 

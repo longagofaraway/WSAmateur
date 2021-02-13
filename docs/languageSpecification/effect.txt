@@ -64,7 +64,8 @@ enum EffectType {
   replay = 32,
   sideAttackWithoutPenalty = 33,
   standby = 34,
-  hardcodedEffects = 35
+  hardcodedEffects = 35,
+  shuffle = 36
 }
 
 enum AttributeType {
@@ -168,6 +169,7 @@ PerformEffect {
 
 // almost the same as 'choose' effect, but it exists for translation purposes
 // usually it's 'search your deck' but you can also search your stock or who knows what else
+// cards beeing searched for by user become chosen
 SearchCard {
   targets Array of SearchTarget,
   place Place
@@ -260,3 +262,8 @@ HardcodedEffect {
   cardName String
 } 
 Possible values: "KGL/S79-020"
+
+Shuffle {
+  zone Zone,
+  owner Player
+}

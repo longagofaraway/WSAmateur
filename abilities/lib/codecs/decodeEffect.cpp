@@ -155,6 +155,13 @@ DrawCard decodeDrawCard(Iterator &it, Iterator end) {
     return e;
 }
 
+Shuffle decodeShuffle(Iterator &it, Iterator end) {
+    Shuffle e;
+    e.zone = decodeEnum<Zone>(it, end);
+    e.owner = decodeEnum<Player>(it, end);
+    return e;
+}
+
 Effect decodeEffect(Iterator &it, Iterator end) {
     Effect e;
 
@@ -226,6 +233,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::Look:
         e.effect = decodeLook(it, end);
+        break;
+    case EffectType::Shuffle:
+        e.effect = decodeShuffle(it, end);
         break;
     default:
         break;

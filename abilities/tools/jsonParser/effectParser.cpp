@@ -320,6 +320,22 @@ DrawCard parseDrawCard(const QJsonObject &json) {
     return e;
 }
 
+Shuffle parseShuffle(const QJsonObject &json) {
+    if (!json.contains("zone") || !json["zone"].isDouble())
+        throw std::runtime_error("no zone in Shuffle");
+    if (json.contains("owner") && !json["owner"].isDouble())
+        throw std::runtime_error("wrong owner in Shuffle");
+
+    Shuffle e;
+    e.zone = static_cast<Zone>(json["zone"].toInt());
+    if (json.contains("owner"))
+        e.owner = static_cast<Player>(json["owner"].toInt());
+    else
+        e.owner = Player::Player;
+
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -398,6 +414,9 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::Look:
         e.effect = parseLook(json["effect"].toObject());
+        break;
+    case EffectType::Shuffle:
+        e.effect = parseShuffle(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

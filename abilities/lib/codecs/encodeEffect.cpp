@@ -119,6 +119,11 @@ void encodeDrawCard(const DrawCard &e, Buf &buf) {
     encodeNumber(e.value, buf);
 }
 
+void encodeShuffle(const Shuffle &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.zone));
+    buf.push_back(static_cast<uint8_t>(e.owner));
+}
+
 void encodeEffect(const Effect &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.type));
     encodeCondition(e.cond, buf);
@@ -189,6 +194,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::Look:
         encodeLook(std::get<Look>(e.effect), buf);
+        break;
+    case EffectType::Shuffle:
+        encodeShuffle(std::get<Shuffle>(e.effect), buf);
         break;
     default:
         break;
