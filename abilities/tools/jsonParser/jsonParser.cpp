@@ -86,13 +86,13 @@ CardSpecifier parseCardSpecifier(const QJsonObject &json) {
         c.specifier = static_cast<Owner>(json["specifier"].toInt());
         break;
     case CardSpecifierType::Trait:
-        c.specifier = Trait{ json["specifier"].toString().toStdString() };
+        c.specifier = parseStringType<Trait>(json["specifier"].toObject());
         break;
     case CardSpecifierType::ExactName:
-        c.specifier = ExactName{ json["specifier"].toString().toStdString() };
+        c.specifier = parseStringType<ExactName>(json["specifier"].toObject());
         break;
     case CardSpecifierType::NameContains:
-        c.specifier = NameContains{ json["specifier"].toString().toStdString() };
+        c.specifier = parseStringType<NameContains>(json["specifier"].toObject());
         break;
     case CardSpecifierType::Level:
         c.specifier = parseNumberType<Level>(json["specifier"].toObject());
@@ -203,16 +203,16 @@ Trigger parseTrigger(const QJsonObject &json) {
         t.trigger = parsePhaseTrigger(json["trigger"].toObject());
         break;
     case TriggerType::OnBattleOpponentReversed:
-        t.trigger = BattleOpponentReversedTrigger{ parseCard(json["trigger"].toObject()) };
+        t.trigger = parseCardType<BattleOpponentReversedTrigger>(json["trigger"].toObject());
         break;
     case TriggerType::OnTriggerReveal:
-        t.trigger = TriggerRevealTrigger{ parseCard(json["trigger"].toObject()) };
+        t.trigger = parseCardType<TriggerRevealTrigger>(json["trigger"].toObject());
         break;
     case TriggerType::OnPlay:
-        t.trigger = OnPlayTrigger{ parseTarget(json["trigger"].toObject()) };
+        t.trigger = parseTargetType<OnPlayTrigger>(json["trigger"].toObject());
         break;
     case TriggerType::OnAttack:
-        t.trigger = OnPlayTrigger{ parseTarget(json["trigger"].toObject()) };
+        t.trigger = parseTargetType<OnAttackTrigger>(json["trigger"].toObject());
         break;
     case TriggerType::OnBackupOfThis:
     case TriggerType::OnEndOfThisCardsAttack:

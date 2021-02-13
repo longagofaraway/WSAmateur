@@ -80,6 +80,26 @@ ConditionCardsLocation parseConditionCardsLocation(const QJsonObject &json) {
     return c;
 }
 
+ConditionSumOfLevels parseConditionSumOfLevels(const QJsonObject &json) {
+    if (!json.contains("moreThan") || !json["moreThan"].isDouble())
+        throw std::runtime_error("no moreThan in ConditionSumOfLevels");
+
+    ConditionSumOfLevels c;
+    c.moreThan = json["moreThan"].toInt();
+
+    return c;
+}
+
+ConditionDuringTurn parseConditionDuringTurn(const QJsonObject &json) {
+    if (!json.contains("player") || !json["player"].isDouble())
+        throw std::runtime_error("no player in ConditionDuringTurn");
+
+    ConditionDuringTurn c;
+    c.player = static_cast<Owner>(json["player"].toInt());
+
+    return c;
+}
+
 Condition parseCondition(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no condition type");
@@ -100,13 +120,13 @@ Condition parseCondition(const QJsonObject &json) {
         c.cond = parseConditionAndOr<ConditionOr>(json["cond"].toObject());
         break;
     case ConditionType::SumOfLevels:
-        c.cond = ConditionSumOfLevels{ json["cond"].toInt() };
+        c.cond = parseConditionSumOfLevels(json["cond"].toObject());
         break;
     case ConditionType::CardsLocation:
         c.cond = parseConditionCardsLocation(json["cond"].toObject());
         break;
     case ConditionType::DuringTurn:
-        c.cond = ConditionDuringTurn{ static_cast<Owner>(json["cond"].toInt()) };
+        c.cond = parseConditionDuringTurn(json["cond"].toObject());
         break;
     case ConditionType::CheckOpenedCards:
         c.cond = parseNumberCard<ConditionCheckOpenedCards>(json["cond"].toObject());

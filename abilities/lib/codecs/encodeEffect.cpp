@@ -181,10 +181,10 @@ void encodeEffect(const Effect &e, Buf &buf) {
         encodeAddMarker(std::get<AddMarker>(e.effect), buf);
         break;
     case EffectType::Bond:
-        encodeString(std::get<Bond>(e.effect).name, buf);
+        encodeString(std::get<Bond>(e.effect).value, buf);
         break;
     case EffectType::PerformReplay:
-        encodeString(std::get<PerformReplay>(e.effect).name, buf);
+        encodeString(std::get<PerformReplay>(e.effect).value, buf);
         break;
     case EffectType::Replay:
         encodeReplay(std::get<Replay>(e.effect), buf);

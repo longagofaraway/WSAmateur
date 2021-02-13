@@ -156,11 +156,11 @@ struct AddMarker {
 };
 
 struct Bond {
-    std::string name;
+    std::string value;
 };
 
 struct PerformReplay {
-    std::string name;
+    std::string value;
 };
 
 struct Replay {

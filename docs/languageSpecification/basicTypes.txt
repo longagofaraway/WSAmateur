@@ -23,11 +23,11 @@ NameContains {
 }
 
 Level {
-  value Number
+  number Number
 }
 
 CostSpecifier {
-  value Number
+  number Number
 }
 
 enum TriggerIcon {

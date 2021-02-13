@@ -241,11 +241,11 @@ AddMarker {
 }
 
 Bond {
-  name String
+  value String
 }
 
 PerformReplay {
-  name String
+  value String
 }
 
 Replay {

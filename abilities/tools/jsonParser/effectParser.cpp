@@ -336,6 +336,24 @@ Shuffle parseShuffle(const QJsonObject &json) {
     return e;
 }
 
+Backup parseBackup(const QJsonObject &json) {
+    if (!json.contains("power") || !json["power"].isDouble())
+        throw std::runtime_error("no power in Backup");
+
+    Backup e;
+    e.power = json["power"].toInt();
+    return e;
+}
+
+MoveWrToDeck parseMoveWrToDeck(const QJsonObject &json) {
+    if (!json.contains("executor") || !json["executor"].isDouble())
+        throw std::runtime_error("no executor in MoveWrToDeck");
+
+    MoveWrToDeck e;
+    e.executor = static_cast<Player>(json["executor"].toInt());
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -374,13 +392,13 @@ Effect parseEffect(const QJsonObject &json) {
         e.effect = parsePerformEffect(json["effect"].toObject());
         break;
     case EffectType::MoveWrToDeck:
-        e.effect = MoveWrToDeck{ static_cast<Player>(json["effect"].toInt()) };
+        e.effect = parseMoveWrToDeck(json["effect"].toObject());
         break;
     case EffectType::FlipOver:
         e.effect = parseFlipOver(json["effect"].toObject());
         break;
     case EffectType::Backup:
-        e.effect = Backup{ json["effect"].toInt() };
+        e.effect = parseBackup(json["effect"].toObject());
         break;
     case EffectType::NonMandatory:
         e.effect = parseNonMandatory(json["effect"].toObject());
@@ -401,10 +419,10 @@ Effect parseEffect(const QJsonObject &json) {
         e.effect = parseAddMarker(json["effect"].toObject());
         break;
     case EffectType::Bond:
-        e.effect = Bond{ json["effect"].toString().toStdString() };
+        e.effect = parseStringType<Bond>(json["effect"].toObject());
         break;
     case EffectType::PerformReplay:
-        e.effect = PerformReplay{ json["effect"].toString().toStdString() };
+        e.effect = parseStringType<PerformReplay>(json["effect"].toObject());
         break;
     case EffectType::Replay:
         e.effect = parseReplay(json["effect"].toObject());

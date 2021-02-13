@@ -36,6 +36,36 @@ T parseNumberType(const QJsonObject &json) {
     return t;
 }
 
+template<typename T>
+T parseStringType(const QJsonObject &json) {
+    if (!json.contains("value") || !json["value"].isString())
+        throw std::runtime_error("no value");
+
+    T t;
+    t.value = json["value"].toString().toStdString();
+    return t;
+}
+
+template<typename T>
+T parseCardType(const QJsonObject &json) {
+    if (!json.contains("card") || !json["card"].isObject())
+        throw std::runtime_error("no card");
+
+    T p;
+    p.card = parseCard(json["card"].toObject());
+    return p;
+}
+
+template<typename T>
+T parseTargetType(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target");
+
+    T p;
+    p.target = parseTarget(json["target"].toObject());
+    return p;
+}
+
 asn::Multiplier parseMultiplier(const QJsonObject &json);
 asn::Place parsePlace(const QJsonObject &json);
 asn::Card parseCard(const QJsonObject &json);
