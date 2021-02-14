@@ -5,7 +5,7 @@ import wsamateur 1.0
 Image {
     id: bgImage
 
-    property TextFrameModel mModel
+    property AbilityModel mModel
 
     z: 100
     width: 300

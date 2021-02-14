@@ -1,6 +1,6 @@
 #pragma once
 
-#include "abilityModel.h"
+#include "activatedAbilityModel.h"
 
 class Player;
 class Game;
@@ -9,7 +9,7 @@ class QQuickItem;
 
 class ActivatedAbilities
 {
-    AbilityModel mModel;
+    ActivatedAbilityModel mModel;
     QQuickItem *mQmlObject;
 
 public:

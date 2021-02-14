@@ -61,9 +61,9 @@ std::string printAttributeGain(const AttributeGain &e) {
     }
 
     if (e.duration == 1)
-        res += "until end of turn.";
+        res += "until end of turn ";
     else if (e.duration == 2)
-        res += "until end of your opponent's turn.";
+        res += "until end of your opponent's turn ";
 
     return res;
 }
@@ -112,6 +112,9 @@ std::string printRevealCard(const RevealCard &e) {
             if (e.number.value == 1)
                 s += "the top card of your deck ";
         }
+    } else if (e.type == RevealType::ChosenCards) {
+        if (gChosenCardsNumber.value == 1)
+            s += "it ";
     }
 
     return s;
@@ -161,7 +164,7 @@ std::string printMoveCard(const MoveCard &e) {
     for (size_t i = 0; i < e.to.size(); ++i) {
         if (i)
             s += "or ";
-        s += "in ";
+        s += "into ";
         if (e.to[i].owner == Player::Player)
             s += "your ";
         else if (e.to[i].owner == Player::Both)
@@ -176,6 +179,47 @@ std::string printDrawCard(const DrawCard &e) {
     std::string s = "draw ";
     if (e.value.mod == NumModifier::ExactMatch && e.value.value == 1)
         s += "a card ";
+    return s;
+}
+
+std::string printPayCost(const PayCost &e) {
+    std::string s = "you may pay the cost. ";
+
+    if (e.ifYouDo.size()) {
+        s += "If you do, ";
+        s += printEffects(e.ifYouDo);
+    }
+
+    if (e.ifYouDont.size()) {
+        s += "If you don't, ";
+        s += printEffects(e.ifYouDont);
+    }
+
+    return s;
+}
+
+std::string printSearchCard(const SearchCard &e) {
+    std::string s = "search ";
+
+    if (e.place.owner == Player::Player)
+        s += "your ";
+    s += printZone(e.place.zone) + " for ";
+    assert(e.targets.size() == 1);
+    assert(e.targets[0].cards.size() == 1);
+    s += printNumber(e.targets[0].number);
+    gChosenCardsNumber = e.targets[0].number;
+    s += printCard(e.targets[0].cards[0], false, false) + " ";
+
+    return s;
+}
+
+std::string printShuffle(const Shuffle &e) {
+    std::string s = "shuffle ";
+
+    if (e.owner == Player::Player)
+        s += "your ";
+    s += printZone(e.zone);
+
     return s;
 }
 
@@ -203,6 +247,15 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::DrawCard:
         s += printDrawCard(std::get<DrawCard>(e.effect));
+        break;
+    case EffectType::PayCost:
+        s += printPayCost(std::get<PayCost>(e.effect));
+        break;
+    case EffectType::SearchCard:
+        s += printSearchCard(std::get<SearchCard>(e.effect));
+        break;
+    case EffectType::Shuffle:
+        s += printShuffle(std::get<Shuffle>(e.effect));
     }
 
     return s;

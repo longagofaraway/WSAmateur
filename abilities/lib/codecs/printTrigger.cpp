@@ -26,5 +26,5 @@ std::string printTrigger(const Trigger &t) {
         break;
     }
 
-    return "";
+    return s;
 }

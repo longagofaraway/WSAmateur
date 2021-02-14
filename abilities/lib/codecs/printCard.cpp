@@ -2,7 +2,7 @@
 
 using namespace asn;
 
-std::string printCard(const Card &c, bool plural) {
+std::string printCard(const Card &c, bool plural, bool article) {
     std::string s;
 
     if (c.cardSpecifiers.empty()) {
@@ -12,8 +12,20 @@ std::string printCard(const Card &c, bool plural) {
         return s;
     }
 
-    if (!plural)
+    if (!plural & article)
         s += "a ";
+
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::Level) {
+            const auto &level = std::get<Level>(cardSpec.specifier);
+            s += "level " + std::to_string(level.value.value) + " ";
+            if (level.value.mod == NumModifier::UpTo)
+                s += "or lower ";
+            else if (level.value.mod == NumModifier::AtLeast)
+                s += "or higher ";
+        }
+    }
+
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Trait) {

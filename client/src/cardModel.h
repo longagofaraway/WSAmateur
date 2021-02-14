@@ -46,7 +46,7 @@ public:
     Q_INVOKABLE void clear();
     Q_INVOKABLE int climaxCount();
     Q_INVOKABLE int nonClimaxCount();
-    Q_INVOKABLE TextFrameModel* textModel(int row);
+    Q_INVOKABLE AbilityModel* textModel(int row);
 
 
     void setGlow(int row, bool glow);

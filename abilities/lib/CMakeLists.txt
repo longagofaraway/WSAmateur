@@ -28,6 +28,7 @@ set(commonSources
     codecs/printAbility.cpp
     codecs/printCard.cpp
     codecs/printCondition.cpp
+    codecs/printCost.cpp
     codecs/printEffect.cpp
     codecs/printTrigger.cpp
     codecs/printUtils.cpp

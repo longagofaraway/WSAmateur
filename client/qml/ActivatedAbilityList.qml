@@ -7,7 +7,7 @@ ListView {
     id: lview
 
     property bool mOpponent
-    property AbilityModel mModel: innerModel
+    property ActivatedAbilityModel mModel: innerModel
 
     z: 160
     x: gGame.width * (mOpponent ? 0.71 : 0.12)

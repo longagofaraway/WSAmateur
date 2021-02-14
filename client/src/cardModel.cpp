@@ -97,7 +97,7 @@ int CardModel::nonClimaxCount() {
     return count;
 }
 
-TextFrameModel *CardModel::textModel(int row) {
+AbilityModel *CardModel::textModel(int row) {
     if (static_cast<size_t>(row) >= mCards.size())
         return nullptr;
     return mCards[row].textModel();

@@ -96,7 +96,6 @@ private:
     void attackDeclarationStep();
     void declareAttack(const EventDeclareAttack &event);
     void startTurn();
-    bool canPlay(const Card &card) const;
     void playClimax();
     void setCardAttr(const EventSetCardAttr &event);
     void setCardState(const EventSetCardState &event);
@@ -108,6 +107,10 @@ private:
     void refresh();
     void discardTo7();
     void endGame(bool victory);
+
+    bool canPlay(const Card &card) const;
+    bool canPlay(const asn::Ability &a) const;
+    bool canPay(const asn::CostItem &c) const;
 
     void restoreUiState();
     void stopUiInteractions();

@@ -22,11 +22,11 @@ void Card::init(const std::string &code) {
     mColor = mInfo->color();
     mType = mInfo->type();
 
-    mTextModel = std::make_unique<TextFrameModel>();
+    mAbilityModel = std::make_unique<AbilityModel>();
     // we will be returning this pointer via Q_INVOKABLE, so we must set ownership explicitly
-    QQmlEngine::setObjectOwnership(mTextModel.get(), QQmlEngine::CppOwnership);
+    QQmlEngine::setObjectOwnership(mAbilityModel.get(), QQmlEngine::CppOwnership);
     for (const auto &abBuf: mInfo->abilities())
-        mTextModel->addAbility(QString::fromStdString(printAbility(decodeAbility(abBuf))));
+        mAbilityModel->addAbility(decodeAbility(abBuf));
 }
 
 void Card::clear() {
@@ -40,7 +40,7 @@ void Card::clear() {
     mGlow = false;
     mSelected = false;
     mState = StateStanding;
-    mTextModel.reset();
+    mAbilityModel.reset();
 }
 
 QString Card::qstate() const {

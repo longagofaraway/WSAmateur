@@ -283,6 +283,38 @@ Resumable ServerPlayer::playAbility(const asn::Ability &a) {
     }
 }
 
+bool ServerPlayer::canBePayed(const asn::CostItem &c) {
+    if (c.type == asn::CostType::Stock) {
+        const auto &item = std::get<asn::StockCost>(c.costItem);
+        if (item.value > zone("stock")->count())
+            return false;
+        return true;
+    } else {
+        const auto &item = std::get<asn::Effect>(c.costItem);
+        if (item.type == asn::EffectType::MoveCard) {
+            const auto &e = std::get<asn::MoveCard>(item.effect);
+            if (e.from.zone == asn::Zone::Hand &&
+                e.target.targetSpecification->number.value > zone("hand")->count())
+                return false;
+        }
+        return true;
+    }
+}
+
+bool ServerPlayer::canBePlayed(const asn::Ability &a) {
+    if (a.type == asn::AbilityType::Auto) {
+        const auto &aa = std::get<asn::AutoAbility>(a.ability);
+        if (!aa.cost)
+            return true;
+        for (const auto &costItem: aa.cost->items)
+            if (!canBePayed(costItem))
+                return false;
+        return true;
+    }
+
+    return false;
+}
+
 void ServerPlayer::checkOnPlacedFromHandToStage(ServerCard *card) {
     auto &abs = card->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
@@ -345,7 +377,15 @@ Resumable ServerPlayer::checkTiming() {
         }
 
         uint32_t uniqueId;
-        if (mQueue.size() > 1) {
+        int playableCount = 0;
+        for (size_t i = 0; i < mQueue.size(); ++i) {
+            if (canBePlayed(mQueue[i].getAbility())) {
+                uniqueId = mQueue[i].uniqueId;
+                playableCount++;
+            }
+        }
+
+        if (playableCount > 1) {
             clearExpectedComands();
             addExpectedCommand(CommandPlayAbility::GetDescriptor()->name());
             while (true) {
@@ -357,8 +397,15 @@ Resumable ServerPlayer::checkTiming() {
                     break;
                 }
             }
-        } else {
-            uniqueId = mQueue[0].uniqueId;
+        } else if (playableCount == 0) {
+            // Only abilities that cannot be played or cannot be paid for are left
+            while(mQueue.size()) {
+                EventAbilityResolved ev2;
+                ev2.set_uniqueid(mQueue[0].uniqueId);
+                sendToBoth(ev2);
+                mQueue.erase(mQueue.begin());
+            }
+            continue;
         }
 
         j = 0;
@@ -367,8 +414,7 @@ Resumable ServerPlayer::checkTiming() {
                 mContext = AbilityContext();
                 mContext.thisCard = mQueue[j].card;
                 // not a reliable way to get temporary ability (in case the card changed zone)
-                auto &arr = mQueue[j].card.card->abilities();
-                co_await playAbility(arr[mQueue[j].abilityId].ability);
+                co_await playAbility(mQueue[j].getAbility());
                 break;
             }
         }

@@ -1,7 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
-#include "abilityModel.h"
+#include "activatedAbilityModel.h"
 #include "cardModel.h"
 #include "choiceDialog.h"
 #include "game.h"
@@ -18,9 +18,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<Game>("wsamateur", 1, 0, "Game");
     qmlRegisterAnonymousType<Player>("wsamateur", 1);
     qmlRegisterType<CardModel>("wsamateur", 1, 0, "CardModel");
-    qmlRegisterType<AbilityModel>("wsamateur", 1, 0, "AbilityModel");
+    qmlRegisterType<ActivatedAbilityModel>("wsamateur", 1, 0, "ActivatedAbilityModel");
     qmlRegisterType<ChoiceDialogModel>("wsamateur", 1, 0, "ChoiceDialogModel");
-    qmlRegisterType<TextFrameModel>("wsamateur", 1, 0, "TextFrameModel");
+    qmlRegisterType<AbilityModel>("wsamateur", 1, 0, "AbilityModel");
 
     QQmlApplicationEngine engine;
 

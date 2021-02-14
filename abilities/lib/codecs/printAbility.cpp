@@ -5,11 +5,19 @@ using namespace asn;
 std::string printAutoAbility(const AutoAbility a) {
     std::string s = "[A] ";
 
+    if (a.cost)
+        s += printCost(*a.cost);
+
     s += printTrigger(a.trigger);
 
     s += printEffects(a.effects);
 
     s[4] = std::toupper(s[4]);
+    if (s[s.size() - 1] == ' ')
+        s.pop_back();
+    if (s[s.size() - 1] == ',')
+        s.pop_back();
+    s.push_back('.');
     return s;
 }
 

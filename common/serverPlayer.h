@@ -50,6 +50,12 @@ struct TriggeredAbility {
     ProtoAbilityType type;
     int abilityId;
     uint32_t uniqueId;
+
+    asn::Ability getAbility() {
+        if (card.card)
+            return card.card->abilities()[abilityId].ability;
+        return {};
+    }
 };
 
 class ServerPlayer
@@ -144,6 +150,9 @@ private:
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
+
+    bool canBePayed(const asn::CostItem &c);
+    bool canBePlayed(const asn::Ability &a);
 
     Resumable playAbility(const asn::Ability &a);
     Resumable playAutoAbility(const asn::AutoAbility &a);

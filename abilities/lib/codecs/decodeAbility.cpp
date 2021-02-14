@@ -2,17 +2,12 @@
 
 using namespace asn;
 
-/*Keyword decodeKeyword(Iterator &it, Iterator end) {
-    checkDistance(it, end, 1);
-    return static_cast<Keyword>(*it++);
-}*/
-
 CostItem decodeCostItem(Iterator &it, Iterator end) {
     CostItem c;
     c.type = decodeEnum<CostType>(it, end);
     switch (c.type) {
     case CostType::Stock:
-        c.costItem = StockCost{ decodeEnum<int>(it, end) };
+        c.costItem = StockCost{ decodeInt8(it, end) };
         break;
     case CostType::Effects:
         c.costItem = decodeEffect(it, end);

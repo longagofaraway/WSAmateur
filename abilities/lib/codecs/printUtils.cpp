@@ -36,3 +36,14 @@ std::string printZone(Zone zone) {
     default: throw PrintingException();
     }
 }
+
+std::string printNumber(const Number &n) {
+    std::string s;
+    if (n.mod == NumModifier::UpTo)
+        s += "up to ";
+    else if (n.mod == NumModifier::AtLeast)
+        s += "at least ";
+    s += std::to_string(n.value) + " ";
+    return s;
+}
+

@@ -146,6 +146,7 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
     stopUiInteractions();
+    int playableCount = 0;
     for (int i = 0; i < event.abilities_size(); ++i) {
         auto protoa = event.abilities(i);
         auto zoneptr = zone(protoa.zone());
@@ -160,6 +161,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
             cards[protoa.cardid()].code() != protoa.cardcode())
             nocard = true;
 
+        asn::Ability ability;
         ActivatedAbility a;
         a.uniqueId = protoa.uniqueid();
         a.type = protoa.type();
@@ -174,24 +176,41 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
             a.code = cardInfo->code();
             if (protoa.type() == ProtoAbilityType::ProtoCard) {
                 const auto &abuf = cardInfo->abilities()[a.abilityId];
-                a.text = QString::fromStdString(printAbility(decodeAbility(abuf)));
+                a.ability = decodeAbility(abuf);
+                a.text = QString::fromStdString(printAbility(ability));
             }
         } else {
             a.code = protoa.cardcode();
-            if (protoa.type() == ProtoAbilityType::ProtoCard)
-                a.text = zone(a.zone)->cards()[a.cardId].text(a.abilityId);
+            if (protoa.type() == ProtoAbilityType::ProtoCard) {
+                const auto &card = zone(a.zone)->cards()[a.cardId];
+                a.ability = card.ability(a.abilityId);
+                a.text = card.text(a.abilityId);
+            }
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger)
             a.text = QString::fromStdString(printAbility(globalAbility(static_cast<TriggerIcon>(protoa.abilityid()))));
 
         if (event.abilities_size() > 1) {
-            if (!mOpponent)
-                a.playBtnActive = true;
+            if (canPlay(a.ability))
+                ++playableCount;
             a.active = false;
         } else {
             a.active = true;
         }
         mAbilityList->addAbility(a);
+    }
+    if (!mOpponent) {
+        if (playableCount == 1) {
+            // if there's just one ability that can be played, make it active
+            for (int i = 0; i < mAbilityList->count(); ++i)
+                if (canPlay(mAbilityList->ability(i).ability))
+                    mAbilityList->setActive(i, true);
+        } else if (playableCount > 1) {
+            // otherwise show 'Play' button on playable abilities
+            for (int i = 0; i < mAbilityList->count(); ++i)
+                if (canPlay(mAbilityList->ability(i).ability))
+                    mAbilityList->activatePlay(i, true);
+        }
     }
     if (mAbilityList->count())
         mGame->pause(250);
@@ -239,9 +258,24 @@ void Player::abilityResolved() {
     auto view = zone("view");
     if (view->model().count())
         QMetaObject::invokeMethod(view->visualItem(), "clear");
-        //view->model().clear();
     if (!mAbilityList->count()) {
         restoreUiState();
+    } else {
+        int playableCount = 0;
+        int playableId = 0;
+        for (int i = 0; i < mAbilityList->count(); ++i) {
+            if (canPlay(mAbilityList->ability(i).ability)) {
+                ++playableCount;
+                playableId = i;
+            }
+        }
+        if (playableCount == 1) {
+            mAbilityList->setActive(playableId, true);
+        } else if (playableCount > 1) {
+            for (int i = 0; i < mAbilityList->count(); ++i)
+                if (canPlay(mAbilityList->ability(i).ability))
+                    mAbilityList->activatePlay(i, false);
+        }
     }
 }
 
@@ -347,4 +381,36 @@ void Player::sendChoice(int index) {
     CommandChoice cmd;
     cmd.set_choice(index);
     sendGameCommand(cmd);
+}
+
+bool Player::canPay(const asn::CostItem &c) const {
+    if (c.type == asn::CostType::Stock) {
+        const auto &item = std::get<asn::StockCost>(c.costItem);
+        if (item.value > zone("stock")->model().count())
+            return false;
+        return true;
+    } else {
+        const auto &item = std::get<asn::Effect>(c.costItem);
+        if (item.type == asn::EffectType::MoveCard) {
+            const auto &e = std::get<asn::MoveCard>(item.effect);
+            if (e.from.zone == asn::Zone::Hand &&
+                e.target.targetSpecification->number.value > zone("hand")->model().count())
+                return false;
+        }
+        return true;
+    }
+}
+
+bool Player::canPlay(const asn::Ability &a) const {
+    if (a.type == asn::AbilityType::Auto) {
+        const auto &aa = std::get<asn::AutoAbility>(a.ability);
+        if (!aa.cost)
+            return true;
+        for (const auto &costItem: aa.cost->items)
+            if (!canPay(costItem))
+                return false;
+        return true;
+    }
+
+    return false;
 }
