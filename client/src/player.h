@@ -124,6 +124,7 @@ private:
     void doneChoosing();
     void makeAbilityActive(const EventPlayAbility &event);
     void conditionNotMet();
+    void payCostChoice();
 
 public slots:
     void switchPositions(int from, int to);

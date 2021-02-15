@@ -55,7 +55,7 @@ QVariant ActivatedAbilityModel::data(const QModelIndex &index, int role) const {
     case Button2ActiveRole:
         return ab.cancelBtnActive;
     case Button1TextRole:
-        return QString("Play");
+        return ab.playBtnText;
     case Button2TextRole:
         return QString("Cancel");
     case ActiveRole:
@@ -75,6 +75,11 @@ void ActivatedAbilityModel::activateCancelButton(int row, bool active) {
     setData(index, active, Button2ActiveRole);
 }
 
+void ActivatedAbilityModel::setPlayBtnText(int row, const QString &text) {
+    auto index = createIndex(row, 0);
+    setData(index, text, Button1TextRole);
+}
+
 bool ActivatedAbilityModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (static_cast<size_t>(index.row()) >= mAbilities.size())
         return false;
@@ -90,6 +95,9 @@ bool ActivatedAbilityModel::setData(const QModelIndex &index, const QVariant &va
         break;
     case Button2ActiveRole:
         ab.cancelBtnActive = value.toBool();
+        break;
+    case Button1TextRole:
+        ab.playBtnText = value.toString();
         break;
     default:
         return false;

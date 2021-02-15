@@ -28,6 +28,19 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     </main>
 </deck>)delim";
 
+std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
+    <deck version="1">
+    <deckname>Vivid Green 2</deckname>
+    <comments></comments>
+    <main>
+        <card number="1" code="IMC/W43-127"/>
+        <card number="1" code="IMC/W43-046"/>
+        <card number="1" code="IMC/W43-009"/>
+        <card number="1" code="IMC/W43-111"/>
+        <card number="42" code="IMC/W43-091"/>
+    </main>
+</deck>)delim";
+
 Game::Game() {
     qRegisterMetaType<std::shared_ptr<EventGameJoined>>("std::shared_ptr<EventGameJoined>");
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
@@ -101,15 +114,18 @@ void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
     mOpponent = std::make_unique<Player>(event->playerid(), this, true);
 
     mPlayer->setDeck(gDeck);
-    mOpponent->setDeck(gDeck);
+    mOpponent->setDeck(gOppDeck);
     CommandSetDeck cmd;
     cmd.set_deck(gDeck);
-    CommandReadyToStart cmd2;
-    cmd2.set_ready(true);
-    for (auto &client: mClients) {
-        client->sendGameCommand(cmd);
-        client->sendGameCommand(cmd2);
-    }
+    mClients[0]->sendGameCommand(cmd);
+    CommandSetDeck cmd2;
+    cmd2.set_deck(gOppDeck);
+    mClients[1]->sendGameCommand(cmd2);
+
+    CommandReadyToStart readyCmd;
+    readyCmd.set_ready(true);
+    mClients[0]->sendGameCommand(readyCmd);
+    mClients[1]->sendGameCommand(readyCmd);
 }
 
 void Game::processGameEvent(const std::shared_ptr<GameEvent> event) {

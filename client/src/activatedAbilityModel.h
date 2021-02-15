@@ -29,6 +29,8 @@ struct ActivatedAbility {
     QString cancelBtnText;
 
     std::variant<std::monostate, asn::ChooseCard> effect;
+
+    ActivatedAbility() : playBtnText("Play") {}
 };
 
 class ActivatedAbilityModel : public QAbstractListModel
@@ -57,6 +59,7 @@ public:
     void removeAbility(int row);
     void activatePlayButton(int row, bool active);
     void activateCancelButton(int row, bool active);
+    void setPlayBtnText(int row, const QString &text);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int count() const { return rowCount(); }

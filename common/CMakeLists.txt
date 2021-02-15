@@ -6,6 +6,7 @@ set(commonSources
     cardInfo.cpp
     deckList.cpp
     playAbility.cpp
+    playEffect.cpp
     server.cpp
     serverCard.cpp
     serverCardZone.cpp

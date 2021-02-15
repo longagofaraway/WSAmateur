@@ -16,8 +16,9 @@ ActivatedAbilities::ActivatedAbilities(Player *player, Game *game) {
     mQmlObject->setProperty("mOpponent", player->isOpponent());
 }
 
-void ActivatedAbilities::activatePlay(int index, bool active) {
+void ActivatedAbilities::activatePlay(int index, bool active, const char *text) {
     mModel.activatePlayButton(index, active);
+    mModel.setPlayBtnText(index, text);
 }
 
 void ActivatedAbilities::activateCancel(int index, bool active) {

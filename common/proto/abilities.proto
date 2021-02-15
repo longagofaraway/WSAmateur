@@ -39,6 +39,7 @@ message CommandCancelEffect {}
 message EventAbilityResolved {
     uint32 uniqueId = 1;
 }
+
 message EventChooseCard {
     bytes effect = 1;
     bool mandatory = 2;
@@ -74,4 +75,5 @@ message EventRevealTopDeck {
 }
 
 message EventConditionNotMet {}
+message EventPayCost {}
 

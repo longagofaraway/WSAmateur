@@ -164,4 +164,6 @@ private:
     Resumable playDrawCard(const asn::DrawCard &e);
     void playRevealCard(const asn::RevealCard &e);
     void playAttributeGain(const asn::AttributeGain &e);
+    Resumable playPayCost(const asn::PayCost &e);
+    Resumable payCost();
 };

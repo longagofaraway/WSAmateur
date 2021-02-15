@@ -219,6 +219,8 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
 void Player::playAbility(int index) {
     const auto &ab = mAbilityList->ability(index);
     if (ab.active) {
+        mAbilityList->activatePlay(index, false);
+        mAbilityList->activateCancel(index, false);
         sendGameCommand(CommandPlayEffect());
     } else {
         mAbilityList->setActive(index, true);
@@ -331,6 +333,14 @@ void Player::makeAbilityActive(const EventPlayAbility &event) {
 void Player::conditionNotMet() {
     if (zone("view")->model().count())
         mGame->pause(900);
+}
+
+void Player::payCostChoice() {
+    if (mOpponent)
+        return;
+
+    mAbilityList->activatePlay(mAbilityList->activeId(), true, "Pay cost");
+    mAbilityList->activateCancel(mAbilityList->activeId(), true);
 }
 
 void Player::cancelAbility(int) {

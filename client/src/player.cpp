@@ -171,6 +171,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         revealTopDeck(ev);
     } else if (event->event().Is<EventConditionNotMet>()) {
         conditionNotMet();
+    } else if (event->event().Is<EventPayCost>()) {
+        payCostChoice();
     }
 }
 
