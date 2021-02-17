@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cardModel.h"
 #include "cardZone.h"
 
 class Player;

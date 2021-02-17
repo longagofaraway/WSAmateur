@@ -8,3 +8,12 @@ int CardZone::numOfSelectedCards() {
 
     return num;
 }
+
+int CardZone::numOfHighlightedCards() {
+    int num = 0;
+    for (const auto &card: mCardsModel.cards())
+        if (card.glow())
+            num++;
+
+    return num;
+}

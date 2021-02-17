@@ -15,10 +15,10 @@ enum ProtoOwner {
 message ProtoAbility {
     ProtoAbilityType type = 1;
     string zone = 2;
-	string cardCode = 3;
+    string cardCode = 3;
     sint32 cardId = 4;
-	sint32 abilityId = 5;
-	uint32 uniqueId = 6;
+    sint32 abilityId = 5;
+    uint32 uniqueId = 6;
 }
 
 message EventAbilityActivated {
@@ -77,3 +77,7 @@ message EventRevealTopDeck {
 message EventConditionNotMet {}
 message EventPayCost {}
 
+message EventSearchCard {
+    bytes effect = 1;
+    repeated string codes = 2;
+}

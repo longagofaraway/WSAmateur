@@ -5,14 +5,20 @@ import wsamateur 1.0
 
 Rectangle {
     id: cardsView
-    property CardModel mModel
+    property CardModel mModel: innerModel
     property bool mIsDeckView: false
     property real mColumnMaxHeight: root.height * 0.5 - header.height
     property bool mOpponent: false
     signal closeSignal()
 
+    x: root.width * 0.9 - width
     y: root.height * 0.33
-    width: header.width + header.anchors.leftMargin + closeBtn.width + closeBtn.anchors.rightMargin * 2//Math.max(row.width + 20, header.width + closeBtn.width * 2 + 20)
+    width: {
+        let w = header.width + header.anchors.leftMargin;
+        if (!mIsDeckView)
+            w += closeBtn.width + closeBtn.anchors.rightMargin * 2;
+        return w;
+    }
     height: {
         const calcHeight = calculateViewHeight();
         if (calcHeight > root.height * 0.5)
@@ -27,11 +33,13 @@ Rectangle {
     Text {
         id: header
         width: {
-            const minViewWidth = contentWidth + header.anchors.leftMargin + closeBtn.width + closeBtn.anchors.rightMargin * 2;
+            let minViewWidth = contentWidth + header.anchors.leftMargin;
+            if (!mIsDeckView)
+                minViewWidth += closeBtn.width + closeBtn.anchors.rightMargin * 2;
             if (minViewWidth > row.width + 20)
                 return contentWidth;
             else
-                return row.width + 20 - (closeBtn.width + closeBtn.anchors.rightMargin * 2);
+                return row.width + 20 - (mIsDeckView ? 0 : (closeBtn.width + closeBtn.anchors.rightMargin * 2));
         }
         anchors {
             left: cardsView.left
@@ -49,6 +57,7 @@ Rectangle {
         horizontalAlignment: Text.AlignHCenter
     }
     Image {
+        visible: !mIsDeckView
         id: closeBtn
         anchors {
             right: cardsView.right

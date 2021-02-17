@@ -8,7 +8,7 @@ set(clientSources
     src/client.cpp
     src/clientConnection.cpp
     src/commonCardZone.cpp
-    src/deck.cpp
+    src/deckView.cpp
     src/game.cpp
     src/hand.cpp
     src/imageProvider.cpp
@@ -29,7 +29,7 @@ set(clientSources
     src/client.h
     src/clientConnection.h
     src/commonCardZone.h
-    src/deck.h
+    src/deckView.h
     src/game.h
     src/hand.h
     src/imageProvider.h

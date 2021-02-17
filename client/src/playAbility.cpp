@@ -26,6 +26,11 @@ asn::DrawCard decodeDrawCard(const std::string &buf) {
     auto it = binbuf.begin();
     return ::decodeDrawCard(it, binbuf.end());
 }
+asn::SearchCard decodeSearchCard(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.begin();
+    return ::decodeSearchCard(it, binbuf.end());
+}
 
 void highlightAllCards(CardZone *zone, bool highlight) {
     for (int i = 0; i < zone->model().count(); ++i)
@@ -86,6 +91,25 @@ void Player::processChooseCard(const EventChooseCard &event) {
             effect.place->owner == asn::Player::Player)
             QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
         if (!event.mandatory())
+            mAbilityList->activateCancel(mAbilityList->activeId(), true);
+    } else {
+        mGame->pause(800);
+        sendGameCommand(CommandCancelEffect());
+    }
+}
+
+void Player::processSearchCard(const EventSearchCard &event) {
+    auto effect = decodeSearchCard(event.effect());
+    assert(effect.place.zone == asn::Zone::Deck);
+    assert(effect.targets.size() == 1);
+    assert(effect.targets[0].cards.size() == 1);
+    mDeckView->setCards(event.codes());
+    const auto &specs = effect.targets[0].cards[0].cardSpecifiers;
+    int eligibleCount = highlightEligibleCards(mDeckView, specs);
+
+    if (eligibleCount) {
+        mAbilityList->ability(mAbilityList->activeId()).effect = effect;
+        if (effect.targets[0].number.mod == asn::NumModifier::UpTo)
             mAbilityList->activateCancel(mAbilityList->activeId(), true);
     } else {
         mGame->pause(800);
@@ -251,6 +275,8 @@ void Player::doneChoosing() {
             highlightAllCards(from, false);
             selectAllCards(from, false);
         }
+    } else if (std::holds_alternative<asn::SearchCard>(effect)) {
+        mDeckView->hide();
     }
 }
 
@@ -351,15 +377,6 @@ void Player::cancelAbility(int) {
 void Player::chooseCard(int, QString qzone, bool opponent) {
     if (!mAbilityList->count())
         return;
-    int activeId = mAbilityList->activeId();
-    auto &effect = mAbilityList->ability(activeId).effect;
-    if (!std::holds_alternative<asn::ChooseCard>(effect))
-        return;
-
-    auto &ef = std::get<asn::ChooseCard>(effect);
-    assert(ef.targets.size() == 1);
-    if (ef.targets[0].type != asn::TargetType::SpecificCards)
-        return;
 
     CardZone *pzone;
     if (!opponent)
@@ -367,11 +384,32 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
     else
         pzone = mGame->opponent()->zone(qzone.toStdString());
 
-    int num = pzone->numOfSelectedCards();
+    int selected = pzone->numOfSelectedCards();
+    int highlighted = pzone->numOfHighlightedCards();
 
-    if (ef.targets[0].targetSpecification->number.value != num)
+    int activeId = mAbilityList->activeId();
+    auto &effect = mAbilityList->ability(activeId).effect;
+    asn::Number *number;
+    if (std::holds_alternative<asn::ChooseCard>(effect)) {
+        auto &ef = std::get<asn::ChooseCard>(effect);
+        assert(ef.targets.size() == 1);
+        if (ef.targets[0].type != asn::TargetType::SpecificCards)
+            return;
+
+        number = &ef.targets[0].targetSpecification->number;
+    } else if (std::holds_alternative<asn::SearchCard>(effect)) {
+        auto &ef = std::get<asn::SearchCard>(effect);
+        assert(ef.targets.size() == 1);
+        number = &ef.targets[0].number;
+    }
+
+    if (number->value != selected && selected < highlighted) {
+        if (number->mod == asn::NumModifier::UpTo)
+            mAbilityList->activatePlay(activeId, true, "Choose");
         return;
+    }
 
+    mAbilityList->activatePlay(activeId, false);
     mAbilityList->activateCancel(activeId, false);
 
     CommandChooseCard cmd;

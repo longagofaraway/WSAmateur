@@ -166,4 +166,5 @@ private:
     void playAttributeGain(const asn::AttributeGain &e);
     Resumable playPayCost(const asn::PayCost &e);
     Resumable payCost();
+    Resumable playSearchCard(const asn::SearchCard &e);
 };

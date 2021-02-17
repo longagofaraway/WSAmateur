@@ -574,7 +574,6 @@ Resumable ServerPlayer::levelUp() {
     sendToBoth(EventLevelUp());
 
     auto cmd = co_await waitForCommand();
-
     if (!cmd.command().Is<CommandLevelUp>())
         co_return;
 

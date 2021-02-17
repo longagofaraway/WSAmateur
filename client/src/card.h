@@ -47,7 +47,7 @@ public:
     void setSelected(bool selected) { mSelected = selected; }
     char color() const { return mColor; }
     int cost() const { return mCost; }
-    int level() const { return mLevel; }
+    int level() const override { return mLevel; }
     void setLevel(int level) { mLevel = level; }
     int power() const { return mPower; }
     void setPower(int power) { mPower = power; }

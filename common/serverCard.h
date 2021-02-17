@@ -14,6 +14,7 @@ class CardBase {
 public:
     virtual ~CardBase() = default;
 
+    virtual int level() const = 0;
     virtual const std::vector<TriggerIcon>& triggers() const = 0;
     virtual const std::vector<std::string>& traits() const = 0;
     virtual CardType type() const = 0;
@@ -60,7 +61,7 @@ public:
     void setZone(ServerCardZone *zone) { mZone = zone; }
     ServerCardZone* zone() const { return mZone; }
     const std::string& code() { return mCode; }
-    int level() const { return mCardInfo->level(); }
+    int level() const override { return mCardInfo->level(); }
     int cost() const { return mCardInfo->cost(); }
     int power() const { return mPower; }
     int soul() const { return mSoul; }

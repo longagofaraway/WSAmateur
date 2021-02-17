@@ -29,7 +29,7 @@ void CardModel::addCard(QString code) {
     addCard(code.toStdString());
 }
 
-void CardModel::addCard(std::string code) {
+void CardModel::addCard(const std::string &code) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     mCards.emplace_back(code);
     endInsertRows();

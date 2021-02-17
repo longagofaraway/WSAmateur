@@ -33,6 +33,9 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::PayCost:
         co_await playPayCost(std::get<asn::PayCost>(e.effect));
         break;
+    case asn::EffectType::SearchCard:
+        co_await playSearchCard(std::get<asn::SearchCard>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -57,6 +60,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
 
     clearExpectedComands();
     addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+    // TODO: check for legitimacy of cancel
     addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
     while (true) {
@@ -272,4 +276,59 @@ Resumable ServerPlayer::playPayCost(const asn::PayCost &e) {
         for (const auto &effect: e.ifYouDont)
             co_await playEffect(effect);
     co_return;
+}
+
+
+Resumable ServerPlayer::playSearchCard(const asn::SearchCard &e) {
+    std::vector<uint8_t> buf;
+    encodeSearchCard(e, buf);
+
+    EventSearchCard eventPrivate;
+    eventPrivate.set_effect(buf.data(), buf.size());
+    EventSearchCard eventPublic(eventPrivate);
+    auto pzone = zone(asnZoneToString(e.place.zone));
+    for (int i = 0; i < pzone->count(); ++i)
+        eventPrivate.add_codes(pzone->card(i)->code());
+    for (int i = 0; i < pzone->count(); ++i)
+        eventPublic.add_codes("");
+    sendGameEvent(eventPrivate);
+    mGame->sendPublicEvent(eventPublic, mId);
+
+    clearExpectedComands();
+    addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+    // TODO: check for legitimacy of cancel
+    addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+
+    while (true) {
+        auto cmd = co_await waitForCommand();
+        if (cmd.command().Is<CommandCancelEffect>()) {
+            break;
+        } else if (cmd.command().Is<CommandChooseCard>()) {
+            CommandChooseCard chooseCmd;
+            cmd.command().UnpackTo(&chooseCmd);
+
+            assert(e.targets.size() == 1);
+            if ((e.targets[0].number.mod == asn::NumModifier::ExactMatch &&
+                e.targets[0].number.value != chooseCmd.ids_size()) ||
+                (e.targets[0].number.mod == asn::NumModifier::AtLeast &&
+                e.targets[0].number.value < chooseCmd.ids_size()) ||
+                (e.targets[0].number.mod == asn::NumModifier::UpTo &&
+                e.targets[0].number.value > chooseCmd.ids_size()))
+                continue;
+            //TODO: add checks
+            for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
+                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? this : mGame->opponentOfPlayer(mId);
+                auto pzone = owner->zone(chooseCmd.zone());
+                if (!pzone)
+                    break;
+
+                auto card = pzone->card(chooseCmd.ids(i));
+                if (!card)
+                    break;
+                mContext.chosenCards.push_back(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+            }
+            break;
+        }
+    }
+    clearExpectedComands();
 }

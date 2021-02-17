@@ -9,9 +9,9 @@
 #include "activatedAbilities.h"
 #include "cardZone.h"
 #include "choiceDialog.h"
+#include "deckView.h"
 
 class EventInitialHand;
-class EventDrawCard;
 class EventMoveCard;
 class EventPlayCard;
 class EventSwitchStagePositions;
@@ -40,6 +40,7 @@ private:
     bool mActivePlayer = false;
     Hand *mHand;
     Stage *mStage;
+    DeckView *mDeckView;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
     std::unique_ptr<ActivatedAbilities> mAbilityList;
     std::unique_ptr<ChoiceDialog> mChoiceDialog;
@@ -118,6 +119,7 @@ private:
     void activateAbilities(const EventAbilityActivated &event);
     void abilityResolved();
     void processChooseCard(const EventChooseCard &event);
+    void processSearchCard(const EventSearchCard &event);
     void processMoveChoice(const EventMoveChoice &event);
     void processDrawChoice(const EventDrawChoice &event);
     void revealTopDeck(const EventRevealTopDeck &event);

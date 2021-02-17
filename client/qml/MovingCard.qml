@@ -67,7 +67,7 @@ Card {
         if (startZone === "deck") {
             movingCard.mSource = "cardback";
             movingCard.rotation = 0;
-            if (tzone.hidden) {
+            if (code === "") {
                 straightMove.start();
             } else {
                 toImg = code;

@@ -76,3 +76,4 @@ asn::Multiplier decodeMultiplier(Iterator &it, Iterator end);
 asn::ChooseCard decodeChooseCard(Iterator &it, Iterator end);
 asn::MoveCard decodeMoveCard(Iterator &it, Iterator end);
 asn::DrawCard decodeDrawCard(Iterator &it, Iterator end);
+asn::SearchCard decodeSearchCard(Iterator &it, Iterator end);

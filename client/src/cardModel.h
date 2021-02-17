@@ -36,7 +36,7 @@ public:
 
     std::vector<Card>& cards() { return mCards; }
     void addCards(int count);
-    void addCard(std::string code);
+    void addCard(const std::string &code);
     Q_INVOKABLE void addCard();
     Q_INVOKABLE void addCard(QString code);
     Q_INVOKABLE void setCard(int row, QString code);

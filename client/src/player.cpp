@@ -16,7 +16,7 @@
 
 #include "cardDatabase.h"
 #include "commonCardZone.h"
-#include "deck.h"
+#include "deckView.h"
 #include "deckList.h"
 #include "game.h"
 #include "hand.h"
@@ -25,6 +25,7 @@
 #include <QDebug>
 
 #include <QQmlContext>
+
 Player::Player(int id, Game *game, bool opponent)
     : mId(id), mGame(game), mOpponent(opponent) {
     auto hand = std::make_unique<Hand>(this, game);
@@ -34,15 +35,9 @@ Player::Player(int id, Game *game, bool opponent)
     /*wr->model().addCard(std::string("IMC/W43-127"));
     wr->model().addCard(std::string("IMC/W43-111"));
     wr->model().addCard(std::string("IMC/W43-046"));
-    wr->model().addCard(std::string("IMC/W43-091"));
-    wr->model().addCard(std::string("IMC/W43-009"));
-    wr->model().addCard(std::string("IMC/W43-009"));
-    wr->model().addCard(std::string("IMC/W43-009"));
-    wr->model().addCard(std::string("IMC/W43-009"));
-    wr->model().addCard(std::string("IMC/W43-009"));
-    wr->model().addCard(std::string("IMC/W43-009"));*/
+    wr->model().addCard(std::string("IMC/W43-091"));*/
     mZones.emplace("wr", std::move(wr));
-    auto deck = std::make_unique<Deck>(this, game);
+    auto deck = std::make_unique<CommonCardZone>(this, game, "Deck");
     mZones.emplace("deck", std::move(deck));
     auto clock = std::make_unique<CommonCardZone>(this, game, "Clock");
     mZones.emplace("clock", std::move(clock));
@@ -61,6 +56,16 @@ Player::Player(int id, Game *game, bool opponent)
     mChoiceDialog = std::make_unique<ChoiceDialog>(game);
     auto orderedView = std::make_unique<CommonCardZone>(this, game, "OrderedCardsView");
     mZones.emplace("view", std::move(orderedView));
+
+    if (!mOpponent) {
+        auto deckView = std::make_unique<DeckView>(this, game);
+        /*deckView->model().addCard(std::string("IMC/W43-127"));
+        deckView->model().addCard(std::string("IMC/W43-111"));
+        deckView->model().addCard(std::string("IMC/W43-046"));*/
+        deckView->model().addCard(std::string("IMC/W43-091"));
+        mDeckView = deckView.get();
+        mZones.emplace("deckView", std::move(deckView));
+    }
 }
 
 void Player::setDeck(const std::string &deck) {
@@ -173,6 +178,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         conditionNotMet();
     } else if (event->event().Is<EventPayCost>()) {
         payCostChoice();
+    } else if (event->event().Is<EventSearchCard>()) {
+        EventSearchCard ev;
+        event->event().UnpackTo(&ev);
+        processSearchCard(ev);
     }
 }
 
@@ -578,10 +587,10 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    //createMovingCard("IMC/W43-046", "deck", 0, "view", 0, false, false, true);
+    createMovingCard("IMC/W43-046", "deck", 0, "hand", 0);
     //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
 
-    QMetaObject::invokeMethod(zone("stage")->visualItem(), "powerChangeAnim", Q_ARG(QVariant, 0));
+    //QMetaObject::invokeMethod(zone("stage")->visualItem(), "powerChangeAnim", Q_ARG(QVariant, 0));
 }
 
 bool Player::playCards(CardModel &hand) {
