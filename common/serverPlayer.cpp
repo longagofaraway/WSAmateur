@@ -229,7 +229,7 @@ void ServerPlayer::moveCards(std::string_view startZoneName,  const std::vector<
         moveCard(startZoneName, sortedIds[i], targetZoneName);
 }
 
-bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName) {
+bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName, bool reveal) {
     ServerCardZone *startZone = zone(startZoneName);
     if (!startZone)
         return false;
@@ -257,8 +257,11 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
 
     EventMoveCard eventPrivate(eventPublic);
 
-    if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PrivateZone)
+    if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PrivateZone) {
         eventPrivate.set_code(card->code());
+        if (reveal)
+            eventPublic.set_code(card->code());
+    }
 
     // revealing card from hand, opponent didn't see this card yet
     if (startZone->type() == ZoneType::PrivateZone && targetZone->type() == ZoneType::PublicZone)

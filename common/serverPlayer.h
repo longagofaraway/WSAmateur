@@ -39,6 +39,7 @@ struct CardImprint {
 struct AbilityContext {
     bool mandatory = true;
     bool canceled = false;
+    bool revealChosen = false;
     std::vector<CardImprint> chosenCards;
     std::vector<CardImprint> mentionedCards;
     CardImprint thisCard;
@@ -109,7 +110,7 @@ public:
     void mulligan(const CommandMulligan &cmd);
     void drawCards(int number);
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName);
-    bool moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName);
+    bool moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName, bool reveal = false);
     void moveTopDeck(std::string_view targetZoneName);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard &cmd);
@@ -167,4 +168,5 @@ private:
     Resumable playPayCost(const asn::PayCost &e);
     Resumable payCost();
     Resumable playSearchCard(const asn::SearchCard &e);
+    void playShuffle(const asn::Shuffle &e);
 };

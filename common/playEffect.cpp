@@ -36,6 +36,9 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::SearchCard:
         co_await playSearchCard(std::get<asn::SearchCard>(e.effect));
         break;
+    case asn::EffectType::Shuffle:
+        playShuffle(std::get<asn::Shuffle>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -110,6 +113,7 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
         if (!mContext.chosenCards.size())
             co_return;
 
+        // choice of a destination
         if (e.to.size() > 1) {
             std::vector<uint8_t> buf;
             encodeMoveCard(e, buf);
@@ -136,7 +140,7 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
         }
         for (const auto &card: mContext.chosenCards) {
             auto owner = card.opponent ? mGame->opponentOfPlayer(mId) : this;
-            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone));
+            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone), mContext.revealChosen);
             if (zone("deck")->count() == 0)
                 refresh();
             if (e.to[toIndex].zone == asn::Zone::Clock && zone("clock")->count() >= 7)
@@ -227,7 +231,8 @@ Resumable ServerPlayer::playDrawCard(const asn::DrawCard &e) {
 }
 
 void ServerPlayer::playRevealCard(const asn::RevealCard &e) {
-    if (e.type == asn::RevealType::TopDeck) {
+    switch (e.type) {
+    case asn::RevealType::TopDeck:
         if (e.number.mod == asn::NumModifier::ExactMatch) {
             for (int i = 0; i < e.number.value; ++i) {
                 auto deck = zone("deck");
@@ -239,7 +244,16 @@ void ServerPlayer::playRevealCard(const asn::RevealCard &e) {
                 sendToBoth(event);
                 mContext.mentionedCards.push_back(CardImprint("deck", deck->count() - i - 1, deck->card(deck->count() - i - 1)));
             }
+        } else {
+            assert(false);
         }
+        break;
+    case asn::RevealType::ChosenCards:
+        mContext.revealChosen = true;
+        break;
+    default:
+        assert(false);
+        break;
     }
 }
 
@@ -331,4 +345,11 @@ Resumable ServerPlayer::playSearchCard(const asn::SearchCard &e) {
         }
     }
     clearExpectedComands();
+}
+
+void ServerPlayer::playShuffle(const asn::Shuffle &e) {
+    assert(e.owner != asn::Player::Both);
+    assert(e.owner != asn::Player::NotSpecified);
+    auto owner = (e.owner == asn::Player::Player) ? this : mGame->opponentOfPlayer(mId);
+    owner->zone(asnZoneToString(e.zone))->shuffle();
 }

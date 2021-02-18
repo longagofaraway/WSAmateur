@@ -28,6 +28,7 @@ Rectangle {
     radius: 5
     border.width: 1
     color: "#F0564747"
+    visible: !mIsDeckView
     z: 160
 
     Text {

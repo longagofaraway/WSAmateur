@@ -59,10 +59,6 @@ Player::Player(int id, Game *game, bool opponent)
 
     if (!mOpponent) {
         auto deckView = std::make_unique<DeckView>(this, game);
-        /*deckView->model().addCard(std::string("IMC/W43-127"));
-        deckView->model().addCard(std::string("IMC/W43-111"));
-        deckView->model().addCard(std::string("IMC/W43-046"));*/
-        deckView->model().addCard(std::string("IMC/W43-091"));
         mDeckView = deckView.get();
         mZones.emplace("deckView", std::move(deckView));
     }

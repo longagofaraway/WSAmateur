@@ -413,7 +413,10 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
     mAbilityList->activateCancel(activeId, false);
 
     CommandChooseCard cmd;
-    cmd.set_zone(qzone.toStdString());
+    std::string cmdZone = qzone.toStdString();
+    if (cmdZone == "deckView")
+        cmdZone = "deck";
+    cmd.set_zone(cmdZone);
     cmd.set_owner(opponent ? ProtoOpponent : ProtoPlayer);
     const auto &cards = pzone->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
