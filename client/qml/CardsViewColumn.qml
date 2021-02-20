@@ -4,6 +4,8 @@ import QtQml.Models 2.12
 
 import wsamateur 1.0
 
+import "objectCreation.js" as ObjectCreator
+
 ListView {
     id: thisListView
 
@@ -96,7 +98,7 @@ ListView {
                         }
                         StateChangeScript {
                             name: "textFrame"
-                            script: createTextFrame(cardImgDelegate);
+                            script: createTextFrame(cardImgDelegate, model.index);
                         }
                     }
 
@@ -115,36 +117,37 @@ ListView {
         }
     }
 
-    function createTextFrame(cardObject) {
-        let comp = Qt.createComponent("CardTextFrame.qml");
-        let incubator = comp.incubateObject(root, { visible: false }, Qt.Asynchronous);
-        let createdCallback = function(status) {
-            if (status === Component.Ready) {
-                if (cardObject.state !== "hovered") {
-                    incubator.object.destroy();
-                    return;
-                }
-                if (thisListView.cardTextFrame !== null)
-                    thisListView.cardTextFrame.destroy();
-                let textFrame = incubator.object;
+    function createTextFrame(frameParent, index) {
+        const cb = function(status) {
+            if (status !== Component.Ready)
+                return;
 
-                let listViewMappedPoint = root.mapFromItem(thisListView, thisListView.x, thisListView.y);
-                let cardMappedPoint = root.mapFromItem(cardObject, cardObject.x, cardObject.y);
-                textFrame.x = cardMappedPoint.x - textFrame.width;
-                let scaleOffset = root.cardHeight * 0.1 * 0.5;
-                textFrame.y = listViewMappedPoint.y + cardObject.y - scaleOffset;
-
-                if (textFrame.y + textFrame.height > root.height)
-                    textFrame.y -= textFrame.y + textFrame.height - root.height;
-                textFrame.visible = true;
-                thisListView.cardTextFrame = textFrame;
+            if (frameParent.state !== "hovered") {
+                this.object.destroy();
+                return;
             }
+            if (thisListView.cardTextFrame !== null)
+                thisListView.cardTextFrame.destroy();
+            let textFrame = this.object;
+
+            let listViewMappedPoint = root.mapFromItem(thisListView, thisListView.x, thisListView.y);
+            let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
+            if (!cardsView.mOpponent)
+                textFrame.x = cardMappedPoint.x - textFrame.width - root.cardWidth * 0.1 - 1;
+            else
+                textFrame.x = cardMappedPoint.x + root.cardWidth - 1;
+            let scaleYOffset = root.cardHeight * 0.1 * 0.5;
+            textFrame.y = listViewMappedPoint.y + frameParent.y - scaleYOffset;
+
+            if (textFrame.y + textFrame.height > root.height)
+                textFrame.y -= textFrame.y + textFrame.height - root.height;
+            textFrame.mModel = thisListView.mModel.textModel(index);
+            textFrame.visible = true;
+            thisListView.cardTextFrame = textFrame;
         }
-        if (incubator.status !== Component.Ready) {
-            incubator.onStatusChanged = createdCallback;
-        } else {
-            createdCallback(Component.Ready);
-        }
+
+        // ListView is clipping, so root parent here
+        ObjectCreator.createAsync("CardTextFrame", root, cb);
     }
 
     function destroyTextFrame(frameParent) {

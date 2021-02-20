@@ -4,6 +4,8 @@ import QtGraphicalEffects 1.15
 
 import wsamateur 1.0
 
+import "objectCreation.js" as ObjectCreator
+
 ListView {
     id: handView
 
@@ -106,11 +108,7 @@ ListView {
             id: cardDelegate
 
             property string mCode: code
-
-            property CardTextFrame cardTextFrame: null
             property int visualIndex: DelegateModel.itemsIndex
-
-            Component.onDestruction: destroyTextFrame(cardDelegate)
 
             width: root.cardWidth
             height: root.cardHeight
@@ -157,17 +155,19 @@ ListView {
                     return "cardback";
                 }
 
+                property CardTextFrame cardTextFrame: null
                 property int visualIndex: 0
                 property var enlargeAnim: mEnlargeAnim
                 property var shrinkAnim: mShrinkAnim
                 property string cardType: opponent ? "" : model.type
 
+                Component.onDestruction: destroyTextFrame(cardImgDelegate)
                 anchors.centerIn: cardDelegate
 
                 // state transitions aren't suitable for this task as we cannot stop transition animations
                 ParallelAnimation {
                     id: mShrinkToDragAnim
-                    ScriptAction { script: destroyTextFrame(cardDelegate); }
+                    ScriptAction { script: destroyTextFrame(cardImgDelegate); }
                     NumberAnimation { target: cardImgDelegate; property: "scale"; to: 1 }
                 }
                 SequentialAnimation {
@@ -184,7 +184,7 @@ ListView {
 
                 SequentialAnimation {
                     id: mShrinkAnim
-                    ScriptAction { script: destroyTextFrame(cardDelegate); }
+                    ScriptAction { script: destroyTextFrame(cardImgDelegate); }
                     ParallelAnimation {
                         NumberAnimation {
                             target: cardImgDelegate;
@@ -231,7 +231,7 @@ ListView {
                         }
                         NumberAnimation { target: cardImgDelegate; property: "rotation"; to: 0; duration: 35 }
                     }
-                    ScriptAction { script: createTextFrame(cardDelegate, cardImgDelegate, model.index); }
+                    ScriptAction { script: createTextFrame(cardImgDelegate, model.index); }
                 }
 
                 MouseArea {
@@ -377,45 +377,43 @@ ListView {
         NumberAnimation { duration: 200 }
     }
 
-    function createTextFrame(cardDelegate, cardImgDelegate, index) {
-        let comp = Qt.createComponent("CardTextFrame.qml");
-        let incubator = comp.incubateObject(cardImgDelegate, { visible: false }, Qt.Asynchronous);
-        let createdCallback = function(status) {
-            if (status === Component.Ready) {
-                if (cardImgDelegate.state !== "hovered") {
-                    incubator.object.destroy();
-                    return;
-                }
-                if (cardDelegate.cardTextFrame !== null)
-                    cardDelegate.cardTextFrame.destroy();
-                var textFrame = incubator.object;
-                textFrame.scale = 0.66;
-                if (cardImgDelegate.visualIndex > handDelegate.halfIndex) {
-                    textFrame.transformOrigin = Item.TopRight;
-                    textFrame.anchors.right = cardImgDelegate.left;
-                } else {
-                    textFrame.transformOrigin = Item.TopLeft;
-                    textFrame.anchors.left = cardImgDelegate.right;
-                }
-                textFrame.anchors.top = cardImgDelegate.top;
-                if (textFrame.height * 0.66 > cardImgDelegate.height)
-                    textFrame.anchors.topMargin = cardImgDelegate.height - textFrame.height * 0.66;
-                textFrame.mModel = handView.mModel.textModel(index);
-                textFrame.visible = true;
-                cardDelegate.cardTextFrame = textFrame;
+    function createTextFrame(cardImgDelegate, index) {
+        const cb = function(status) {
+            if (status !== Component.Ready)
+                return;
+
+            if (cardImgDelegate.state !== "hovered") {
+                this.object.destroy();
+                return;
             }
+            if (cardImgDelegate.cardTextFrame !== null)
+                cardImgDelegate.cardTextFrame.destroy();
+            let textFrame = this.object;
+            textFrame.scale = 0.66;
+            if (cardImgDelegate.visualIndex > handDelegate.halfIndex) {
+                textFrame.transformOrigin = Item.TopRight;
+                textFrame.anchors.right = cardImgDelegate.left;
+            } else {
+                textFrame.transformOrigin = Item.TopLeft;
+                textFrame.anchors.left = cardImgDelegate.right;
+            }
+            textFrame.anchors.top = cardImgDelegate.top;
+            if (textFrame.height * 0.66 > cardImgDelegate.height)
+                textFrame.anchors.topMargin = cardImgDelegate.height - textFrame.height * 0.66;
+            textFrame.mModel = handView.mModel.textModel(index);
+            textFrame.visible = true;
+            textFrame.z = -2;
+            cardImgDelegate.cardTextFrame = textFrame;
+            return;
         }
-        if (incubator.status !== Component.Ready) {
-            incubator.onStatusChanged = createdCallback;
-        } else {
-            createdCallback(Component.Ready);
-        }
+
+        ObjectCreator.createAsync("CardTextFrame", cardImgDelegate, cb);
     }
 
-    function destroyTextFrame(cardDelegate) {
-        if (cardDelegate.cardTextFrame !== null) {
-            cardDelegate.cardTextFrame.destroy();
-            cardDelegate.cardTextFrame = null;
+    function destroyTextFrame(cardImgDelegate) {
+        if (cardImgDelegate.cardTextFrame !== null) {
+            cardImgDelegate.cardTextFrame.destroy();
+            cardImgDelegate.cardTextFrame = null;
         }
     }
 
@@ -446,20 +444,20 @@ ListView {
 
     function glowAllCards(glow) {
         for (let i = 0; i < handView.mModel.rowCount(); i++) {
-            let index = handView.mModel.index(i, 0);
+            const index = handView.mModel.index(i, 0);
             handView.mModel.setData(index, glow, CardModel.GlowRole);
         }
     }
 
     function setSelected(index, selected) {
-        let modelIndex = handView.mModel.index(index, 0);
+        const modelIndex = handView.mModel.index(index, 0);
         handView.mModel.setData(modelIndex, selected, CardModel.SelectedRole);
     }
 
     function unglowUnselected() {
         for (let i = 0; i < handView.mModel.rowCount(); i++) {
-            let index = handView.mModel.index(i, 0);
-            let selected = handView.mModel.data(index, CardModel.SelectedRole);
+            const index = handView.mModel.index(i, 0);
+            const selected = handView.mModel.data(index, CardModel.SelectedRole);
             if (selected)
                 continue;
             handView.mModel.setData(index, false, CardModel.GlowRole);
@@ -468,7 +466,7 @@ ListView {
 
     function startPlayingClimax(imgDelegate, code, index) {
         let comp = Qt.createComponent("MovingCard.qml");
-        let point = root.mapFromItem(handView, imgDelegate.x, imgDelegate.y);
+        const point = root.mapFromItem(handView, imgDelegate.x, imgDelegate.y);
         let card = comp.createObject(root, { x: point.x, y: point.y });
         gGame.startUiAction();
         card.opponent = false;
@@ -491,7 +489,7 @@ ListView {
     function removeCard(index) { handView.mModel.removeCard(index); }
 
     function getVisualIndexFromModelIndex(modelId) {
-        for (var i = 0; i < handDelegate.count; i++) {
+        for (let i = 0; i < handDelegate.count; i++) {
             if (handDelegate.items.get(i).model.index === modelId)
                 return i;
         }

@@ -28,13 +28,13 @@ ListView {
             width: root.cardWidth
             height: root.cardHeight
             hoverEnabled: true
-            Component.onDestruction: destroyTextFrame(cardDelegate)
+            //Component.onDestruction: destroyTextFrame(cardDelegate)
 
             onEntered: {
-                createTextFrame(cardDelegate);
+                //createTextFrame(cardDelegate);
             }
             onExited: {
-                destroyTextFrame(cardDelegate);
+                //destroyTextFrame(cardDelegate);
             }
 
             Card {

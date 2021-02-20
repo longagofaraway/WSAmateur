@@ -3,8 +3,10 @@ import QtQuick.Window 2.12
 
 import wsamateur 1.0
 
+import "objectCreation.js" as ObjectCreator
+
 ListView {
-    id: level
+    id: levelZone
 
     property bool opponent
     property bool hidden: false
@@ -57,12 +59,12 @@ ListView {
                     }
                     ParentChange {
                         target: cardImgDelegate
-                        parent: level.contentItem
+                        parent: levelZone
                         scale: 0.9
                     }
                     StateChangeScript {
                         name: "textFrame"
-                        script: createTextFrame(cardImgDelegate);
+                        script: createTextFrame(cardImgDelegate, model.index);
                     }
                 }
 
@@ -75,39 +77,32 @@ ListView {
         }
     }
 
-    function createTextFrame(frameParent) {
-        let comp = Qt.createComponent("CardTextFrame.qml");
-        let incubator = comp.incubateObject(root, { visible: false }, Qt.Asynchronous);
-        let createdCallback = function(status) {
-            if (status === Component.Ready) {
-                if (frameParent.state !== "hovered") {
-                    incubator.object.destroy();
-                    return;
-                }
-                if (frameParent.cardTextFrame !== null)
-                    frameParent.cardTextFrame.destroy();
-                let textFrame = incubator.object;
-
-                let scaledX = root.cardWidth * (1 - 0.9) / 2;
-                let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
-                textFrame.x = level.x + scaledX;
-                textFrame.y = cardMappedPoint.y;
-                if (!opponent) {
-                    textFrame.x += (root.cardHeight + root.cardWidth) / 2 * 0.9;
-                    textFrame.y -= textFrame.height;
-                } else {
-                    textFrame.x += -textFrame.width - ((root.cardHeight - root.cardWidth) / 2) * 0.9;
-                }
-
-                textFrame.visible = true;
-                frameParent.cardTextFrame = textFrame;
+    function createTextFrame(frameParent, index) {
+        const cb = function(status) {
+            if (status !== Component.Ready)
+                return;
+            if (frameParent.state !== "hovered") {
+                this.object.destroy();
+                return;
             }
+            if (frameParent.cardTextFrame !== null)
+                frameParent.cardTextFrame.destroy();
+            let textFrame = this.object;
+            if (!opponent) {
+                textFrame.anchors.bottom = frameParent.bottom;
+                textFrame.transformOrigin = Item.BottomLeft;
+
+            } else {
+                textFrame.transformOrigin = Item.TopLeft;
+                textFrame.y = frameParent.height + textFrame.width;
+            }
+            textFrame.rotation = opponent ? -90 : 90;
+            textFrame.mModel = levelZone.mModel.textModel(index);
+            textFrame.visible = true;
+            frameParent.cardTextFrame = textFrame;
         }
-        if (incubator.status !== Component.Ready) {
-            incubator.onStatusChanged = createdCallback;
-        } else {
-            createdCallback(Component.Ready);
-        }
+
+        ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
     }
 
     function destroyTextFrame(frameParent) {
@@ -118,20 +113,20 @@ ListView {
     }
 
     function getLevelHeight()  {
-        if (!level.count)
+        if (!levelZone.count)
             return 0;
-        return (level.count - 1) * mMargin + root.cardHeight;
+        return (levelZone.count - 1) * mMargin + root.cardHeight;
     }
 
-    function addCard(code) { level.mModel.addCard(code); }
-    function removeCard(index) { level.mModel.removeCard(index); }
-    function getXForNewCard() { return opponent ? level.x : level.x; }
+    function addCard(code) { levelZone.mModel.addCard(code); }
+    function removeCard(index) { levelZone.mModel.removeCard(index); }
+    function getXForNewCard() { return opponent ? levelZone.x : levelZone.x; }
     function getYForNewCard() {
         if (opponent)
-            return level.y + level.count * mMargin;
-        return root.height * 0.87 - level.count * mMargin - root.cardHeight;
+            return levelZone.y + levelZone.count * mMargin;
+        return root.height * 0.87 - levelZone.count * mMargin - root.cardHeight;
     }
-    function getXForCard() { return level.x; }
-    function getYForCard() { return level.y + (level.count ? (level.count - 1) : 0) * mMargin; }
-    function scaleForMovingCard() { return level.mScale; }
+    function getXForCard() { return levelZone.x; }
+    function getYForCard() { return levelZone.y + (levelZone.count ? (levelZone.count - 1) : 0) * mMargin; }
+    function scaleForMovingCard() { return levelZone.mScale; }
 }

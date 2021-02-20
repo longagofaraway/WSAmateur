@@ -2,6 +2,8 @@ import QtQuick 2.0
 
 import wsamateur 1.0
 
+import "objectCreation.js" as ObjectCreator
+
 ListView {
     id: zone
 
@@ -56,7 +58,7 @@ ListView {
                     PropertyAction { target: cardImgDelegate; property: "z"; value: 100 }
                     PropertyAction { target: cardImgDelegate; property: "scale"; value: 1.1 }
                     PropertyAction { target: cardImgDelegate; property: "x"; value: model.index * root.cardWidth * (1 - mMarginModifier) }
-                    ScriptAction { script: createTextFrame(cardImgDelegate); }
+                    ScriptAction { script: createTextFrame(cardImgDelegate, model.index); }
                 }
                 SequentialAnimation {
                     id: mUnhoverAnim
@@ -75,48 +77,29 @@ ListView {
         NumberAnimation { properties: "x,y"; duration: 200 }
     }
 
-    function createTextFrame(frameParent) {
-        let comp = Qt.createComponent("CardTextFrame.qml");
-        let incubator = comp.incubateObject(root, { visible: false }, Qt.Asynchronous);
-        let createdCallback = function(status) {
-            if (status === Component.Ready) {
-                if (frameParent.state !== "hovered") {
-                    incubator.object.destroy();
-                    return;
-                }
-                if (frameParent.cardTextFrame !== null)
-                    frameParent.cardTextFrame.destroy();
-                var textFrame = incubator.object;
+    function createTextFrame(frameParent, index) {
+        const cb = function(status) {
+            if (status !== Component.Ready)
+                return;
 
-                let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
-                let cardOffset = frameParent.x * zone.scale;
-
-                if (opponent) {
-                    let cardWidthAndScaleOffset = frameParent.width * zone.scale * (frameParent.scale + 1) / 2;
-                    textFrame.x = zone.x + cardOffset + cardWidthAndScaleOffset;
-                    textFrame.y = cardMappedPoint.y;
-
-                    let cardHeight = frameParent.height * zone.scale * frameParent.scale;
-                    if (textFrame.height > cardHeight)
-                        textFrame.y -= textFrame.height - cardHeight;
-                } else {
-                    textFrame.x = zone.x - textFrame.width + cardOffset;
-                    textFrame.y = cardMappedPoint.y;
-                }
-
-                if (frameParent.state !== "hovered") {
-                    textFrame.destroy();
-                    return;
-                }
-                textFrame.visible = true;
-                frameParent.cardTextFrame = textFrame;
+            if (frameParent.state !== "hovered") {
+                this.object.destroy();
+                return;
             }
+            if (frameParent.cardTextFrame !== null)
+                frameParent.cardTextFrame.destroy();
+            let textFrame = this.object;
+            if (opponent)
+                textFrame.anchors.left = frameParent.right;
+            else
+                textFrame.anchors.right = frameParent.left;
+
+            textFrame.mModel = zone.mModel.textModel(index);
+            textFrame.visible = true;
+            frameParent.cardTextFrame = textFrame;
         }
-        if (incubator.status !== Component.Ready) {
-            incubator.onStatusChanged = createdCallback;
-        } else {
-            createdCallback(Component.Ready);
-        }
+
+        ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
     }
 
     function destroyTextFrame(frameParent) {
@@ -130,6 +113,6 @@ ListView {
     function removeCard(index) { zone.mModel.removeCard(index); }
     function getXForNewCard() { return zone.x + zone.count * mMargin; }
     function getYForNewCard() { return zone.y; }
-    function getXForCard(index) { return zone.x + index/*(index ? (index - 1) : 0)*/ * mMargin; }
+    function getXForCard(index) { return zone.x + index * mMargin; }
     function getYForCard() { return zone.y; }
 }

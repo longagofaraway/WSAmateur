@@ -2,6 +2,8 @@ import QtQuick 2.15
 
 import wsamateur 1.0
 
+import "objectCreation.js" as ObjectCreator
+
 ListView {
     id: clockView
 
@@ -19,6 +21,7 @@ ListView {
     spacing: -root.cardWidth * (1 - mMarginModifier)
     orientation: ListView.Horizontal
     interactive: false
+    z: 55
 
     displaced: Transition {
         NumberAnimation { properties: "x,y"; duration: 200 }
@@ -69,7 +72,7 @@ ListView {
                     PropertyAction { target: cardImgDelegate; property: "z"; value: 100 }
                     PropertyAction { target: cardImgDelegate; property: "scale"; value: 0.8 }
                     PropertyAction { target: cardImgDelegate; property: "x"; value: model.index * root.cardWidth * (1 - mMarginModifier) }
-                    ScriptAction { script: createTextFrame(cardImgDelegate); }
+                    ScriptAction { script: createTextFrame(cardImgDelegate, model.index); }
                 }
                 SequentialAnimation {
                     id: mUnhoverAnim
@@ -100,44 +103,29 @@ ListView {
         }
     }
 
-    function createTextFrame(frameParent) {
-        let comp = Qt.createComponent("CardTextFrame.qml");
-        let incubator = comp.incubateObject(root, { visible: false }, Qt.Asynchronous);
-        let createdCallback = function(status) {
-            if (status === Component.Ready) {
-                if (frameParent.state !== "hovered") {
-                    incubator.object.destroy();
-                    return;
-                }
-                if (frameParent.cardTextFrame !== null)
-                    frameParent.cardTextFrame.destroy();
-                var textFrame = incubator.object;
+    function createTextFrame(frameParent, index) {
+        const cb = function(status) {
+            if (status !== Component.Ready)
+                return;
 
-                let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
-                let cardOffset = frameParent.x * clockView.scale;
-
-                if (!opponent) {
-                    let cardWidthAndScaleOffset = frameParent.width * clockView.scale * (frameParent.scale + 1) / 2;
-                    textFrame.x = clockView.x + cardOffset + cardWidthAndScaleOffset;
-                    textFrame.y = cardMappedPoint.y;
-
-                    let cardHeight = frameParent.height * clockView.scale * frameParent.scale;
-                    if (textFrame.height > cardHeight)
-                        textFrame.y -= textFrame.height - cardHeight;
-                } else {
-                    textFrame.x = clockView.x - textFrame.width + cardOffset;
-                    textFrame.y = cardMappedPoint.y;
-                }
-
-                textFrame.visible = true;
-                frameParent.cardTextFrame = textFrame;
+            if (frameParent.state !== "hovered") {
+                this.object.destroy();
+                return;
             }
+            if (frameParent.cardTextFrame !== null)
+                frameParent.cardTextFrame.destroy();
+            var textFrame = this.object;
+
+            if (!opponent)
+                textFrame.anchors.left = frameParent.right;
+            else
+                textFrame.anchors.right = frameParent.left;
+            textFrame.mModel = clockView.mModel.textModel(index);
+            textFrame.visible = true;
+            frameParent.cardTextFrame = textFrame;
         }
-        if (incubator.status !== Component.Ready) {
-            incubator.onStatusChanged = createdCallback;
-        } else {
-            createdCallback(Component.Ready);
-        }
+
+        ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
     }
 
     function destroyTextFrame(frameParent) {

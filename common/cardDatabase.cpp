@@ -3,7 +3,7 @@
 CardDatabase::CardDatabase() {
     auto info = std::make_shared<CardInfo>();
     info->setCode("IMC/W43-009");
-    info->setLevel(1);
+    info->setLevel(0);
     info->setCost(0);
     info->setSoul(1);
     info->setPower(4000);

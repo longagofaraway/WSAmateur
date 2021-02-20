@@ -4,6 +4,8 @@ import QtGraphicalEffects 1.12
 
 import wsamateur 1.0
 
+import "objectCreation.js" as ObjectCreator
+
 ListView {
     id: stagePlace
 
@@ -138,31 +140,28 @@ ListView {
                 onEntered: {
                     if (mStageCard === null || drag.active || mTooltipsDisabled)
                         return;
-                    let comp = Qt.createComponent("CardTextFrame.qml");
-                    let incubator = comp.incubateObject(root, { visible: false, z: 100 }, Qt.Asynchronous);
-                    let createdCallback = function(status) {
-                        if (status === Component.Ready) {
-                            if (!containsMouse) {
-                                incubator.object.destroy();
-                                return;
-                            }
-                            if (cardInfo !== null)
-                                cardInfo.destroy();
-                            cardInfo = incubator.object;
-                            cardInfo.x = stagePlace.x + stageRect.width;
-                            cardInfo.y = stagePlace.y;
-                            if (model.state === "Rested") {
-                                cardInfo.x += (root.cardHeight - root.cardWidth) / 2;
-                                cardInfo.y += (root.cardHeight - root.cardWidth) / 2;
-                            }
-                            cardInfo.visible = true;
+
+                    let cb = function(status) {
+                        if (status !== Component.Ready)
+                            return;
+
+                        if (!containsMouse || mStageCard === null) {
+                            this.object.destroy();
+                            return;
                         }
+                        if (cardInfo !== null)
+                            cardInfo.destroy();
+                        cardInfo = this.object;
+                        cardInfo.x = stagePlace.x + stageRect.width;
+                        cardInfo.y = stagePlace.y;
+                        if (model.state === "Rested") {
+                            cardInfo.x += (root.cardHeight - root.cardWidth) / 2;
+                            cardInfo.y += (root.cardHeight - root.cardWidth) / 2;
+                        }
+                        cardInfo.mModel = stage.mModel.textModel(model.index);
+                        cardInfo.visible = true;
                     }
-                    if (incubator.status !== Component.Ready) {
-                        incubator.onStatusChanged = createdCallback;
-                    } else {
-                        createdCallback(Component.Ready);
-                    }
+                    ObjectCreator.createAsync("CardTextFrame", root, cb);
                 }
 
                 onExited: destroyCardInfo()

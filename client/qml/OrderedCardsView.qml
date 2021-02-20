@@ -3,6 +3,8 @@ import QtQml.Models 2.15
 
 import wsamateur 1.0
 
+import "objectCreation.js" as ObjectCreator
+
 Rectangle {
     id: cardsView
 
@@ -164,28 +166,28 @@ Rectangle {
     }
 
     function createTextFrame(frameParent, model) {
-        let comp = Qt.createComponent("CardTextFrame.qml");
-        let incubator = comp.incubateObject(frameParent, { visible: false }, Qt.Asynchronous);
-        let createdCallback = function(status) {
-            if (status === Component.Ready) {
-                if (frameParent.state !== "hovered") {
-                    incubator.object.destroy();
-                    return;
-                }
-                if (frameParent.cardTextFrame !== null)
-                    frameParent.cardTextFrame.destroy();
-                let textFrame = incubator.object;
-                textFrame.x = frameParent.width;
-                textFrame.mModel = model;
-                textFrame.visible = true;
-                frameParent.cardTextFrame = textFrame;
+        const cb = function(status) {
+            if (status !== Component.Ready)
+                return;
+
+            if (frameParent.state !== "hovered") {
+                this.object.destroy();
+                return;
             }
+            if (frameParent.cardTextFrame !== null)
+                frameParent.cardTextFrame.destroy();
+            let textFrame = this.object;
+            if (!opponent)
+                textFrame.anchors.right = frameParent.left;
+            else
+                textFrame.anchors.left = frameParent.right;
+
+            textFrame.mModel = model;
+            textFrame.visible = true;
+            frameParent.cardTextFrame = textFrame;
         }
-        if (incubator.status !== Component.Ready) {
-            incubator.onStatusChanged = createdCallback;
-        } else {
-            createdCallback(Component.Ready);
-        }
+
+        ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
     }
 
     function clear() { clearAnim.start(); }

@@ -583,7 +583,7 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    createMovingCard("IMC/W43-046", "deck", 0, "hand", 0);
+    createMovingCard("IMC/W43-046", "deck", 0, "level", 0);
     //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
 
     //QMetaObject::invokeMethod(zone("stage")->visualItem(), "powerChangeAnim", Q_ARG(QVariant, 0));
