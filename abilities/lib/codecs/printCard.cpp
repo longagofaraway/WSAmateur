@@ -12,8 +12,15 @@ std::string printCard(const Card &c, bool plural, bool article) {
         return s;
     }
 
-    if (!plural & article)
+    if (!plural && article)
         s += "a ";
+
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::Owner) {
+            if (std::get<Owner>(cardSpec.specifier) == Owner::Player)
+                s += "your ";
+        }
+    }
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Level) {

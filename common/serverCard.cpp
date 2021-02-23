@@ -72,3 +72,17 @@ void ServerCard::validateBuffs() {
     }
     std::erase_if(mBuffs, [](const AttributeChange &o){ return o.mDuration <= 0; });
 }
+
+void ServerCard::changeAttr(asn::AttributeType type, int delta) {
+    switch (type) {
+    case asn::AttributeType::Power:
+        mPower += delta;
+        break;
+    case asn::AttributeType::Soul:
+        mSoul += delta;
+        break;
+    case asn::AttributeType::Level:
+        mLevel += delta;
+        break;
+    }
+}

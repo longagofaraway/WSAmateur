@@ -8,6 +8,13 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
     if (c.target.type == TargetType::MentionedCards ||
         c.target.type == TargetType::ChosenCards)
         s += "that card is ";
+    else if (c.target.type == TargetType::SpecificCards) {
+        if (c.target.targetSpecification->mode == TargetMode::All) {
+            s += "all of ";
+            s += printCard(c.target.targetSpecification->cards, true);
+            s += " are ";
+        }
+    }
 
     for (const auto &card: c.neededCard) {
         s += printCard(card, false);

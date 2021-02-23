@@ -39,6 +39,18 @@ bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
                 if (checkCard(neededCard.cardSpecifiers, *card.card))
                     return true;
         }
+    } else if (c.target.type == asn::TargetType::SpecificCards) {
+        assert(c.neededCard.size() == 1);
+        const auto &spec = *c.target.targetSpecification;
+        if (spec.mode == asn::TargetMode::All) {
+            auto stage = zone("stage");
+            bool verified = true;
+            for (int i = 0; i < stage->count(); ++i)
+                if (stage->card(i) && !checkCard(c.neededCard[0].cardSpecifiers, *stage->card(i)))
+                        verified = false;
+            if (verified)
+                return true;
+        }
     }
     return false;
 }
@@ -54,6 +66,24 @@ Resumable ServerPlayer::playAutoAbility(const asn::AutoAbility &a) {
         co_await playEffect(effect);
 }
 
+void ServerPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
+    if (a.effects.size() == 0)
+        return;
+
+    bool res = evaluateCondition(a.effects[0].cond);
+    if ((res && active) ||
+        (!res && !active))
+        return;
+    if (!res && active) {
+        mContext.revert = true;
+        active = false;
+    } else {
+        active = true;
+    }
+    for (const auto &effect: a.effects)
+        playContEffect(effect);
+}
+
 Resumable ServerPlayer::playAbility(const asn::Ability &a) {
     switch(a.type) {
     case asn::AbilityType::Auto:
@@ -64,6 +94,18 @@ Resumable ServerPlayer::playAbility(const asn::Ability &a) {
         break;
     default:
         break;
+    }
+}
+
+void ServerPlayer::activateContAbilities(ServerCard *card) {
+    for (auto &ab: card->abilities()) {
+        if (ab.ability.type != asn::AbilityType::Cont)
+            continue;
+
+        mContext = AbilityContext();
+        mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
+        mContext.cont = true;
+        playContAbility(std::get<asn::ContAbility>(ab.ability.ability), ab.active);
     }
 }
 
@@ -97,6 +139,27 @@ bool ServerPlayer::canBePlayed(const asn::Ability &a) {
     }
 
     return false;
+}
+
+void ServerPlayer::stageCountChanged() {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        for (auto &ab: card->abilities()) {
+            if (ab.ability.type != asn::AbilityType::Cont)
+                continue;
+            const auto &cont = std::get<asn::ContAbility>(ab.ability.ability);
+            if (cont.effects[0].cond.type == asn::ConditionType::IsCard) {
+                mContext = AbilityContext();
+                mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
+                mContext.cont = true;
+                playContAbility(cont, ab.active);
+            }
+        }
+    }
 }
 
 void ServerPlayer::checkOnPlacedFromHandToStage(ServerCard *card) {

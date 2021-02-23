@@ -28,6 +28,7 @@ enum StageRow {
 struct AbilityState {
     asn::Ability ability;
     bool permanent = true;
+    bool active = false; // for cont
     int duration = 0;
     int activationTimes = 0;
     AbilityState(asn::Ability ab) : ability(ab) {}
@@ -74,4 +75,5 @@ public:
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
+    void changeAttr(asn::AttributeType type, int delta);
 };

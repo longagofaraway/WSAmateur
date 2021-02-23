@@ -40,6 +40,8 @@ struct AbilityContext {
     bool mandatory = true;
     bool canceled = false;
     bool revealChosen = false;
+    bool cont = false; // is cont ability
+    bool revert = false; // revert results of cont ability
     std::vector<CardImprint> chosenCards;
     std::vector<CardImprint> mentionedCards;
     CardImprint thisCard;
@@ -136,6 +138,7 @@ public:
     void sendEndGame(bool victory);
 
     void addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration = 1);
+    void changeAttribute(ServerCard *card, asn::AttributeType attr, int delta);
     void setCardState(ServerCard *card, CardState state);
 
     void endOfTurnEffectValidation();
@@ -145,6 +148,8 @@ private:
     AbilityContext mContext;
     std::vector<TriggeredAbility> mQueue;
 
+    void activateContAbilities(ServerCard *card);
+    void stageCountChanged();
     void checkOnPlacedFromHandToStage(ServerCard *card);
 
     Resumable checkTiming();
@@ -156,8 +161,10 @@ private:
     bool canBePlayed(const asn::Ability &a);
 
     Resumable playAbility(const asn::Ability &a);
+    void playContAbility(const asn::ContAbility &a, bool &active);
     Resumable playAutoAbility(const asn::AutoAbility &a);
     Resumable playEventAbility(const asn::EventAbility &a);
+    void playContEffect(const asn::Effect &e);
     Resumable playEffect(const asn::Effect &e);
     Resumable playNonMandatory(const asn::NonMandatory &e);
     Resumable playChooseCard(const asn::ChooseCard &e);

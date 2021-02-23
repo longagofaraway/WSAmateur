@@ -41,6 +41,11 @@ std::string printAttributeGain(const AttributeGain &e) {
             res += "that character gets ";
         }
         break;
+    case TargetType::ThisCard:
+        res += "this card gets ";
+        break;
+    default:
+        assert(false);
     }
 
     if (e.gainType == ValueType::Raw) {

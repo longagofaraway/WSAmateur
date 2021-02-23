@@ -3,7 +3,8 @@
 using namespace asn;
 
 std::string printAutoAbility(const AutoAbility a) {
-    std::string s = "[A] ";
+    std::string prefix = "【AUTO】 ";
+    std::string s = prefix;
 
     if (a.cost)
         s += printCost(*a.cost);
@@ -12,7 +13,7 @@ std::string printAutoAbility(const AutoAbility a) {
 
     s += printEffects(a.effects);
 
-    s[4] = std::toupper(s[4]);
+    s[prefix.size()] = std::toupper(s[prefix.size()]);
     if (s[s.size() - 1] == ' ')
         s.pop_back();
     if (s[s.size() - 1] == ',')
@@ -37,10 +38,29 @@ std::string printEventAbility(const EventAbility a) {
     return s;
 }
 
+std::string printContAbility(const ContAbility a) {
+    std::string prefix = "【CONT】 ";
+    std::string s = prefix;
+
+    s += printEffects(a.effects);
+
+    if (s.size()) {
+        s[prefix.size()] = std::toupper(s[prefix.size()]);
+        if (s[s.size() - 1] == ' ')
+            s.pop_back();
+        if (s[s.size() - 1] == ',')
+            s.pop_back();
+        s.push_back('.');
+    }
+    return s;
+}
+
 std::string printAbility(const Ability &a) {
     switch (a.type) {
     case AbilityType::Auto:
         return printAutoAbility(std::get<AutoAbility>(a.ability));
+    case AbilityType::Cont:
+        return printContAbility(std::get<ContAbility>(a.ability));
     case AbilityType::Event:
         return printEventAbility(std::get<EventAbility>(a.ability));
     }

@@ -289,7 +289,6 @@ AutoAbility parseAutoAbility(const QJsonObject &json) {
     if (json.contains("keyword"))
         a.keywords = parseKeywords(json["keyword"].toArray());
 
-
     return a;
 }
 
@@ -396,7 +395,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-001_2.txt");
+    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-002_1.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

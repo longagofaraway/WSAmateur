@@ -270,6 +270,9 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
+    if (startZoneName == "stage" && targetZoneName != "stage")
+        stageCountChanged();
+
     return true;
 }
 
@@ -344,6 +347,8 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
+    stageCountChanged();
+    activateContAbilities(cardInPlay);
     checkOnPlacedFromHandToStage(cardInPlay);
     co_await checkTiming();
 }
@@ -478,6 +483,16 @@ void ServerPlayer::addAttributeBuff(asn::AttributeType attr, int pos, int delta,
 
     EventSetCardAttr event;
     event.set_stageid(pos);
+    event.set_attr(attrTypeToProto(attr));
+    event.set_value(attr == asn::AttributeType::Soul ? card->soul() : card->power());
+    sendToBoth(event);
+}
+
+void ServerPlayer::changeAttribute(ServerCard *card, asn::AttributeType attr, int delta) {
+    card->changeAttr(attr, delta);
+
+    EventSetCardAttr event;
+    event.set_stageid(card->pos());
     event.set_attr(attrTypeToProto(attr));
     event.set_value(attr == asn::AttributeType::Soul ? card->soul() : card->power());
     sendToBoth(event);

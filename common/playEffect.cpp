@@ -45,6 +45,16 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
     }
 }
 
+void ServerPlayer::playContEffect(const asn::Effect &e) {
+    switch (e.type) {
+    case asn::EffectType::AttributeGain:
+        playAttributeGain(std::get<asn::AttributeGain>(e.effect));
+        break;
+    default:
+        break;
+    }
+}
+
 Resumable ServerPlayer::playNonMandatory(const asn::NonMandatory &e) {
     mContext.mandatory = false;
     for (const auto &effect: e.effect)
@@ -261,6 +271,15 @@ void ServerPlayer::playAttributeGain(const asn::AttributeGain &e) {
     if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: mContext.chosenCards)
             addAttributeBuff(e.type, card.id, e.value, e.duration);
+    } else if (e.target.type == asn::TargetType::ThisCard) {
+        auto card = mContext.thisCard.card;
+        if (card == nullptr || card->zone()->name() != "stage")
+            return;
+
+        if (mContext.cont)
+            changeAttribute(card, e.type, e.value * (mContext.revert ? -1 : 1));
+        else
+            addAttributeBuff(e.type, mContext.thisCard.id, e.value, e.duration);
     }
 }
 
