@@ -11,7 +11,7 @@ void encodeCardSpecifier(const CardSpecifier &c, Buf &buf) {
         buf.push_back(static_cast<uint8_t>(std::get<CardType>(c.specifier)));
         break;
     case CardSpecifierType::Owner:
-        buf.push_back(static_cast<uint8_t>(std::get<Owner>(c.specifier)));
+        buf.push_back(static_cast<uint8_t>(std::get<Player>(c.specifier)));
         break;
     case CardSpecifierType::Trait:
         encodeString(std::get<Trait>(c.specifier).value, buf);

@@ -39,6 +39,8 @@ void encodeAutoAbility(const AutoAbility &a, Buf &buf) {
 
     buf.push_back(static_cast<uint8_t>(AbilityItem::Effect));
     encodeArray(a.effects, buf, encodeEffect);
+
+    buf.push_back(static_cast<uint8_t>(AbilityItem::EndTag));
 }
 
 void encodeContAbility(const ContAbility &a, Buf &buf) {
@@ -49,6 +51,8 @@ void encodeContAbility(const ContAbility &a, Buf &buf) {
 
     buf.push_back(static_cast<uint8_t>(AbilityItem::Effect));
     encodeArray(a.effects, buf, encodeEffect);
+
+    buf.push_back(static_cast<uint8_t>(AbilityItem::EndTag));
 }
 
 void encodeActAbility(const ActAbility &a, Buf &buf) {
@@ -62,6 +66,8 @@ void encodeActAbility(const ActAbility &a, Buf &buf) {
 
     buf.push_back(static_cast<uint8_t>(AbilityItem::Effect));
     encodeArray(a.effects, buf, encodeEffect);
+
+    buf.push_back(static_cast<uint8_t>(AbilityItem::EndTag));
 }
 
 void encodeEventAbility(const EventAbility &a, Buf &buf) {
@@ -72,6 +78,8 @@ void encodeEventAbility(const EventAbility &a, Buf &buf) {
 
     buf.push_back(static_cast<uint8_t>(AbilityItem::Effect));
     encodeArray(a.effects, buf, encodeEffect);
+
+    buf.push_back(static_cast<uint8_t>(AbilityItem::EndTag));
 }
 
 Buf encodeAbility(const Ability &a) {

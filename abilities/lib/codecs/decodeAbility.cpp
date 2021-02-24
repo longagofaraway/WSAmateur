@@ -28,7 +28,8 @@ Cost decodeCost(Iterator &it, Iterator end) {
 AutoAbility decodeAutoAbility(Iterator &it, Iterator end) {
     AutoAbility a;
 
-    while (it != end) {
+    bool abilityEnd = false;
+    while (it != end && !abilityEnd) {
         auto t = decodeEnum<AbilityItem>(it, end);
         switch (t) {
         case AbilityItem::Activation:
@@ -45,6 +46,9 @@ AutoAbility decodeAutoAbility(Iterator &it, Iterator end) {
             break;
         case AbilityItem::Effect:
             a.effects = decodeArray<Effect>(it, end, decodeEffect);
+            break;
+        case AbilityItem::EndTag:
+            abilityEnd = true;
             break;
         default:
             throw DecodeException("unknown AbilityItem");

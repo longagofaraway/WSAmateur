@@ -86,23 +86,19 @@ std::string printChooseCard(const ChooseCard &e) {
         if (spec.number.mod == NumModifier::ExactMatch) {
             if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
                 s += printDigit(spec.number.value);
-                s += " of ";
-                if (e.place->owner == Player::Player)
-                    s += "your ";
-                else if (e.place->owner == Player::Both)
-                    s += "your or your opponent's ";
+                s += " of " + printPlayer(e.place->owner);
                 plural = true;
             }
         }
+        if (spec.mode == TargetMode::FrontRow)
+            s += "center stage ";
 
         gChosenCardsNumber = spec.number;
         s += printCard(spec.cards, plural) + " ";
     }
 
     if (e.placeType == PlaceType::SpecificPlace && e.place->zone != Zone::Stage) {
-        s += "in ";
-        if (e.place->owner == Player::Player)
-            s += "your ";
+        s += "in " + printPlayer(e.place->owner);
         s += printZone(e.place->zone) + " ";
     }
 
@@ -127,7 +123,6 @@ std::string printRevealCard(const RevealCard &e) {
 
 std::string printNonMandatory(const NonMandatory &e) {
     std::string s = "you may ";
-
 
     s += printEffects(e.effect);
 
@@ -159,10 +154,7 @@ std::string printMoveCard(const MoveCard &e) {
             s += "the top ";
             s += printCard(e.target.targetSpecification->cards, false) + " of ";
         }
-        if (e.from.owner == Player::Player)
-            s += "your ";
-        else
-            s += "your opponent's";
+        s += printPlayer(e.from.owner);
         s += printZone(e.from.zone) + " ";
     }
 
@@ -174,6 +166,8 @@ std::string printMoveCard(const MoveCard &e) {
             s += "your ";
         else if (e.to[i].owner == Player::Both)
             s += "its owner's ";
+        else if (e.to[i].owner == Player::Opponent)
+            s += "your opponent's ";
         s += printZone(e.to[i].zone) + " ";
     }
 
@@ -228,6 +222,31 @@ std::string printShuffle(const Shuffle &e) {
     return s;
 }
 
+std::string printAbilityGain(const AbilityGain &e) {
+    std::string s = printTarget(e.target);
+
+    s += "gets ";
+    if (static_cast<size_t>(e.number) == e.abilities.size()) {
+        s += "the following ";
+        if (e.number == 1)
+            s += "ability ";
+        else
+            s += std::to_string(e.number) + " abilities ";
+    } else {
+        s += std::to_string(e.number) + " of the following " + std::to_string(e.abilities.size()) + " abilities of your choice ";
+    }
+
+    if (e.duration == 1)
+        s += "until end of turn. ";
+    else if (e.duration == 2)
+        s += "until end of your opponent's turn. ";
+
+    for (const auto &a: e.abilities)
+        s += "\"" + printAbility(a) + "\" ";
+    s.pop_back();
+    return s;
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -261,6 +280,10 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::Shuffle:
         s += printShuffle(std::get<Shuffle>(e.effect));
+        break;
+    case EffectType::AbilityGain:
+        s += printAbilityGain(std::get<AbilityGain>(e.effect));
+        break;
     }
 
     return s;

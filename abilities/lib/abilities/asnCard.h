@@ -72,7 +72,7 @@ struct CardSpecifier {
     std::variant<
         std::monostate,
         CardType,
-        Owner,
+        Player,
         Trait,
         ExactName,
         NameContains,

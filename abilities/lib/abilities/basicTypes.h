@@ -21,7 +21,8 @@ enum class Player : uint8_t {
 };
 
 enum class Zone : uint8_t {
-    Stage = 1,
+    NotSpecified = 0,
+    Stage,
     WaitingRoom,
     Deck,
     Clock,

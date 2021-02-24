@@ -42,7 +42,7 @@ ConditionIsCard {
 }
 
 ConditionHaveCard {
-  invert Bool,
+  invert Bool, // do not have
   who Player,
   howMany Number,
   whichCards Card,

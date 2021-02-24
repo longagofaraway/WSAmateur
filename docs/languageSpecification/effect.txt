@@ -156,7 +156,7 @@ PayCost {
 
 AbilityGain {
   target Target,
-  number UInt8,
+  number UInt8, // how much abilities the card gets
   abilities Array of Ability,
   duration UInt8
 }

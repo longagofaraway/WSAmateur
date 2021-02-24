@@ -3,7 +3,7 @@
 using namespace asn;
 
 std::string printConditionIsCard(const ConditionIsCard &c) {
-    std::string s = "If ";
+    std::string s = "if ";
 
     if (c.target.type == TargetType::MentionedCards ||
         c.target.type == TargetType::ChosenCards)
@@ -23,12 +23,32 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
     return s + ", ";
 }
 
+std::string printConditionHaveCard(const ConditionHaveCard &c) {
+    std::string s = "if ";
+
+    if (c.who == Player::Player)
+        s += "you ";
+
+    s += "have ";
+    if ((c.howMany.mod == NumModifier::AtLeast ||
+        c.howMany.mod == NumModifier::ExactMatch) &&
+        c.howMany.value == 1 && c.excludingThis)
+        s += "another ";
+
+    s += printCard(c.whichCards, false, false);
+
+    return s + ", ";
+}
+
 std::string printCondition(const Condition &c) {
     std::string s;
 
     switch(c.type) {
     case ConditionType::IsCard:
         s += printConditionIsCard(std::get<ConditionIsCard>(c.cond));
+        break;
+    case ConditionType::HaveCards:
+        s += printConditionHaveCard(std::get<ConditionHaveCard>(c.cond));
         break;
     }
 

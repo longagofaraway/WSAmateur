@@ -29,6 +29,7 @@ enum Keyword {
 }
 
 enum AbilityItem {
+  endTag = 0,
   cost = 1,
   trigger = 2,
   effect = 3,

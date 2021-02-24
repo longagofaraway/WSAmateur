@@ -112,7 +112,8 @@ enum Zone {
   hand = 5,
   memory = 6,
   stock = 7,
-  level = 8
+  level = 8,
+  climax = 9
 }
 
 enum Position {

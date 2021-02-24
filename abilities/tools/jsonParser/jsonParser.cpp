@@ -83,7 +83,7 @@ CardSpecifier parseCardSpecifier(const QJsonObject &json) {
         c.specifier = static_cast<CardType>(json["specifier"].toInt());
         break;
     case CardSpecifierType::Owner:
-        c.specifier = static_cast<Owner>(json["specifier"].toInt());
+        c.specifier = static_cast<Player>(json["specifier"].toInt());
         break;
     case CardSpecifierType::Trait:
         c.specifier = parseStringType<Trait>(json["specifier"].toObject());
@@ -269,7 +269,7 @@ std::vector<Keyword> parseKeywords(const QJsonArray &json) {
 }
 
 AutoAbility parseAutoAbility(const QJsonObject &json) {
-    if (!json.contains("activationTimes") || !json["activationTimes"].isDouble())
+    if (json.contains("activationTimes") && !json["activationTimes"].isDouble())
         throw std::runtime_error("no activationTimes");
     if (!json.contains("trigger") || !json["trigger"].isObject())
         throw std::runtime_error("no trigger");
@@ -281,7 +281,10 @@ AutoAbility parseAutoAbility(const QJsonObject &json) {
         throw std::runtime_error("wrong keyword");
 
     AutoAbility a;
-    a.activationTimes = json["activationTimes"].toInt();
+    if (json.contains("activationTimes"))
+        a.activationTimes = json["activationTimes"].toInt();
+    else
+        a.activationTimes = 0;
     a.trigger = parseTrigger(json["trigger"].toObject());
     a.effects = parseArray(json["effects"].toArray(), parseEffect);
     if (json.contains("cost"))
@@ -395,7 +398,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-002_1.txt");
+    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-002_2.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

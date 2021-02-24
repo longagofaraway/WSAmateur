@@ -11,7 +11,7 @@ CardSpecifier decodeCardSpecifier(Iterator &it, Iterator end) {
         c.specifier = decodeEnum<CardType>(it, end);
         break;
     case CardSpecifierType::Owner:
-        c.specifier = decodeEnum<Owner>(it, end);
+        c.specifier = decodeEnum<Player>(it, end);
         break;
     case CardSpecifierType::Trait:
         c.specifier = Trait{ decodeString(it, end) };
