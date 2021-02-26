@@ -146,6 +146,7 @@ void ServerGame::battleStep() {
         return;
 
 
+    auto oppState = battleOpponent->state();
     if (attCard->power() > battleOpponent->power()) {
         opponent->setCardState(battleOpponent, StateReversed);
     } else if (attCard->power() < battleOpponent->power()) {
@@ -153,6 +154,10 @@ void ServerGame::battleStep() {
     } else {
         attPlayer->setCardState(attCard, StateReversed);
         opponent->setCardState(battleOpponent, StateReversed);
+    }
+    if (battleOpponent->state() == CardState::StateReversed &&
+        battleOpponent->state() != oppState) {
+        attPlayer->checkOnBattleOpponentReversed(attCard, battleOpponent);
     }
 }
 
@@ -168,4 +173,14 @@ Resumable ServerGame::encoreStep() {
     turnPlayer->setActive(false);
     opponent->setActive(true);
     opponent->startTurn();
+}
+
+Resumable ServerGame::checkTiming() {
+    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
+    if (!aplayer || !opponent)
+        co_return;
+
+    co_await aplayer->checkTiming();
+    co_await opponent->checkTiming();
 }

@@ -60,6 +60,7 @@ public:
     Resumable continueFromDamageStep();
     void battleStep();
     Resumable encoreStep();
+    Resumable checkTiming();
 
     void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 

@@ -143,6 +143,10 @@ public:
 
     void endOfTurnEffectValidation();
 
+    void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
+    Resumable checkTiming();
+    Resumable processRuleActions(bool &ruleActionFound);
+
 private:
     // playing abilities
     AbilityContext mContext;
@@ -154,7 +158,6 @@ private:
     void checkOnPlacedOnClimaxZone(ServerCard *climax);
     void checkOnAttack(ServerCard *card);
 
-    Resumable checkTiming();
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);

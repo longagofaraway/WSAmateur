@@ -350,7 +350,7 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     stageCountChanged();
     activateContAbilities(cardInPlay);
     checkOnPlacedFromHandToStage(cardInPlay);
-    co_await checkTiming();
+    co_await mGame->checkTiming();
 }
 
 Resumable ServerPlayer::playClimax(int handIndex) {
@@ -370,7 +370,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     mGame->sendPublicEvent(eventPublic, mId);
 
     checkOnPlacedOnClimaxZone(cardPtr);
-    co_await checkTiming();
+    co_await mGame->checkTiming();
 
     //process climax effects
 
@@ -474,7 +474,7 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
         addAttributeBuff(asn::AttributeType::Soul, cmd.stageid(), -battleOpp->level());
 
     checkOnAttack(attCard);
-    co_await checkTiming();
+    co_await mGame->checkTiming();
 
     co_await triggerStep(cmd.stageid());
 }
@@ -534,7 +534,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
             sendToBoth(event);
             mContext = AbilityContext();
             mContext.thisCard = CardImprint("res", 0, card);
-            co_await playAbility(globalAbility(trigger));
+            co_await playAbility(triggerAbility(trigger));
             EventAbilityResolved ev2;
             ev2.set_uniqueid(uniqueId);
             sendToBoth(ev2);
@@ -749,6 +749,8 @@ void ServerPlayer::sendEndGame(bool victory) {
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {
+    if (card->state() == state)
+        return;
     card->setState(state);
 
     EventSetCardState event;

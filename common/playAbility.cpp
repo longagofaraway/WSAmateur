@@ -4,6 +4,7 @@
 #include "serverGame.h"
 #include "serverPlayer.h"
 #include "codecs/encode.h"
+#include "globalAbilities/globalAbilities.h"
 
 Resumable ServerPlayer::payCost() {
     if (!mContext.cost)
@@ -266,6 +267,25 @@ void ServerPlayer::checkOnAttack(ServerCard *card) {
     }
 }
 
+void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpp) {
+    auto &abs = attCard->abilities();
+    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+        if (abs[i].ability.type != asn::AbilityType::Auto)
+            continue;
+        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        if (autoab.trigger.type != asn::TriggerType::OnBattleOpponentReversed)
+            continue;
+        const auto &trig = std::get<asn::BattleOpponentReversedTrigger>(autoab.trigger.trigger);
+        if (!checkCard(trig.card.cardSpecifiers, *battleOpp))
+            continue;
+        TriggeredAbility a;
+        a.card = CardImprint(attCard->zone()->name(), attCard->pos(), attCard);
+        a.type = ProtoCard;
+        a.abilityId = i;
+        mQueue.push_back(a);
+    }
+}
+
 Resumable ServerPlayer::checkTiming() {
     if (mQueue.empty())
         co_return;
@@ -278,19 +298,10 @@ Resumable ServerPlayer::checkTiming() {
     bool abilitiesSent = false;
     while (mQueue.size()) {
         bool ruleActionFound = false;
-        size_t j = 0;
-        for (; j < mQueue.size(); ++j) {
-            if (mQueue[j].type == ProtoAbilityType::ProtoRuleAction) {
-                //play rule action
-                //playAbility()
-                ruleActionFound = true;
-                break;
-            }
-        }
-        if (ruleActionFound) {
-            mQueue.erase(mQueue.begin() + j);
+        co_await processRuleActions(ruleActionFound);
+        if (ruleActionFound)
             continue;
-        }
+        co_await mGame->opponentOfPlayer(mId)->processRuleActions(ruleActionFound);
 
         if (!abilitiesSent) {
             EventAbilityActivated event;
@@ -340,7 +351,7 @@ Resumable ServerPlayer::checkTiming() {
             continue;
         }
 
-        j = 0;
+        size_t j = 0;
         for (; j < mQueue.size(); ++j) {
             if (mQueue[j].uniqueId == uniqueId) {
                 mContext = AbilityContext();
@@ -356,5 +367,22 @@ Resumable ServerPlayer::checkTiming() {
         mQueue.erase(mQueue.begin() + j);
     }
     mExpectedCommands = expectedCopy;
+}
+
+Resumable ServerPlayer::processRuleActions(bool &ruleActionFound) {
+    if (mQueue.empty())
+        co_return;
+
+    auto it = mQueue.begin();
+    while (it != mQueue.end()) {
+        if (it->type == ProtoAbilityType::ProtoRuleAction) {
+            mContext = AbilityContext();
+            co_await playAbility(ruleActionAbility(static_cast<RuleAction>(it->abilityId)));
+            ruleActionFound = true;
+            it = mQueue.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 

@@ -257,7 +257,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
             }
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger)
-            a.text = QString::fromStdString(printAbility(globalAbility(static_cast<TriggerIcon>(protoa.abilityid()))));
+            a.text = QString::fromStdString(printAbility(triggerAbility(static_cast<TriggerIcon>(protoa.abilityid()))));
 
         if (event.abilities_size() > 1) {
             if (canPlay(a.ability))
