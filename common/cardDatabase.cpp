@@ -6,7 +6,7 @@ CardDatabase::CardDatabase() {
     info->setLevel(0);
     info->setCost(0);
     info->setSoul(1);
-    info->setPower(4000);
+    info->setPower(1400);
     info->setName("prr");
     info->setType(CardType::Char);
     info->setColor('Y');

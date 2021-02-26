@@ -54,11 +54,11 @@ public:
     void setStartingPlayer();
 
     void startGame();
-    void endMulligan();
+    Resumable endMulligan();
     ServerPhase phase() const { return mCurrentPhase; }
     void setPhase(ServerPhase phase) { mCurrentPhase = phase; }
     Resumable continueFromDamageStep();
-    void battleStep();
+    Resumable battleStep();
     Resumable encoreStep();
     Resumable checkTiming();
 

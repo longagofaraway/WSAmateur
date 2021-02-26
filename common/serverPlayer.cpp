@@ -44,7 +44,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandMulligan>()) {
         CommandMulligan mulliganCmd;
         cmd.command().UnpackTo(&mulliganCmd);
-        mulligan(mulliganCmd);
+        mGame->startAsyncTask(mulligan(mulliganCmd));
     } else if (cmd.command().Is<CommandClockPhase>()) {
         CommandClockPhase clockCmd;
         cmd.command().UnpackTo(&clockCmd);
@@ -140,7 +140,7 @@ void ServerPlayer::startGame() {
     mExpectedCommands.emplace_back(CommandMulligan::GetDescriptor()->name(), 1);
 }
 
-void ServerPlayer::startTurn() {
+Resumable ServerPlayer::startTurn() {
     sendToBoth(EventStartTurn());
 
     auto stage = zone("stage");
@@ -151,6 +151,7 @@ void ServerPlayer::startTurn() {
     }
 
     drawCards(1);
+    co_await mGame->checkTiming();
 
     sendToBoth(EventClockPhase());
 
@@ -204,7 +205,7 @@ void ServerPlayer::dealStartingHand() {
     mGame->sendPublicEvent(eventPublic, mId);
 }
 
-void ServerPlayer::mulligan(const CommandMulligan &cmd) {
+Resumable ServerPlayer::mulligan(const CommandMulligan &cmd) {
     if (cmd.ids_size()) {
         std::vector<int> ids;
         for (int i = 0; i < cmd.ids_size(); ++i)
@@ -214,7 +215,7 @@ void ServerPlayer::mulligan(const CommandMulligan &cmd) {
         drawCards(static_cast<int>(ids.size()));
     }
     mMulliganFinished = true;
-    mGame->endMulligan();
+    co_await mGame->endMulligan();
 }
 
 void ServerPlayer::drawCards(int number) {
@@ -291,6 +292,8 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
             co_await levelUp();
         drawCards(2);
     }
+
+    co_await mGame->checkTiming();
 
     sendToBoth(EventMainPhase());
 
@@ -543,6 +546,8 @@ Resumable ServerPlayer::triggerStep(int pos) {
     }
     moveCard("res", 0, "stock");
 
+    co_await mGame->checkTiming();
+
     if (attackType() == FrontAttack)
         mGame->opponentOfPlayer(mId)->counterStep();
     else
@@ -585,6 +590,8 @@ Resumable ServerPlayer::damageStep() {
 
     if (zone("clock")->count() >= 7)
         co_await levelUp();
+
+    co_await mGame->checkTiming();
 }
 
 Resumable ServerPlayer::levelUp() {
@@ -727,7 +734,10 @@ void ServerPlayer::refresh() {
     deck->shuffle();
     sendToBoth(EventRefresh());
 
-    //resolve refresh point
+    TriggeredAbility a;
+    a.type = ProtoRuleAction;
+    a.abilityId = static_cast<int>(RuleAction::RefreshPoint);
+    mQueue.push_back(a);
 }
 
 void ServerPlayer::sendPhaseEvent(asn::Phase phase) {

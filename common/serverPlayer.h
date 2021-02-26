@@ -107,9 +107,9 @@ public:
     void setupZones();
     void createStage();
     void startGame();
-    void startTurn();
+    Resumable startTurn();
     void dealStartingHand();
-    void mulligan(const CommandMulligan &cmd);
+    Resumable mulligan(const CommandMulligan &cmd);
     void drawCards(int number);
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName);
     bool moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName, bool reveal = false);

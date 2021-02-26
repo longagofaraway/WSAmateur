@@ -61,7 +61,8 @@ AutoAbility decodeAutoAbility(Iterator &it, Iterator end) {
 ActAbility decodeActAbility(Iterator &it, Iterator end) {
     ActAbility a;
 
-    while (it != end) {
+    bool abilityEnd = false;
+    while (it != end && !abilityEnd) {
         auto t = decodeEnum<AbilityItem>(it, end);
         switch (t) {
         case AbilityItem::Keyword:
@@ -72,6 +73,9 @@ ActAbility decodeActAbility(Iterator &it, Iterator end) {
             break;
         case AbilityItem::Effect:
             a.effects = decodeArray<Effect>(it, end, decodeEffect);
+            break;
+        case AbilityItem::EndTag:
+            abilityEnd = true;
             break;
         default:
             throw DecodeException("unknown AbilityItem");
@@ -84,7 +88,8 @@ ActAbility decodeActAbility(Iterator &it, Iterator end) {
 ContAbility decodeContAbility(Iterator &it, Iterator end) {
     ContAbility a;
 
-    while (it != end) {
+    bool abilityEnd = false;
+    while (it != end && !abilityEnd) {
         auto t = decodeEnum<AbilityItem>(it, end);
         switch (t) {
         case AbilityItem::Keyword:
@@ -92,6 +97,9 @@ ContAbility decodeContAbility(Iterator &it, Iterator end) {
             break;
         case AbilityItem::Effect:
             a.effects = decodeArray<Effect>(it, end, decodeEffect);
+            break;
+        case AbilityItem::EndTag:
+            abilityEnd = true;
             break;
         default:
             throw DecodeException("unknown AbilityItem");
@@ -104,7 +112,8 @@ ContAbility decodeContAbility(Iterator &it, Iterator end) {
 EventAbility decodeEventAbility(Iterator &it, Iterator end) {
     EventAbility a;
 
-    while (it != end) {
+    bool abilityEnd = false;
+    while (it != end && !abilityEnd) {
         auto t = decodeEnum<AbilityItem>(it, end);
         switch (t) {
         case AbilityItem::Keyword:
@@ -112,6 +121,9 @@ EventAbility decodeEventAbility(Iterator &it, Iterator end) {
             break;
         case AbilityItem::Effect:
             a.effects = decodeArray<Effect>(it, end, decodeEffect);
+            break;
+        case AbilityItem::EndTag:
+            abilityEnd = true;
             break;
         default:
             throw DecodeException("unknown AbilityItem");

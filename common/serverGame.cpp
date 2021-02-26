@@ -88,15 +88,15 @@ void ServerGame::startGame() {
     }
 }
 
-void ServerGame::endMulligan() {
+Resumable ServerGame::endMulligan() {
     for (auto &pEntry: mPlayers) {
         if (!pEntry.second->mulliganFinished())
-            return;
+            co_return;
     }
 
     for (auto &pEntry: mPlayers) {
         if (pEntry.second->active())
-            pEntry.second->startTurn();
+            co_await pEntry.second->startTurn();
     }
 }
 
@@ -116,7 +116,7 @@ Resumable ServerGame::continueFromDamageStep() {
     attPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     defPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     co_await defPlayer->damageStep();
-    battleStep();
+    co_await battleStep();
     attPlayer->endOfAttack();
     if (attPlayer->canAttack())
         attPlayer->attackDeclarationStep();
@@ -124,26 +124,26 @@ Resumable ServerGame::continueFromDamageStep() {
         co_await encoreStep();
 }
 
-void ServerGame::battleStep() {
+Resumable ServerGame::battleStep() {
     ServerPlayer *attPlayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);
     if (!attPlayer || !opponent)
-        return;
+        co_return;
 
     if (attPlayer->attackType() == AttackType::SideAttack
         || attPlayer->attackType() == AttackType::DirectAttack)
-        return;
+        co_return;
 
     mCurrentPhase = ServerPhase::BattleStep;
     //at the beginning of battle step, check timing
 
     auto attCard = attPlayer->attackingCard();
     if (!attCard || attCard->zone()->name() != "stage")
-        return;
+        co_return;
 
     auto battleOpponent = attPlayer->battleOpponent(attCard);
     if (!battleOpponent)
-        return;
+        co_return;
 
 
     auto oppState = battleOpponent->state();
@@ -159,6 +159,7 @@ void ServerGame::battleStep() {
         battleOpponent->state() != oppState) {
         attPlayer->checkOnBattleOpponentReversed(attCard, battleOpponent);
     }
+    co_await checkTiming();
 }
 
 Resumable ServerGame::encoreStep() {
@@ -172,7 +173,7 @@ Resumable ServerGame::encoreStep() {
     co_await turnPlayer->endPhase();
     turnPlayer->setActive(false);
     opponent->setActive(true);
-    opponent->startTurn();
+    co_await opponent->startTurn();
 }
 
 Resumable ServerGame::checkTiming() {
