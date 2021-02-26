@@ -46,7 +46,7 @@ public:
     void setGlow(bool glow) { mGlow = glow; }
     void setSelected(bool selected) { mSelected = selected; }
     char color() const { return mColor; }
-    int cost() const { return mCost; }
+    int cost() const override { return mCost; }
     int level() const override { return mLevel; }
     void setLevel(int level) { mLevel = level; }
     int power() const { return mPower; }
@@ -61,8 +61,10 @@ public:
     QString qstate() const;
     QString qtype() const;
     QString qcode() const { return QString::fromStdString(mCode); }
-    std::string code() const { return mCode; }
+    const std::string& code() const { return mCode; }
+    const std::string& name() const override { return mInfo->name(); }
     QString text(int abilityId) const { return mAbilityModel->text(abilityId); }
     AbilityModel* textModel() { return mAbilityModel.get(); }
     const asn::Ability& ability(int abilityId) const { return mAbilityModel->ability(abilityId); }
+    void addAbility(const asn::Ability &a);
 };

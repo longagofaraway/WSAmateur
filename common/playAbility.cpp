@@ -25,6 +25,8 @@ bool ServerPlayer::evaluateCondition(const asn::Condition &c) {
         return true;
     case asn::ConditionType::IsCard:
         return evaluateConditionIsCard(std::get<asn::ConditionIsCard>(c.cond));
+    case asn::ConditionType::HaveCards:
+        return evaluateConditionHaveCard(std::get<asn::ConditionHaveCard>(c.cond));
     default:
         assert(false);
         return false;
@@ -52,6 +54,35 @@ bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
                 return true;
         }
     }
+    return false;
+}
+
+bool ServerPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
+    auto player = (c.who == asn::Player::Player) ? this : mGame->opponentOfPlayer(mId);
+    auto z = player->zone(asnZoneToString(c.where.zone));
+    int count = 0;
+    for (int i = 0; i < z->count(); ++i) {
+        auto card = z->card(i);
+        if (!card)
+            continue;
+
+        if (c.excludingThis && mContext.thisCard.card == card)
+            continue;
+
+        if (checkCard(c.whichCards.cardSpecifiers, *card)) {
+            count++;
+
+            if (c.howMany.mod == asn::NumModifier::AtLeast &&
+                count >= c.howMany.value)
+                return true;
+        }
+    }
+    if ((c.howMany.mod == asn::NumModifier::ExactMatch &&
+         c.howMany.value == count) ||
+        (c.howMany.mod == asn::NumModifier::UpTo &&
+         c.howMany.value <= count))
+        return true;
+
     return false;
 }
 
@@ -184,7 +215,42 @@ void ServerPlayer::checkOnPlacedFromHandToStage(ServerCard *card) {
     }
 }
 
+void ServerPlayer::checkOnPlacedOnClimaxZone(ServerCard *climax) {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+        for (int j = 0; static_cast<size_t>(j) < card->abilities().size(); ++j) {
+            const auto &a = card->abilities()[j];
+            if (a.ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &aa = std::get<asn::AutoAbility>(a.ability.ability);
+            if (aa.trigger.type != asn::TriggerType::OnZoneChange)
+                continue;
+            const auto &t = std::get<asn::ZoneChangeTrigger>(aa.trigger.trigger);
+            if (t.to != asn::Zone::Climax)
+                continue;
+            assert(t.target.size() == 1);
+            if (t.target[0].type != asn::TargetType::SpecificCards)
+                continue;
+            const auto &spec = *t.target[0].targetSpecification;
+            if (!checkCard(spec.cards.cardSpecifiers, *climax))
+                continue;
+
+            TriggeredAbility ta;
+            ta.card = CardImprint(card->zone()->name(), card->pos(), card);
+            ta.type = ProtoCard;
+            ta.abilityId = j;
+            mQueue.push_back(ta);
+        }
+    }
+}
+
 Resumable ServerPlayer::checkTiming() {
+    if (mQueue.empty())
+        co_return;
+
     auto expectedCopy = mExpectedCommands;
     clearExpectedComands();
     // first play all rule actions

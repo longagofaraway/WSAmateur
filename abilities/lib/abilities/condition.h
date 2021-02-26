@@ -29,7 +29,7 @@ struct ConditionHaveCard {
     Player who;
     Number howMany;
     Card whichCards;
-    Zone where;
+    Place where;
     bool excludingThis;
 };
 

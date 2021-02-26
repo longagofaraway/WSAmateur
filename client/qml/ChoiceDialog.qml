@@ -5,6 +5,7 @@ import wsamateur 1.0
 Rectangle {
     id: dialog
 
+    property bool mLongtext: false
     property string mHeaderText: "Choose a card"
     property ChoiceDialogModel mModel: innerModel
 
@@ -14,7 +15,7 @@ Rectangle {
     border.width: 1
     color: "#F0564747"
     z: 160
-    width: Math.max(200, header.contentWidth) + 25
+    width: mLongtext ? 375 : (Math.max(200, header.contentWidth) + 25)
     height: childrenRect.height + 11
     opacity: 0
     scale: 0
@@ -50,7 +51,7 @@ Rectangle {
         anchors.top: header.bottom
         anchors.topMargin: 3
         anchors.horizontalCenter: parent.horizontalCenter
-        width: 200
+        width: dialog.width - 25
         height: contentHeight
         interactive: false
 
@@ -67,8 +68,14 @@ Rectangle {
             Text {
                 id: choiceText
                 anchors.centerIn: parent
+                width: parent.width
                 text: model.text
-                font.pointSize: 18
+                font.pointSize: dialog.mLongtext ? 10 : 18
+                wrapMode: Text.WordWrap
+                textFormat: Text.StyledText
+                horizontalAlignment: dialog.mLongtext ? Text.AlignJustify : Text.AlignHCenter
+                leftPadding: 4
+                rightPadding: 4
             }
 
             MouseArea {

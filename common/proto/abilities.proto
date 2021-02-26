@@ -81,3 +81,13 @@ message EventSearchCard {
     bytes effect = 1;
     repeated string codes = 2;
 }
+
+message EventAbilityChoice {
+    bytes effect = 1;
+}
+
+message EventAbilityGain {
+    sint32 cardId = 1;
+    string zone = 2;
+    bytes ability = 3;
+}

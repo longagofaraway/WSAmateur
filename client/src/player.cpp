@@ -178,6 +178,14 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventSearchCard ev;
         event->event().UnpackTo(&ev);
         processSearchCard(ev);
+    } else if (event->event().Is<EventAbilityChoice>()) {
+        EventAbilityChoice ev;
+        event->event().UnpackTo(&ev);
+        processAbilityChoice(ev);
+    } else if (event->event().Is<EventAbilityGain>()) {
+        EventAbilityGain ev;
+        event->event().UnpackTo(&ev);
+        processAbilityGain(ev);
     }
 }
 
@@ -583,7 +591,8 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    createMovingCard("IMC/W43-046", "deck", 0, "level", 0);
+    std::vector<QString> data { "1234567890123", "1234567890123456789" };
+    mChoiceDialog->setData("Choose ability", data);
     //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
 
     //QMetaObject::invokeMethod(zone("stage")->visualItem(), "powerChangeAnim", Q_ARG(QVariant, 0));

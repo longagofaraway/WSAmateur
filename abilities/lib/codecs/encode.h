@@ -24,6 +24,7 @@ void encodeChooseCard(const asn::ChooseCard &m, Buf &buf);
 void encodeMoveCard(const asn::MoveCard &e, Buf &buf);
 void encodeDrawCard(const asn::DrawCard &e, Buf &buf);
 void encodeSearchCard(const asn::SearchCard &e, Buf &buf);
+void encodeAbilityGain(const asn::AbilityGain &e, Buf &buf);
 
 template<typename T>
 void encodeArray(const std::vector<T> &array, Buf &buf, void(*encodeType)(const T&, Buf&)) {

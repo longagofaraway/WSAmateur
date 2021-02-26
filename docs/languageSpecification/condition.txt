@@ -46,7 +46,7 @@ ConditionHaveCard {
   who Player,
   howMany Number,
   whichCards Card,
-  where Zone,
+  where Place,
   excludingThis Bool
 }
 

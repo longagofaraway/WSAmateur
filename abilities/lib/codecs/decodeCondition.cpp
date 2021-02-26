@@ -15,7 +15,7 @@ ConditionHaveCard decodeConditionHaveCard(Iterator &it, Iterator end) {
     c.who = decodeEnum<Player>(it, end);
     c.howMany = decodeNumber(it, end);
     c.whichCards = decodeCard(it, end);
-    c.where = decodeEnum<Zone>(it, end);
+    c.where = decodePlace(it, end);
     c.excludingThis = decodeBool(it, end);
     return c;
 }

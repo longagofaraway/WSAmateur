@@ -12,7 +12,7 @@ void encodeConditionHaveCard(const ConditionHaveCard &c, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(c.who));
     encodeNumber(c.howMany, buf);
     encodeCard(c.whichCards, buf);
-    buf.push_back(static_cast<uint8_t>(c.where));
+    encodePlace(c.where, buf);
     buf.push_back(c.excludingThis ? 1 : 0);
 }
 

@@ -38,7 +38,7 @@ ConditionHaveCard parseConditionHaveCard(const QJsonObject &json) {
         throw std::runtime_error("no howMany in ConditionHaveCard");
     if (!json.contains("whichCards") || !json["whichCards"].isObject())
         throw std::runtime_error("no whichCards in ConditionHaveCard");
-    if (!json.contains("where") || !json["where"].isDouble())
+    if (!json.contains("where") || !json["where"].isObject())
         throw std::runtime_error("no where in ConditionHaveCard");
     if (!json.contains("excludingThis") || !json["excludingThis"].isBool())
         throw std::runtime_error("no excludingThis in ConditionHaveCard");
@@ -48,7 +48,7 @@ ConditionHaveCard parseConditionHaveCard(const QJsonObject &json) {
     c.who = static_cast<Player>(json["who"].toInt());
     c.howMany = parseNumber(json["howMany"].toObject());
     c.whichCards = parseCard(json["whichCards"].toObject());
-    c.where = static_cast<Zone>(json["who"].toInt());
+    c.where = parsePlace(json["where"].toObject());
     c.excludingThis = json["excludingThis"].toBool();
 
     return c;

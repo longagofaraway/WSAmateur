@@ -123,6 +123,23 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
                 eligible = false;
             break;
         }
+        case asn::CardSpecifierType::Cost: {
+            const auto &number = std::get<asn::CostSpecifier>(spec.specifier).value;
+            if ((number.mod == asn::NumModifier::ExactMatch &&
+                 number.value != card.cost()) ||
+                (number.mod == asn::NumModifier::AtLeast &&
+                 number.value > card.cost()) ||
+                (number.mod == asn::NumModifier::UpTo &&
+                 number.value < card.cost()))
+                eligible = false;
+            break;
+        }
+        case asn::CardSpecifierType::ExactName: {
+            const auto &name = std::get<asn::ExactName>(spec.specifier).value;
+            if (name != card.name())
+                eligible = false;
+            break;
+        }
         case asn::CardSpecifierType::Owner:
             // don't process here
             break;

@@ -51,6 +51,8 @@ QString Card::qstate() const {
         return QString("Rested");
     case StateReversed:
         return QString("Reversed");
+    default:
+        break;
     }
     assert(false);
     return "";
@@ -64,6 +66,12 @@ QString Card::qtype() const {
         return QString("Climax");
     case CardType::Event:
         return QString("Event");
+    default:
+        break;
     }
     return "";
+}
+
+void Card::addAbility(const asn::Ability &a) {
+    mAbilityModel->addAbility(a, false);
 }

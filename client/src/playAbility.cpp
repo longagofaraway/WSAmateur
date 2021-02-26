@@ -31,6 +31,16 @@ asn::SearchCard decodeSearchCard(const std::string &buf) {
     auto it = binbuf.begin();
     return ::decodeSearchCard(it, binbuf.end());
 }
+asn::AbilityGain decodeAbilityGain(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.begin();
+    return ::decodeAbilityGain(it, binbuf.end());
+}
+asn::Ability decodeAbility(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.begin();
+    return ::decodeAbility(it, binbuf.end());
+}
 
 void highlightAllCards(CardZone *zone, bool highlight) {
     for (int i = 0; i < zone->model().count(); ++i)
@@ -158,6 +168,29 @@ void Player::processDrawChoice(const EventDrawChoice &event) {
         std::vector<QString> data { "Yes", "No" };
         mChoiceDialog->setData(QString::fromStdString(header), data);
     }
+}
+
+void Player::processAbilityChoice(const EventAbilityChoice &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodeAbilityGain(event.effect());
+    if (static_cast<size_t>(effect.number) < effect.abilities.size()) {
+        std::vector<QString> data;
+        for (const auto &a: effect.abilities)
+            data.push_back(QString::fromStdString(printAbility(a)));
+        mChoiceDialog->setData("Choose ability", data);
+        mAbilityList->ability(mAbilityList->activeId()).effect = effect;
+    }
+}
+
+void Player::processAbilityGain(const EventAbilityGain &event) {
+    auto ability = decodeAbility(event.ability());
+    auto pzone = zone(event.zone());
+    auto &card = pzone->cards()[event.cardid()];
+    if (!card.cardPresent())
+        return;
+    card.addAbility(ability);
 }
 
 void Player::revealTopDeck(const EventRevealTopDeck &event) {
@@ -429,6 +462,20 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
 }
 
 void Player::sendChoice(int index) {
+    int activeId = mAbilityList->activeId();
+    auto &effect = mAbilityList->ability(activeId).effect;
+    if (std::holds_alternative<asn::AbilityGain>(effect)) {
+        auto &ef = std::get<asn::AbilityGain>(effect);
+        if (static_cast<size_t>(index) > ef.abilities.size())
+            return;
+        if (ef.target.type == asn::TargetType::ThisCard) {
+            auto pzone = zone(mAbilityList->ability(activeId).zone);
+            auto &card = pzone->cards()[mAbilityList->ability(activeId).cardId];
+            if (!card.cardPresent())
+                return;
+
+        }
+    }
     CommandChoice cmd;
     cmd.set_choice(index);
     sendGameCommand(cmd);

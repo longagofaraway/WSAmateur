@@ -15,6 +15,8 @@ public:
     virtual ~CardBase() = default;
 
     virtual int level() const = 0;
+    virtual int cost() const = 0;
+    virtual const std::string& name() const = 0;
     virtual const std::vector<TriggerIcon>& triggers() const = 0;
     virtual const std::vector<std::string>& traits() const = 0;
     virtual CardType type() const = 0;
@@ -31,7 +33,7 @@ struct AbilityState {
     bool active = false; // for cont
     int duration = 0;
     int activationTimes = 0;
-    AbilityState(asn::Ability ab) : ability(ab) {}
+    AbilityState(const asn::Ability &ab) : ability(ab) {}
 };
 
 class ServerCard : public CardBase
@@ -61,9 +63,11 @@ public:
     int pos() const;
     void setZone(ServerCardZone *zone) { mZone = zone; }
     ServerCardZone* zone() const { return mZone; }
+
     const std::string& code() { return mCode; }
+    const std::string& name() const override { return mCardInfo->name(); }
     int level() const override { return mCardInfo->level(); }
-    int cost() const { return mCardInfo->cost(); }
+    int cost() const override { return mCardInfo->cost(); }
     int power() const { return mPower; }
     int soul() const { return mSoul; }
     CardType type() const override { return mCardInfo->type(); }
@@ -75,5 +79,6 @@ public:
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
+    void addAbility(const asn::Ability &a, int duration);
     void changeAttr(asn::AttributeType type, int delta);
 };

@@ -311,7 +311,7 @@ Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
     if (cardPtr->type() == CardType::Char)
         co_await playCharacter(cmd);
     else if (cardPtr->type() == CardType::Climax)
-        playClimax(cmd.handid());
+        co_await playClimax(cmd.handid());
 }
 
 Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
@@ -353,7 +353,7 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     co_await checkTiming();
 }
 
-void ServerPlayer::playClimax(int handIndex) {
+Resumable ServerPlayer::playClimax(int handIndex) {
     auto hand = zone("hand");
     auto climaxZone = zone("climax");
 
@@ -368,6 +368,9 @@ void ServerPlayer::playClimax(int handIndex) {
 
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
+
+    checkOnPlacedOnClimaxZone(cardPtr);
+    co_await checkTiming();
 
     //process climax effects
 

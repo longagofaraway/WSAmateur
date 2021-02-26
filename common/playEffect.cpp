@@ -39,6 +39,9 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::Shuffle:
         playShuffle(std::get<asn::Shuffle>(e.effect));
         break;
+    case asn::EffectType::AbilityGain:
+        co_await playAbilityGain(std::get<asn::AbilityGain>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -371,4 +374,63 @@ void ServerPlayer::playShuffle(const asn::Shuffle &e) {
     assert(e.owner != asn::Player::NotSpecified);
     auto owner = (e.owner == asn::Player::Player) ? this : mGame->opponentOfPlayer(mId);
     owner->zone(asnZoneToString(e.zone))->shuffle();
+}
+
+Resumable ServerPlayer::playAbilityGain(const asn::AbilityGain &e) {
+    if (static_cast<size_t>(e.number) < e.abilities.size()) {
+        std::vector<uint8_t> buf;
+        encodeAbilityGain(e, buf);
+
+        EventAbilityChoice event;
+        event.set_effect(buf.data(), buf.size());
+        sendToBoth(event);
+
+        clearExpectedComands();
+        addExpectedCommand(CommandChoice::GetDescriptor()->name());
+
+        int chosenAbilityId;
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandChoice>()) {
+                CommandChoice choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                chosenAbilityId = choiceCmd.choice();
+                if (static_cast<size_t>(chosenAbilityId) >= e.abilities.size())
+                    continue;
+                break;
+            }
+        }
+        clearExpectedComands();
+
+        if (e.target.type == asn::TargetType::ThisCard) {
+            auto card = mContext.thisCard.card;
+            if (!card || card->zone()->name() != mContext.thisCard.zone)
+                co_return;
+            card->addAbility(e.abilities[chosenAbilityId], e.duration);
+            EventAbilityGain ev;
+            ev.set_zone(card->zone()->name());
+            ev.set_cardid(card->pos());
+
+            std::vector<uint8_t> abilityBuf = encodeAbility(e.abilities[chosenAbilityId]);
+            ev.set_ability(abilityBuf.data(), abilityBuf.size());
+            sendToBoth(ev);
+        }
+        co_return;
+    }
+
+    if (e.target.type == asn::TargetType::ThisCard) {
+        auto card = mContext.thisCard.card;
+        if (!card || card->zone()->name() != mContext.thisCard.zone)
+            co_return;
+        for (const auto &a: e.abilities) {
+            card->addAbility(a, e.duration);
+            EventAbilityGain ev;
+            ev.set_zone(card->zone()->name());
+            ev.set_cardid(card->pos());
+
+            std::vector<uint8_t> abilityBuf = encodeAbility(a);
+            ev.set_ability(abilityBuf.data(), abilityBuf.size());
+            sendToBoth(ev);
+        }
+    }
 }

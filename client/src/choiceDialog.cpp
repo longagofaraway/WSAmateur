@@ -54,5 +54,9 @@ void ChoiceDialog::setData(const QString &header, const std::vector<QString> &da
     mQmlObject->setProperty("mHeaderText", header);
     mQmlObject->setProperty("state", "active");
 
+    if (data.size() && data[0].size() > 16)
+        mQmlObject->setProperty("mLongtext", true);
+    else
+        mQmlObject->setProperty("mLongtext", false);
     mModel.setChoice(data);
 }

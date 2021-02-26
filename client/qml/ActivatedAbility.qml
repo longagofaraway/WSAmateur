@@ -66,6 +66,7 @@ Rectangle {
                 id: effectText
                 width: parent.width
                 wrapMode: Text.WordWrap
+                textFormat: Text.StyledText
                 horizontalAlignment: Text.AlignJustify
                 leftPadding: 4
                 rightPadding: 4

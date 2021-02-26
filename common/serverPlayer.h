@@ -117,7 +117,7 @@ public:
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard &cmd);
     Resumable playCharacter(const CommandPlayCard &cmd);
-    void playClimax(int handIndex);
+    Resumable playClimax(int handIndex);
     void switchPositions(const CommandSwitchStagePositions &cmd);
     bool canPlay(ServerCard *card);
     void climaxPhase();
@@ -151,11 +151,13 @@ private:
     void activateContAbilities(ServerCard *card);
     void stageCountChanged();
     void checkOnPlacedFromHandToStage(ServerCard *card);
+    void checkOnPlacedOnClimaxZone(ServerCard *climax);
 
     Resumable checkTiming();
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
+    bool evaluateConditionHaveCard(const asn::ConditionHaveCard &c);
 
     bool canBePayed(const asn::CostItem &c);
     bool canBePlayed(const asn::Ability &a);
@@ -176,4 +178,5 @@ private:
     Resumable payCost();
     Resumable playSearchCard(const asn::SearchCard &e);
     void playShuffle(const asn::Shuffle &e);
+    Resumable playAbilityGain(const asn::AbilityGain &e);
 };

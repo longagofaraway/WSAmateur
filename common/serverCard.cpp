@@ -73,6 +73,13 @@ void ServerCard::validateBuffs() {
     std::erase_if(mBuffs, [](const AttributeChange &o){ return o.mDuration <= 0; });
 }
 
+void ServerCard::addAbility(const asn::Ability &a, int duration) {
+    AbilityState s(a);
+    s.duration = duration;
+    s.permanent = false;
+    mAbilities.push_back(s);
+}
+
 void ServerCard::changeAttr(asn::AttributeType type, int delta) {
     switch (type) {
     case asn::AttributeType::Power:

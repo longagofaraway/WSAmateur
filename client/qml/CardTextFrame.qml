@@ -37,7 +37,7 @@ Image {
             model: mModel
 
             delegate: Rectangle {
-                color: "#FFFFFF"
+                color: model.permanent ? "#FFFFFF" : "#FFFDD7"
                 radius: 5
                 border.width: 1
                 width: bgImage.width - borderRect.borderWidth * 2
