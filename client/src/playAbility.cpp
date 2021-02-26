@@ -51,7 +51,7 @@ void selectAllCards(CardZone *zone, bool select) {
         zone->model().setSelected(i, select);
 }
 
-int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs) {
+int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs, asn::TargetMode mode) {
     int eligibleCount = 0;
     const auto &cards = zone->cards();
     highlightAllCards(zone, false);
@@ -59,6 +59,10 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
 
     for (int i = 0; i < zone->model().count(); ++i) {
         if (!cards[i].cardPresent())
+            continue;
+
+        if ((mode == asn::TargetMode::FrontRow && i > 2) ||
+            (mode == asn::TargetMode::BackRow && i < 3))
             continue;
 
         if (checkCard(specs, cards[i])) {
@@ -89,11 +93,11 @@ void Player::processChooseCard(const EventChooseCard &event) {
     int eligibleCount = 0;
     if (effect.place->owner == asn::Player::Player || effect.place->owner == asn::Player::Both) {
         auto from = zone(asnZoneToString(effect.place->zone));
-        eligibleCount += highlightEligibleCards(from, specs);
+        eligibleCount += highlightEligibleCards(from, specs, effect.targets[0].targetSpecification->mode);
     }
     if (effect.place->owner == asn::Player::Opponent || effect.place->owner == asn::Player::Both) {
         auto from = mGame->opponent()->zone(asnZoneToString(effect.place->zone));
-        eligibleCount += highlightEligibleCards(from, specs);
+        eligibleCount += highlightEligibleCards(from, specs, effect.targets[0].targetSpecification->mode);
     }
     if (eligibleCount) {
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
@@ -115,7 +119,7 @@ void Player::processSearchCard(const EventSearchCard &event) {
     assert(effect.targets[0].cards.size() == 1);
     mDeckView->setCards(event.codes());
     const auto &specs = effect.targets[0].cards[0].cardSpecifiers;
-    int eligibleCount = highlightEligibleCards(mDeckView, specs);
+    int eligibleCount = highlightEligibleCards(mDeckView, specs, asn::TargetMode::Any);
 
     if (eligibleCount) {
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;

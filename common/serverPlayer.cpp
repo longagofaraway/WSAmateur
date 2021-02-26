@@ -449,7 +449,7 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     if (!isCenterStagePosition(cmd.stageid()))
         co_return;
     auto attCard = stage->card(cmd.stageid());
-    if (attCard->state() != StateStanding)
+    if (!attCard || attCard->state() != StateStanding)
         co_return;
 
     clearExpectedComands();
@@ -472,6 +472,9 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
         addAttributeBuff(asn::AttributeType::Soul, cmd.stageid(), 1);
     else if (type == AttackType::SideAttack)
         addAttributeBuff(asn::AttributeType::Soul, cmd.stageid(), -battleOpp->level());
+
+    checkOnAttack(attCard);
+    co_await checkTiming();
 
     co_await triggerStep(cmd.stageid());
 }

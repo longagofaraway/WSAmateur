@@ -247,6 +247,25 @@ void ServerPlayer::checkOnPlacedOnClimaxZone(ServerCard *climax) {
     }
 }
 
+void ServerPlayer::checkOnAttack(ServerCard *card) {
+    auto &abs = card->abilities();
+    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+        if (abs[i].ability.type != asn::AbilityType::Auto)
+            continue;
+        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        if (autoab.trigger.type != asn::TriggerType::OnAttack)
+            continue;
+        const auto &trig = std::get<asn::OnAttackTrigger>(autoab.trigger.trigger);
+        if (trig.target.type != asn::TargetType::ThisCard)
+            continue;
+        TriggeredAbility a;
+        a.card = CardImprint(card->zone()->name(), card->pos(), card);
+        a.type = ProtoCard;
+        a.abilityId = i;
+        mQueue.push_back(a);
+    }
+}
+
 Resumable ServerPlayer::checkTiming() {
     if (mQueue.empty())
         co_return;

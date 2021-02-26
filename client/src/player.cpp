@@ -604,7 +604,7 @@ void Player::testAction()
 
 bool Player::playCards(CardModel &hand) {
     auto &cards = mStage->cards();
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 2; i < 5; ++i) {
         if (cards[i].cardPresent())
             continue;
         auto &handCards = hand.cards();

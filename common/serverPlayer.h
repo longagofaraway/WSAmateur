@@ -152,6 +152,7 @@ private:
     void stageCountChanged();
     void checkOnPlacedFromHandToStage(ServerCard *card);
     void checkOnPlacedOnClimaxZone(ServerCard *climax);
+    void checkOnAttack(ServerCard *card);
 
     Resumable checkTiming();
 
