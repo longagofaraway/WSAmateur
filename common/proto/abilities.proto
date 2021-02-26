@@ -91,3 +91,9 @@ message EventAbilityGain {
     string zone = 2;
     bytes ability = 3;
 }
+
+message EventRemoveAbility {
+    sint32 cardId = 1;
+    string zone = 2;
+    sint32 abilityId = 3;
+}

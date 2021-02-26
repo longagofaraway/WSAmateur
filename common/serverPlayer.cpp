@@ -777,6 +777,18 @@ void ServerPlayer::endOfTurnEffectValidation() {
             event.set_value(card->soul());
             sendToBoth(event);
         }
+        auto &abs = card->abilities();
+        for (int i = static_cast<int>(abs.size()) - 1; i >= 0; --i) {
+            if (abs[i].permanent)
+                break;
+            if (--abs[i].duration != 0)
+                continue;
+            EventRemoveAbility event;
+            event.set_cardid(card->pos());
+            event.set_zone(card->zone()->name());
+            event.set_abilityid(i);
+            sendToBoth(event);
+        }
     }
 }
 

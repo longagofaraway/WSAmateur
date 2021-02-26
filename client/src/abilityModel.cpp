@@ -22,6 +22,15 @@ void AbilityModel::addAbility(const asn::Ability &a, bool permanent) {
     endInsertRows();
 }
 
+void AbilityModel::removeAbility(int row) {
+    if (static_cast<size_t>(row) >= mAbilities.size())
+        return;
+
+    beginRemoveRows(QModelIndex(), row, row);
+    mAbilities.erase(mAbilities.begin() + row);
+    endRemoveRows();
+}
+
 QVariant AbilityModel::data(const QModelIndex &index, int role) const {
     if (static_cast<size_t>(index.row()) >= mAbilities.size())
         return QVariant();

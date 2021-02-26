@@ -186,6 +186,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventAbilityGain ev;
         event->event().UnpackTo(&ev);
         processAbilityGain(ev);
+    } else if (event->event().Is<EventRemoveAbility>()) {
+        EventRemoveAbility ev;
+        event->event().UnpackTo(&ev);
+        processRemoveAbility(ev);
     }
 }
 

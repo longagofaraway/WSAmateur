@@ -75,3 +75,7 @@ QString Card::qtype() const {
 void Card::addAbility(const asn::Ability &a) {
     mAbilityModel->addAbility(a, false);
 }
+
+void Card::removeAbility(int id) {
+    mAbilityModel->removeAbility(id);
+}

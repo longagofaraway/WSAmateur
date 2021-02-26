@@ -124,6 +124,7 @@ private:
     void processDrawChoice(const EventDrawChoice &event);
     void processAbilityChoice(const EventAbilityChoice &event);
     void processAbilityGain(const EventAbilityGain &event);
+    void processRemoveAbility(const EventRemoveAbility &event);
     void revealTopDeck(const EventRevealTopDeck &event);
     void doneChoosing();
     void makeAbilityActive(const EventPlayAbility &event);

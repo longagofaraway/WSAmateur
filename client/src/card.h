@@ -67,4 +67,5 @@ public:
     AbilityModel* textModel() { return mAbilityModel.get(); }
     const asn::Ability& ability(int abilityId) const { return mAbilityModel->ability(abilityId); }
     void addAbility(const asn::Ability &a);
+    void removeAbility(int id);
 };

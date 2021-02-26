@@ -193,6 +193,14 @@ void Player::processAbilityGain(const EventAbilityGain &event) {
     card.addAbility(ability);
 }
 
+void Player::processRemoveAbility(const EventRemoveAbility &event) {
+    auto pzone = zone(event.zone());
+    auto &card = pzone->cards()[event.cardid()];
+    if (!card.cardPresent())
+        return;
+    card.removeAbility(event.abilityid());
+}
+
 void Player::revealTopDeck(const EventRevealTopDeck &event) {
     zone("view")->visualItem()->setProperty("mViewMode", Game::RevealMode);
 
