@@ -34,3 +34,8 @@ void ActivatedAbilities::removeActiveAbility() {
     mModel.setActive(id, false);
     mModel.removeAbility(id);
 }
+
+void ActivatedAbilities::clear() {
+    for (int i = 0; i < mModel.count(); ++i)
+        mModel.removeAbility(i);
+}

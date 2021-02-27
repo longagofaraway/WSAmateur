@@ -183,6 +183,12 @@ Resumable ServerGame::checkTiming() {
     if (!aplayer || !opponent)
         co_return;
 
-    co_await aplayer->checkTiming();
-    co_await opponent->checkTiming();
+    while (true) {
+        co_await aplayer->checkTiming();
+        co_await opponent->checkTiming();
+        if (aplayer->hasActivatedAbilities() ||
+            opponent->hasActivatedAbilities())
+            continue;
+        break;
+    }
 }

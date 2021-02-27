@@ -272,7 +272,9 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
     mGame->sendPublicEvent(eventPublic, mId);
 
     if (startZoneName == "stage" && targetZoneName != "stage")
-        stageCountChanged();
+        validateContAbilities();
+
+    checkZoneChangeTrigger(card, startZoneName, targetZoneName);
 
     return true;
 }
@@ -350,9 +352,9 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
-    stageCountChanged();
+    validateContAbilities();
     activateContAbilities(cardInPlay);
-    checkOnPlacedFromHandToStage(cardInPlay);
+    checkZoneChangeTrigger(cardInPlay, "hand", "stage");
     co_await mGame->checkTiming();
 }
 
@@ -372,7 +374,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
-    checkOnPlacedOnClimaxZone(cardPtr);
+    checkZoneChangeTrigger(cardPtr, "hand", "climax");
     co_await mGame->checkTiming();
 
     //process climax effects
@@ -680,6 +682,7 @@ Resumable ServerPlayer::encoreStep() {
                     auto card = stage->card(i);
                     if (card && card->state() == StateReversed) {
                         moveCard("stage", i, "wr");
+                        co_await mGame->checkTiming();
                     }
                 }
                 break;
@@ -727,6 +730,8 @@ Resumable ServerPlayer::endPhase() {
     auto climax = zone("climax");
     if (climax->count() > 0)
         moveCard("climax", 0, "wr");
+
+    co_await mGame->checkTiming();
 
     endOfTurnEffectValidation();
 }

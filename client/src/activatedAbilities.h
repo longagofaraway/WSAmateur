@@ -21,6 +21,7 @@ public:
     ActivatedAbility& ability(int index) { return mModel.ability(index); }
     int activeId() const { return mModel.activeId(); }
     void removeActiveAbility();
+    void clear();
     void setActive(int index, bool active) { mModel.setActive(index, active); }
     void addAbility(const ActivatedAbility &a) { mModel.addAbility(a); }
     int count() const { return mModel.count(); }

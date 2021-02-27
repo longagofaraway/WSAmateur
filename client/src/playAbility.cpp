@@ -294,8 +294,8 @@ void Player::startResolvingAbility(const EventStartResolvingAbility &event) {
 }
 
 void Player::endResolvingAbilties() {
-    if (!mAbilityList->count())
-        restoreUiState();
+    mAbilityList->clear();
+    restoreUiState();
 }
 
 void Player::playAbility(int index) {

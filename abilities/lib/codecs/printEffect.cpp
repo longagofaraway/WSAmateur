@@ -136,7 +136,11 @@ std::string printNonMandatory(const NonMandatory &e) {
 }
 
 std::string printMoveCard(const MoveCard &e) {
-    std::string s = "put ";
+    std::string s;
+    if (e.to[0].pos == asn::Position::SlotThisWasIn)
+        s += "return ";
+    else
+        s += "put ";
 
     if (e.target.type == TargetType::ChosenCards) {
         if ((gChosenCardsNumber.mod == NumModifier::ExactMatch ||
@@ -161,6 +165,11 @@ std::string printMoveCard(const MoveCard &e) {
     for (size_t i = 0; i < e.to.size(); ++i) {
         if (i)
             s += "or ";
+
+        if (e.to[i].pos == asn::Position::SlotThisWasIn) {
+            s += "to its previous position as" + printState(asn::State::Rested);
+            return s;
+        }
         s += "into ";
         if (e.to[i].owner == Player::Player)
             s += "your ";

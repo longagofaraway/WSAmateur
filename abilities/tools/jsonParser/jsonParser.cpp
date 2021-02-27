@@ -226,23 +226,28 @@ Trigger parseTrigger(const QJsonObject &json) {
     return t;
 }
 
+StockCost parseStockCost(const QJsonObject &json) {
+    if (!json.contains("value") || !json["value"].isDouble())
+        throw std::runtime_error("no value in StockCost");
+
+    StockCost e;
+    e.value = json["value"].toInt();
+    return e;
+}
+
 CostItem parseCostItem(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no cost type");
+    if (!json.contains("costItem") || !json["costItem"].isObject())
+        throw std::runtime_error("no costItem");
 
     CostItem i;
     i.type = static_cast<CostType>(json["type"].toInt());
     switch (i.type) {
     case CostType::Stock:
-        if (!json.contains("costItem") || !json["costItem"].isDouble())
-            throw std::runtime_error("no costItem");
-
-        i.costItem = StockCost{ json["costItem"].toInt() };
+        i.costItem = parseStockCost(json["costItem"].toObject());
         break;
     case CostType::Effects:
-        if (!json.contains("costItem") || !json["costItem"].isObject())
-            throw std::runtime_error("no costItem");
-
         i.costItem = parseEffect(json["costItem"].toObject());
         break;
     default:
@@ -398,7 +403,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-002_2.txt");
+    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonGlobalEncore.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

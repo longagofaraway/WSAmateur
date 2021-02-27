@@ -173,7 +173,7 @@ bool ServerPlayer::canBePlayed(const asn::Ability &a) {
     return false;
 }
 
-void ServerPlayer::stageCountChanged() {
+void ServerPlayer::validateContAbilities() {
     auto stage = zone("stage");
     for (int i = 0; i < stage->count(); ++i) {
         auto card = stage->card(i);
@@ -194,29 +194,7 @@ void ServerPlayer::stageCountChanged() {
     }
 }
 
-void ServerPlayer::checkOnPlacedFromHandToStage(ServerCard *card) {
-    auto &abs = card->abilities();
-    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
-        if (abs[i].ability.type != asn::AbilityType::Auto)
-            continue;
-        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (autoab.trigger.type != asn::TriggerType::OnZoneChange)
-            continue;
-        const auto &trig = std::get<asn::ZoneChangeTrigger>(autoab.trigger.trigger);
-        assert(trig.target.size() == 1);
-        if (trig.target[0].type != asn::TargetType::ThisCard)
-            continue;
-        if (trig.from != asn::Zone::Hand || trig.to != asn::Zone::Stage)
-            continue;
-        TriggeredAbility a;
-        a.card = CardImprint(card->zone()->name(), card->pos(), card);
-        a.type = ProtoCard;
-        a.abilityId = i;
-        mQueue.push_back(a);
-    }
-}
-
-void ServerPlayer::checkOnPlacedOnClimaxZone(ServerCard *climax) {
+void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {
     auto stage = zone("stage");
     for (int i = 0; i < stage->count(); ++i) {
         auto card = stage->card(i);
@@ -230,14 +208,19 @@ void ServerPlayer::checkOnPlacedOnClimaxZone(ServerCard *climax) {
             if (aa.trigger.type != asn::TriggerType::OnZoneChange)
                 continue;
             const auto &t = std::get<asn::ZoneChangeTrigger>(aa.trigger.trigger);
-            if (t.to != asn::Zone::Climax)
+            if (t.from != asn::Zone::NotSpecified && asnZoneToString(t.from) != from)
+                continue;
+            if (t.to != asn::Zone::NotSpecified && asnZoneToString(t.to) != to)
                 continue;
             assert(t.target.size() == 1);
-            if (t.target[0].type != asn::TargetType::SpecificCards)
-                continue;
-            const auto &spec = *t.target[0].targetSpecification;
-            if (!checkCard(spec.cards.cardSpecifiers, *climax))
-                continue;
+            if (t.target[0].type == asn::TargetType::ThisCard) {
+                if (card != movedCard)
+                    continue;
+            } else if (t.target[0].type != asn::TargetType::SpecificCards) {
+                const auto &spec = *t.target[0].targetSpecification;
+                if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
+                    continue;
+            }
 
             TriggeredAbility ta;
             ta.card = CardImprint(card->zone()->name(), card->pos(), card);
@@ -246,6 +229,7 @@ void ServerPlayer::checkOnPlacedOnClimaxZone(ServerCard *climax) {
             mQueue.push_back(ta);
         }
     }
+
 }
 
 void ServerPlayer::checkOnAttack(ServerCard *card) {
@@ -287,20 +271,39 @@ void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard
 }
 
 Resumable ServerPlayer::checkTiming() {
+    // protocol for playing abilities
+    // 1. Server sends EventAbilityActivated with activated abilities. Client shows them.
+    // 2. If there are more than 1 playable ability, client must send, which one he wants to play
+    //    using CommandPlayAbility. Otherwise, server will automatically choose to play the single playable ability.
+    // 3. Server sends EventStartResolvingAbility to indicate, which ability it is going to play.
+    //    Client marks that ability as active.
+    // 4. Server sends EventAbilityResolved after the ability is resolved.
+    // 5. At this point more abilities may be triggered. If this is not the master of the turn and
+    //    the master of the turn has abilities to resolve, send EventEndResolvingAbilties as this player,
+    //    and perform checkTiming as active player. If new abilities appeared during check timing,
+    //    proceed to point 1 but send EventAbilityActivated only with new abilities. If there are no new abilities,
+    //    but not all abilities are resolved, proceed to point 2.
+    // 6. After all abilities are resolved server sends EventEndResolvingAbilties.
+    //    Client uses this signal to restore ui state after playing abilities.
     if (mQueue.empty())
         co_return;
 
     auto expectedCopy = mExpectedCommands;
     clearExpectedComands();
-    // first play all rule actions
-    // then if only 1 ability in queue, play it
-    // otherwise wait for player to choose the ability
     while (mQueue.size()) {
+        // first play all rule actions
         bool ruleActionFound = false;
         co_await processRuleActions(ruleActionFound);
         if (ruleActionFound)
             continue;
         co_await mGame->opponentOfPlayer(mId)->processRuleActions(ruleActionFound);
+
+        if (!mActive && mGame->opponentOfPlayer(mId)->hasActivatedAbilities()) {
+            // priority to the master of the turn
+            for (size_t i = 0; i < mQueue.size(); ++i)
+                mQueue[i].uniqueId = 0;
+            break;
+        }
 
         EventAbilityActivated event;
         for (size_t i = 0; i < mQueue.size(); ++i) {
@@ -390,5 +393,9 @@ Resumable ServerPlayer::processRuleActions(bool &ruleActionFound) {
             ++it;
         }
     }
+}
+
+bool ServerPlayer::hasActivatedAbilities() const {
+    return !mQueue.empty();
 }
 

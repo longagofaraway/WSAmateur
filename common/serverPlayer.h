@@ -146,6 +146,7 @@ public:
     void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
     Resumable checkTiming();
     Resumable processRuleActions(bool &ruleActionFound);
+    bool hasActivatedAbilities() const;
 
 private:
     // playing abilities
@@ -153,9 +154,8 @@ private:
     std::vector<TriggeredAbility> mQueue;
 
     void activateContAbilities(ServerCard *card);
-    void stageCountChanged();
-    void checkOnPlacedFromHandToStage(ServerCard *card);
-    void checkOnPlacedOnClimaxZone(ServerCard *climax);
+    void validateContAbilities();
+    void checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *card);
 
 

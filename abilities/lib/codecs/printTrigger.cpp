@@ -8,13 +8,21 @@ std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
     std::string s = "When ";
 
     s += printTarget(t.target[0]);
-    s += "is placed on ";
-    if (t.from == Zone::NotSpecified)
+    s += "is placed ";
+    if (t.to == Zone::Stage)
+        s += "on ";
+    else
+        s += "into ";
+    if (t.to != Zone::Stage)
         s += "your ";
     s += printZone(t.to);
 
     if (t.from != Zone::NotSpecified) {
-        s += "from your " + printZone(t.from);
+        s += " from ";
+        if (t.from == Zone::Stage)
+            s += "the stage";
+        else
+            s += "your " + printZone(t.from);
     }
 
     s += ", ";
