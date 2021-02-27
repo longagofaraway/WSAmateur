@@ -380,12 +380,12 @@ void Player::moveCard(const EventMoveCard &event) {
         return;
 
     auto &cards = startZone->cards();
-    if (size_t(event.id() + 1) > cards.size())
+    if (size_t(event.startid() + 1) > cards.size())
         return;
 
     QString code = QString::fromStdString(event.code());
     if (code.isEmpty())
-        code = cards[event.id()].qcode();
+        code = cards[event.startid()].qcode();
 
     bool dontFinishAction = false;
     if (event.targetzone() == "res" &&
@@ -394,7 +394,7 @@ void Player::moveCard(const EventMoveCard &event) {
         dontFinishAction = true;
     }
 
-    createMovingCard(code, event.startzone(), event.id(), event.targetzone(), 0, false, dontFinishAction);
+    createMovingCard(code, event.startzone(), event.startid(), event.targetzone(), event.targetid(), false, dontFinishAction);
 }
 
 void Player::playCard(const EventPlayCard &event) {

@@ -173,7 +173,7 @@ bool ServerPlayer::canBePlayed(const asn::Ability &a) {
     return false;
 }
 
-void ServerPlayer::validateContAbilities() {
+void ServerPlayer::validateContAbilitiesOnStageChanges() {
     auto stage = zone("stage");
     for (int i = 0; i < stage->count(); ++i) {
         auto card = stage->card(i);
@@ -230,6 +230,16 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
         }
     }
 
+}
+
+void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to) {
+    if (from == "stage" && to == "wr" && movedCard->zone()->name() == "wr") {
+        TriggeredAbility ta;
+        ta.card = CardImprint(movedCard->zone()->name(), cardId, movedCard);
+        ta.type = ProtoGlobal;
+        ta.abilityId = static_cast<int>(GlobalAbility::Encore);
+        mQueue.push_back(ta);
+    }
 }
 
 void ServerPlayer::checkOnAttack(ServerCard *card) {

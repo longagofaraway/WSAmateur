@@ -67,10 +67,6 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         mGame->startAsyncTask(declareAttack(declareAttackCmd));
     } else if (cmd.command().Is<CommandTakeDamage>()) {
         mGame->startAsyncTask(mGame->continueFromDamageStep());
-    } else if (cmd.command().Is<CommandEncoreCharacter>()) {
-        CommandEncoreCharacter encoreCmd;
-        cmd.command().UnpackTo(&encoreCmd);
-        encoreCharacter(encoreCmd);
     } else if (cmd.command().Is<CommandEncoreStep>()) {
         mGame->startAsyncTask(mGame->encoreStep());
     }
@@ -230,7 +226,8 @@ void ServerPlayer::moveCards(std::string_view startZoneName,  const std::vector<
         moveCard(startZoneName, sortedIds[i], targetZoneName);
 }
 
-bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName, bool reveal) {
+bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::string_view targetZoneName,
+                            int targetId, bool reveal, bool enableGlobEncore) {
     ServerCardZone *startZone = zone(startZoneName);
     if (!startZone)
         return false;
@@ -239,7 +236,10 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
     if (!targetZone)
         return false;
 
-    auto cardPtr = startZone->takeCard(id);
+    if (startZoneName != "stage" && targetZoneName == "stage")
+        return moveCardToStage(startZone, startId, targetZone, targetId);
+
+    auto cardPtr = startZone->takeCard(startId);
     if (!cardPtr)
         return false;
 
@@ -249,7 +249,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
         card->reset();
 
     EventMoveCard eventPublic;
-    eventPublic.set_id(static_cast<google::protobuf::uint32>(id));
+    eventPublic.set_startid(static_cast<google::protobuf::uint32>(startId));
     eventPublic.set_startzone(startZone->name());
     eventPublic.set_targetzone(targetZone->name());
 
@@ -272,9 +272,42 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int id, std::string_
     mGame->sendPublicEvent(eventPublic, mId);
 
     if (startZoneName == "stage" && targetZoneName != "stage")
-        validateContAbilities();
+        validateContAbilitiesOnStageChanges();
 
     checkZoneChangeTrigger(card, startZoneName, targetZoneName);
+    if (enableGlobEncore)
+        checkGlobalEncore(card, targetZone->count() - 1, startZoneName, targetZoneName);
+
+    return true;
+}
+
+bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, ServerCardZone *targetZone, int targetId) {
+    if (targetId >= 5)
+        return false;
+    auto card = startZone->takeCard(startId);
+    if (!card)
+        return false;
+
+    auto oldStageCard = targetZone->putOnStage(std::move(card), targetId);
+    auto cardOnStage = targetZone->card(targetId);
+
+    EventMoveCard event;
+    event.set_code(cardOnStage->code());
+    event.set_startzone(startZone->name());
+    event.set_startid(startId);
+    event.set_targetzone(targetZone->name());
+    event.set_targetid(targetId);
+    sendToBoth(event);
+
+    ServerCard *pOldStageCard = nullptr;
+    if (oldStageCard)
+        pOldStageCard = zone("wr")->addCard(std::move(oldStageCard));
+
+    validateContAbilitiesOnStageChanges();
+    activateContAbilities(cardOnStage);
+    checkZoneChangeTrigger(cardOnStage, startZone->name(), "stage");
+    if (pOldStageCard)
+        checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
 
     return true;
 }
@@ -346,15 +379,18 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
+    ServerCard *pOldStageCard = nullptr;
     if (oldStageCard)
-        zone("wr")->addCard(std::move(oldStageCard));
+        pOldStageCard = zone("wr")->addCard(std::move(oldStageCard));
 
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
-    validateContAbilities();
+    validateContAbilitiesOnStageChanges();
     activateContAbilities(cardInPlay);
     checkZoneChangeTrigger(cardInPlay, "hand", "stage");
+    if (pOldStageCard)
+        checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
     co_await mGame->checkTiming();
 }
 
@@ -674,14 +710,14 @@ Resumable ServerPlayer::encoreStep() {
             if (cmd.command().Is<CommandEncoreCharacter>()) {
                 CommandEncoreCharacter encoreCmd;
                 cmd.command().UnpackTo(&encoreCmd);
-                encoreCharacter(encoreCmd);
+                co_await encoreCharacter(encoreCmd);
                 if (!needEncore())
                     break;
             } else if (cmd.command().Is<CommandEndTurn>()) {
                 for (int i = 0; i < 5; ++i) {
                     auto card = stage->card(i);
                     if (card && card->state() == StateReversed) {
-                        moveCard("stage", i, "wr");
+                        moveCard("stage", i, "wr", false, false);
                         co_await mGame->checkTiming();
                     }
                 }
@@ -693,18 +729,18 @@ Resumable ServerPlayer::encoreStep() {
     }
 }
 
-void ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
+Resumable ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
     if (cmd.stageid() < 0 || cmd.stageid() >= 5)
-        return;
+        co_return;
 
     auto stage = zone("stage");
     if (!stage->card(cmd.stageid())
         || stage->card(cmd.stageid())->state() != StateReversed)
-        return;
+        co_return;
 
     moveCard("stage", cmd.stageid(), "wr");
 
-    // ...
+    co_await mGame->checkTiming();
 }
 
 Resumable ServerPlayer::endPhase() {
@@ -836,4 +872,12 @@ ServerCard *ServerPlayer::battleOpponent(ServerCard *card) const {
         return nullptr;
 
     return opponent->zone("stage")->card(card->pos());
+}
+
+asn::Ability TriggeredAbility::getAbility() const {
+    if (type == ProtoCard && card.card)
+        return card.card->abilities()[abilityId].ability;
+    else if (type == ProtoGlobal)
+        return globalAbility(static_cast<GlobalAbility>(abilityId));
+    return {};
 }

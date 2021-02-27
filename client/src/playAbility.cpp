@@ -262,6 +262,9 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger) {
             a.ability = triggerAbility(static_cast<TriggerIcon>(protoa.abilityid()));
             a.text = QString::fromStdString(printAbility(a.ability));
+        } else if (protoa.type() == ProtoAbilityType::ProtoGlobal) {
+            a.ability = globalAbility(static_cast<GlobalAbility>(protoa.abilityid()));
+            a.text = QString::fromStdString(printAbility(a.ability));
         }
         a.active = false;
         mAbilityList->addAbility(a);

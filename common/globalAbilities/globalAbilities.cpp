@@ -9,6 +9,7 @@
 namespace {
 std::unordered_map<asn::TriggerIcon, asn::Ability> gTriggerAbilities;
 std::unordered_map<RuleAction, asn::Ability> gRuleActionAbilities;
+std::unordered_map<GlobalAbility, asn::Ability> gGlobalAbilities;
 std::unordered_map<asn::TriggerIcon, std::vector<uint8_t>> gTriggerBinAbilities = {
     { asn::TriggerIcon::Door, {
           #include "door"
@@ -41,6 +42,12 @@ std::unordered_map<RuleAction, std::vector<uint8_t>> gRuleActionBinAbilities = {
       }
     }
 };
+std::unordered_map<GlobalAbility, std::vector<uint8_t>> gGlobalBinAbilities = {
+    { GlobalAbility::Encore, {
+          #include "globalEncore"
+      }
+    }
+};
 bool gAbilitiesDecoded = false;
 }
 
@@ -51,6 +58,9 @@ void decodeGlobalAbilities() {
     gRuleActionAbilities.clear();
     for (const auto &pair: gRuleActionBinAbilities)
         gRuleActionAbilities.emplace(pair.first, decodeAbility(pair.second));
+    gGlobalAbilities.clear();
+    for (const auto &pair: gGlobalBinAbilities)
+        gGlobalAbilities.emplace(pair.first, decodeAbility(pair.second));
 
     gAbilitiesDecoded = true;
 }
@@ -67,4 +77,11 @@ asn::Ability ruleActionAbility(RuleAction ruleAction) {
         decodeGlobalAbilities();
 
     return gRuleActionAbilities.at(ruleAction);
+}
+
+asn::Ability globalAbility(GlobalAbility ability) {
+    if (!gAbilitiesDecoded)
+        decodeGlobalAbilities();
+
+    return gGlobalAbilities.at(ability);
 }

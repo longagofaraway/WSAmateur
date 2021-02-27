@@ -7,10 +7,11 @@ message EventInitialHand {
 }
 
 message EventMoveCard {
-    sint32 id = 1;
-    string code = 2;
-    string startZone = 3;
+    string code = 1;
+    string startZone = 2;
+    sint32 startId = 3;
     string targetZone = 4;
+    sint32 targetId = 5;
 }
 
 message EventPlayCard {

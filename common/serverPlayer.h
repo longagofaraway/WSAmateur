@@ -54,11 +54,7 @@ struct TriggeredAbility {
     int abilityId;
     uint32_t uniqueId = 0;
 
-    asn::Ability getAbility() {
-        if (card.card)
-            return card.card->abilities()[abilityId].ability;
-        return {};
-    }
+    asn::Ability getAbility() const;
 };
 
 class ServerPlayer
@@ -112,7 +108,9 @@ public:
     Resumable mulligan(const CommandMulligan &cmd);
     void drawCards(int number);
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardIds, std::string_view targetZoneName);
-    bool moveCard(std::string_view startZoneName, int id, std::string_view targetZoneName, bool reveal = false);
+    bool moveCard(std::string_view startZoneName, int startId, std::string_view targetZoneName, int targetId = 0,
+                  bool reveal = false, bool enableGlobEncore = true);
+    bool moveCardToStage(ServerCardZone *startZone, int startId, ServerCardZone *targetZone, int targetId);
     void moveTopDeck(std::string_view targetZoneName);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard &cmd);
@@ -131,7 +129,7 @@ public:
     Resumable damageStep();
     Resumable levelUp();
     Resumable encoreStep();
-    void encoreCharacter(const CommandEncoreCharacter &cmd);
+    Resumable encoreCharacter(const CommandEncoreCharacter &cmd);
     Resumable endPhase();
     void refresh();
     void sendPhaseEvent(asn::Phase phase);
@@ -154,8 +152,9 @@ private:
     std::vector<TriggeredAbility> mQueue;
 
     void activateContAbilities(ServerCard *card);
-    void validateContAbilities();
+    void validateContAbilitiesOnStageChanges();
     void checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to);
+    void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *card);
 
 

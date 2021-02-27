@@ -119,7 +119,6 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
 
 Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
     assert(e.executor == asn::Player::Player);
-    assert(e.to[0].zone != asn::Zone::Stage);
 
     if (e.target.type == asn::TargetType::ChosenCards) {
         int toIndex = 0;
@@ -206,7 +205,14 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
     } else if (e.target.type == asn::TargetType::ThisCard) {
         assert(mContext.mandatory);
         assert(e.to.size() == 1);
-        moveCard(mContext.thisCard.zone, mContext.thisCard.id, asnZoneToString(e.to[0].zone));
+        if (mContext.thisCard.zone != mContext.thisCard.card->zone()->name())
+            co_return;
+        int toIndex = 0;
+        if (e.to[0].pos == asn::Position::SlotThisWasIn)
+            toIndex = mContext.thisCard.card->pos();
+        moveCard(mContext.thisCard.zone, mContext.thisCard.id, asnZoneToString(e.to[0].zone), toIndex);
+        if (e.to[0].pos == asn::Position::SlotThisWasIn)
+            setCardState(mContext.thisCard.card, CardState::StateRested);
         if (e.to[0].zone == asn::Zone::Clock && zone("clock")->count() >= 7)
             co_await levelUp();
     }
