@@ -412,6 +412,10 @@ bool ServerPlayer::canPlay(ServerCard *card) {
 void ServerPlayer::climaxPhase() {
     // check timing at start of climax phase
     mGame->setPhase(ServerPhase::Climax);
+    EventPhaseEvent event;
+    event.set_phase(static_cast<int>(asn::Phase::ClimaxPhase));
+    sendToBoth(event);
+
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
     sendToBoth(EventClimaxPhase());
@@ -535,12 +539,20 @@ Resumable ServerPlayer::triggerStep(int pos) {
             auto uniqueId = abilityHash(*ab);
             ab->set_uniqueid(uniqueId);
             sendToBoth(event);
+
+            EventStartResolvingAbility evStart;
+            evStart.set_uniqueid(uniqueId);
+            sendToBoth(evStart);
+
             mContext = AbilityContext();
             mContext.thisCard = CardImprint("res", 0, card);
             co_await playAbility(triggerAbility(trigger));
+
             EventAbilityResolved ev2;
             ev2.set_uniqueid(uniqueId);
             sendToBoth(ev2);
+
+            sendToBoth(EventEndResolvingAbilties());
             break;
         }
     }
@@ -793,16 +805,22 @@ void ServerPlayer::endOfTurnEffectValidation() {
             sendToBoth(event);
         }
         auto &abs = card->abilities();
-        for (int i = static_cast<int>(abs.size()) - 1; i >= 0; --i) {
-            if (abs[i].permanent)
+        auto it = abs.rbegin();
+        while (it != abs.rend()) {
+            if (it->permanent)
                 break;
-            if (--abs[i].duration != 0)
+            if (--it->duration != 0) {
+                ++it;
                 continue;
+            }
+
             EventRemoveAbility event;
             event.set_cardid(card->pos());
             event.set_zone(card->zone()->name());
-            event.set_abilityid(i);
+            event.set_abilityid(std::distance(abs.begin(), (it+1).base()));
             sendToBoth(event);
+
+            it = std::reverse_iterator(abs.erase((++it).base()));
         }
     }
 }

@@ -214,8 +214,11 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
-    stopUiInteractions();
-    int playableCount = 0;
+    // this function adds activated abilities to the list
+    // there's another event to make an ability active
+    if (!mAbilityList->count())
+        stopUiInteractions();
+
     for (int i = 0; i < event.abilities_size(); ++i) {
         auto protoa = event.abilities(i);
         auto zoneptr = zone(protoa.zone());
@@ -256,26 +259,22 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
                 a.text = card.text(a.abilityId);
             }
         }
-        if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger)
-            a.text = QString::fromStdString(printAbility(triggerAbility(static_cast<TriggerIcon>(protoa.abilityid()))));
-
-        if (event.abilities_size() > 1) {
-            if (canPlay(a.ability))
-                ++playableCount;
-            a.active = false;
-        } else {
-            a.active = true;
+        if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger) {
+            a.ability = triggerAbility(static_cast<TriggerIcon>(protoa.abilityid()));
+            a.text = QString::fromStdString(printAbility(a.ability));
         }
+        a.active = false;
         mAbilityList->addAbility(a);
     }
+
     if (!mOpponent) {
-        if (playableCount == 1) {
-            // if there's just one ability that can be played, make it active
-            for (int i = 0; i < mAbilityList->count(); ++i)
-                if (canPlay(mAbilityList->ability(i).ability))
-                    mAbilityList->setActive(i, true);
-        } else if (playableCount > 1) {
-            // otherwise show 'Play' button on playable abilities
+        int playableCount = 0;
+        for (int i = 0; i < mAbilityList->count(); ++i) {
+            if (canPlay(mAbilityList->ability(i).ability))
+                ++playableCount;
+        }
+        if (playableCount > 1) {
+            // show 'Play' button on playable abilities
             for (int i = 0; i < mAbilityList->count(); ++i)
                 if (canPlay(mAbilityList->ability(i).ability))
                     mAbilityList->activatePlay(i, true);
@@ -283,6 +282,20 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
     }
     if (mAbilityList->count())
         mGame->pause(250);
+}
+
+void Player::startResolvingAbility(const EventStartResolvingAbility &event) {
+    for (int i = 0; i < mAbilityList->count(); ++i) {
+        if (mAbilityList->ability(i).uniqueId == event.uniqueid()) {
+            mAbilityList->setActive(i, true);
+            break;
+        }
+    }
+}
+
+void Player::endResolvingAbilties() {
+    if (!mAbilityList->count())
+        restoreUiState();
 }
 
 void Player::playAbility(int index) {
@@ -331,23 +344,18 @@ void Player::abilityResolved() {
     auto view = zone("view");
     if (view->model().count())
         QMetaObject::invokeMethod(view->visualItem(), "clear");
-    if (!mAbilityList->count()) {
-        restoreUiState();
-    } else {
+
+    if (!mOpponent) {
         int playableCount = 0;
-        int playableId = 0;
         for (int i = 0; i < mAbilityList->count(); ++i) {
-            if (canPlay(mAbilityList->ability(i).ability)) {
+            if (canPlay(mAbilityList->ability(i).ability))
                 ++playableCount;
-                playableId = i;
-            }
         }
-        if (playableCount == 1) {
-            mAbilityList->setActive(playableId, true);
-        } else if (playableCount > 1) {
+        if (playableCount > 1) {
+            // show 'Play' button on playable abilities
             for (int i = 0; i < mAbilityList->count(); ++i)
                 if (canPlay(mAbilityList->ability(i).ability))
-                    mAbilityList->activatePlay(i, false);
+                    mAbilityList->activatePlay(i, true);
         }
     }
 }
@@ -361,6 +369,9 @@ void Player::stopUiInteractions() {
         mHand->endMainPhase();
         mStage->endMainPhase();
         mGame->pauseMainPhase();
+        break;
+    case asn::Phase::AttackPhase:
+        mStage->unhighlightAttacker();
         break;
     default:
         break;
@@ -522,5 +533,5 @@ bool Player::canPlay(const asn::Ability &a) const {
         return true;
     }
 
-    return false;
+    return true;
 }

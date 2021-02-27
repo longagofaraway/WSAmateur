@@ -295,7 +295,6 @@ Resumable ServerPlayer::checkTiming() {
     // first play all rule actions
     // then if only 1 ability in queue, play it
     // otherwise wait for player to choose the ability
-    bool abilitiesSent = false;
     while (mQueue.size()) {
         bool ruleActionFound = false;
         co_await processRuleActions(ruleActionFound);
@@ -303,21 +302,21 @@ Resumable ServerPlayer::checkTiming() {
             continue;
         co_await mGame->opponentOfPlayer(mId)->processRuleActions(ruleActionFound);
 
-        if (!abilitiesSent) {
-            EventAbilityActivated event;
-            for (size_t i = 0; i < mQueue.size(); ++i) {
-                auto ab = event.add_abilities();
-                ab->set_zone(mQueue[i].card.zone);
-                ab->set_type(mQueue[i].type);
-                ab->set_cardid(mQueue[i].card.id);
-                ab->set_abilityid(mQueue[i].abilityId);
-                ab->set_cardcode(mQueue[i].card.card->code());
-                mQueue[i].uniqueId = abilityHash(*ab);
-                ab->set_uniqueid(mQueue[i].uniqueId);
-            }
-            sendToBoth(event);
-            abilitiesSent = true;
+        EventAbilityActivated event;
+        for (size_t i = 0; i < mQueue.size(); ++i) {
+            if (mQueue[i].uniqueId != 0)
+                continue;
+            auto ab = event.add_abilities();
+            ab->set_zone(mQueue[i].card.zone);
+            ab->set_type(mQueue[i].type);
+            ab->set_cardid(mQueue[i].card.id);
+            ab->set_abilityid(mQueue[i].abilityId);
+            ab->set_cardcode(mQueue[i].card.card->code());
+            mQueue[i].uniqueId = abilityHash(*ab);
+            ab->set_uniqueid(mQueue[i].uniqueId);
         }
+        if (event.abilities_size())
+            sendToBoth(event);
 
         uint32_t uniqueId;
         int playableCount = 0;
@@ -351,21 +350,28 @@ Resumable ServerPlayer::checkTiming() {
             continue;
         }
 
-        size_t j = 0;
-        for (; j < mQueue.size(); ++j) {
+        for (size_t j = 0; j < mQueue.size(); ++j) {
             if (mQueue[j].uniqueId == uniqueId) {
+                EventStartResolvingAbility evStart;
+                evStart.set_uniqueid(uniqueId);
+                sendToBoth(evStart);
+
                 mContext = AbilityContext();
                 mContext.thisCard = mQueue[j].card;
                 // not a reliable way to get temporary ability (in case the card changed zone)
                 co_await playAbility(mQueue[j].getAbility());
+
+                EventAbilityResolved ev2;
+                ev2.set_uniqueid(uniqueId);
+                sendToBoth(ev2);
+                mQueue.erase(mQueue.begin() + j);
+
                 break;
             }
         }
-        EventAbilityResolved ev2;
-        ev2.set_uniqueid(uniqueId);
-        sendToBoth(ev2);
-        mQueue.erase(mQueue.begin() + j);
     }
+    sendToBoth(EventEndResolvingAbilties());
+
     mExpectedCommands = expectedCopy;
 }
 

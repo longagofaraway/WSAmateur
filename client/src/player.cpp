@@ -144,6 +144,12 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventAbilityActivated ev;
         event->event().UnpackTo(&ev);
         activateAbilities(ev);
+    } else if (event->event().Is<EventStartResolvingAbility>()) {
+        EventStartResolvingAbility ev;
+        event->event().UnpackTo(&ev);
+        startResolvingAbility(ev);
+    } else if (event->event().Is<EventEndResolvingAbilties>()) {
+        endResolvingAbilties();
     } else if (event->event().Is<EventChooseCard>()) {
         EventChooseCard ev;
         event->event().UnpackTo(&ev);

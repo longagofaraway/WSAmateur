@@ -52,7 +52,7 @@ struct TriggeredAbility {
     CardImprint card;
     ProtoAbilityType type;
     int abilityId;
-    uint32_t uniqueId;
+    uint32_t uniqueId = 0;
 
     asn::Ability getAbility() {
         if (card.card)

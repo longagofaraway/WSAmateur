@@ -36,9 +36,14 @@ message EventPlayAbility {
 message CommandPlayEffect {}
 message CommandCancelEffect {}
 
+message EventStartResolvingAbility {
+    uint32 uniqueId = 1;
+}
+
 message EventAbilityResolved {
     uint32 uniqueId = 1;
 }
+message EventEndResolvingAbilties {}
 
 message EventChooseCard {
     bytes effect = 1;

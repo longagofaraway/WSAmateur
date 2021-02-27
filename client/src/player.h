@@ -117,6 +117,8 @@ private:
     void stopUiInteractions();
 
     void activateAbilities(const EventAbilityActivated &event);
+    void startResolvingAbility(const EventStartResolvingAbility &event);
+    void endResolvingAbilties();
     void abilityResolved();
     void processChooseCard(const EventChooseCard &event);
     void processSearchCard(const EventSearchCard &event);
