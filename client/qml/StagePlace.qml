@@ -11,6 +11,7 @@ ListView {
 
     property int mIndex
     property StageCard mStageCard: null
+    property CardTextFrame mCardInfo: null
     property bool mTooltipsDisabled: false
     property var mStageRect
     property bool mTapped: false
@@ -51,7 +52,6 @@ ListView {
         delegate: Rectangle {
             id: stageRect
 
-            property CardTextFrame cardInfo: null
 
             width: root.cardWidth
             height: root.cardHeight
@@ -149,17 +149,17 @@ ListView {
                             this.object.destroy();
                             return;
                         }
-                        if (cardInfo !== null)
-                            cardInfo.destroy();
-                        cardInfo = this.object;
-                        cardInfo.x = stagePlace.x + stageRect.width;
-                        cardInfo.y = stagePlace.y;
+                        if (mCardInfo !== null)
+                            mCardInfo.destroy();
+                        mCardInfo = this.object;
+                        mCardInfo.x = stagePlace.x + stageRect.width;
+                        mCardInfo.y = stagePlace.y;
                         if (model.state === "Rested") {
-                            cardInfo.x += (root.cardHeight - root.cardWidth) / 2;
-                            cardInfo.y += (root.cardHeight - root.cardWidth) / 2;
+                            mCardInfo.x += (root.cardHeight - root.cardWidth) / 2;
+                            mCardInfo.y += (root.cardHeight - root.cardWidth) / 2;
                         }
-                        cardInfo.mModel = stage.mModel.textModel(model.index);
-                        cardInfo.visible = true;
+                        mCardInfo.mModel = stage.mModel.textModel(model.index);
+                        mCardInfo.visible = true;
                     }
                     ObjectCreator.createAsync("CardTextFrame", root, cb);
                 }
@@ -178,13 +178,6 @@ ListView {
                         gGame.getPlayer().chooseCard(model.index, "stage", stage.opponent);
                     }
                 }
-
-                function destroyCardInfo() {
-                    if (cardInfo !== null) {
-                        cardInfo.destroy();
-                        cardInfo = null;
-                    }
-                }
             }
         }
     }
@@ -194,6 +187,13 @@ ListView {
         id: tooltipTimeout
         PauseAnimation { duration: 100 }
         PropertyAction { target: stagePlace; property: "mTooltipsDisabled"; value: false }
+    }
+
+    function destroyCardInfo() {
+        if (mCardInfo !== null) {
+            mCardInfo.destroy();
+            mCardInfo = null;
+        }
     }
 
     function powerChangeAnim() {
@@ -236,6 +236,7 @@ ListView {
         stage.mModel.setCard(mIndex, code);
     }
     function removeCard(pos) {
+        destroyCardInfo();
         mStageRect.color = "#30FFFFFF";
         mStageCard.destroy();
         stage.mModel.clearCard(pos);
