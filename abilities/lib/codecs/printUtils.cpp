@@ -19,7 +19,7 @@ std::string printDigit(int8_t value) {
 }
 
 std::string printTrait(const std::string &trait) {
-    return '<' + trait + '>';
+    return "&lt;" + trait + "&gt;";
 }
 
 std::string printZone(Zone zone) {

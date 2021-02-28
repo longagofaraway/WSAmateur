@@ -5,6 +5,7 @@ using namespace asn;
 std::string printConditionIsCard(const ConditionIsCard &c) {
     std::string s = "if ";
 
+    bool article = true;
     if (c.target.type == TargetType::MentionedCards ||
         c.target.type == TargetType::ChosenCards)
         s += "that card is ";
@@ -13,11 +14,12 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
             s += "all of ";
             s += printCard(c.target.targetSpecification->cards, true);
             s += " are ";
+            article = false;
         }
     }
 
     for (const auto &card: c.neededCard) {
-        s += printCard(card, false);
+        s += printCard(card, false, article);
     }
 
     return s + ", ";

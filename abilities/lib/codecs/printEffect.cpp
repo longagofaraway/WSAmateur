@@ -7,25 +7,36 @@ using namespace asn;
 
 namespace {
     Number gChosenCardsNumber;
+    bool gAttributeGainChaining = false;
 }
 
 std::string printEffects(const std::vector<Effect> &effects) {
     std::string s;
 
-    for (int i = 0; i < (int)effects.size(); ++i) {
-        if (i != 0 && effects[i].cond.type != ConditionType::NoCondition) {
-            s[s.size() - 1] = '.';
-            s.push_back(' ');
-        } else if (i != 0) {
-            if (i < (int)effects.size() - 1) {
-                s[s.size() - 1] = ',';
+    for (size_t i = 0; i < effects.size(); ++i) {
+        if (!gAttributeGainChaining) {
+            if (i != 0 && effects[i].cond.type != ConditionType::NoCondition) {
+                s[s.size() - 1] = '.';
                 s.push_back(' ');
-            } else if (i == (int)effects.size() - 1) {
-                s[s.size() - 1] = ',';
-                s += " and ";
+            } else if (i != 0) {
+                if (i < effects.size() - 1) {
+                    s[s.size() - 1] = ',';
+                    s.push_back(' ');
+                } else if (i == effects.size() - 1) {
+                    s[s.size() - 1] = ',';
+                    s += " and ";
+                }
             }
         }
         s += printEffect(effects[i]);
+
+        if (effects[i].type == EffectType::AttributeGain && effects.size() > i + 1 &&
+            effects[i + 1].type == EffectType::AttributeGain) {
+            const auto &attGain1 = std::get<AttributeGain>(effects[i].effect);
+            const auto &attGain2 = std::get<AttributeGain>(effects[i + 1].effect);
+            if (attGain1.target == attGain2.target)
+                gAttributeGainChaining = true;
+        }
     }
 
     return s;
@@ -34,18 +45,36 @@ std::string printEffects(const std::vector<Effect> &effects) {
 std::string printAttributeGain(const AttributeGain &e) {
     std::string res;
 
-    switch (e.target.type) {
-    case TargetType::ChosenCards:
-        if (gChosenCardsNumber.mod == NumModifier::ExactMatch &&
-            gChosenCardsNumber.value == 1) {
-            res += "that character gets ";
+    if (!gAttributeGainChaining) {
+        switch (e.target.type) {
+        case TargetType::ChosenCards:
+            if (gChosenCardsNumber.mod == NumModifier::ExactMatch &&
+                gChosenCardsNumber.value == 1) {
+                res += "that character gets ";
+            }
+            break;
+        case TargetType::ThisCard:
+            res += "this card gets ";
+            break;
+        case TargetType::SpecificCards: {
+            const auto &spec = *e.target.targetSpecification;
+            bool plural = false;
+            if (spec.mode == TargetMode::All) {
+                plural = true;
+                res += "all of ";
+            }
+            res += printCard(spec.cards, plural) + " get";
+            if (!plural)
+                res += "s";
+            res += " ";
+            break;
         }
-        break;
-    case TargetType::ThisCard:
-        res += "this card gets ";
-        break;
-    default:
-        assert(false);
+        default:
+            assert(false);
+        }
+    } else {
+        res += "and ";
+        gAttributeGainChaining = false;
     }
 
     if (e.gainType == ValueType::Raw) {

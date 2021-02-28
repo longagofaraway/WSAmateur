@@ -39,4 +39,22 @@ struct Target {
     std::optional<TargetSpecificCards> targetSpecification;
 };
 
+inline bool operator==(const TargetSpecificCards &lhs, const TargetSpecificCards &rhs) {
+    if (lhs.mode != rhs.mode || lhs.number != rhs.number)
+        return false;
+    return true;
+}
+inline bool operator!=(const TargetSpecificCards &lhs, const TargetSpecificCards &rhs) { return !(lhs == rhs); }
+
+inline bool operator==(const Target &lhs, const Target &rhs) {
+    if (lhs.type != rhs.type)
+        return false;
+    if (lhs.type == TargetType::SpecificCards) {
+        if (*lhs.targetSpecification != *rhs.targetSpecification)
+            return false;
+    }
+    return true;
+}
+inline bool operator!=(const Target &lhs, const Target &rhs) { return !(lhs == rhs); }
+
 }

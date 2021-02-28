@@ -34,4 +34,11 @@ struct Number {
     std::optional<Multiplier> multiplier;
 };
 
+inline bool operator==(const Number &lhs, const Number &rhs) {
+    if (lhs.mod != rhs.mod || lhs.value != rhs.value)
+        return false;
+    return true;
+}
+inline bool operator!=(const Number &lhs, const Number &rhs) { return !(lhs == rhs); }
+
 }
