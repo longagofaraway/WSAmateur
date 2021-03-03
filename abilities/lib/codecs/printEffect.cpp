@@ -289,6 +289,14 @@ std::string printAbilityGain(const AbilityGain &e) {
     return s;
 }
 
+std::string printMoveWrToDeck(const MoveWrToDeck &e) {
+    std::string s;
+    if (e.executor == asn::Player::Both)
+        s += "all players return all cards in their waiting room to their deck, and all players shuffle their decks ";
+
+    return s;
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -325,6 +333,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::AbilityGain:
         s += printAbilityGain(std::get<AbilityGain>(e.effect));
+        break;
+    case EffectType::MoveWrToDeck:
+        s += printMoveWrToDeck(std::get<MoveWrToDeck>(e.effect));
         break;
     }
 

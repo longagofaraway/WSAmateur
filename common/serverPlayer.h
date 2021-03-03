@@ -183,4 +183,5 @@ private:
     Resumable playSearchCard(const asn::SearchCard &e);
     void playShuffle(const asn::Shuffle &e);
     Resumable playAbilityGain(const asn::AbilityGain &e);
+    void playMoveWrToDeck(const asn::MoveWrToDeck &e);
 };

@@ -1,4 +1,5 @@
 #include "abilities.pb.h"
+#include "gameEvent.pb.h"
 
 #include "abilityUtils.h"
 #include "serverGame.h"
@@ -41,6 +42,9 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
         break;
     case asn::EffectType::AbilityGain:
         co_await playAbilityGain(std::get<asn::AbilityGain>(e.effect));
+        break;
+    case asn::EffectType::MoveWrToDeck:
+        playMoveWrToDeck(std::get<asn::MoveWrToDeck>(e.effect));
         break;
     default:
         assert(false);
@@ -472,4 +476,11 @@ Resumable ServerPlayer::playAbilityGain(const asn::AbilityGain &e) {
             sendToBoth(ev);
         }
     }
+}
+
+void ServerPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {
+    if (e.executor == asn::Player::Player || e.executor == asn::Player::Both)
+        sendToBoth(EventRefresh());
+    if (e.executor == asn::Player::Opponent || e.executor == asn::Player::Both)
+        mGame->opponentOfPlayer(mId)->sendToBoth(EventRefresh());
 }
