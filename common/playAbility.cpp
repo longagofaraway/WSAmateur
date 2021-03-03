@@ -184,12 +184,10 @@ void ServerPlayer::validateContAbilitiesOnStageChanges() {
             if (ab.ability.type != asn::AbilityType::Cont)
                 continue;
             const auto &cont = std::get<asn::ContAbility>(ab.ability.ability);
-            if (cont.effects[0].cond.type == asn::ConditionType::IsCard) {
-                mContext = AbilityContext();
-                mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
-                mContext.cont = true;
-                playContAbility(cont, ab.active);
-            }
+            mContext = AbilityContext();
+            mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
+            mContext.cont = true;
+            playContAbility(cont, ab.active);
         }
     }
 }

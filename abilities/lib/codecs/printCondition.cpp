@@ -32,12 +32,19 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         s += "you ";
 
     s += "have ";
+    bool plural = false;
     if ((c.howMany.mod == NumModifier::AtLeast ||
         c.howMany.mod == NumModifier::ExactMatch) &&
         c.howMany.value == 1 && c.excludingThis)
         s += "another ";
+    else if (c.howMany.mod == NumModifier::AtLeast) {
+        plural = true;
+        s += std::to_string(c.howMany.value) + " or more ";
+        if (c.excludingThis)
+            s += "other ";
+    }
 
-    s += printCard(c.whichCards, false, false);
+    s += printCard(c.whichCards, plural, false);
 
     return s + ", ";
 }

@@ -30,7 +30,7 @@ T parseNumberCard(const QJsonObject &json) {
 
 
 ConditionHaveCard parseConditionHaveCard(const QJsonObject &json) {
-    if (!json.contains("invert") || !json["invert"].isBool())
+    if (json.contains("invert") && !json["invert"].isBool())
         throw std::runtime_error("no invert in ConditionHaveCard");
     if (!json.contains("who") || !json["who"].isDouble())
         throw std::runtime_error("no who in ConditionHaveCard");
@@ -44,7 +44,10 @@ ConditionHaveCard parseConditionHaveCard(const QJsonObject &json) {
         throw std::runtime_error("no excludingThis in ConditionHaveCard");
 
     ConditionHaveCard c;
-    c.invert = json["invert"].toBool();
+    if (json.contains("invert"))
+        c.invert = json["invert"].toBool();
+    else
+        c.invert = false;
     c.who = static_cast<Player>(json["who"].toInt());
     c.howMany = parseNumber(json["howMany"].toObject());
     c.whichCards = parseCard(json["whichCards"].toObject());
