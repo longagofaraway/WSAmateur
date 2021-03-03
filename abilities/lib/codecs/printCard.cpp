@@ -6,6 +6,8 @@ std::string printCard(const Card &c, bool plural, bool article) {
     std::string s;
 
     if (c.cardSpecifiers.empty()) {
+        if (article)
+            s += "a ";
         s += "card";
         if (plural)
             s += "s";

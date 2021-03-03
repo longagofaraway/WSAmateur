@@ -116,6 +116,9 @@ private:
     void restoreUiState();
     void stopUiInteractions();
 
+    int highlightCardsForChoice(const asn::Target &target, const asn::Place &place, bool mandatory);
+    void dehighlightCards(const asn::Place &place);
+
     void activateAbilities(const EventAbilityActivated &event);
     void startResolvingAbility(const EventStartResolvingAbility &event);
     void endResolvingAbilties();

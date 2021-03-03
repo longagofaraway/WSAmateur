@@ -52,7 +52,6 @@ ListView {
         delegate: Rectangle {
             id: stageRect
 
-
             width: root.cardWidth
             height: root.cardHeight
             color: "#30FFFFFF"

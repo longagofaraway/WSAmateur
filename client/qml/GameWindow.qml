@@ -90,6 +90,9 @@ Item {
         }
 
         function startHelpTextDestruction() {
+            if (mHelpText === null)
+                return;
+
             gGame.startUiAction();
             mHelpText.startDestroy();
         }

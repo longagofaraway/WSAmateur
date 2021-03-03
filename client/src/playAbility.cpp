@@ -75,6 +75,46 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
 }
 }
 
+int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place &place, bool mandatory) {
+    const auto &specs = target.targetSpecification->cards.cardSpecifiers;
+    int eligibleCount = 0;
+    if (place.owner == asn::Player::Player || place.owner == asn::Player::Both) {
+        auto from = zone(asnZoneToString(place.zone));
+        eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode);
+    }
+    if (place.owner == asn::Player::Opponent || place.owner == asn::Player::Both) {
+        auto from = mGame->opponent()->zone(asnZoneToString(place.zone));
+        eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode);
+    }
+    if (eligibleCount) {
+        if (place.zone == asn::Zone::WaitingRoom &&
+            place.owner == asn::Player::Player)
+            QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
+        if (!mandatory)
+            mAbilityList->activateCancel(mAbilityList->activeId(), true);
+    } else {
+        mGame->pause(800);
+        sendGameCommand(CommandCancelEffect());
+    }
+    return eligibleCount;
+}
+
+void Player::dehighlightCards(const asn::Place &place) {
+    if (place.zone == asn::Zone::WaitingRoom) {
+        QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
+    }
+    if (place.owner == asn::Player::Player || place.owner == asn::Player::Both) {
+        auto from = zone(asnZoneToString(place.zone));
+        highlightAllCards(from, false);
+        selectAllCards(from, false);
+    }
+    if (place.owner == asn::Player::Opponent || place.owner == asn::Player::Both) {
+        auto from = mGame->opponent()->zone(asnZoneToString(place.zone));
+        highlightAllCards(from, false);
+        selectAllCards(from, false);
+    }
+}
+
 void Player::processChooseCard(const EventChooseCard &event) {
     if (mOpponent)
         return;
@@ -89,27 +129,9 @@ void Player::processChooseCard(const EventChooseCard &event) {
         return;
     }
 
-    const auto &specs = effect.targets[0].targetSpecification->cards.cardSpecifiers;
-    int eligibleCount = 0;
-    if (effect.place->owner == asn::Player::Player || effect.place->owner == asn::Player::Both) {
-        auto from = zone(asnZoneToString(effect.place->zone));
-        eligibleCount += highlightEligibleCards(from, specs, effect.targets[0].targetSpecification->mode);
-    }
-    if (effect.place->owner == asn::Player::Opponent || effect.place->owner == asn::Player::Both) {
-        auto from = mGame->opponent()->zone(asnZoneToString(effect.place->zone));
-        eligibleCount += highlightEligibleCards(from, specs, effect.targets[0].targetSpecification->mode);
-    }
-    if (eligibleCount) {
+
+    if (highlightCardsForChoice(effect.targets[0], *effect.place, event.mandatory()))
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
-        if (effect.place->zone == asn::Zone::WaitingRoom &&
-            effect.place->owner == asn::Player::Player)
-            QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
-        if (!event.mandatory())
-            mAbilityList->activateCancel(mAbilityList->activeId(), true);
-    } else {
-        mGame->pause(800);
-        sendGameCommand(CommandCancelEffect());
-    }
 }
 
 void Player::processSearchCard(const EventSearchCard &event) {
@@ -150,12 +172,17 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
         return;
     }
 
-    auto header = printMoveCard(effect);
-    header[0] = std::toupper(header[0]);
-    header.push_back('?');
+    auto effectText = printMoveCard(effect);
+    effectText[0] = std::toupper(effectText[0]);
     if (!event.mandatory()) {
+        effectText.push_back('?');
         std::vector<QString> data { "Yes", "No" };
-        mChoiceDialog->setData(QString::fromStdString(header), data);
+        mChoiceDialog->setData(QString::fromStdString(effectText), data);
+    } else if (effect.from.pos == asn::Position::NotSpecified) {
+        mGame->showText(QString::fromStdString(effectText));
+        int eligibleCount = highlightCardsForChoice(effect.target, effect.from, event.mandatory());
+        if (eligibleCount)
+            mAbilityList->ability(mAbilityList->activeId()).effect = effect;
     }
 }
 
@@ -323,22 +350,14 @@ void Player::doneChoosing() {
     if (std::holds_alternative<asn::ChooseCard>(effect)) {
         auto &ef = std::get<asn::ChooseCard>(effect);
         assert(ef.placeType == asn::PlaceType::SpecificPlace);
-        if (ef.place->zone == asn::Zone::WaitingRoom) {
-            QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
-        }
-        if (ef.place->owner == asn::Player::Player || ef.place->owner == asn::Player::Both) {
-            auto from = zone(asnZoneToString(ef.place->zone));
-            highlightAllCards(from, false);
-            selectAllCards(from, false);
-        }
-        if (ef.place->owner == asn::Player::Opponent || ef.place->owner == asn::Player::Both) {
-            auto from = mGame->opponent()->zone(asnZoneToString(ef.place->zone));
-            highlightAllCards(from, false);
-            selectAllCards(from, false);
-        }
+        dehighlightCards(*ef.place);
+    } else if (std::holds_alternative<asn::MoveCard>(effect)) {
+        auto &ef = std::get<asn::MoveCard>(effect);
+        dehighlightCards(ef.from);
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         mDeckView->hide();
     }
+    mGame->hideText();
 }
 
 void Player::abilityResolved() {
@@ -460,6 +479,12 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
         auto &ef = std::get<asn::SearchCard>(effect);
         assert(ef.targets.size() == 1);
         number = &ef.targets[0].number;
+    } else if (std::holds_alternative<asn::MoveCard>(effect)) {
+        auto &ef = std::get<asn::MoveCard>(effect);
+        if (ef.target.type != asn::TargetType::SpecificCards)
+            return;
+
+        number = &ef.target.targetSpecification->number;
     }
 
     if (number->value != selected && selected < highlighted) {

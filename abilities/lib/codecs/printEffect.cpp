@@ -168,6 +168,8 @@ std::string printMoveCard(const MoveCard &e) {
     std::string s;
     if (e.to[0].pos == asn::Position::SlotThisWasIn)
         s += "return ";
+    else if (e.from.zone == asn::Zone::Hand)
+        s += "discard ";
     else
         s += "put ";
 
@@ -186,6 +188,8 @@ std::string printMoveCard(const MoveCard &e) {
             e.target.targetSpecification->number.value == 1) {
             s += "the top ";
             s += printCard(e.target.targetSpecification->cards, false) + " of ";
+        } else {
+            s += printCard(e.target.targetSpecification->cards) + " from ";
         }
         s += printPlayer(e.from.owner);
         s += printZone(e.from.zone) + " ";

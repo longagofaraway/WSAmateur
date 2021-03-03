@@ -74,7 +74,7 @@ public:
     QQmlContext* context() const;
 
     void pause(int ms);
-    void showText(QString mainText, QString subText);
+    void showText(QString mainText, QString subText = "");
     void hideText();
 
     void sendGameCommand(const google::protobuf::Message &command, int playerId);

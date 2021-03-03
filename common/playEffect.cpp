@@ -117,6 +117,24 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
     clearExpectedComands();
 }
 
+std::map<int, ServerCard*> ServerPlayer::processCommandChooseCard(const CommandChooseCard &cmd) {
+    //TODO: add checks
+    std::map<int, ServerCard*> res;
+    for (int i = cmd.ids_size() - 1; i >= 0; --i) {
+        auto owner = cmd.owner() == ProtoOwner::ProtoPlayer ? this : mGame->opponentOfPlayer(mId);
+        auto pzone = owner->zone(cmd.zone());
+        if (!pzone)
+            break;
+
+        auto card = pzone->card(cmd.ids(i));
+        if (!card)
+            break;
+
+        res[cmd.ids(i)] = card;
+    }
+    return res;
+}
+
 Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
     assert(e.executor == asn::Player::Player);
 
@@ -165,25 +183,40 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
                 co_return;
         }
         assert(e.to.size() == 1);
-        if (!mContext.mandatory) {
+        if (!mContext.mandatory || e.from.pos == asn::Position::NotSpecified) {
             std::vector<uint8_t> buf;
             encodeMoveCard(e, buf);
 
             EventMoveChoice ev;
             ev.set_effect(buf.data(), buf.size());
-            ev.set_mandatory(false);
+            ev.set_mandatory(mContext.mandatory);
             sendToBoth(ev);
 
             clearExpectedComands();
-            addExpectedCommand(CommandChoice::GetDescriptor()->name());
+            if (e.from.pos == asn::Position::NotSpecified)
+                addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+            if (!mContext.mandatory)
+                addExpectedCommand(CommandChoice::GetDescriptor()->name());
+            // TODO: check for legitimacy of cancel
+            addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
             while (true) {
                 auto cmd = co_await waitForCommand();
-                if (cmd.command().Is<CommandChoice>()) {
+                if (cmd.command().Is<CommandCancelEffect>()) {
+                    mContext.canceled = true;
+                    break;
+                } else if (cmd.command().Is<CommandChoice>()) {
                     CommandChoice choiceCmd;
                     cmd.command().UnpackTo(&choiceCmd);
                     // 0 is yes, so 'yes' will be the first on client's side
                     confirmed = !choiceCmd.choice();
+                    break;
+                } else if (cmd.command().Is<CommandChooseCard>()) {
+                    CommandChooseCard cardCmd;
+                    cmd.command().UnpackTo(&cardCmd);
+                    auto cards = processCommandChooseCard(cardCmd);
+                    for (auto it = cards.rbegin(); it != cards.rend(); ++it)
+                        moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[0].zone));
                     break;
                 }
             }

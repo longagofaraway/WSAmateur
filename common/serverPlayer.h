@@ -164,6 +164,7 @@ private:
 
     bool canBePayed(const asn::CostItem &c);
     bool canBePlayed(const asn::Ability &a);
+    std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
 
     Resumable playAbility(const asn::Ability &a);
     void playContAbility(const asn::ContAbility &a, bool &active);

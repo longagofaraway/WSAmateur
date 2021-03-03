@@ -28,7 +28,7 @@ struct ActivatedAbility {
     QString playBtnText;
     QString cancelBtnText;
 
-    std::variant<std::monostate, asn::ChooseCard, asn::SearchCard, asn::AbilityGain> effect;
+    std::variant<std::monostate, asn::ChooseCard, asn::SearchCard, asn::AbilityGain, asn::MoveCard> effect;
 
     ActivatedAbility() : playBtnText("Play") {}
 };
