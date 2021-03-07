@@ -103,8 +103,7 @@ void ServerPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
         return;
 
     bool res = evaluateCondition(a.effects[0].cond);
-    if ((res && active) ||
-        (!res && !active))
+    if (!res && !active)
         return;
     if (!res && active) {
         mContext.revert = true;
@@ -126,18 +125,6 @@ Resumable ServerPlayer::playAbility(const asn::Ability &a) {
         break;
     default:
         break;
-    }
-}
-
-void ServerPlayer::activateContAbilities(ServerCard *card) {
-    for (auto &ab: card->abilities()) {
-        if (ab.ability.type != asn::AbilityType::Cont)
-            continue;
-
-        mContext = AbilityContext();
-        mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
-        mContext.cont = true;
-        playContAbility(std::get<asn::ContAbility>(ab.ability.ability), ab.active);
     }
 }
 
@@ -173,21 +160,23 @@ bool ServerPlayer::canBePlayed(const asn::Ability &a) {
     return false;
 }
 
-void ServerPlayer::validateContAbilitiesOnStageChanges() {
+void ServerPlayer::resolveAllContAbilities() {
     auto stage = zone("stage");
     for (int i = 0; i < stage->count(); ++i) {
         auto card = stage->card(i);
         if (!card)
             continue;
 
-        for (auto &ab: card->abilities()) {
-            if (ab.ability.type != asn::AbilityType::Cont)
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Cont)
                 continue;
-            const auto &cont = std::get<asn::ContAbility>(ab.ability.ability);
+            const auto &cont = std::get<asn::ContAbility>(abs[i].ability.ability);
             mContext = AbilityContext();
             mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
             mContext.cont = true;
-            playContAbility(cont, ab.active);
+            mContext.abilityId = i;
+            playContAbility(cont, abs[i].active);
         }
     }
 }

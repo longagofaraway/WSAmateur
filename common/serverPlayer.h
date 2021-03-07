@@ -42,6 +42,7 @@ struct AbilityContext {
     bool revealChosen = false;
     bool cont = false; // is cont ability
     bool revert = false; // revert results of cont ability
+    int abilityId;
     std::vector<CardImprint> chosenCards;
     std::vector<CardImprint> mentionedCards;
     CardImprint thisCard;
@@ -135,7 +136,10 @@ public:
     void sendPhaseEvent(asn::Phase phase);
     void sendEndGame(bool victory);
 
+    void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration = 1);
+    void addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta);
+    void removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr);
     void changeAttribute(ServerCard *card, asn::AttributeType attr, int delta);
     void setCardState(ServerCard *card, CardState state);
 
@@ -151,8 +155,7 @@ private:
     AbilityContext mContext;
     std::vector<TriggeredAbility> mQueue;
 
-    void activateContAbilities(ServerCard *card);
-    void validateContAbilitiesOnStageChanges();
+    void resolveAllContAbilities();
     void checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *card);

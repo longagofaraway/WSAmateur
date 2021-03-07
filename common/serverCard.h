@@ -42,6 +42,7 @@ class ServerCard : public CardBase
     ServerCardZone *mZone;
     std::string mCode;
     std::vector<AttributeChange> mBuffs;
+    std::vector<ContAttributeChange> mContBuffs;
     std::vector<AbilityState> mAbilities;
 
     // stage position
@@ -77,6 +78,8 @@ public:
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
+    bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta);
+    void removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
     void addAbility(const asn::Ability &a, int duration);

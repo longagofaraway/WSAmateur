@@ -272,7 +272,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     mGame->sendPublicEvent(eventPublic, mId);
 
     if (startZoneName == "stage" && targetZoneName != "stage")
-        validateContAbilitiesOnStageChanges();
+        resolveAllContAbilities();
 
     checkZoneChangeTrigger(card, startZoneName, targetZoneName);
     if (enableGlobEncore)
@@ -303,8 +303,7 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, Serve
     if (oldStageCard)
         pOldStageCard = zone("wr")->addCard(std::move(oldStageCard));
 
-    validateContAbilitiesOnStageChanges();
-    activateContAbilities(cardOnStage);
+    resolveAllContAbilities();
     checkZoneChangeTrigger(cardOnStage, startZone->name(), "stage");
     if (pOldStageCard)
         checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
@@ -386,8 +385,7 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
-    validateContAbilitiesOnStageChanges();
-    activateContAbilities(cardInPlay);
+    resolveAllContAbilities();
     checkZoneChangeTrigger(cardInPlay, "hand", "stage");
     if (pOldStageCard)
         checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
@@ -532,21 +530,24 @@ void ServerPlayer::addAttributeBuff(asn::AttributeType attr, int pos, int delta,
 
     card->addAttrBuff(attr, delta, duration);
 
-    EventSetCardAttr event;
-    event.set_stageid(pos);
-    event.set_attr(attrTypeToProto(attr));
-    event.set_value(attr == asn::AttributeType::Soul ? card->soul() : card->power());
-    sendToBoth(event);
+    sendAttrChange(card, attr);
+}
+
+void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta) {
+    if (!card->addContAttrBuff(source, abilityId, attr, delta))
+        return;
+
+    sendAttrChange(card, attr);
+}
+
+void ServerPlayer::removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr) {
+    card->removeContAttrBuff(source, abilityId, attr);
+    sendAttrChange(card, attr);
 }
 
 void ServerPlayer::changeAttribute(ServerCard *card, asn::AttributeType attr, int delta) {
     card->changeAttr(attr, delta);
-
-    EventSetCardAttr event;
-    event.set_stageid(card->pos());
-    event.set_attr(attrTypeToProto(attr));
-    event.set_value(attr == asn::AttributeType::Soul ? card->soul() : card->power());
-    sendToBoth(event);
+    sendAttrChange(card, attr);
 }
 
 Resumable ServerPlayer::triggerStep(int pos) {
@@ -811,6 +812,14 @@ void ServerPlayer::sendEndGame(bool victory) {
     mGame->opponentOfPlayer(mId)->sendGameEvent(eventOpp);
 }
 
+void ServerPlayer::sendAttrChange(ServerCard *card, asn::AttributeType attr) {
+    EventSetCardAttr event;
+    event.set_stageid(card->pos());
+    event.set_attr(attrTypeToProto(attr));
+    event.set_value(attr == asn::AttributeType::Soul ? card->soul() : card->power());
+    sendToBoth(event);
+}
+
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {
     if (card->state() == state)
         return;
@@ -831,20 +840,10 @@ void ServerPlayer::endOfTurnEffectValidation() {
         int oldPower = card->power();
         int oldSoul = card->soul();
         card->validateBuffs();
-        if (oldPower != card->power()) {
-            EventSetCardAttr event;
-            event.set_stageid(i);
-            event.set_attr(ProtoAttrPower);
-            event.set_value(card->power());
-            sendToBoth(event);
-        }
-        if (oldSoul != card->soul()) {
-            EventSetCardAttr event;
-            event.set_stageid(i);
-            event.set_attr(ProtoAttrSoul);
-            event.set_value(card->soul());
-            sendToBoth(event);
-        }
+        if (oldPower != card->power())
+            sendAttrChange(card, asn::AttributeType::Power);
+        if (oldSoul != card->soul())
+            sendAttrChange(card, asn::AttributeType::Soul);
         auto &abs = card->abilities();
         auto it = abs.rbegin();
         while (it != abs.rend()) {

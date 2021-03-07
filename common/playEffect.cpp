@@ -344,10 +344,14 @@ void ServerPlayer::playAttributeGain(const asn::AttributeGain &e) {
         if (card == nullptr || card->zone()->name() != "stage")
             return;
 
-        if (mContext.cont)
-            changeAttribute(card, e.type, value * (mContext.revert ? -1 : 1));
-        else
+        if (mContext.cont) {
+            if (mContext.revert)
+                removeContAttributeBuff(card, card, mContext.abilityId, e.type);
+            else
+                addContAttributeBuff(card, card, mContext.abilityId, e.type, value);
+        } else {
             addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
+        }
     }
 }
 

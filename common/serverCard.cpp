@@ -1,5 +1,7 @@
 #include "serverCard.h"
 
+#include <algorithm>
+
 ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone)
     : mCardInfo(info), mZone(zone) {
     mCode = info->code();
@@ -41,17 +43,27 @@ int ServerCard::pos() const {
 
 void ServerCard::addAttrBuff(asn::AttributeType attr, int delta, int duration) {
     mBuffs.emplace_back(attr, delta, duration);
-    switch (attr) {
-    case asn::AttributeType::Soul:
-        mSoul += delta;
-        break;
-    case asn::AttributeType::Power:
-        mPower += delta;
-        break;
-    default:
-        assert(false);
-        break;
+    changeAttr(attr, delta);
+}
+
+bool ServerCard::addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta) {
+    ContAttributeChange buff(card, abilityId, attr, delta);
+    auto it = std::find(mContBuffs.begin(), mContBuffs.end(), buff);
+    if (it == mContBuffs.end()) {
+        mContBuffs.emplace_back(std::move(buff));
+        changeAttr(attr, delta);
+        return true;
     }
+    if (it->mValue == delta)
+        return false;
+    changeAttr(attr, delta - it->mValue);
+    it->mValue = delta;
+    return true;
+}
+
+void ServerCard::removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr) {
+    ContAttributeChange buff(card, abilityId, attr, 0);
+    std::erase(mContBuffs, buff);
 }
 
 void ServerCard::validateBuffs() {
