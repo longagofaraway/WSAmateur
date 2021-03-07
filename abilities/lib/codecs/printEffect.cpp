@@ -77,20 +77,25 @@ std::string printAttributeGain(const AttributeGain &e) {
         gAttributeGainChaining = false;
     }
 
-    if (e.gainType == ValueType::Raw) {
-        if (e.value > 0)
-            res += "+";
-        res += std::to_string(e.value);
-        switch (e.type) {
-        case AttributeType::Power:
-            res += " power ";
-            break;
-        case AttributeType::Soul:
-            res += " soul ";
-            break;
-        case AttributeType::Level:
-            res += " level ";
-            break;
+    if (e.value > 0)
+        res += "+";
+    res += std::to_string(e.value);
+    switch (e.type) {
+    case AttributeType::Power:
+        res += " power ";
+        break;
+    case AttributeType::Soul:
+        res += " soul ";
+        break;
+    case AttributeType::Level:
+        res += " level ";
+        break;
+    }
+
+    if (e.gainType == ValueType::Multiplier) {
+        if (e.modifier->type == MultiplierType::ForEach) {
+            res += "for each of ";
+            res += printTarget(*e.modifier->forEach);
         }
     }
 

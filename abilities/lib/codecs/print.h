@@ -5,7 +5,7 @@
 // utils
 std::string printDigit(int8_t value);
 std::string printTrait(const std::string &trait);
-std::string printCard(const asn::Card &c, bool plural = false, bool article = true);
+std::string printCard(const asn::Card &c, bool plural = false, bool article = true, asn::TargetMode mode = asn::TargetMode::Any);
 std::string printNumber(const asn::Number &n);
 std::string printZone(asn::Zone zone);
 std::string printPlayer(const asn::Player &p);

@@ -314,18 +314,40 @@ void ServerPlayer::playRevealCard(const asn::RevealCard &e) {
 }
 
 void ServerPlayer::playAttributeGain(const asn::AttributeGain &e) {
+    int value = e.value;
+    if (e.gainType == asn::ValueType::Multiplier) {
+        assert(e.modifier->type == asn::MultiplierType::ForEach);
+        assert(e.modifier->forEach->type == asn::TargetType::SpecificCards);
+        auto pzone = zone(asnZoneToString(e.modifier->zone));
+        int cardCount = 0;
+        for (int i = 0; i < pzone->count(); ++i) {
+            auto card = pzone->card(i);
+            if (!card)
+                continue;
+
+            const auto &tspec = *e.modifier->forEach->targetSpecification;
+            if (tspec.mode == asn::TargetMode::AllOther && card == mContext.thisCard.card)
+                continue;
+
+            if (checkCard(tspec.cards.cardSpecifiers, *card))
+                cardCount++;
+        }
+
+        value = cardCount * e.value;
+    }
+
     if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: mContext.chosenCards)
-            addAttributeBuff(e.type, card.id, e.value, e.duration);
+            addAttributeBuff(e.type, card.id, value, e.duration);
     } else if (e.target.type == asn::TargetType::ThisCard) {
         auto card = mContext.thisCard.card;
         if (card == nullptr || card->zone()->name() != "stage")
             return;
 
         if (mContext.cont)
-            changeAttribute(card, e.type, e.value * (mContext.revert ? -1 : 1));
+            changeAttribute(card, e.type, value * (mContext.revert ? -1 : 1));
         else
-            addAttributeBuff(e.type, mContext.thisCard.id, e.value, e.duration);
+            addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
     }
 }
 

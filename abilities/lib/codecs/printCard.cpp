@@ -2,7 +2,7 @@
 
 using namespace asn;
 
-std::string printCard(const Card &c, bool plural, bool article) {
+std::string printCard(const Card &c, bool plural, bool article, TargetMode mode) {
     std::string s;
 
     if (c.cardSpecifiers.empty()) {
@@ -60,6 +60,9 @@ std::string printCard(const Card &c, bool plural, bool article) {
                 s += "or higher ";
         }
     }
+
+    if (mode == TargetMode::AllOther)
+        s += "other ";
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Trait) {

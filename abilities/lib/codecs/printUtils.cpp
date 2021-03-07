@@ -45,7 +45,13 @@ std::string printTarget(const Target &t) {
         s += "this card ";
     else if (t.type == TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
-        s += printCard(spec.cards, false) + " ";
+        bool plural = false;
+        bool article = true;
+        if (spec.mode == TargetMode::AllOther) {
+            plural = true;
+            article = false;
+        }
+        s += printCard(spec.cards, plural, article, spec.mode) + " ";
     }
 
     return s;
