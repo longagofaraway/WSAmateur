@@ -20,8 +20,12 @@ ServerCard::ServerCard(int pos, ServerCardZone *zone)
 
 void ServerCard::reset() {
     mBuffs.clear();
+    mContBuffs.clear();
     std::erase_if(mAbilities, [](const AbilityState& ab) { return !ab.permanent; });
-    std::for_each(mAbilities.begin(), mAbilities.end(), [](AbilityState& ab) { ab.activationTimes = 0; });
+    std::for_each(mAbilities.begin(), mAbilities.end(), [](AbilityState& ab) {
+        ab.activationTimes = 0;
+        ab.active = false;
+    });
     mState = StateStanding;
 
     mPower = mCardInfo->power();

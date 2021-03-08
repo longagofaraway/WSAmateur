@@ -352,6 +352,28 @@ void ServerPlayer::playAttributeGain(const asn::AttributeGain &e) {
         } else {
             addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
         }
+    } else if (e.target.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *e.target.targetSpecification;
+        auto stage = zone("stage");
+        for (int i = 0; i < stage->count(); ++i) {
+            auto card = stage->card(i);
+            if (!card)
+                continue;
+
+            if (spec.mode == asn::TargetMode::AllOther && card == mContext.thisCard.card)
+                continue;
+
+            if (spec.mode == asn::TargetMode::All || checkCard(spec.cards.cardSpecifiers, *card)) {
+                if (mContext.cont) {
+                    if (mContext.revert)
+                        removeContAttributeBuff(card, mContext.thisCard.card, mContext.abilityId, e.type);
+                    else
+                        addContAttributeBuff(card, mContext.thisCard.card, mContext.abilityId, e.type, value);
+                } else {
+                    addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
+                }
+            }
+        }
     }
 }
 
