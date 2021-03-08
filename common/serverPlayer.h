@@ -156,11 +156,9 @@ private:
     AbilityContext mContext;
     std::vector<TriggeredAbility> mQueue;
 
-    void resolveAllContAbilities();
     void checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *card);
-
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
@@ -169,6 +167,10 @@ private:
     bool canBePayed(const asn::CostItem &c);
     bool canBePlayed(const asn::Ability &a);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
+
+    void resolveAllContAbilities();
+    Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
+    void playContAbilities(ServerCard *card);
 
     Resumable playAbility(const asn::Ability &a);
     void playContAbility(const asn::ContAbility &a, bool &active);

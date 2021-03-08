@@ -408,10 +408,10 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
+    resolveAllContAbilities();
+
     checkZoneChangeTrigger(cardPtr, "hand", "climax");
     co_await mGame->checkTiming();
-
-    //process climax effects
 
     attackDeclarationStep();
 }
@@ -548,42 +548,10 @@ Resumable ServerPlayer::triggerStep(int pos) {
     if (!card)
         co_await std::suspend_always();
     for (auto trigger: card->triggers()) {
-        switch(trigger) {
-        case TriggerIcon::Soul:
+        if (trigger == TriggerIcon::Soul)
             addAttributeBuff(asn::AttributeType::Soul, pos, 1);
-            break;
-        case TriggerIcon::Door:
-        case TriggerIcon::Choice:
-        case TriggerIcon::Wind:
-        case TriggerIcon::Treasure:
-        case TriggerIcon::Bag:
-        case TriggerIcon::Book:
-            EventAbilityActivated event;
-            auto ab = event.add_abilities();
-            ab->set_zone("res");
-            ab->set_type(ProtoAbilityType::ProtoClimaxTrigger);
-            ab->set_cardid(0);
-            ab->set_abilityid(static_cast<::google::protobuf::int32>(trigger));
-            ab->set_cardcode(card->code());
-            auto uniqueId = abilityHash(*ab);
-            ab->set_uniqueid(uniqueId);
-            sendToBoth(event);
-
-            EventStartResolvingAbility evStart;
-            evStart.set_uniqueid(uniqueId);
-            sendToBoth(evStart);
-
-            mContext = AbilityContext();
-            mContext.thisCard = CardImprint("res", 0, card);
-            co_await playAbility(triggerAbility(trigger));
-
-            EventAbilityResolved ev2;
-            ev2.set_uniqueid(uniqueId);
-            sendToBoth(ev2);
-
-            sendToBoth(EventEndResolvingAbilties());
-            break;
-        }
+        else
+            co_await resolveTrigger(card, trigger);
     }
     moveCard("res", 0, "stock");
 

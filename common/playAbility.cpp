@@ -128,6 +128,33 @@ Resumable ServerPlayer::playAbility(const asn::Ability &a) {
     }
 }
 
+Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigger) {
+    EventAbilityActivated event;
+    auto ab = event.add_abilities();
+    ab->set_zone("res");
+    ab->set_type(ProtoAbilityType::ProtoClimaxTrigger);
+    ab->set_cardid(0);
+    ab->set_abilityid(static_cast<::google::protobuf::int32>(trigger));
+    ab->set_cardcode(card->code());
+    auto uniqueId = abilityHash(*ab);
+    ab->set_uniqueid(uniqueId);
+    sendToBoth(event);
+
+    EventStartResolvingAbility evStart;
+    evStart.set_uniqueid(uniqueId);
+    sendToBoth(evStart);
+
+    mContext = AbilityContext();
+    mContext.thisCard = CardImprint("res", 0, card);
+    co_await playAbility(triggerAbility(trigger));
+
+    EventAbilityResolved ev2;
+    ev2.set_uniqueid(uniqueId);
+    sendToBoth(ev2);
+
+    sendToBoth(EventEndResolvingAbilties());
+}
+
 bool ServerPlayer::canBePayed(const asn::CostItem &c) {
     if (c.type == asn::CostType::Stock) {
         const auto &item = std::get<asn::StockCost>(c.costItem);
@@ -167,17 +194,25 @@ void ServerPlayer::resolveAllContAbilities() {
         if (!card)
             continue;
 
-        auto &abs = card->abilities();
-        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
-            if (abs[i].ability.type != asn::AbilityType::Cont)
-                continue;
-            const auto &cont = std::get<asn::ContAbility>(abs[i].ability.ability);
-            mContext = AbilityContext();
-            mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
-            mContext.cont = true;
-            mContext.abilityId = i;
-            playContAbility(cont, abs[i].active);
-        }
+        playContAbilities(card);
+    }
+
+    auto climax = zone("climax");
+    if (climax->count() > 0)
+        playContAbilities(climax->card(0));
+}
+
+void ServerPlayer::playContAbilities(ServerCard *card) {
+    auto &abs = card->abilities();
+    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+        if (abs[i].ability.type != asn::AbilityType::Cont)
+            continue;
+        const auto &cont = std::get<asn::ContAbility>(abs[i].ability.ability);
+        mContext = AbilityContext();
+        mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
+        mContext.cont = true;
+        mContext.abilityId = i;
+        playContAbility(cont, abs[i].active);
     }
 }
 

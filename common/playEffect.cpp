@@ -341,7 +341,7 @@ void ServerPlayer::playAttributeGain(const asn::AttributeGain &e) {
             addAttributeBuff(e.type, card.id, value, e.duration);
     } else if (e.target.type == asn::TargetType::ThisCard) {
         auto card = mContext.thisCard.card;
-        if (card == nullptr || card->zone()->name() != "stage")
+        if (card == nullptr || (card->zone()->name() != "stage" && card->zone()->name() != "climax"))
             return;
 
         if (mContext.cont) {
