@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <tuple>
 
 #include "cardAttribute.pb.h"
 
@@ -65,7 +66,7 @@ public:
     void setZone(ServerCardZone *zone) { mZone = zone; }
     ServerCardZone* zone() const { return mZone; }
 
-    const std::string& code() { return mCode; }
+    const std::string& code() const { return mCode; }
     const std::string& name() const override { return mCardInfo->name(); }
     int level() const override { return mCardInfo->level(); }
     int cost() const override { return mCardInfo->cost(); }
@@ -80,8 +81,12 @@ public:
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta);
     void removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr);
+    void removePositionalContBuffs();
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
     void addAbility(const asn::Ability &a, int duration);
     void changeAttr(asn::AttributeType type, int delta);
+
+    int attrByType(asn::AttributeType type) const;
+    std::tuple<int, int, int> attributes() const { return { power(), soul(), level() }; }
 };

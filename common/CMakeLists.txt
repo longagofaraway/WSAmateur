@@ -2,6 +2,7 @@ add_subdirectory(proto)
 
 set(commonSources
     abilityUtils.cpp
+    cardBuffs.cpp
     cardDatabase.cpp
     cardInfo.cpp
     deckList.cpp

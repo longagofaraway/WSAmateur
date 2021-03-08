@@ -3,6 +3,7 @@ syntax = "proto3";
 enum ProtoCardAttribute {
     ProtoAttrPower = 0;
     ProtoAttrSoul = 1;
+    ProtoAttrLevel = 2;
 }
 
 enum CardState {

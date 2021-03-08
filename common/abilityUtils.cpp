@@ -74,6 +74,8 @@ ProtoCardAttribute attrTypeToProto(asn::AttributeType t) {
         return ProtoAttrSoul;
     case asn::AttributeType::Power:
         return ProtoAttrPower;
+    case asn::AttributeType::Level:
+        return ProtoAttrLevel;
     default:
         assert(false);
         return ProtoAttrSoul;

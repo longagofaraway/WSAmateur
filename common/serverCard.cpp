@@ -66,6 +66,17 @@ void ServerCard::removeContAttrBuff(ServerCard *card, int abilityId, asn::Attrib
     std::erase(mContBuffs, buff);
 }
 
+void ServerCard::removePositionalContBuffs() {
+    for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
+        if (it->mPositional) {
+            changeAttr(it->mAttr, -it->mValue);
+            it = mContBuffs.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void ServerCard::validateBuffs() {
     for (auto &buff: mBuffs) {
         if (--buff.mDuration == 0) {
@@ -103,5 +114,19 @@ void ServerCard::changeAttr(asn::AttributeType type, int delta) {
     case asn::AttributeType::Level:
         mLevel += delta;
         break;
+    }
+}
+
+int ServerCard::attrByType(asn::AttributeType type) const {
+    switch (type) {
+    case asn::AttributeType::Power:
+        return power();
+    case asn::AttributeType::Soul:
+        return soul();
+    case asn::AttributeType::Level:
+        return level();
+    default:
+        assert(false);
+        return power();
     }
 }

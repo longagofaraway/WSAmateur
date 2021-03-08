@@ -20,9 +20,10 @@ public:
     int mAbilityId;
     asn::AttributeType mAttr;
     int mValue;
+    bool mPositional;
 
-    ContAttributeChange(ServerCard *card, int abilityId, asn::AttributeType attr, int value)
-        : mSource(card), mAbilityId(abilityId), mAttr(attr), mValue(value) {}
+    ContAttributeChange(ServerCard *card, int abilityId, asn::AttributeType attr, int value, bool positional = false)
+        : mSource(card), mAbilityId(abilityId), mAttr(attr), mValue(value), mPositional(positional) {}
 };
 
 inline bool operator==(const ContAttributeChange &lhs, const ContAttributeChange &rhs) {

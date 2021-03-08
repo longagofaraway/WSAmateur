@@ -137,6 +137,7 @@ public:
     void sendEndGame(bool victory);
 
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
+    void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);
     void addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration = 1);
     void addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta);
     void removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr);

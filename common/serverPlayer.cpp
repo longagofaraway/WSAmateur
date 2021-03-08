@@ -422,12 +422,30 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
         || cmd.stageidto() >= stage->count())
         return;
 
+    auto card1 = stage->card(cmd.stageidfrom());
+    auto card2 = stage->card(cmd.stageidto());
+    std::tuple<int, int, int> oldAttrs1;
+    std::tuple<int, int, int> oldAttrs2;
+    if (card1) {
+        oldAttrs1 = card1->attributes();
+        card1->removePositionalContBuffs();
+    }
+    if (card2) {
+        oldAttrs2 = card2->attributes();
+        card2->removePositionalContBuffs();
+    }
+
     stage->switchPositions(cmd.stageidfrom(), cmd.stageidto());
     EventSwitchStagePositions event;
     event.set_stageidfrom(cmd.stageidfrom());
     event.set_stageidto(cmd.stageidto());
-
     sendToBoth(event);
+
+    resolveAllContAbilities();
+    if (card1)
+        sendChangedAttrs(card1, oldAttrs1);
+    if (card2)
+        sendChangedAttrs(card2, oldAttrs2);
 }
 
 bool ServerPlayer::canPlay(ServerCard *card) {
@@ -520,34 +538,6 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     co_await mGame->checkTiming();
 
     co_await triggerStep(cmd.stageid());
-}
-
-void ServerPlayer::addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration) {
-    auto stage = zone("stage");
-    auto card = stage->card(pos);
-    if (!card)
-        return;
-
-    card->addAttrBuff(attr, delta, duration);
-
-    sendAttrChange(card, attr);
-}
-
-void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta) {
-    if (!card->addContAttrBuff(source, abilityId, attr, delta))
-        return;
-
-    sendAttrChange(card, attr);
-}
-
-void ServerPlayer::removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr) {
-    card->removeContAttrBuff(source, abilityId, attr);
-    sendAttrChange(card, attr);
-}
-
-void ServerPlayer::changeAttribute(ServerCard *card, asn::AttributeType attr, int delta) {
-    card->changeAttr(attr, delta);
-    sendAttrChange(card, attr);
 }
 
 Resumable ServerPlayer::triggerStep(int pos) {
@@ -812,14 +802,6 @@ void ServerPlayer::sendEndGame(bool victory) {
     mGame->opponentOfPlayer(mId)->sendGameEvent(eventOpp);
 }
 
-void ServerPlayer::sendAttrChange(ServerCard *card, asn::AttributeType attr) {
-    EventSetCardAttr event;
-    event.set_stageid(card->pos());
-    event.set_attr(attrTypeToProto(attr));
-    event.set_value(attr == asn::AttributeType::Soul ? card->soul() : card->power());
-    sendToBoth(event);
-}
-
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {
     if (card->state() == state)
         return;
@@ -829,40 +811,6 @@ void ServerPlayer::setCardState(ServerCard *card, CardState state) {
     event.set_stageid(card->pos());
     event.set_state(state);
     sendToBoth(event);
-}
-
-void ServerPlayer::endOfTurnEffectValidation() {
-    auto stage = zone("stage");
-    for (int i = 0; i < 5; ++i) {
-        auto card = stage->card(i);
-        if (!card)
-            continue;
-        int oldPower = card->power();
-        int oldSoul = card->soul();
-        card->validateBuffs();
-        if (oldPower != card->power())
-            sendAttrChange(card, asn::AttributeType::Power);
-        if (oldSoul != card->soul())
-            sendAttrChange(card, asn::AttributeType::Soul);
-        auto &abs = card->abilities();
-        auto it = abs.rbegin();
-        while (it != abs.rend()) {
-            if (it->permanent)
-                break;
-            if (--it->duration != 0) {
-                ++it;
-                continue;
-            }
-
-            EventRemoveAbility event;
-            event.set_cardid(card->pos());
-            event.set_zone(card->zone()->name());
-            event.set_abilityid(std::distance(abs.begin(), (it+1).base()));
-            sendToBoth(event);
-
-            it = std::reverse_iterator(abs.erase((++it).base()));
-        }
-    }
 }
 
 ServerCard *ServerPlayer::battleOpponent(ServerCard *card) const {
