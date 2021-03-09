@@ -245,8 +245,10 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
 
     ServerCard *card = targetZone->addCard(std::move(cardPtr));
 
-    if (startZoneName == "stage" && targetZoneName != "stage")
+    if (startZoneName == "stage" || startZoneName == "climax") {
+        deactivateContAbilities(card);
         card->reset();
+    }
 
     EventMoveCard eventPublic;
     eventPublic.set_startid(static_cast<google::protobuf::uint32>(startId));
@@ -271,7 +273,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
-    if (startZoneName == "stage" && targetZoneName != "stage")
+    if (startZoneName == "stage" || targetZoneName == "stage")
         resolveAllContAbilities();
 
     checkZoneChangeTrigger(card, startZoneName, targetZoneName);

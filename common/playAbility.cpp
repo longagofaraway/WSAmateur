@@ -216,6 +216,19 @@ void ServerPlayer::playContAbilities(ServerCard *card) {
     }
 }
 
+void ServerPlayer::deactivateContAbilities(ServerCard *source) {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        auto oldAttrs = card->attributes();
+        card->removeContBuffsBySource(source);
+        sendChangedAttrs(card, oldAttrs);
+    }
+}
+
 void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {
     auto stage = zone("stage");
     for (int i = 0; i < stage->count(); ++i) {

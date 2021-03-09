@@ -171,6 +171,7 @@ private:
     void resolveAllContAbilities();
     Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
     void playContAbilities(ServerCard *card);
+    void deactivateContAbilities(ServerCard *source);
 
     Resumable playAbility(const asn::Ability &a);
     void playContAbility(const asn::ContAbility &a, bool &active);

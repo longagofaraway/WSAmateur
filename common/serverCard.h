@@ -78,10 +78,12 @@ public:
     void setState(CardState state) { mState = state; }
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
+
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta);
     void removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr);
     void removePositionalContBuffs();
+    void removeContBuffsBySource(ServerCard *card);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
     void addAbility(const asn::Ability &a, int duration);

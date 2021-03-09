@@ -81,6 +81,17 @@ void ServerCard::removePositionalContBuffs() {
     }
 }
 
+void ServerCard::removeContBuffsBySource(ServerCard *card) {
+    for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
+        if (it->mSource == card) {
+            changeAttr(it->mAttr, -it->mValue);
+            it = mContBuffs.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void ServerCard::validateBuffs() {
     for (auto &buff: mBuffs) {
         if (--buff.mDuration == 0) {
