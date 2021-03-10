@@ -83,7 +83,7 @@ public:
     bool mulliganFinished() const { return mMulliganFinished; }
     bool active() const { return mActive; }
     void setActive(bool active) { mActive = active; }
-    ServerCard* battleOpponent(ServerCard *card) const;
+    ServerCard* oppositeCard(ServerCard *card) const;
     ServerCard* attackingCard() { return mAttackingCard; }
     void setAttackingCard(ServerCard *card) { mAttackingCard = card; }
     AttackType attackType() const { return mAttackType; }
@@ -139,23 +139,19 @@ public:
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);
     void addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration = 1);
-    void addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta);
+    void addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta, bool positional = false);
     void removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr);
-    void changeAttribute(ServerCard *card, asn::AttributeType attr, int delta);
+    void removePositionalContBuffsBySource(ServerCard *card);
     void setCardState(ServerCard *card, CardState state);
-
     void endOfTurnEffectValidation();
-
-    void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
-    Resumable checkTiming();
-    Resumable processRuleActions(bool &ruleActionFound);
-    bool hasActivatedAbilities() const;
 
 private:
     // playing abilities
     AbilityContext mContext;
     std::vector<TriggeredAbility> mQueue;
 
+public:
+    void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
     void checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *card);
@@ -168,10 +164,14 @@ private:
     bool canBePlayed(const asn::Ability &a);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
 
-    void resolveAllContAbilities();
     Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
+    Resumable processRuleActions(bool &ruleActionFound);
     void playContAbilities(ServerCard *card);
+    void resolveAllContAbilities();
     void deactivateContAbilities(ServerCard *source);
+
+    bool hasActivatedAbilities() const;
+    Resumable checkTiming();
 
     Resumable playAbility(const asn::Ability &a);
     void playContAbility(const asn::ContAbility &a, bool &active);

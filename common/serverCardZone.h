@@ -26,6 +26,8 @@ public:
     ServerCardZone(ServerPlayer *player, const std::string_view name, ZoneType type);
     virtual ~ServerCardZone(){}
 
+    ServerPlayer* player() const { return mPlayer; }
+
     int count() const { return static_cast<int>(mCards.size()); }
     const std::string& name() const { return mName; }
     ZoneType type() const { return mType; }

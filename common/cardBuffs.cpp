@@ -64,19 +64,27 @@ void ServerPlayer::addAttributeBuff(asn::AttributeType attr, int pos, int delta,
     sendAttrChange(card, attr);
 }
 
-void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta) {
-    if (!card->addContAttrBuff(source, abilityId, attr, delta))
+void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta, bool positional) {
+    if (!card->addContAttrBuff(source, abilityId, attr, delta, positional))
         return;
 
-    sendAttrChange(card, attr);
+    card->player()->sendAttrChange(card, attr);
 }
 
 void ServerPlayer::removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr) {
     card->removeContAttrBuff(source, abilityId, attr);
-    sendAttrChange(card, attr);
+    card->player()->sendAttrChange(card, attr);
 }
 
-void ServerPlayer::changeAttribute(ServerCard *card, asn::AttributeType attr, int delta) {
-    card->changeAttr(attr, delta);
-    sendAttrChange(card, attr);
+void ServerPlayer::removePositionalContBuffsBySource(ServerCard *source) {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        auto oldAttrs = card->attributes();
+        card->removePositionalContBuffsBySource(source);
+        sendChangedAttrs(card, oldAttrs);
+    }
 }

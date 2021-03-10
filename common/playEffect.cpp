@@ -172,6 +172,8 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
             }
             clearExpectedComands();
         }
+        std::sort(mContext.chosenCards.begin(), mContext.chosenCards.end(),
+                  [](const CardImprint &a, const CardImprint &b) { return a.id > b.id; });
         for (const auto &card: mContext.chosenCards) {
             auto owner = card.opponent ? mGame->opponentOfPlayer(mId) : this;
             owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone), 0, mContext.revealChosen);
@@ -372,6 +374,18 @@ void ServerPlayer::playAttributeGain(const asn::AttributeGain &e) {
                 } else {
                     addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
                 }
+            }
+        }
+    } else if (e.target.type == asn::TargetType::OppositeThis) {
+        auto card = oppositeCard(mContext.thisCard.card);
+        if (card) {
+            if (mContext.cont) {
+                if (mContext.revert)
+                    removeContAttributeBuff(card, mContext.thisCard.card, mContext.abilityId, e.type);
+                else
+                    addContAttributeBuff(card, mContext.thisCard.card, mContext.abilityId, e.type, value, true);
+            } else {
+                mGame->opponentOfPlayer(mId)->addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
             }
         }
     }

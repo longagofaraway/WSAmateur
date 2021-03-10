@@ -69,6 +69,9 @@ std::string printAttributeGain(const AttributeGain &e) {
             res += " ";
             break;
         }
+        case TargetType::OppositeThis:
+            res += "the character facing this card gets ";
+            break;
         default:
             assert(false);
         }

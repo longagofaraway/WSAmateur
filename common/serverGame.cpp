@@ -141,7 +141,7 @@ Resumable ServerGame::battleStep() {
     if (!attCard || attCard->zone()->name() != "stage")
         co_return;
 
-    auto battleOpponent = attPlayer->battleOpponent(attCard);
+    auto battleOpponent = attPlayer->oppositeCard(attCard);
     if (!battleOpponent)
         co_return;
 
@@ -191,4 +191,34 @@ Resumable ServerGame::checkTiming() {
             continue;
         break;
     }
+}
+
+void ServerGame::resolveAllContAbilities() {
+    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
+    if (!aplayer || !opponent)
+        return;
+
+    aplayer->resolveAllContAbilities();
+    opponent->resolveAllContAbilities();
+}
+
+void ServerGame::removePositionalContBuffsBySource(ServerCard *source) {
+    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
+    if (!aplayer || !opponent)
+        return;
+
+    aplayer->removePositionalContBuffsBySource(source);
+    opponent->removePositionalContBuffsBySource(source);
+}
+
+void ServerGame::deactivateContAbilities(ServerCard *source) {
+    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
+    if (!aplayer || !opponent)
+        return;
+
+    aplayer->deactivateContAbilities(source);
+    opponent->deactivateContAbilities(source);
 }

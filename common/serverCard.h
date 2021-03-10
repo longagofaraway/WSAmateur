@@ -10,6 +10,7 @@
 #include "cardInfo.h"
 
 class ServerCardZone;
+class ServerPlayer;
 
 class CardBase {
 public:
@@ -65,6 +66,7 @@ public:
     int pos() const;
     void setZone(ServerCardZone *zone) { mZone = zone; }
     ServerCardZone* zone() const { return mZone; }
+    ServerPlayer* player() const;
 
     const std::string& code() const { return mCode; }
     const std::string& name() const override { return mCardInfo->name(); }
@@ -80,10 +82,11 @@ public:
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
 
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
-    bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta);
+    bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional = false);
     void removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr);
     void removePositionalContBuffs();
     void removeContBuffsBySource(ServerCard *card);
+    void removePositionalContBuffsBySource(ServerCard *card);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
     void addAbility(const asn::Ability &a, int duration);

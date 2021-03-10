@@ -60,7 +60,12 @@ public:
     Resumable continueFromDamageStep();
     Resumable battleStep();
     Resumable encoreStep();
+
     Resumable checkTiming();
+
+    void resolveAllContAbilities();
+    void removePositionalContBuffsBySource(ServerCard *source);
+    void deactivateContAbilities(ServerCard *source);
 
     void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 

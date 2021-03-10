@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "serverCardZone.h"
+
 ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone)
     : mCardInfo(info), mZone(zone) {
     mCode = info->code();
@@ -45,13 +47,17 @@ int ServerCard::pos() const {
     return mPosition;
 }
 
+ServerPlayer* ServerCard::player() const {
+    return mZone->player();
+}
+
 void ServerCard::addAttrBuff(asn::AttributeType attr, int delta, int duration) {
     mBuffs.emplace_back(attr, delta, duration);
     changeAttr(attr, delta);
 }
 
-bool ServerCard::addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta) {
-    ContAttributeChange buff(card, abilityId, attr, delta);
+bool ServerCard::addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional) {
+    ContAttributeChange buff(card, abilityId, attr, delta, positional);
     auto it = std::find(mContBuffs.begin(), mContBuffs.end(), buff);
     if (it == mContBuffs.end()) {
         mContBuffs.emplace_back(std::move(buff));
@@ -84,6 +90,17 @@ void ServerCard::removePositionalContBuffs() {
 void ServerCard::removeContBuffsBySource(ServerCard *card) {
     for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
         if (it->mSource == card) {
+            changeAttr(it->mAttr, -it->mValue);
+            it = mContBuffs.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void ServerCard::removePositionalContBuffsBySource(ServerCard *card) {
+    for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
+        if (it->mPositional && it->mSource == card) {
             changeAttr(it->mAttr, -it->mValue);
             it = mContBuffs.erase(it);
         } else {

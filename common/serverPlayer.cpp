@@ -247,7 +247,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     int newCardId = targetZone->count() - 1;
 
     if (startZoneName == "stage" || startZoneName == "climax") {
-        deactivateContAbilities(card);
+        mGame->deactivateContAbilities(card);
         card->reset();
     }
 
@@ -275,7 +275,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     mGame->sendPublicEvent(eventPublic, mId);
 
     if (startZoneName == "stage" || targetZoneName == "stage")
-        resolveAllContAbilities();
+        mGame->resolveAllContAbilities();
 
     checkZoneChangeTrigger(card, newCardId, startZoneName, targetZoneName);
     if (enableGlobEncore)
@@ -309,7 +309,7 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, Serve
         oldStageCardId = zone("wr")->count() - 1;
     }
 
-    resolveAllContAbilities();
+    mGame->resolveAllContAbilities();
     checkZoneChangeTrigger(cardOnStage, targetId, startZone->name(), "stage");
     if (pOldStageCard)
         checkZoneChangeTrigger(pOldStageCard, oldStageCardId, "stage", "wr");
@@ -394,7 +394,7 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
-    resolveAllContAbilities();
+    mGame->resolveAllContAbilities();
     checkZoneChangeTrigger(cardInPlay, cmd.stageid(), "hand", "stage");
     if (pOldStageCard)
         checkZoneChangeTrigger(pOldStageCard, oldStageCardId, "stage", "wr");
@@ -417,7 +417,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
-    resolveAllContAbilities();
+    mGame->resolveAllContAbilities();
 
     checkZoneChangeTrigger(cardPtr, 0, "hand", "climax");
     co_await mGame->checkTiming();
@@ -438,10 +438,12 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
     if (card1) {
         oldAttrs1 = card1->attributes();
         card1->removePositionalContBuffs();
+        mGame->removePositionalContBuffsBySource(card1);
     }
     if (card2) {
         oldAttrs2 = card2->attributes();
         card2->removePositionalContBuffs();
+        mGame->removePositionalContBuffsBySource(card2);
     }
 
     stage->switchPositions(cmd.stageidfrom(), cmd.stageidto());
@@ -450,7 +452,7 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
     event.set_stageidto(cmd.stageidto());
     sendToBoth(event);
 
-    resolveAllContAbilities();
+    mGame->resolveAllContAbilities();
     if (card1)
         sendChangedAttrs(card1, oldAttrs1);
     if (card2)
@@ -528,7 +530,7 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     setAttackingCard(attCard);
 
     AttackType type = cmd.attacktype();
-    auto battleOpp = battleOpponent(attCard);
+    auto battleOpp = oppositeCard(attCard);
     if (!battleOpp)
         type = AttackType::DirectAttack;
 
@@ -790,7 +792,7 @@ void ServerPlayer::setCardState(ServerCard *card, CardState state) {
     sendToBoth(event);
 }
 
-ServerCard *ServerPlayer::battleOpponent(ServerCard *card) const {
+ServerCard *ServerPlayer::oppositeCard(ServerCard *card) const {
     auto opponent = mGame->opponentOfPlayer(mId);
     if (!opponent)
         return nullptr;
