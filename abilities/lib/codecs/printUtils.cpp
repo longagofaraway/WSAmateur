@@ -100,3 +100,39 @@ std::string printPlayer(const Player &p) {
     return s;
 }
 
+std::string printKeyword(Keyword keyword) {
+    switch (keyword) {
+    case Keyword::Alarm:
+        return "Alarm";
+    case Keyword::Backup:
+        return "Backup";
+    case Keyword::Bond:
+        return "Bond";
+    case Keyword::Brainstorm:
+        return "Brainstorm";
+    case Keyword::Change:
+        return "Change";
+    case Keyword::Cxcombo:
+        return "CXCombo";
+    case Keyword::Encore:
+        return "Encore";
+    case Keyword::Experience:
+        return "Experience";
+    case Keyword::Replay:
+        return "Replay";
+    case Keyword::Resonance:
+        return "Resonance";
+    default:
+        return "";
+    }
+}
+
+std::string printKeywords(const std::vector<Keyword> &keywords) {
+    std::string s;
+
+    for (auto keyword: keywords)
+        s += "<b>" + printKeyword(keyword) + "</b> ";
+
+    return s;
+}
+
