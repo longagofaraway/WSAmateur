@@ -229,12 +229,8 @@ void ServerPlayer::deactivateContAbilities(ServerCard *source) {
     }
 }
 
-void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {
-    auto stage = zone("stage");
-    for (int i = 0; i < stage->count(); ++i) {
-        auto card = stage->card(i);
-        if (!card)
-            continue;
+void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to) {
+    auto checkTrigger = [=](ServerCard *card, int id) {
         for (int j = 0; static_cast<size_t>(j) < card->abilities().size(); ++j) {
             const auto &a = card->abilities()[j];
             if (a.ability.type != asn::AbilityType::Auto)
@@ -258,13 +254,23 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
             }
 
             TriggeredAbility ta;
-            ta.card = CardImprint(card->zone()->name(), card->pos(), card);
+            ta.card = CardImprint(card->zone()->name(), id, card);
             ta.type = ProtoCard;
             ta.abilityId = j;
             mQueue.push_back(ta);
         }
+    };
+
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+        checkTrigger(card, i);
     }
 
+    if (movedCard->zone()->name() != "stage")
+        checkTrigger(movedCard, cardId);
 }
 
 void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to) {

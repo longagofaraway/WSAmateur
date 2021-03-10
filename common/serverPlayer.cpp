@@ -244,6 +244,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
         return false;
 
     ServerCard *card = targetZone->addCard(std::move(cardPtr));
+    int newCardId = targetZone->count() - 1;
 
     if (startZoneName == "stage" || startZoneName == "climax") {
         deactivateContAbilities(card);
@@ -276,9 +277,9 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     if (startZoneName == "stage" || targetZoneName == "stage")
         resolveAllContAbilities();
 
-    checkZoneChangeTrigger(card, startZoneName, targetZoneName);
+    checkZoneChangeTrigger(card, newCardId, startZoneName, targetZoneName);
     if (enableGlobEncore)
-        checkGlobalEncore(card, targetZone->count() - 1, startZoneName, targetZoneName);
+        checkGlobalEncore(card, newCardId, startZoneName, targetZoneName);
 
     return true;
 }
@@ -302,13 +303,16 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, Serve
     sendToBoth(event);
 
     ServerCard *pOldStageCard = nullptr;
-    if (oldStageCard)
+    int oldStageCardId = 0;
+    if (oldStageCard) {
         pOldStageCard = zone("wr")->addCard(std::move(oldStageCard));
+        oldStageCardId = zone("wr")->count() - 1;
+    }
 
     resolveAllContAbilities();
-    checkZoneChangeTrigger(cardOnStage, startZone->name(), "stage");
+    checkZoneChangeTrigger(cardOnStage, targetId, startZone->name(), "stage");
     if (pOldStageCard)
-        checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
+        checkZoneChangeTrigger(pOldStageCard, oldStageCardId, "stage", "wr");
 
     return true;
 }
@@ -381,16 +385,19 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     mGame->sendPublicEvent(eventPublic, mId);
 
     ServerCard *pOldStageCard = nullptr;
-    if (oldStageCard)
+    int oldStageCardId = 0;
+    if (oldStageCard) {
         pOldStageCard = zone("wr")->addCard(std::move(oldStageCard));
+        oldStageCardId = zone("wr")->count() - 1;
+    }
 
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
     resolveAllContAbilities();
-    checkZoneChangeTrigger(cardInPlay, "hand", "stage");
+    checkZoneChangeTrigger(cardInPlay, cmd.stageid(), "hand", "stage");
     if (pOldStageCard)
-        checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
+        checkZoneChangeTrigger(pOldStageCard, oldStageCardId, "stage", "wr");
     co_await mGame->checkTiming();
 }
 
@@ -412,7 +419,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
 
     resolveAllContAbilities();
 
-    checkZoneChangeTrigger(cardPtr, "hand", "climax");
+    checkZoneChangeTrigger(cardPtr, 0, "hand", "climax");
     co_await mGame->checkTiming();
 
     attackDeclarationStep();
@@ -678,7 +685,7 @@ Resumable ServerPlayer::encoreStep() {
                 for (int i = 0; i < 5; ++i) {
                     auto card = stage->card(i);
                     if (card && card->state() == StateReversed) {
-                        moveCard("stage", i, "wr", false, false);
+                        moveCard("stage", i, "wr", 0, false, false);
                         co_await mGame->checkTiming();
                     }
                 }

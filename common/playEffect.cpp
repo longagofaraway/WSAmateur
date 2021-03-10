@@ -174,7 +174,7 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
         }
         for (const auto &card: mContext.chosenCards) {
             auto owner = card.opponent ? mGame->opponentOfPlayer(mId) : this;
-            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone), mContext.revealChosen);
+            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone), 0, mContext.revealChosen);
             if (zone("deck")->count() == 0)
                 refresh();
             if (e.to[toIndex].zone == asn::Zone::Clock && zone("clock")->count() >= 7)

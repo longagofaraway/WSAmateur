@@ -156,7 +156,7 @@ private:
     AbilityContext mContext;
     std::vector<TriggeredAbility> mQueue;
 
-    void checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to);
+    void checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *card);
 
