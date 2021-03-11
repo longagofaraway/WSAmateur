@@ -11,8 +11,6 @@
 
 #include "abilities.h"
 
-//using namespace asn;
-
 asn::Number parseNumber(const QJsonObject &json);
 template<typename T>
 std::vector<T> parseArray(const QJsonArray &json, T(*parseType)(const QJsonObject &json)) {

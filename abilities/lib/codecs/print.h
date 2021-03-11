@@ -10,8 +10,9 @@ std::string printNumber(const asn::Number &n);
 std::string printZone(asn::Zone zone);
 std::string printPlayer(const asn::Player &p);
 std::string printState(asn::State s);
-std::string printKeywords(const std::vector<asn::Keyword> &keywords);
+bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
+std::string printKeywords(const std::vector<asn::Keyword> &keywords);
 std::string printCondition(const asn::Condition &c);
 std::string printCost(const asn::Cost &c);
 std::string printEffect(const asn::Effect &e);

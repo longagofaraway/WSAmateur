@@ -72,10 +72,10 @@ Condition decodeCondition(Iterator &it, Iterator end) {
         c.cond = ConditionPlayersLevel{ decodeNumber(it, end) };
         break;
     case ConditionType::And:
-        c.cond = ConditionPlayersLevel{ decodeNumber(it, end) };
+        c.cond = decodeConditionAndOr<ConditionAnd>(it, end);
         break;
     case ConditionType::Or:
-        c.cond = ConditionPlayersLevel{ decodeNumber(it, end) };
+        c.cond = decodeConditionAndOr<ConditionOr>(it, end);
         break;
     default:
         break;
