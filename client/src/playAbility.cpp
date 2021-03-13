@@ -122,15 +122,16 @@ void Player::processChooseCard(const EventChooseCard &event) {
     auto effect = decodeChooseCard(event.effect());
     if (effect.placeType != asn::PlaceType::SpecificPlace ||
         effect.targets.size() != 1 ||
-        effect.targets[0].type != asn::TargetType::SpecificCards ||
-        effect.targets[0].targetSpecification->number.mod != asn::NumModifier::ExactMatch ||
-        effect.targets[0].targetSpecification->number.value != 1) {
+        effect.targets[0].type != asn::TargetType::SpecificCards) {
         assert(false);
         return;
     }
 
+    bool mandatory = event.mandatory();
+    if (effect.targets[0].targetSpecification->number.mod == asn::NumModifier::UpTo)
+        mandatory = false;
 
-    if (highlightCardsForChoice(effect.targets[0], *effect.place, event.mandatory()))
+    if (highlightCardsForChoice(effect.targets[0], *effect.place, mandatory))
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
 }
 

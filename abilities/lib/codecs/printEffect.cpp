@@ -120,12 +120,10 @@ std::string printChooseCard(const ChooseCard &e) {
     const auto &target = e.targets[0];
     if (target.type == TargetType::SpecificCards) {
         const auto &spec = *target.targetSpecification;
-        if (spec.number.mod == NumModifier::ExactMatch) {
-            if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
-                s += printDigit(spec.number.value);
-                s += " of " + printPlayer(e.place->owner);
-                plural = true;
-            }
+        s += printNumber(spec.number);
+        if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
+            s += " of " + printPlayer(e.place->owner);
+            plural = true;
         }
         if (spec.mode == TargetMode::FrontRow)
             s += "center stage ";

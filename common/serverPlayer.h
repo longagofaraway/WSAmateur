@@ -154,11 +154,12 @@ public:
     void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
     void checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
-    void checkOnAttack(ServerCard *card);
+    void checkOnAttack(ServerCard *attCard);
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
     bool evaluateConditionHaveCard(const asn::ConditionHaveCard &c);
+    bool evaluateConditionAnd(const asn::ConditionAnd &c);
 
     bool canBePayed(const asn::CostItem &c);
     bool canBePlayed(const asn::Ability &a);

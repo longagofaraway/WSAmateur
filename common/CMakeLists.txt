@@ -5,6 +5,7 @@ set(commonSources
     cardBuffs.cpp
     cardDatabase.cpp
     cardInfo.cpp
+    condition.cpp
     deckList.cpp
     playAbility.cpp
     playEffect.cpp

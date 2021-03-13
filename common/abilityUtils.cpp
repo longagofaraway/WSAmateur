@@ -116,23 +116,13 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
         }
         case asn::CardSpecifierType::Level: {
             const auto &number = std::get<asn::Level>(spec.specifier).value;
-            if ((number.mod == asn::NumModifier::ExactMatch &&
-                 number.value != card.level()) ||
-                (number.mod == asn::NumModifier::AtLeast &&
-                 number.value > card.level()) ||
-                (number.mod == asn::NumModifier::UpTo &&
-                 number.value < card.level()))
+            if (!checkNumber(number, card.level()))
                 eligible = false;
             break;
         }
         case asn::CardSpecifierType::Cost: {
             const auto &number = std::get<asn::CostSpecifier>(spec.specifier).value;
-            if ((number.mod == asn::NumModifier::ExactMatch &&
-                 number.value != card.cost()) ||
-                (number.mod == asn::NumModifier::AtLeast &&
-                 number.value > card.cost()) ||
-                (number.mod == asn::NumModifier::UpTo &&
-                 number.value < card.cost()))
+            if (!checkNumber(number, card.cost()))
                 eligible = false;
             break;
         }
@@ -153,4 +143,15 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             return false;
     }
     return true;
+}
+
+bool checkNumber(const asn::Number &numObj, int n) {
+    if ((numObj.mod == asn::NumModifier::ExactMatch &&
+         numObj.value == n) ||
+        (numObj.mod == asn::NumModifier::AtLeast &&
+         numObj.value <= n) ||
+        (numObj.mod == asn::NumModifier::UpTo &&
+         numObj.value >= n))
+        return true;
+    return false;
 }

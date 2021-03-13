@@ -20,73 +20,6 @@ Resumable ServerPlayer::payCost() {
     }
 }
 
-bool ServerPlayer::evaluateCondition(const asn::Condition &c) {
-    switch (c.type) {
-    case asn::ConditionType::NoCondition:
-        return true;
-    case asn::ConditionType::IsCard:
-        return evaluateConditionIsCard(std::get<asn::ConditionIsCard>(c.cond));
-    case asn::ConditionType::HaveCards:
-        return evaluateConditionHaveCard(std::get<asn::ConditionHaveCard>(c.cond));
-    default:
-        assert(false);
-        return false;
-    }
-}
-
-bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
-    if (c.target.type == asn::TargetType::MentionedCards) {
-        for (const auto &card: mContext.mentionedCards) {
-            assert(card.card);
-            for (const auto &neededCard: c.neededCard)
-                if (checkCard(neededCard.cardSpecifiers, *card.card))
-                    return true;
-        }
-    } else if (c.target.type == asn::TargetType::SpecificCards) {
-        assert(c.neededCard.size() == 1);
-        const auto &spec = *c.target.targetSpecification;
-        if (spec.mode == asn::TargetMode::All) {
-            auto stage = zone("stage");
-            bool verified = true;
-            for (int i = 0; i < stage->count(); ++i)
-                if (stage->card(i) && !checkCard(c.neededCard[0].cardSpecifiers, *stage->card(i)))
-                        verified = false;
-            if (verified)
-                return true;
-        }
-    }
-    return false;
-}
-
-bool ServerPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
-    auto player = (c.who == asn::Player::Player) ? this : mGame->opponentOfPlayer(mId);
-    auto z = player->zone(asnZoneToString(c.where.zone));
-    int count = 0;
-    for (int i = 0; i < z->count(); ++i) {
-        auto card = z->card(i);
-        if (!card)
-            continue;
-
-        if (c.excludingThis && mContext.thisCard.card == card)
-            continue;
-
-        if (checkCard(c.whichCards.cardSpecifiers, *card)) {
-            count++;
-
-            if (c.howMany.mod == asn::NumModifier::AtLeast &&
-                count >= c.howMany.value)
-                return true;
-        }
-    }
-    if ((c.howMany.mod == asn::NumModifier::ExactMatch &&
-         c.howMany.value == count) ||
-        (c.howMany.mod == asn::NumModifier::UpTo &&
-         c.howMany.value <= count))
-        return true;
-
-    return false;
-}
-
 Resumable ServerPlayer::playEventAbility(const asn::EventAbility &a) {
     for (const auto &effect: a.effects)
         co_await playEffect(effect);
@@ -283,8 +216,8 @@ void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, int cardId, std::str
     }
 }
 
-void ServerPlayer::checkOnAttack(ServerCard *card) {
-    auto &abs = card->abilities();
+void ServerPlayer::checkOnAttack(ServerCard *attCard) {
+    auto &abs = attCard->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
         if (abs[i].ability.type != asn::AbilityType::Auto)
             continue;
@@ -295,7 +228,7 @@ void ServerPlayer::checkOnAttack(ServerCard *card) {
         if (trig.target.type != asn::TargetType::ThisCard)
             continue;
         TriggeredAbility a;
-        a.card = CardImprint(card->zone()->name(), card->pos(), card);
+        a.card = CardImprint(attCard->zone()->name(), attCard->pos(), attCard);
         a.type = ProtoCard;
         a.abilityId = i;
         mQueue.push_back(a);
