@@ -18,8 +18,10 @@ std::string printSpecificAbility(const T &a) {
     size_t prefixLen = s.size();
 
     if constexpr (std::is_same_v<T, AutoAbility>) {
-        if (a.cost)
+        if (a.cost) {
             s += printCost(*a.cost);
+            prefixLen = s.size();
+        }
 
         s += printTrigger(a.trigger);
     }

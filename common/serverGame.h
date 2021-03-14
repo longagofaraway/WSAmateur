@@ -37,6 +37,8 @@ public:
 
     QMutex mGameMutex;
 
+    void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
+
     bool taskInProgress() const { return mTask.has_value(); }
     void startAsyncTask(Resumable&& task);
     void passCmdToTask(const GameCommand &cmd);
@@ -61,13 +63,14 @@ public:
     Resumable battleStep();
     Resumable encoreStep();
 
+    void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
+
     Resumable checkTiming();
 
     void resolveAllContAbilities();
     void removePositionalContBuffsBySource(ServerCard *source);
     void deactivateContAbilities(ServerCard *source);
 
-    void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 
 private:
     void setTask(Resumable&& task) { mTask.emplace(std::move(task)); }

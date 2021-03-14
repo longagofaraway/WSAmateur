@@ -13,10 +13,12 @@ class CardZone
 {
 protected:
     CardModel mCardsModel;
+    std::string mName;
 
 public:
     virtual ~CardZone() {}
 
+    virtual const std::string& name() const { return mName; }
     virtual QQuickItem* visualItem() const = 0;
     virtual int numOfSelectedCards();
     virtual int numOfHighlightedCards();

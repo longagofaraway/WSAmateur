@@ -136,6 +136,14 @@ std::string printKeywords(const std::vector<Keyword> &keywords) {
     return s;
 }
 
+std::string printPhase(Phase p) {
+    switch (p) {
+    case Phase::AttackPhase:
+        return "attack phase";
+    }
+    return "";
+}
+
 bool haveExactName(const std::vector<CardSpecifier> &s) {
     for (const auto &c: s)
         if (c.type == CardSpecifierType::ExactName)

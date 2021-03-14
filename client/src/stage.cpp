@@ -11,6 +11,7 @@ Stage::Stage(Player *player, Game *game)
     : mPlayer(player), mGame(game) {
     mCardsModel.addCards(5);
 
+    mName = "stage";
     QQmlComponent component(mGame->engine(), "qrc:/qml/Stage.qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame);
     context->setContextProperty("innerModel", QVariant::fromValue(&mCardsModel));

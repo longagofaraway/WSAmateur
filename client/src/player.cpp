@@ -31,30 +31,30 @@ Player::Player(int id, Game *game, bool opponent)
     auto hand = std::make_unique<Hand>(this, game);
     mHand = hand.get();
     mZones.emplace("hand", std::move(hand));
-    auto wr = std::make_unique<CommonCardZone>(this, game, "WaitingRoom");
+    auto wr = std::make_unique<CommonCardZone>(this, game, "wr");
     /*wr->model().addCard(std::string("IMC/W43-127"));
     wr->model().addCard(std::string("IMC/W43-111"));
     wr->model().addCard(std::string("IMC/W43-046"));
     wr->model().addCard(std::string("IMC/W43-091"));*/
     mZones.emplace("wr", std::move(wr));
-    auto deck = std::make_unique<CommonCardZone>(this, game, "Deck");
+    auto deck = std::make_unique<CommonCardZone>(this, game, "deck");
     mZones.emplace("deck", std::move(deck));
-    auto clock = std::make_unique<CommonCardZone>(this, game, "Clock");
+    auto clock = std::make_unique<CommonCardZone>(this, game, "clock");
     mZones.emplace("clock", std::move(clock));
-    auto stock = std::make_unique<CommonCardZone>(this, game, "Stock");
+    auto stock = std::make_unique<CommonCardZone>(this, game, "stock");
     mZones.emplace("stock", std::move(stock));
     auto stage= std::make_unique<Stage>(this, game);
     mStage = stage.get();
     mZones.emplace("stage", std::move(stage));
-    auto level = std::make_unique<CommonCardZone>(this, game, "Level");
+    auto level = std::make_unique<CommonCardZone>(this, game, "level");
     mZones.emplace("level", std::move(level));
-    auto climax = std::make_unique<CommonCardZone>(this, game, "Climax");
+    auto climax = std::make_unique<CommonCardZone>(this, game, "climax");
     mZones.emplace("climax", std::move(climax));
-    auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "ResolutionZone");
+    auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "res");
     mZones.emplace("res", std::move(resolutionZone));
     mAbilityList = std::make_unique<ActivatedAbilities>(this, game);
     mChoiceDialog = std::make_unique<ChoiceDialog>(game);
-    auto orderedView = std::make_unique<CommonCardZone>(this, game, "OrderedCardsView");
+    auto orderedView = std::make_unique<CommonCardZone>(this, game, "view");
     mZones.emplace("view", std::move(orderedView));
 
     if (!mOpponent) {

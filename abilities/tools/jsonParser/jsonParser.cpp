@@ -176,13 +176,13 @@ PhaseTrigger parsePhaseTrigger(const QJsonObject &json) {
         throw std::runtime_error("no state in PhaseTrigger");
     if (!json.contains("phase") || !json["phase"].isDouble())
         throw std::runtime_error("no phase in PhaseTrigger");
-    if (!json.contains("turnPlayer") || !json["turnPlayer"].isDouble())
-        throw std::runtime_error("no turnPlayer in PhaseTrigger");
+    if (!json.contains("owner") || !json["owner"].isDouble())
+        throw std::runtime_error("no owner in PhaseTrigger");
 
     PhaseTrigger p;
     p.state = static_cast<PhaseState>(json["state"].toInt());
     p.phase = static_cast<Phase>(json["phase"].toInt());
-    p.player = static_cast<Player>(json["turnPlayer"].toInt());
+    p.player = static_cast<Player>(json["owner"].toInt());
 
     return p;
 }
@@ -405,7 +405,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-006_3.txt");
+    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-007_2.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

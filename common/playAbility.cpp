@@ -235,6 +235,35 @@ void ServerPlayer::checkOnAttack(ServerCard *attCard) {
     }
 }
 
+void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            if (autoab.trigger.type != asn::TriggerType::OnPhaseEvent)
+                continue;
+            const auto &trig = std::get<asn::PhaseTrigger>(autoab.trigger.trigger);
+            if (trig.phase != phase || trig.state != state ||
+                (trig.player == asn::Player::Player && !mActive) ||
+                (trig.player == asn::Player::Opponent && mActive))
+                continue;
+
+            TriggeredAbility a;
+            a.card = CardImprint(card->zone()->name(), card->pos(), card);
+            a.type = ProtoCard;
+            a.abilityId = i;
+            mQueue.push_back(a);
+        }
+    }
+}
+
 void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpp) {
     auto &abs = attCard->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {

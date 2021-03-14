@@ -122,11 +122,13 @@ std::string printChooseCard(const ChooseCard &e) {
         const auto &spec = *target.targetSpecification;
         s += printNumber(spec.number);
         if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
-            s += " of " + printPlayer(e.place->owner);
+            s += "of " + printPlayer(e.place->owner);
             plural = true;
         }
         if (spec.mode == TargetMode::FrontRow)
             s += "center stage ";
+        else if (spec.mode == TargetMode::AllOther)
+            s += "other ";
 
         gChosenCardsNumber = spec.number;
         s += printCard(spec.cards, plural) + " ";
@@ -172,10 +174,12 @@ std::string printNonMandatory(const NonMandatory &e) {
 
 std::string printMoveCard(const MoveCard &e) {
     std::string s;
-    if (e.to[0].pos == asn::Position::SlotThisWasIn)
+    if (e.to[0].pos == Position::SlotThisWasIn)
         s += "return ";
-    else if (e.from.zone == asn::Zone::Hand)
+    else if (e.from.zone == Zone::Hand)
         s += "discard ";
+    else if (e.to[0].pos == Position::EmptySlotBackRow)
+        s += "move ";
     else
         s += "put ";
 
@@ -205,6 +209,8 @@ std::string printMoveCard(const MoveCard &e) {
         if (i)
             s += "or ";
 
+        if (e.to[0].pos == Position::EmptySlotBackRow)
+            return s + "to an empty slot in the back stage ";
         if (e.to[i].pos == asn::Position::SlotThisWasIn) {
             s += "to its previous position as" + printState(asn::State::Rested);
             return s;

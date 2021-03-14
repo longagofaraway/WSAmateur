@@ -7,6 +7,7 @@
 
 DeckView::DeckView(Player *player, Game *game)
     : mPlayer(player) {
+    mName = "deckView";
     QQmlComponent component(game->engine(), "qrc:/qml/CardsView.qml");
     QQmlContext *context = new QQmlContext(game->context(), game);
     context->setContextProperty("innerModel", QVariant::fromValue(&mCardsModel));

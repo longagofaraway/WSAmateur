@@ -177,6 +177,16 @@ Resumable ServerGame::encoreStep() {
     co_await opponent->startTurn();
 }
 
+void ServerGame::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
+    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
+    if (!aplayer || !opponent)
+        return;
+
+    aplayer->checkPhaseTrigger(state, phase);
+    opponent->checkPhaseTrigger(state, phase);
+}
+
 Resumable ServerGame::checkTiming() {
     ServerPlayer *aplayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);

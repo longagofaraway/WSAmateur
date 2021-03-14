@@ -122,7 +122,8 @@ public:
     void climaxPhase();
     bool canAttack();
     void endOfAttack();
-    void startAttackPhase();
+    Resumable startAttackPhase();
+    Resumable startOfAttackPhase();
     void attackDeclarationStep();
     Resumable declareAttack(const CommandDeclareAttack &cmd);
     Resumable triggerStep(int pos);
@@ -155,6 +156,7 @@ public:
     void checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *attCard);
+    void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);

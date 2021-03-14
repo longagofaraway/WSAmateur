@@ -8,6 +8,7 @@
 
 Hand::Hand(Player *player, Game *game)
     : mPlayer(player), mGame(game) {
+    mName = "hand";
     QQmlComponent component(mGame->engine(), "qrc:/qml/Hand.qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame);
     context->setContextProperty("innerModel", QVariant::fromValue(&mCardsModel));

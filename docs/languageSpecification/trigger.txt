@@ -39,7 +39,7 @@ ZoneChangeTrigger {
 PhaseTrigger {
   state PhaseState
   phase Phase
-  turnPlayer Player
+  owner Player
 }  
 
 TriggerRevealTrigger {

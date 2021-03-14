@@ -60,7 +60,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandClimaxPhase>()) {
         climaxPhase();
     } else if (cmd.command().Is<CommandAttackPhase>()) {
-        startAttackPhase();
+        mGame->startAsyncTask(startAttackPhase());
     } else if (cmd.command().Is<CommandDeclareAttack>()) {
         CommandDeclareAttack declareAttackCmd;
         cmd.command().UnpackTo(&declareAttackCmd);
@@ -422,7 +422,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     checkZoneChangeTrigger(cardPtr, 0, "hand", "climax");
     co_await mGame->checkTiming();
 
-    attackDeclarationStep();
+    co_await startAttackPhase();
 }
 
 void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
@@ -501,11 +501,19 @@ bool ServerPlayer::canAttack() {
     return false;
 }
 
-void ServerPlayer::startAttackPhase() {
-    if (canAttack())
+Resumable ServerPlayer::startAttackPhase() {
+    if (canAttack()) {
+        co_await startOfAttackPhase();
         attackDeclarationStep();
-    else
-        mGame->startAsyncTask(mGame->encoreStep());
+    }
+    else {
+        co_await mGame->encoreStep();
+    }
+}
+
+Resumable ServerPlayer::startOfAttackPhase() {
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::AttackPhase);
+    co_await mGame->checkTiming();
 }
 
 void ServerPlayer::attackDeclarationStep() {
