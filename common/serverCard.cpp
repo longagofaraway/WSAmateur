@@ -73,7 +73,11 @@ bool ServerCard::addContAttrBuff(ServerCard *card, int abilityId, asn::Attribute
 
 void ServerCard::removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr) {
     ContAttributeChange buff(card, abilityId, attr, 0);
-    std::erase(mContBuffs, buff);
+    auto it = std::find(mContBuffs.begin(), mContBuffs.end(), buff);
+    if (it != mContBuffs.end()) {
+        changeAttr(attr, -it->mValue);
+        mContBuffs.erase(it);
+    }
 }
 
 void ServerCard::removePositionalContBuffs() {
@@ -118,6 +122,9 @@ void ServerCard::validateBuffs() {
                 break;
             case asn::AttributeType::Power:
                 mPower -= buff.mValue;
+                break;
+            case asn::AttributeType::Level:
+                mLevel -= buff.mValue;
                 break;
             default:
                 assert(false);

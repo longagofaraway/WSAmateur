@@ -1,37 +1,39 @@
 #include "abilities.pb.h"
 
+#include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "serverGame.h"
 #include "serverPlayer.h"
 #include "codecs/encode.h"
 #include "globalAbilities/globalAbilities.h"
 
-Resumable ServerPlayer::payCost() {
-    if (!mContext.cost)
+Resumable AbilityPlayer::payCost() {
+    if (!hasCost())
         co_return;
 
-    for (const auto &item: mContext.cost->items) {
+    for (const auto &item: cost().items) {
         if (item.type == asn::CostType::Stock) {
             for (int i = 0; i < std::get<asn::StockCost>(item.costItem).value; ++i)
-                moveCard("stock", zone("stock")->count() - 1, "wr");
+                mPlayer->moveCard("stock", mPlayer->zone("stock")->count() - 1, "wr");
         } else {
             co_await playEffect(std::get<asn::Effect>(item.costItem));
         }
     }
 }
 
-Resumable ServerPlayer::playEventAbility(const asn::EventAbility &a) {
+Resumable AbilityPlayer::playEventAbility(const asn::EventAbility &a) {
     for (const auto &effect: a.effects)
         co_await playEffect(effect);
 }
 
-Resumable ServerPlayer::playAutoAbility(const asn::AutoAbility &a) {
-    mContext.cost = a.cost;
+Resumable AbilityPlayer::playAutoAbility(const asn::AutoAbility &a) {
+    if (a.cost)
+        setCost(*a.cost);
     for (const auto &effect: a.effects)
         co_await playEffect(effect);
 }
 
-void ServerPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
+void AbilityPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
     if (a.effects.size() == 0)
         return;
 
@@ -39,7 +41,7 @@ void ServerPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
     if (!res && !active)
         return;
     if (!res && active) {
-        mContContext.revert = true;
+        setRevert(true);
         active = false;
     } else {
         active = true;
@@ -48,7 +50,7 @@ void ServerPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
         playContEffect(effect);
 }
 
-Resumable ServerPlayer::playAbility(const asn::Ability &a) {
+Resumable AbilityPlayer::playAbility(const asn::Ability &a) {
     switch(a.type) {
     case asn::AbilityType::Auto:
         co_await playAutoAbility(std::get<asn::AutoAbility>(a.ability));
@@ -77,9 +79,9 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     evStart.set_uniqueid(uniqueId);
     sendToBoth(evStart);
 
-    mContext = AbilityContext();
-    mContext.thisCard = CardImprint("res", 0, card);
-    co_await playAbility(triggerAbility(trigger));
+    AbilityPlayer a(this);
+    a.setThisCard(CardImprint("res", 0, card));
+    co_await a.playAbility(triggerAbility(trigger));
 
     EventAbilityResolved ev2;
     ev2.set_uniqueid(uniqueId);
@@ -141,10 +143,11 @@ void ServerPlayer::playContAbilities(ServerCard *card) {
         if (abs[i].ability.type != asn::AbilityType::Cont)
             continue;
         const auto &cont = std::get<asn::ContAbility>(abs[i].ability.ability);
-        mContContext = AbilityContext();
-        mContContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
-        mContContext.abilityId = i;
-        playContAbility(cont, abs[i].active);
+
+        AbilityPlayer a(this);
+        a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
+        a.setAbilityId(i);
+        a.playContAbility(cont, abs[i].active);
     }
 }
 
@@ -371,10 +374,10 @@ Resumable ServerPlayer::checkTiming() {
                 evStart.set_uniqueid(uniqueId);
                 sendToBoth(evStart);
 
-                mContext = AbilityContext();
-                mContext.thisCard = mQueue[j].card;
+                AbilityPlayer a(this);
+                a.setThisCard(mQueue[j].card);
                 // not a reliable way to get temporary ability (in case the card changed zone)
-                co_await playAbility(mQueue[j].getAbility());
+                co_await a.playAbility(mQueue[j].getAbility());
 
                 EventAbilityResolved ev2;
                 ev2.set_uniqueid(uniqueId);
@@ -397,8 +400,8 @@ Resumable ServerPlayer::processRuleActions(bool &ruleActionFound) {
     auto it = mQueue.begin();
     while (it != mQueue.end()) {
         if (it->type == ProtoAbilityType::ProtoRuleAction) {
-            mContext = AbilityContext();
-            co_await playAbility(ruleActionAbility(static_cast<RuleAction>(it->abilityId)));
+            AbilityPlayer a(this);
+            co_await a.playAbility(ruleActionAbility(static_cast<RuleAction>(it->abilityId)));
             ruleActionFound = true;
             it = mQueue.erase(it);
         } else {

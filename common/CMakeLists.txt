@@ -16,10 +16,12 @@ set(commonSources
     serverPlayer.cpp
     serverProtocolHandler.cpp
     serverStage.cpp
+    abilityPlayer.h
     abilityUtils.h
     attributeChange.h
     cardDatabase.h
     cardInfo.h
+    cardImprint.h
     commands.h
     connection.h
     coroutineTask.h

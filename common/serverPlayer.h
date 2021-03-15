@@ -10,6 +10,7 @@
 #include "gameCommand.pb.h"
 
 #include "abilities.h"
+#include "cardImprint.h"
 #include "coroutineTask.h"
 #include "commands.h"
 #include "deckList.h"
@@ -26,17 +27,7 @@ class CommandDeclareAttack;
 class CommandLevelUp;
 class CommandEncoreCharacter;
 
-struct CardImprint {
-    ServerCard *card;
-    std::string zone;
-    int id = 0;
-    bool opponent = false;
-    CardImprint() = default;
-    CardImprint(const std::string &zone, int id, ServerCard *card = nullptr, bool opponent = false)
-        : card(card), zone(zone), id(id), opponent(opponent) {}
-};
-
-struct AbilityContext {
+/*struct AbilityContext {
     bool mandatory = true;
     bool canceled = false;
     bool revealChosen = false;
@@ -46,7 +37,7 @@ struct AbilityContext {
     std::vector<CardImprint> mentionedCards;
     CardImprint thisCard;
     std::optional<asn::Cost> cost;
-};
+};*/
 
 struct TriggeredAbility {
     CardImprint card;
@@ -76,6 +67,7 @@ class ServerPlayer
 public:
     ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id);
 
+    ServerGame* game() { return mGame; }
     int id() const { return mId; }
     bool ready() const { return mReady; }
     void setReady(bool ready) { mReady = ready; }
@@ -147,9 +139,6 @@ public:
     void endOfTurnEffectValidation();
 
 private:
-    // playing abilities
-    AbilityContext mContext;
-    AbilityContext mContContext;
     std::vector<TriggeredAbility> mQueue;
 
 public:
@@ -159,14 +148,8 @@ public:
     void checkOnAttack(ServerCard *attCard);
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
 
-    bool evaluateCondition(const asn::Condition &c);
-    bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
-    bool evaluateConditionHaveCard(const asn::ConditionHaveCard &c);
-    bool evaluateConditionAnd(const asn::ConditionAnd &c);
-
     bool canBePayed(const asn::CostItem &c);
     bool canBePlayed(const asn::Ability &a);
-    std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
 
     Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
     Resumable processRuleActions(bool &ruleActionFound);
@@ -176,23 +159,4 @@ public:
 
     bool hasActivatedAbilities() const;
     Resumable checkTiming();
-
-    Resumable playAbility(const asn::Ability &a);
-    void playContAbility(const asn::ContAbility &a, bool &active);
-    Resumable playAutoAbility(const asn::AutoAbility &a);
-    Resumable playEventAbility(const asn::EventAbility &a);
-    void playContEffect(const asn::Effect &e);
-    Resumable playEffect(const asn::Effect &e);
-    Resumable playNonMandatory(const asn::NonMandatory &e);
-    Resumable playChooseCard(const asn::ChooseCard &e);
-    Resumable playMoveCard(const asn::MoveCard &e);
-    Resumable playDrawCard(const asn::DrawCard &e);
-    void playRevealCard(const asn::RevealCard &e);
-    void playAttributeGain(const asn::AttributeGain &e, bool cont = false);
-    Resumable playPayCost(const asn::PayCost &e);
-    Resumable payCost();
-    Resumable playSearchCard(const asn::SearchCard &e);
-    void playShuffle(const asn::Shuffle &e);
-    Resumable playAbilityGain(const asn::AbilityGain &e);
-    void playMoveWrToDeck(const asn::MoveWrToDeck &e);
 };

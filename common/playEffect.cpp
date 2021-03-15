@@ -1,14 +1,15 @@
 #include "abilities.pb.h"
 #include "gameEvent.pb.h"
 
+#include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "serverGame.h"
 #include "serverPlayer.h"
 #include "codecs/encode.h"
 
-Resumable ServerPlayer::playEffect(const asn::Effect &e) {
+Resumable AbilityPlayer::playEffect(const asn::Effect &e) {
     if (!evaluateCondition(e.cond)) {
-        sendToBoth(EventConditionNotMet());
+        mPlayer->sendToBoth(EventConditionNotMet());
         co_return;
     }
 
@@ -50,10 +51,10 @@ Resumable ServerPlayer::playEffect(const asn::Effect &e) {
         assert(false);
         break;
     }
-    mContext.mandatory = true;
+    setMandatory(true);
 }
 
-void ServerPlayer::playContEffect(const asn::Effect &e) {
+void AbilityPlayer::playContEffect(const asn::Effect &e) {
     switch (e.type) {
     case asn::EffectType::AttributeGain:
         playAttributeGain(std::get<asn::AttributeGain>(e.effect), true);
@@ -63,32 +64,32 @@ void ServerPlayer::playContEffect(const asn::Effect &e) {
     }
 }
 
-Resumable ServerPlayer::playNonMandatory(const asn::NonMandatory &e) {
-    mContext.mandatory = false;
+Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
+    setMandatory(false);
     for (const auto &effect: e.effect)
         co_await playEffect(effect);
-    mContext.mandatory = true;
-    mContext.canceled = false;
+    setMandatory(true);
+    setCanceled(false);
 }
 
-Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
+Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
     std::vector<uint8_t> buf;
     encodeChooseCard(e, buf);
 
     EventChooseCard ev;
     ev.set_effect(buf.data(), buf.size());
-    ev.set_mandatory(mContext.mandatory);
-    sendToBoth(ev);
+    ev.set_mandatory(mandatory());
+    mPlayer->sendToBoth(ev);
 
-    clearExpectedComands();
-    addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+    mPlayer->clearExpectedComands();
+    mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
     // TODO: check for legitimacy of cancel
-    addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+    mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
     while (true) {
         auto cmd = co_await waitForCommand();
         if (cmd.command().Is<CommandCancelEffect>()) {
-            mContext.canceled = true;
+            setCanceled(true);
             break;
         } else if (cmd.command().Is<CommandChooseCard>()) {
             CommandChooseCard chooseCmd;
@@ -107,7 +108,7 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
             }
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
-                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? this : mGame->opponentOfPlayer(mId);
+                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
                 auto pzone = owner->zone(chooseCmd.zone());
                 if (!pzone)
                     break;
@@ -115,19 +116,19 @@ Resumable ServerPlayer::playChooseCard(const asn::ChooseCard &e) {
                 auto card = pzone->card(chooseCmd.ids(i));
                 if (!card)
                     break;
-                mContext.chosenCards.push_back(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+                addChosenCard(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
             }
             break;
         }
     }
-    clearExpectedComands();
+    mPlayer->clearExpectedComands();
 }
 
-std::map<int, ServerCard*> ServerPlayer::processCommandChooseCard(const CommandChooseCard &cmd) {
+std::map<int, ServerCard*> AbilityPlayer::processCommandChooseCard(const CommandChooseCard &cmd) {
     //TODO: add checks
     std::map<int, ServerCard*> res;
     for (int i = cmd.ids_size() - 1; i >= 0; --i) {
-        auto owner = cmd.owner() == ProtoOwner::ProtoPlayer ? this : mGame->opponentOfPlayer(mId);
+        auto owner = cmd.owner() == ProtoOwner::ProtoPlayer ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
         auto pzone = owner->zone(cmd.zone());
         if (!pzone)
             break;
@@ -141,20 +142,20 @@ std::map<int, ServerCard*> ServerPlayer::processCommandChooseCard(const CommandC
     return res;
 }
 
-Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
+Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     assert(e.executor == asn::Player::Player);
 
-    if ((e.target.type == asn::TargetType::ChosenCards && mContext.chosenCards.empty()) ||
+    if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
         ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
-            mContext.mentionedCards.empty()) ||
-        (e.target.type == asn::TargetType::ThisCard && mContext.thisCard.zone != mContext.thisCard.card->zone()->name()))
+            mentionedCards().empty()) ||
+        (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
         co_return;
 
-    if (e.from.pos == asn::Position::Top && zone(asnZoneToString(e.from.zone))->count() == 0)
+    if (e.from.pos == asn::Position::Top && mPlayer->zone(asnZoneToString(e.from.zone))->count() == 0)
         co_return;
 
     bool chooseCards = (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified);
-    std::map<int, ServerCard*> chosenCards;
+    std::map<int, ServerCard*> chCards;
     if (chooseCards) {
         assert(e.to.size() == 1);
         std::vector<uint8_t> buf;
@@ -162,49 +163,47 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
 
         EventMoveTargetChoice ev;
         ev.set_effect(buf.data(), buf.size());
-        ev.set_mandatory(mContext.mandatory);
-        sendToBoth(ev);
+        ev.set_mandatory(mandatory());
+        mPlayer->sendToBoth(ev);
 
-        clearExpectedComands();
-        addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
         // TODO: check for legitimacy of cancel
-        addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
             if (cmd.command().Is<CommandCancelEffect>()) {
-                mContext.canceled = true;
+                setCanceled(true);
                 break;
             } else if (cmd.command().Is<CommandChooseCard>()) {
                 CommandChooseCard cardCmd;
                 cmd.command().UnpackTo(&cardCmd);
-                chosenCards = processCommandChooseCard(cardCmd);
-                /*for (auto it = cards.rbegin(); it != cards.rend(); ++it)
-                    moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[0].zone));*/
+                chCards = processCommandChooseCard(cardCmd);
                 break;
             }
         }
-        clearExpectedComands();
-    } else if (!mContext.mandatory) {
-        bool confirmed = mContext.mandatory;
+        mPlayer->clearExpectedComands();
+    } else if (!mandatory()) {
+        bool confirmed = mandatory();
 
         std::vector<uint8_t> buf;
         encodeMoveCard(e, buf);
 
         EventMoveChoice ev;
         ev.set_effect(buf.data(), buf.size());
-        ev.set_mandatory(mContext.mandatory);
-        sendToBoth(ev);
+        ev.set_mandatory(mandatory());
+        mPlayer->sendToBoth(ev);
 
-        clearExpectedComands();
-        addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
         // TODO: check for legitimacy of cancel
-        addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
             if (cmd.command().Is<CommandCancelEffect>()) {
-                mContext.canceled = true;
+                setCanceled(true);
                 break;
             } else if (cmd.command().Is<CommandChoice>()) {
                 CommandChoice choiceCmd;
@@ -214,26 +213,26 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
                 break;
             }
         }
-        clearExpectedComands();
+        mPlayer->clearExpectedComands();
         if (!confirmed)
             co_return;
     }
-    if (mContext.canceled)
+    if (canceled())
         co_return;
 
     // choice of a destination
     int toZoneIndex = 0;
     if (e.to.size() > 1) {
-        assert(mContext.mandatory);
+        assert(mandatory());
         std::vector<uint8_t> buf;
         encodeMoveCard(e, buf);
         EventMoveDestinationChoice ev;
         ev.set_effect(buf.data(), buf.size());
         ev.set_mandatory(true);
-        sendToBoth(ev);
+        mPlayer->sendToBoth(ev);
 
-        clearExpectedComands();
-        addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
@@ -246,175 +245,59 @@ Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
                 break;
             }
         }
-        clearExpectedComands();
+        mPlayer->clearExpectedComands();
     }
 
     if (e.target.type == asn::TargetType::ChosenCards) {
-        std::sort(mContext.chosenCards.begin(), mContext.chosenCards.end(),
+        std::sort(chosenCards().begin(), chosenCards().end(),
                   [](const CardImprint &a, const CardImprint &b) { return a.id > b.id; });
-        for (const auto &card: mContext.chosenCards) {
-            auto owner = card.opponent ? mGame->opponentOfPlayer(mId) : this;
-            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toZoneIndex].zone), 0, mContext.revealChosen);
-            if (zone("deck")->count() == 0)
-                refresh();
-            if (e.to[toZoneIndex].zone == asn::Zone::Clock && zone("clock")->count() >= 7)
-                co_await levelUp();
+        for (const auto &card: chosenCards()) {
+            auto owner = card.opponent ? mPlayer->game()->opponentOfPlayer(mPlayer->id()) : mPlayer;
+            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toZoneIndex].zone), 0, revealChosen());
+            if (mPlayer->zone("deck")->count() == 0)
+                mPlayer->refresh();
+            if (e.to[toZoneIndex].zone == asn::Zone::Clock && mPlayer->zone("clock")->count() >= 7)
+                co_await mPlayer->levelUp();
         }
     } else if (chooseCards) {
-        for (auto it = chosenCards.rbegin(); it != chosenCards.rend(); ++it) {
-            moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone));
+        for (auto it = chCards.rbegin(); it != chCards.rend(); ++it) {
+            mPlayer->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone));
         }
     } else {
         if (e.from.pos == asn::Position::Top) {
             if (e.from.zone == asn::Zone::Deck) {
-                moveTopDeck(asnZoneToString(e.to[toZoneIndex].zone));
+                mPlayer->moveTopDeck(asnZoneToString(e.to[toZoneIndex].zone));
             } else {
-                auto pzone = zone(asnZoneToString(e.from.zone));
-                moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[toZoneIndex].zone));
+                auto pzone = mPlayer->zone(asnZoneToString(e.from.zone));
+                mPlayer->moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[toZoneIndex].zone));
             }
         } else {
             int toIndex = 0;
             if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
-                toIndex = mContext.thisCard.card->pos();
-            moveCard(mContext.thisCard.zone, mContext.thisCard.id, asnZoneToString(e.to[toZoneIndex].zone), toIndex);
+                toIndex = thisCard().card->pos();
+            mPlayer->moveCard(thisCard().zone, thisCard().id, asnZoneToString(e.to[toZoneIndex].zone), toIndex);
             if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
-                setCardState(mContext.thisCard.card, CardState::StateRested);
+                mPlayer->setCardState(thisCard().card, CardState::StateRested);
         }
         // TODO: refresh and levelup are triggered at the same time, give choice
-        if (e.to[toZoneIndex].zone == asn::Zone::Clock && zone("clock")->count() >= 7)
-            co_await levelUp();
+        if (e.to[toZoneIndex].zone == asn::Zone::Clock && mPlayer->zone("clock")->count() >= 7)
+            co_await mPlayer->levelUp();
     }
 }
 
-/*Resumable ServerPlayer::playMoveCard(const asn::MoveCard &e) {
-    if (e.target.type == asn::TargetType::ChosenCards) {
-        int toIndex = 0;
-        if (!mContext.chosenCards.size())
-            co_return;
-
-        // choice of a destination
-        if (e.to.size() > 1) {
-            std::vector<uint8_t> buf;
-            encodeMoveCard(e, buf);
-            EventMoveChoice ev;
-            ev.set_effect(buf.data(), buf.size());
-            ev.set_mandatory(true);
-            sendToBoth(ev);
-
-            clearExpectedComands();
-            addExpectedCommand(CommandChoice::GetDescriptor()->name());
-
-            while (true) {
-                auto cmd = co_await waitForCommand();
-                if (cmd.command().Is<CommandChoice>()) {
-                    CommandChoice choiceCmd;
-                    cmd.command().UnpackTo(&choiceCmd);
-                    toIndex = choiceCmd.choice();
-                    if (static_cast<size_t>(toIndex) >= e.to.size())
-                        continue;
-                    break;
-                }
-            }
-            clearExpectedComands();
-        }
-        std::sort(mContext.chosenCards.begin(), mContext.chosenCards.end(),
-                  [](const CardImprint &a, const CardImprint &b) { return a.id > b.id; });
-        for (const auto &card: mContext.chosenCards) {
-            auto owner = card.opponent ? mGame->opponentOfPlayer(mId) : this;
-            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toIndex].zone), 0, mContext.revealChosen);
-            if (zone("deck")->count() == 0)
-                refresh();
-            if (e.to[toIndex].zone == asn::Zone::Clock && zone("clock")->count() >= 7)
-                co_await levelUp();
-        }
-    } else if (e.target.type == asn::TargetType::SpecificCards) {
-        bool confirmed = mContext.mandatory;
-        if (e.from.pos == asn::Position::Top) {
-            if (zone(asnZoneToString(e.from.zone))->count() == 0)
-                co_return;
-        }
-        assert(e.to.size() == 1);
-        if (!mContext.mandatory || e.from.pos == asn::Position::NotSpecified) {
-            std::vector<uint8_t> buf;
-            encodeMoveCard(e, buf);
-
-            EventMoveChoice ev;
-            ev.set_effect(buf.data(), buf.size());
-            ev.set_mandatory(mContext.mandatory);
-            sendToBoth(ev);
-
-            clearExpectedComands();
-            if (e.from.pos == asn::Position::NotSpecified)
-                addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
-            if (!mContext.mandatory)
-                addExpectedCommand(CommandChoice::GetDescriptor()->name());
-            // TODO: check for legitimacy of cancel
-            addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
-
-            while (true) {
-                auto cmd = co_await waitForCommand();
-                if (cmd.command().Is<CommandCancelEffect>()) {
-                    mContext.canceled = true;
-                    break;
-                } else if (cmd.command().Is<CommandChoice>()) {
-                    CommandChoice choiceCmd;
-                    cmd.command().UnpackTo(&choiceCmd);
-                    // 0 is yes, so 'yes' will be the first on client's side
-                    confirmed = !choiceCmd.choice();
-                    break;
-                } else if (cmd.command().Is<CommandChooseCard>()) {
-                    CommandChooseCard cardCmd;
-                    cmd.command().UnpackTo(&cardCmd);
-                    auto cards = processCommandChooseCard(cardCmd);
-                    for (auto it = cards.rbegin(); it != cards.rend(); ++it)
-                        moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[0].zone));
-                    break;
-                }
-            }
-            clearExpectedComands();
-        }
-        if (!confirmed)
-            co_return;
-        if (e.from.pos == asn::Position::Top) {
-            if (e.from.zone == asn::Zone::Deck) {
-                moveTopDeck(asnZoneToString(e.to[0].zone));
-            } else {
-                auto pzone = zone(asnZoneToString(e.from.zone));
-                moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[0].zone));
-            }
-        }
-        // TODO: refresh and levelup are triggered at the same time, give choice
-        if (e.to[0].zone == asn::Zone::Clock && zone("clock")->count() >= 7)
-            co_await levelUp();
-    } else if (e.target.type == asn::TargetType::ThisCard) {
-        assert(mContext.mandatory);
-        assert(e.to.size() == 1);
-        if (mContext.thisCard.zone != mContext.thisCard.card->zone()->name())
-            co_return;
-        int toIndex = 0;
-        if (e.to[0].pos == asn::Position::SlotThisWasIn)
-            toIndex = mContext.thisCard.card->pos();
-        moveCard(mContext.thisCard.zone, mContext.thisCard.id, asnZoneToString(e.to[0].zone), toIndex);
-        if (e.to[0].pos == asn::Position::SlotThisWasIn)
-            setCardState(mContext.thisCard.card, CardState::StateRested);
-        if (e.to[0].zone == asn::Zone::Clock && zone("clock")->count() >= 7)
-            co_await levelUp();
-    }
-}*/
-
-Resumable ServerPlayer::playDrawCard(const asn::DrawCard &e) {
-    bool confirmed = mContext.mandatory;
-    if (!mContext.mandatory) {
+Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
+    bool confirmed = mandatory();
+    if (!mandatory()) {
         std::vector<uint8_t> buf;
         encodeDrawCard(e, buf);
 
         EventDrawChoice ev;
         ev.set_effect(buf.data(), buf.size());
         ev.set_mandatory(false);
-        sendToBoth(ev);
+        mPlayer->sendToBoth(ev);
 
-        clearExpectedComands();
-        addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
@@ -426,33 +309,33 @@ Resumable ServerPlayer::playDrawCard(const asn::DrawCard &e) {
                 break;
             }
         }
-        clearExpectedComands();
+        mPlayer->clearExpectedComands();
     }
     if (!confirmed)
         co_return;
-    moveTopDeck("hand");
+    mPlayer->moveTopDeck("hand");
 }
 
-void ServerPlayer::playRevealCard(const asn::RevealCard &e) {
+void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
     switch (e.type) {
     case asn::RevealType::TopDeck:
         if (e.number.mod == asn::NumModifier::ExactMatch) {
             for (int i = 0; i < e.number.value; ++i) {
-                auto deck = zone("deck");
+                auto deck = mPlayer->zone("deck");
                 if (i >= deck->count())
                     break;
 
                 EventRevealTopDeck event;
                 event.set_code(deck->card(deck->count() - i - 1)->code());
-                sendToBoth(event);
-                mContext.mentionedCards.push_back(CardImprint("deck", deck->count() - i - 1, deck->card(deck->count() - i - 1)));
+                mPlayer->sendToBoth(event);
+                addMentionedCard(CardImprint("deck", deck->count() - i - 1, deck->card(deck->count() - i - 1)));
             }
         } else {
             assert(false);
         }
         break;
     case asn::RevealType::ChosenCards:
-        mContext.revealChosen = true;
+        setRevealChosen(true);
         break;
     default:
         assert(false);
@@ -460,13 +343,12 @@ void ServerPlayer::playRevealCard(const asn::RevealCard &e) {
     }
 }
 
-void ServerPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
+void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
     int value = e.value;
-    auto thisCard = cont ? mContContext.thisCard.card : mContext.thisCard.card;
     if (e.gainType == asn::ValueType::Multiplier) {
         assert(e.modifier->type == asn::MultiplierType::ForEach);
         assert(e.modifier->forEach->type == asn::TargetType::SpecificCards);
-        auto pzone = zone(asnZoneToString(e.modifier->zone));
+        auto pzone = mPlayer->zone(asnZoneToString(e.modifier->zone));
         int cardCount = 0;
         for (int i = 0; i < pzone->count(); ++i) {
             auto card = pzone->card(i);
@@ -474,7 +356,7 @@ void ServerPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
                 continue;
 
             const auto &tspec = *e.modifier->forEach->targetSpecification;
-            if (tspec.mode == asn::TargetMode::AllOther && card == thisCard)
+            if (tspec.mode == asn::TargetMode::AllOther && card == thisCard().card)
                 continue;
 
             if (checkCard(tspec.cards.cardSpecifiers, *card))
@@ -485,105 +367,107 @@ void ServerPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
     }
 
     if (e.target.type == asn::TargetType::ChosenCards) {
-        for (const auto &card: mContext.chosenCards)
-            addAttributeBuff(e.type, card.id, value, e.duration);
+        for (const auto &card: chosenCards())
+            mPlayer->addAttributeBuff(e.type, card.id, value, e.duration);
     } else if (e.target.type == asn::TargetType::ThisCard) {
-        if (thisCard == nullptr || (thisCard->zone()->name() != "stage" && thisCard->zone()->name() != "climax"))
+        if (thisCard().card == nullptr ||
+            (thisCard().card->zone()->name() != "stage" && thisCard().card->zone()->name() != "climax"))
             return;
 
         if (cont) {
-            if (mContContext.revert)
-                removeContAttributeBuff(thisCard, thisCard, mContContext.abilityId, e.type);
+            if (revert())
+                mPlayer->removeContAttributeBuff(thisCard().card, thisCard().card, abilityId(), e.type);
             else
-                addContAttributeBuff(thisCard, thisCard, mContContext.abilityId, e.type, value);
+                mPlayer->addContAttributeBuff(thisCard().card, thisCard().card, abilityId(), e.type, value);
         } else {
-            addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
+            mPlayer->addAttributeBuff(e.type, thisCard().id, value, e.duration);
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.target.targetSpecification;
-        auto stage = zone("stage");
+        auto stage = mPlayer->zone("stage");
         for (int i = 0; i < stage->count(); ++i) {
             auto card = stage->card(i);
             if (!card)
                 continue;
 
-            if (spec.mode == asn::TargetMode::AllOther && card == thisCard)
+            if (spec.mode == asn::TargetMode::AllOther && card == thisCard().card)
                 continue;
 
             if (spec.mode == asn::TargetMode::All || checkCard(spec.cards.cardSpecifiers, *card)) {
                 if (cont) {
-                    if (mContContext.revert)
-                        removeContAttributeBuff(card, thisCard, mContContext.abilityId, e.type);
+                    if (revert())
+                        mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
                     else
-                        addContAttributeBuff(card, thisCard, mContContext.abilityId, e.type, value);
+                        mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value);
                 } else {
-                    addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
+                    mPlayer->addAttributeBuff(e.type, thisCard().id, value, e.duration);
                 }
             }
         }
     } else if (e.target.type == asn::TargetType::OppositeThis) {
-        auto card = oppositeCard(thisCard);
+        auto card = mPlayer->oppositeCard(thisCard().card);
         if (card) {
             if (cont) {
-                if (mContContext.revert)
-                    removeContAttributeBuff(card, thisCard, mContContext.abilityId, e.type);
+                if (revert())
+                    mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
                 else
-                    addContAttributeBuff(card, thisCard, mContContext.abilityId, e.type, value, true);
+                    mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, true);
             } else {
-                mGame->opponentOfPlayer(mId)->addAttributeBuff(e.type, mContext.thisCard.id, value, e.duration);
+                mPlayer->game()->opponentOfPlayer(mPlayer->id())->addAttributeBuff(e.type, thisCard().id, value, e.duration);
             }
         }
     }
 }
 
-Resumable ServerPlayer::playPayCost(const asn::PayCost &e) {
-    sendToBoth(EventPayCost());
+Resumable AbilityPlayer::playPayCost(const asn::PayCost &e) {
+    mPlayer->sendToBoth(EventPayCost());
 
-    clearExpectedComands();
-    addExpectedCommand(CommandPlayEffect::GetDescriptor()->name());
-    addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+    mPlayer->clearExpectedComands();
+    mPlayer->addExpectedCommand(CommandPlayEffect::GetDescriptor()->name());
+    mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
     while (true) {
         auto cmd = co_await waitForCommand();
         if (cmd.command().Is<CommandCancelEffect>()) {
-            mContext.canceled = true;
+            setCanceled(true);
             break;
         } else if (cmd.command().Is<CommandPlayEffect>()) {
             co_await payCost();
             break;
         }
     }
+    mPlayer->clearExpectedComands();
 
-    if (!mContext.canceled)
+    if (!canceled())
         for (const auto &effect: e.ifYouDo)
             co_await playEffect(effect);
 
-    if (mContext.canceled)
+    if (canceled())
         for (const auto &effect: e.ifYouDont)
             co_await playEffect(effect);
     co_return;
 }
 
 
-Resumable ServerPlayer::playSearchCard(const asn::SearchCard &e) {
+Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
     std::vector<uint8_t> buf;
     encodeSearchCard(e, buf);
 
     EventSearchCard eventPrivate;
     eventPrivate.set_effect(buf.data(), buf.size());
     EventSearchCard eventPublic(eventPrivate);
-    auto pzone = zone(asnZoneToString(e.place.zone));
+    auto pzone = mPlayer->zone(asnZoneToString(e.place.zone));
     for (int i = 0; i < pzone->count(); ++i)
         eventPrivate.add_codes(pzone->card(i)->code());
     for (int i = 0; i < pzone->count(); ++i)
         eventPublic.add_codes("");
-    sendGameEvent(eventPrivate);
-    mGame->sendPublicEvent(eventPublic, mId);
+    mPlayer->sendGameEvent(eventPrivate);
+    mPlayer->game()->sendPublicEvent(eventPublic, mPlayer->id());
 
-    clearExpectedComands();
-    addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+    mPlayer->clearExpectedComands();
+    mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
     // TODO: check for legitimacy of cancel
-    addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+    mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
     while (true) {
         auto cmd = co_await waitForCommand();
@@ -603,7 +487,7 @@ Resumable ServerPlayer::playSearchCard(const asn::SearchCard &e) {
                 continue;
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
-                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? this : mGame->opponentOfPlayer(mId);
+                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
                 auto pzone = owner->zone(chooseCmd.zone());
                 if (!pzone)
                     break;
@@ -611,32 +495,32 @@ Resumable ServerPlayer::playSearchCard(const asn::SearchCard &e) {
                 auto card = pzone->card(chooseCmd.ids(i));
                 if (!card)
                     break;
-                mContext.chosenCards.push_back(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+                addChosenCard(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
             }
             break;
         }
     }
-    clearExpectedComands();
+    mPlayer->clearExpectedComands();
 }
 
-void ServerPlayer::playShuffle(const asn::Shuffle &e) {
+void AbilityPlayer::playShuffle(const asn::Shuffle &e) {
     assert(e.owner != asn::Player::Both);
     assert(e.owner != asn::Player::NotSpecified);
-    auto owner = (e.owner == asn::Player::Player) ? this : mGame->opponentOfPlayer(mId);
+    auto owner = (e.owner == asn::Player::Player) ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
     owner->zone(asnZoneToString(e.zone))->shuffle();
 }
 
-Resumable ServerPlayer::playAbilityGain(const asn::AbilityGain &e) {
+Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
     if (static_cast<size_t>(e.number) < e.abilities.size()) {
         std::vector<uint8_t> buf;
         encodeAbilityGain(e, buf);
 
         EventAbilityChoice event;
         event.set_effect(buf.data(), buf.size());
-        sendToBoth(event);
+        mPlayer->sendToBoth(event);
 
-        clearExpectedComands();
-        addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
 
         int chosenAbilityId;
         while (true) {
@@ -650,11 +534,11 @@ Resumable ServerPlayer::playAbilityGain(const asn::AbilityGain &e) {
                 break;
             }
         }
-        clearExpectedComands();
+        mPlayer->clearExpectedComands();
 
         if (e.target.type == asn::TargetType::ThisCard) {
-            auto card = mContext.thisCard.card;
-            if (!card || card->zone()->name() != mContext.thisCard.zone)
+            auto card = thisCard().card;
+            if (!card || card->zone()->name() != thisCard().zone)
                 co_return;
             card->addAbility(e.abilities[chosenAbilityId], e.duration);
             EventAbilityGain ev;
@@ -663,14 +547,14 @@ Resumable ServerPlayer::playAbilityGain(const asn::AbilityGain &e) {
 
             std::vector<uint8_t> abilityBuf = encodeAbility(e.abilities[chosenAbilityId]);
             ev.set_ability(abilityBuf.data(), abilityBuf.size());
-            sendToBoth(ev);
+            mPlayer->sendToBoth(ev);
         }
         co_return;
     }
 
     if (e.target.type == asn::TargetType::ThisCard) {
-        auto card = mContext.thisCard.card;
-        if (!card || card->zone()->name() != mContext.thisCard.zone)
+        auto card = thisCard().card;
+        if (!card || card->zone()->name() != thisCard().zone)
             co_return;
         for (const auto &a: e.abilities) {
             card->addAbility(a, e.duration);
@@ -680,18 +564,18 @@ Resumable ServerPlayer::playAbilityGain(const asn::AbilityGain &e) {
 
             std::vector<uint8_t> abilityBuf = encodeAbility(a);
             ev.set_ability(abilityBuf.data(), abilityBuf.size());
-            sendToBoth(ev);
+            mPlayer->sendToBoth(ev);
         }
     }
 }
 
-void ServerPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {
+void AbilityPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {
     if (e.executor == asn::Player::Player || e.executor == asn::Player::Both) {
-        moveWrToDeck();
-        sendToBoth(EventRefresh());
+        mPlayer->moveWrToDeck();
+        mPlayer->sendToBoth(EventRefresh());
     }
     if (e.executor == asn::Player::Opponent || e.executor == asn::Player::Both) {
-        auto opponent = mGame->opponentOfPlayer(mId);
+        auto opponent = mPlayer->game()->opponentOfPlayer(mPlayer->id());
         opponent->moveWrToDeck();
         opponent->sendToBoth(EventRefresh());
     }

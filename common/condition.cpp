@@ -1,10 +1,11 @@
 #include "serverPlayer.h"
 
+#include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "serverGame.h"
 
 
-bool ServerPlayer::evaluateCondition(const asn::Condition &c) {
+bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
     switch (c.type) {
     case asn::ConditionType::NoCondition:
         return true;
@@ -20,9 +21,9 @@ bool ServerPlayer::evaluateCondition(const asn::Condition &c) {
     }
 }
 
-bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
+bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
     if (c.target.type == asn::TargetType::MentionedCards) {
-        for (const auto &card: mContext.mentionedCards) {
+        for (const auto &card: mentionedCards()) {
             assert(card.card);
             for (const auto &neededCard: c.neededCard)
                 if (checkCard(neededCard.cardSpecifiers, *card.card))
@@ -32,7 +33,7 @@ bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
         assert(c.neededCard.size() == 1);
         const auto &spec = *c.target.targetSpecification;
         if (spec.mode == asn::TargetMode::All) {
-            auto stage = zone("stage");
+            auto stage = mPlayer->zone("stage");
             bool verified = true;
             for (int i = 0; i < stage->count(); ++i)
                 if (stage->card(i) && !checkCard(c.neededCard[0].cardSpecifiers, *stage->card(i)))
@@ -44,10 +45,10 @@ bool ServerPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
     return false;
 }
 
-bool ServerPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
+bool AbilityPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
     assert(c.invert == false);
     assert(c.who != asn::Player::Both);
-    auto player = (c.who == asn::Player::Player) ? this : mGame->opponentOfPlayer(mId);
+    auto player = (c.who == asn::Player::Player) ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
     auto z = player->zone(asnZoneToString(c.where.zone));
     int count = 0;
     for (int i = 0; i < z->count(); ++i) {
@@ -55,7 +56,7 @@ bool ServerPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
         if (!card)
             continue;
 
-        if (c.excludingThis && mContext.thisCard.card == card)
+        if (c.excludingThis && thisCard().card == card)
             continue;
 
         if (checkCard(c.whichCards.cardSpecifiers, *card)) {
@@ -75,7 +76,7 @@ bool ServerPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
     return false;
 }
 
-bool ServerPlayer::evaluateConditionAnd(const asn::ConditionAnd &c) {
+bool AbilityPlayer::evaluateConditionAnd(const asn::ConditionAnd &c) {
     bool res = true;
     for (const auto &cond: c.cond)
         res = res && evaluateCondition(cond);
