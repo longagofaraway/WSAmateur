@@ -164,6 +164,14 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventMoveChoice ev;
         event->event().UnpackTo(&ev);
         processMoveChoice(ev);
+    } else if (event->event().Is<EventMoveDestinationChoice>()) {
+        EventMoveDestinationChoice ev;
+        event->event().UnpackTo(&ev);
+        processMoveDestinationChoice(ev);
+    } else if (event->event().Is<EventMoveTargetChoice>()) {
+        EventMoveTargetChoice ev;
+        event->event().UnpackTo(&ev);
+        processMoveTargetChoice(ev);
     } else if (event->event().Is<EventDrawChoice>()) {
         EventDrawChoice ev;
         event->event().UnpackTo(&ev);

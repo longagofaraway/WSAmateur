@@ -126,6 +126,8 @@ private:
     void processChooseCard(const EventChooseCard &event);
     void processSearchCard(const EventSearchCard &event);
     void processMoveChoice(const EventMoveChoice &event);
+    void processMoveDestinationChoice(const EventMoveDestinationChoice &event);
+    void processMoveTargetChoice(const EventMoveTargetChoice &event);
     void processDrawChoice(const EventDrawChoice &event);
     void processAbilityChoice(const EventAbilityChoice &event);
     void processAbilityGain(const EventAbilityGain &event);

@@ -120,7 +120,9 @@ std::string printChooseCard(const ChooseCard &e) {
     const auto &target = e.targets[0];
     if (target.type == TargetType::SpecificCards) {
         const auto &spec = *target.targetSpecification;
-        s += printNumber(spec.number);
+        if ((spec.number.value > 1 && spec.number.mod == NumModifier::ExactMatch) ||
+            (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage))
+            s += printNumber(spec.number);
         if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
             s += "of " + printPlayer(e.place->owner);
             plural = true;
@@ -197,7 +199,7 @@ std::string printMoveCard(const MoveCard &e) {
         if (e.from.pos == Position::Top && e.target.targetSpecification->number.mod == NumModifier::ExactMatch &&
             e.target.targetSpecification->number.value == 1) {
             s += "the top ";
-            s += printCard(e.target.targetSpecification->cards, false) + " of ";
+            s += printCard(e.target.targetSpecification->cards, false, false) + " of ";
         } else {
             s += printCard(e.target.targetSpecification->cards) + " from ";
         }

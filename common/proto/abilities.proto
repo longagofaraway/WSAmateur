@@ -61,6 +61,16 @@ message EventMoveChoice {
     bool mandatory = 2;
 }
 
+message EventMoveTargetChoice {
+    bytes effect = 1;
+    bool mandatory = 2;
+}
+
+message EventMoveDestinationChoice {
+    bytes effect = 1;
+    bool mandatory = 2;
+}
+
 message EventDrawChoice {
     bytes effect = 1;
     bool mandatory = 2;

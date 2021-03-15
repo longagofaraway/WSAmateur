@@ -166,6 +166,20 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
 
     auto effect = decodeMoveCard(event.effect());
     assert(effect.executor == asn::Player::Player);
+    assert(!event.mandatory());
+
+    auto effectText = printMoveCard(effect) + '?';
+    effectText[0] = std::toupper(effectText[0]);
+    std::vector<QString> data { "Yes", "No" };
+    mChoiceDialog->setData(QString::fromStdString(effectText), data);
+}
+
+void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodeMoveCard(event.effect());
+    assert(effect.executor == asn::Player::Player);
 
     if (effect.to.size() > 1) {
         std::vector<QString> data;
@@ -178,19 +192,23 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
         mChoiceDialog->setData("Choose where to put the card", data);
         return;
     }
+}
+
+void Player::processMoveTargetChoice(const EventMoveTargetChoice &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodeMoveCard(event.effect());
+    assert(effect.executor == asn::Player::Player);
+    assert(effect.target.type == asn::TargetType::SpecificCards);
+    assert(effect.from.pos == asn::Position::NotSpecified);
 
     auto effectText = printMoveCard(effect);
     effectText[0] = std::toupper(effectText[0]);
-    if (!event.mandatory()) {
-        effectText.push_back('?');
-        std::vector<QString> data { "Yes", "No" };
-        mChoiceDialog->setData(QString::fromStdString(effectText), data);
-    } else if (effect.from.pos == asn::Position::NotSpecified) {
-        mGame->showText(QString::fromStdString(effectText));
-        int eligibleCount = highlightCardsForChoice(effect.target, effect.from, event.mandatory());
-        if (eligibleCount)
-            mAbilityList->ability(mAbilityList->activeId()).effect = effect;
-    }
+    mGame->showText(QString::fromStdString(effectText));
+    int eligibleCount = highlightCardsForChoice(effect.target, effect.from, event.mandatory());
+    if (eligibleCount)
+        mAbilityList->ability(mAbilityList->activeId()).effect = effect;
 }
 
 void Player::processDrawChoice(const EventDrawChoice &event) {

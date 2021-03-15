@@ -58,6 +58,9 @@ ListView {
 
             Component.onCompleted: { mStageRect = stageRect; }
 
+            CardGlow {
+                glow: model.glow && mStageCard == null
+            }
             DropArea {
                 id: dropStage
                 width: root.cardWidth * 2

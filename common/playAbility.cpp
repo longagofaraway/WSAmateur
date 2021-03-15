@@ -39,7 +39,7 @@ void ServerPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
     if (!res && !active)
         return;
     if (!res && active) {
-        mContext.revert = true;
+        mContContext.revert = true;
         active = false;
     } else {
         active = true;
@@ -141,10 +141,9 @@ void ServerPlayer::playContAbilities(ServerCard *card) {
         if (abs[i].ability.type != asn::AbilityType::Cont)
             continue;
         const auto &cont = std::get<asn::ContAbility>(abs[i].ability.ability);
-        mContext = AbilityContext();
-        mContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
-        mContext.cont = true;
-        mContext.abilityId = i;
+        mContContext = AbilityContext();
+        mContContext.thisCard = CardImprint(card->zone()->name(), card->pos(), card);
+        mContContext.abilityId = i;
         playContAbility(cont, abs[i].active);
     }
 }

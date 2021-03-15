@@ -40,7 +40,6 @@ struct AbilityContext {
     bool mandatory = true;
     bool canceled = false;
     bool revealChosen = false;
-    bool cont = false; // is cont ability
     bool revert = false; // revert results of cont ability
     int abilityId;
     std::vector<CardImprint> chosenCards;
@@ -134,6 +133,7 @@ public:
     Resumable encoreCharacter(const CommandEncoreCharacter &cmd);
     Resumable endPhase();
     void refresh();
+    void moveWrToDeck();
     void sendPhaseEvent(asn::Phase phase);
     void sendEndGame(bool victory);
 
@@ -149,6 +149,7 @@ public:
 private:
     // playing abilities
     AbilityContext mContext;
+    AbilityContext mContContext;
     std::vector<TriggeredAbility> mQueue;
 
 public:
@@ -187,7 +188,7 @@ public:
     Resumable playMoveCard(const asn::MoveCard &e);
     Resumable playDrawCard(const asn::DrawCard &e);
     void playRevealCard(const asn::RevealCard &e);
-    void playAttributeGain(const asn::AttributeGain &e);
+    void playAttributeGain(const asn::AttributeGain &e, bool cont = false);
     Resumable playPayCost(const asn::PayCost &e);
     Resumable payCost();
     Resumable playSearchCard(const asn::SearchCard &e);

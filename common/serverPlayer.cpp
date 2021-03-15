@@ -751,24 +751,29 @@ Resumable ServerPlayer::endPhase() {
 }
 
 void ServerPlayer::refresh() {
-    auto deck = zone("deck");
-    auto wr = zone("wr");
-    int count = wr->count();
+    int count = zone("wr")->count();
     if (!count) {
         sendEndGame(false);
         return;
     }
-    for (int i = 0; i < count; ++i) {
-        auto card = wr->takeTopCard();
-        deck->addCard(std::move(card));
-    }
-    deck->shuffle();
+    moveWrToDeck();
     sendToBoth(EventRefresh());
 
     TriggeredAbility a;
     a.type = ProtoRuleAction;
     a.abilityId = static_cast<int>(RuleAction::RefreshPoint);
     mQueue.push_back(a);
+}
+
+void ServerPlayer::moveWrToDeck() {
+    auto deck = zone("deck");
+    auto wr = zone("wr");
+    int count = wr->count();
+    for (int i = 0; i < count; ++i) {
+        auto card = wr->takeTopCard();
+        deck->addCard(std::move(card));
+    }
+    deck->shuffle();
 }
 
 void ServerPlayer::sendPhaseEvent(asn::Phase phase) {

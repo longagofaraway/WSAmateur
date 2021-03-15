@@ -24,6 +24,7 @@ QString qmlModuleFromZoneName(std::string_view v) {
     else if (v == "view")
         return "OrderedCardsView";
     assert(false);
+    return "";
 }
 }
 
