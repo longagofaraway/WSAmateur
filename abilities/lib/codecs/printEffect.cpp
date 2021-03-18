@@ -14,10 +14,12 @@ std::string printEffects(const std::vector<Effect> &effects) {
     std::string s;
 
     for (size_t i = 0; i < effects.size(); ++i) {
+        bool makeUpper = false;
         if (!gAttributeGainChaining) {
             if (i != 0 && effects[i].cond.type != ConditionType::NoCondition) {
                 s[s.size() - 1] = '.';
                 s.push_back(' ');
+                makeUpper = true;
             } else if (i != 0) {
                 if (i < effects.size() - 1) {
                     s[s.size() - 1] = ',';
@@ -28,7 +30,10 @@ std::string printEffects(const std::vector<Effect> &effects) {
                 }
             }
         }
-        s += printEffect(effects[i]);
+        auto effectText = printEffect(effects[i]);
+        if (makeUpper)
+            effectText = std::toupper(effectText[0]);
+        s += effectText;
 
         if (effects[i].type == EffectType::AttributeGain && effects.size() > i + 1 &&
             effects[i + 1].type == EffectType::AttributeGain) {

@@ -108,8 +108,7 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
             }
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
-                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
-                auto pzone = owner->zone(chooseCmd.zone());
+                auto pzone = owner(protoPlayerToPlayer(chooseCmd.owner()))->zone(chooseCmd.zone());
                 if (!pzone)
                     break;
 
@@ -128,8 +127,7 @@ std::map<int, ServerCard*> AbilityPlayer::processCommandChooseCard(const Command
     //TODO: add checks
     std::map<int, ServerCard*> res;
     for (int i = cmd.ids_size() - 1; i >= 0; --i) {
-        auto owner = cmd.owner() == ProtoOwner::ProtoPlayer ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
-        auto pzone = owner->zone(cmd.zone());
+        auto pzone = owner(protoPlayerToPlayer(cmd.owner()))->zone(cmd.zone());
         if (!pzone)
             break;
 
@@ -155,7 +153,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         co_return;
 
     bool chooseCards = (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified);
-    std::map<int, ServerCard*> chCards;
+    std::map<int, ServerCard*> cardsToMove;
     if (chooseCards) {
         assert(e.to.size() == 1);
         std::vector<uint8_t> buf;
@@ -179,14 +177,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             } else if (cmd.command().Is<CommandChooseCard>()) {
                 CommandChooseCard cardCmd;
                 cmd.command().UnpackTo(&cardCmd);
-                chCards = processCommandChooseCard(cardCmd);
+                cardsToMove = processCommandChooseCard(cardCmd);
                 break;
             }
         }
         mPlayer->clearExpectedComands();
     } else if (!mandatory()) {
-        bool confirmed = mandatory();
-
         std::vector<uint8_t> buf;
         encodeMoveCard(e, buf);
 
@@ -209,13 +205,11 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 CommandChoice choiceCmd;
                 cmd.command().UnpackTo(&choiceCmd);
                 // 0 is yes, 'yes' will be the first choice on client's side
-                confirmed = !choiceCmd.choice();
+                setCanceled(choiceCmd.choice());
                 break;
             }
         }
         mPlayer->clearExpectedComands();
-        if (!confirmed)
-            co_return;
     }
     if (canceled())
         co_return;
@@ -248,40 +242,36 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         mPlayer->clearExpectedComands();
     }
 
+    int toIndex = 0;
+    ServerPlayer *player = mPlayer;
     if (e.target.type == asn::TargetType::ChosenCards) {
-        std::sort(chosenCards().begin(), chosenCards().end(),
-                  [](const CardImprint &a, const CardImprint &b) { return a.id > b.id; });
         for (const auto &card: chosenCards()) {
-            auto owner = card.opponent ? mPlayer->game()->opponentOfPlayer(mPlayer->id()) : mPlayer;
-            owner->moveCard(card.zone, card.id, asnZoneToString(e.to[toZoneIndex].zone), 0, revealChosen());
-            if (mPlayer->zone("deck")->count() == 0)
-                mPlayer->refresh();
-            if (e.to[toZoneIndex].zone == asn::Zone::Clock && mPlayer->zone("clock")->count() >= 7)
-                co_await mPlayer->levelUp();
+            player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
+            cardsToMove[card.id] = card.card;
         }
-    } else if (chooseCards) {
-        for (auto it = chCards.rbegin(); it != chCards.rend(); ++it) {
-            mPlayer->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone));
-        }
-    } else {
+    } else if (e.target.type == asn::TargetType::SpecificCards) {
         if (e.from.pos == asn::Position::Top) {
-            if (e.from.zone == asn::Zone::Deck) {
-                mPlayer->moveTopDeck(asnZoneToString(e.to[toZoneIndex].zone));
-            } else {
-                auto pzone = mPlayer->zone(asnZoneToString(e.from.zone));
-                mPlayer->moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[toZoneIndex].zone));
-            }
-        } else {
-            int toIndex = 0;
-            if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
-                toIndex = thisCard().card->pos();
-            mPlayer->moveCard(thisCard().zone, thisCard().id, asnZoneToString(e.to[toZoneIndex].zone), toIndex);
-            if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
-                mPlayer->setCardState(thisCard().card, CardState::StateRested);
+            player = owner(e.from.owner);
+            auto zone = mPlayer->zone(asnZoneToString(e.from.zone));
+            cardsToMove[zone->count() - 1] = zone->card(zone->count() - 1);
         }
+    } else if (e.target.type == asn::TargetType::ThisCard) {
+        if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
+            toIndex = thisCard().card->pos();
+        cardsToMove[thisCard().id] = thisCard().card;
+    }
+
+    for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
+        player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+
+        if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
+            player->setCardState(it->second, CardState::StateRested);
+
         // TODO: refresh and levelup are triggered at the same time, give choice
-        if (e.to[toZoneIndex].zone == asn::Zone::Clock && mPlayer->zone("clock")->count() >= 7)
-            co_await mPlayer->levelUp();
+        if (player->zone("deck")->count() == 0)
+            player->refresh();
+        if (e.to[toZoneIndex].zone == asn::Zone::Clock && player->zone("clock")->count() >= 7)
+            co_await player->levelUp();
     }
 }
 
@@ -487,8 +477,7 @@ Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
                 continue;
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
-                auto owner = chooseCmd.owner() == ProtoOwner::ProtoPlayer ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
-                auto pzone = owner->zone(chooseCmd.zone());
+                auto pzone = owner(protoPlayerToPlayer(chooseCmd.owner()))->zone(chooseCmd.zone());
                 if (!pzone)
                     break;
 
@@ -506,8 +495,7 @@ Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
 void AbilityPlayer::playShuffle(const asn::Shuffle &e) {
     assert(e.owner != asn::Player::Both);
     assert(e.owner != asn::Player::NotSpecified);
-    auto owner = (e.owner == asn::Player::Player) ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
-    owner->zone(asnZoneToString(e.zone))->shuffle();
+    owner(e.owner)->zone(asnZoneToString(e.zone))->shuffle();
 }
 
 Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {

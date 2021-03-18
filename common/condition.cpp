@@ -48,8 +48,7 @@ bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
 bool AbilityPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
     assert(c.invert == false);
     assert(c.who != asn::Player::Both);
-    auto player = (c.who == asn::Player::Player) ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
-    auto z = player->zone(asnZoneToString(c.where.zone));
+    auto z = owner(c.who)->zone(asnZoneToString(c.where.zone));
     int count = 0;
     for (int i = 0; i < z->count(); ++i) {
         auto card = z->card(i);

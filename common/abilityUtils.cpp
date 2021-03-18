@@ -155,3 +155,14 @@ bool checkNumber(const asn::Number &numObj, int n) {
         return true;
     return false;
 }
+
+asn::Player protoPlayerToPlayer(ProtoOwner player) {
+    switch (player) {
+    case ProtoPlayer:
+        return asn::Player::Player;
+    case ProtoOpponent:
+        return asn::Player::Opponent;
+    }
+    assert(false);
+    return asn::Player::Player;
+}

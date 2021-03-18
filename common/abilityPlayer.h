@@ -23,6 +23,8 @@ class AbilityPlayer {
 public:
     AbilityPlayer(ServerPlayer *player) : mPlayer(player) {}
 
+    ServerPlayer* owner(asn::Player player) const;
+
     bool mandatory() const { return mMandatory; }
     void setMandatory(bool mandatory) { mMandatory = mandatory; }
     bool canceled() const { return mCanceled; }

@@ -63,6 +63,11 @@ Resumable AbilityPlayer::playAbility(const asn::Ability &a) {
     }
 }
 
+ServerPlayer* AbilityPlayer::owner(asn::Player player) const {
+    assert(player != asn::Player::Both && player != asn::Player::NotSpecified);
+    return player == asn::Player::Player ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
+}
+
 Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigger) {
     EventAbilityActivated event;
     auto ab = event.add_abilities();
