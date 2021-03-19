@@ -109,6 +109,7 @@ public:
     Resumable playCharacter(const CommandPlayCard &cmd);
     Resumable playClimax(int handIndex);
     void switchPositions(const CommandSwitchStagePositions &cmd);
+    void switchPositions(int from, int to);
     bool canPlay(ServerCard *card);
     void climaxPhase();
     bool canAttack();

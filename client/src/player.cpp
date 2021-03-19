@@ -168,6 +168,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventMoveDestinationChoice ev;
         event->event().UnpackTo(&ev);
         processMoveDestinationChoice(ev);
+    } else if (event->event().Is<EventMoveDestinationIndexChoice>()) {
+        EventMoveDestinationIndexChoice ev;
+        event->event().UnpackTo(&ev);
+        processMoveDestinationIndexChoice(ev);
     } else if (event->event().Is<EventMoveTargetChoice>()) {
         EventMoveTargetChoice ev;
         event->event().UnpackTo(&ev);
@@ -435,8 +439,8 @@ void Player::playCard(const EventPlayCard &event) {
 }
 
 void Player::switchStagePositions(const EventSwitchStagePositions &event) {
-    if (!mOpponent)
-        return;
+    //if (!mOpponent)
+        //return;
 
     if (size_t(event.stageidfrom()) >= mStage->cards().size()
         || size_t(event.stageidto()) >= mStage->cards().size())

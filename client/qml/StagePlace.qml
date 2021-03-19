@@ -175,6 +175,9 @@ ListView {
                     } else if (stage.state === "encore" && model.glow) {
                         destroyCardInfo();
                         stage.encoreCharacter(mIndex);
+                    } else if (model.glow && mStageCard === null) {
+                        // choosing place
+                        gGame.getPlayer().sendChoice(model.index);
                     } else if (model.glow) {
                         model.selected = !model.selected;
                         gGame.getPlayer().chooseCard(model.index, "stage", stage.opponent);

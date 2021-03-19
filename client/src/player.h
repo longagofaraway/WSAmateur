@@ -30,7 +30,7 @@ class Hand;
 class Stage;
 
 
-class  Player : public QObject
+class Player : public QObject
 {
     Q_OBJECT
 private:
@@ -127,6 +127,7 @@ private:
     void processSearchCard(const EventSearchCard &event);
     void processMoveChoice(const EventMoveChoice &event);
     void processMoveDestinationChoice(const EventMoveDestinationChoice &event);
+    void processMoveDestinationIndexChoice(const EventMoveDestinationIndexChoice &event);
     void processMoveTargetChoice(const EventMoveTargetChoice &event);
     void processDrawChoice(const EventDrawChoice &event);
     void processAbilityChoice(const EventAbilityChoice &event);

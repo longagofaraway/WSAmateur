@@ -137,7 +137,7 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         return false;
 
     Card &card = mCards[index.row()];
-    if (!card.cardPresent())
+    if (!card.cardPresent() && role != GlowRole)
         return false;
 
     switch(role) {

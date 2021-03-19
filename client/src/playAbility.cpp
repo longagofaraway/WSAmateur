@@ -194,6 +194,20 @@ void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &even
     }
 }
 
+void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexChoice &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodeMoveCard(event.effect());
+    assert(effect.executor == asn::Player::Player);
+    assert(effect.to.size() == 1);
+
+    if (effect.to[0].pos == asn::Position::EmptySlotBackRow) {
+        mStage->model().setGlow(3, true);
+        mStage->model().setGlow(4, true);
+    }
+}
+
 void Player::processMoveTargetChoice(const EventMoveTargetChoice &event) {
     if (mOpponent)
         return;
@@ -549,7 +563,6 @@ void Player::sendChoice(int index) {
             auto &card = pzone->cards()[mAbilityList->ability(activeId).cardId];
             if (!card.cardPresent())
                 return;
-
         }
     }
     CommandChoice cmd;

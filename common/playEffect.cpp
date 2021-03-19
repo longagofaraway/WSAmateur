@@ -243,6 +243,48 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     }
 
     int toIndex = 0;
+    if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
+        assert(mandatory());
+        auto player = owner(e.to[toZoneIndex].owner);
+        auto stage = player->zone("stage");
+        bool positionSet = false;
+        if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
+            if (stage->card(3) && !stage->card(4)) {
+                positionSet = true;
+                toIndex = 4;
+            } else if (!stage->card(3) && stage->card(4)) {
+                positionSet = true;
+                toIndex = 3;
+            } else if (stage->card(3) && stage->card(4)) {
+                co_return;
+            }
+        }
+        if (!positionSet) {
+            std::vector<uint8_t> buf;
+            encodeMoveCard(e, buf);
+            EventMoveDestinationIndexChoice ev;
+            ev.set_effect(buf.data(), buf.size());
+            ev.set_mandatory(true);
+            mPlayer->sendToBoth(ev);
+
+            mPlayer->clearExpectedComands();
+            mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+
+            while (true) {
+                auto cmd = co_await waitForCommand();
+                if (cmd.command().Is<CommandChoice>()) {
+                    CommandChoice choiceCmd;
+                    cmd.command().UnpackTo(&choiceCmd);
+                    toIndex = choiceCmd.choice();
+                    if (toIndex >= stage->count())
+                        continue;
+                    break;
+                }
+            }
+            mPlayer->clearExpectedComands();
+        }
+    }
+
     ServerPlayer *player = mPlayer;
     if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards()) {

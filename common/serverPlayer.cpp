@@ -238,6 +238,10 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
 
     if (startZoneName != "stage" && targetZoneName == "stage")
         return moveCardToStage(startZone, startId, targetZone, targetId);
+    if (startZoneName == "stage" && targetZoneName == "stage") {
+        switchPositions(startId, targetId);
+        return true;
+    }
 
     auto cardPtr = startZone->takeCard(startId);
     if (!cardPtr)
@@ -431,8 +435,13 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
         || cmd.stageidto() >= stage->count())
         return;
 
-    auto card1 = stage->card(cmd.stageidfrom());
-    auto card2 = stage->card(cmd.stageidto());
+    switchPositions(cmd.stageidfrom(), cmd.stageidto());
+}
+
+void ServerPlayer::switchPositions(int from, int to) {
+    ServerCardZone *stage = zone("stage");
+    auto card1 = stage->card(from);
+    auto card2 = stage->card(to);
     std::tuple<int, int, int> oldAttrs1;
     std::tuple<int, int, int> oldAttrs2;
     if (card1) {
@@ -446,10 +455,10 @@ void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
         mGame->removePositionalContBuffsBySource(card2);
     }
 
-    stage->switchPositions(cmd.stageidfrom(), cmd.stageidto());
+    stage->switchPositions(from, to);
     EventSwitchStagePositions event;
-    event.set_stageidfrom(cmd.stageidfrom());
-    event.set_stageidto(cmd.stageidto());
+    event.set_stageidfrom(from);
+    event.set_stageidto(to);
     sendToBoth(event);
 
     mGame->resolveAllContAbilities();
