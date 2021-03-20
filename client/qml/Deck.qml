@@ -27,8 +27,8 @@ Card {
     }
     y: {
         if (opponent)
-            return root.height * 0.47 - root.cardHeight;
-        return root.height * 0.53;
+            return root.height * 0.38 - root.cardHeight;
+        return root.height * 0.62;
     }
     z: 1
 

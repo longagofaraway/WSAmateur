@@ -50,6 +50,8 @@ Player::Player(int id, Game *game, bool opponent)
     mZones.emplace("level", std::move(level));
     auto climax = std::make_unique<CommonCardZone>(this, game, "climax");
     mZones.emplace("climax", std::move(climax));
+    auto memory = std::make_unique<CommonCardZone>(this, game, "memory");
+    mZones.emplace("memory", std::move(memory));
     auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "res");
     mZones.emplace("res", std::move(resolutionZone));
     mAbilityList = std::make_unique<ActivatedAbilities>(this, game);
@@ -614,7 +616,8 @@ void Player::testAction()
 {
     //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
 
-    QMetaObject::invokeMethod(zone("stage")->visualItem(), "getCardPos", Q_ARG(QVariant, 1));
+    createMovingCard("IMC/W43-046", "stage", 1, "memory", 0, true, false, true);
+    //QMetaObject::invokeMethod(zone("stage")->visualItem(), "getCardPos", Q_ARG(QVariant, 1));
 }
 
 bool Player::playCards(CardModel &hand) {

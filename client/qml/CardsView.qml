@@ -9,6 +9,7 @@ Rectangle {
     property bool mIsDeckView: false
     property real mColumnMaxHeight: root.height * 0.5 - header.height
     property bool mOpponent: false
+    property string mZoneName: "Waiting Room"
     signal closeSignal()
 
     x: root.width * 0.9 - width
@@ -50,7 +51,7 @@ Rectangle {
         }
         text: {
             let txt = mOpponent ? "Opponent's " : " ";
-            return txt + (mIsDeckView ? "Deck" : "Waiting Room");
+            return txt + (mIsDeckView ? "Deck" : mZoneName);
         }
         font.family: "Futura Bk BT"
         font.pointSize: 20

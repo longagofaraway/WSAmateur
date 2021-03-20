@@ -120,7 +120,7 @@ ListView {
 
     function addCard(code) { levelZone.mModel.addCard(code); }
     function removeCard(index) { levelZone.mModel.removeCard(index); }
-    function getXForNewCard() { return opponent ? levelZone.x : levelZone.x; }
+    function getXForNewCard() { return levelZone.x; }
     function getYForNewCard() {
         if (opponent)
             return levelZone.y + levelZone.count * mMargin;

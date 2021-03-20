@@ -116,6 +116,7 @@ void ServerPlayer::setupZones() {
     addZone("climax");
     addZone("level");
     addZone("res");
+    addZone("memory");
     createStage();
 
     for (auto &card: mDeck->cards()) {

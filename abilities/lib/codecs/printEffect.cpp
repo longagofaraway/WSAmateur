@@ -64,11 +64,11 @@ std::string printAttributeGain(const AttributeGain &e) {
         case TargetType::SpecificCards: {
             const auto &spec = *e.target.targetSpecification;
             bool plural = false;
-            if (spec.mode == TargetMode::All) {
+            if (spec.mode == TargetMode::All || spec.mode == TargetMode::AllOther) {
                 plural = true;
                 res += "all of ";
             }
-            res += printCard(spec.cards, plural) + " get";
+            res += printCard(spec.cards, plural, true, spec.mode) + " get";
             if (!plural)
                 res += "s";
             res += " ";

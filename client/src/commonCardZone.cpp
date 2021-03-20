@@ -23,6 +23,8 @@ QString qmlModuleFromZoneName(std::string_view v) {
         return "ResolutionZone";
     else if (v == "view")
         return "OrderedCardsView";
+    else if (v == "memory")
+        return "Memory";
     assert(false);
     return "";
 }
