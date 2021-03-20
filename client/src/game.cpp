@@ -275,7 +275,7 @@ void Game::endGame(bool victory) {
 
 void Game::testAction() {
     mPlayer->testAction();
-    mOpponent->testAction();
+    //mOpponent->testAction();
 }
 
 

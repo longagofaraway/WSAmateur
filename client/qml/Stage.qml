@@ -54,23 +54,17 @@ Item {
 
     function getXForNewCard(pos) { return mPositions[pos].x; }
     function getYForNewCard(pos) { return mPositions[pos].y; }
-    function getXForCard(pos) { return mPositions[pos].x; }
-    function getYForCard(pos) { return mPositions[pos].y; }
+    function getXForCard(pos) { return mStagePlaces[pos].getX(); }
+    function getYForCard(pos) { return mStagePlaces[pos].getY(); }
+    function getCardPos(pos) { mStagePlaces[pos].getCardPos(); }
     function addCard(code, pos, startZone, startPos) {
-        if (startZone === "stage") {
-            mStagePlaces[pos].swapCards(startPos);
-            if (mStagePlaces[pos].mStageCard !== null) {
-                mStagePlaces[startPos].createStageCardWithAnim(mStagePlaces[pos].mStageCard.mSource, mPositions[pos].x, mPositions[pos].y);
-                mStagePlaces[pos].createStageCard(code);
-            } else {
-                mStagePlaces[startPos].mStageCard.destroy();
-            }
-
-            return;
-        }
+        if (startZone === "stage")
+            throw "use special function";
         if (mStagePlaces[pos].mStageCard !== null)
             mStagePlaces[pos].sendToWr();
         mStagePlaces[pos].setCard(code);
     }
+    function swapCards(from, to) { mStagePlaces[from].startSwappingCards(to); }
+
     function removeCard(pos) { mStagePlaces[pos].removeCard(pos); }
 }

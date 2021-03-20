@@ -27,4 +27,5 @@ public:
     void endAttackPhase();
     void encoreStep();
     void deactivateEncoreStep();
+    void swapCards(int from, int to);
 };

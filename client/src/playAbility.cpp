@@ -205,6 +205,7 @@ void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexCh
     if (effect.to[0].pos == asn::Position::EmptySlotBackRow) {
         mStage->model().setGlow(3, true);
         mStage->model().setGlow(4, true);
+        mAbilityList->ability(mAbilityList->activeId()).effect = effect;
     }
 }
 
@@ -393,6 +394,7 @@ void Player::doneChoosing() {
     } else if (std::holds_alternative<asn::MoveCard>(effect)) {
         auto &ef = std::get<asn::MoveCard>(effect);
         dehighlightCards(ef.from);
+        dehighlightCards(ef.to[0]);
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         mDeckView->hide();
     }
@@ -568,6 +570,7 @@ void Player::sendChoice(int index) {
     CommandChoice cmd;
     cmd.set_choice(index);
     sendGameCommand(cmd);
+    doneChoosing();
 }
 
 bool Player::canPay(const asn::CostItem &c) const {

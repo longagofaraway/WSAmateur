@@ -446,8 +446,7 @@ void Player::switchStagePositions(const EventSwitchStagePositions &event) {
         || size_t(event.stageidto()) >= mStage->cards().size())
         return;
 
-    createMovingCard(mStage->cards()[event.stageidfrom()].qcode(), "stage", event.stageidfrom(),
-            "stage", event.stageidto(), true);
+    mStage->swapCards(event.stageidfrom(), event.stageidto());
 }
 
 bool Player::canPlay(const Card &card) const {
@@ -600,7 +599,7 @@ void Player::cardPlayed(int handId, int stageId) {
     sendGameCommand(cmd);
 }
 
-void Player::switchPositions(int from, int to) {
+void Player::sendSwitchPositions(int from, int to) {
     CommandSwitchStagePositions cmd;
     cmd.set_stageidfrom(from);
     cmd.set_stageidto(to);
@@ -613,11 +612,9 @@ void Player::sendFromStageToWr(int pos) {
 
 void Player::testAction()
 {
-    std::vector<QString> data { "1234567890123", "1234567890123456789" };
-    mChoiceDialog->setData("Choose ability", data);
     //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
 
-    //QMetaObject::invokeMethod(zone("stage")->visualItem(), "powerChangeAnim", Q_ARG(QVariant, 0));
+    QMetaObject::invokeMethod(zone("stage")->visualItem(), "getCardPos", Q_ARG(QVariant, 1));
 }
 
 bool Player::playCards(CardModel &hand) {

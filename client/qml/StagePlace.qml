@@ -123,17 +123,8 @@ ListView {
                     if (!stagePlaceMouseArea.drag.active)
                         return;
                     if (root.stageDropTarget !== undefined) {
-                        let swappingCard = model.code;
-                        let dropTarget = root.stageDropTarget;
-                        dropTarget.swapCards(stagePlace.mIndex);
-                        if (dropTarget.mStageCard === null) {
-                            stageRect.color = "#30FFFFFF";
-                            mStageCard.destroy();
-                        } else {
-                            createStageCardWithAnim(model.code, dropTarget.x, dropTarget.y);
-                        }
-                        dropTarget.createStageCard(swappingCard);
-                        stage.switchPositions(stagePlace.mIndex, dropTarget.mIndex);
+                        root.stageDropTarget.mTooltipsDisabled = true;
+                        stage.switchPositions(stagePlace.mIndex, root.stageDropTarget.mIndex);
                         return;
                     }
                     mStageCard.startDropAnim(stagePlace.x, stagePlace.y);
@@ -193,6 +184,48 @@ ListView {
         PauseAnimation { duration: 100 }
         PropertyAction { target: stagePlace; property: "mTooltipsDisabled"; value: false }
     }
+
+    SequentialAnimation {
+        id: swapCardsAnim
+        property int toIndex
+        ScriptAction { script: gGame.startAction(); }
+        ParallelAnimation {
+            NumberAnimation { id: swapTargetX; target: mStageCard; property: "x"; duration: 150; }
+            NumberAnimation { id: swapTargetY; target: mStageCard; property: "y"; duration: 150; }
+        }
+        ScriptAction { script: finishSwapMove(swapCardsAnim.toIndex); }
+    }
+
+    function startSwappingCards(toIndex, x, y) {
+        swapCardsAnim.toIndex = toIndex;
+        swapTargetX.to = stage.mPositions[toIndex].x;
+        swapTargetY.to = stage.mPositions[toIndex].y;
+        swapCardsAnim.start();
+    }
+
+    function finishSwapMove(toIndex) {
+        let code = mStageCard.mSource;
+        swapCards(toIndex);
+        if (stage.mStagePlaces[toIndex].mStageCard !== null) {
+            createStageCardWithAnim(stage.mStagePlaces[toIndex].mStageCard.mSource, stage.mPositions[toIndex].x, stage.mPositions[toIndex].y);
+            stage.mStagePlaces[toIndex].createStageCard(code);
+            gGame.pause(200);
+        } else {
+            mStageCard.destroy();
+            mStageRect.color = "#30FFFFFF";
+            stage.mStagePlaces[toIndex].createStageCard(code);
+            gGame.actionComplete();
+        }
+    }
+
+    function getCardPos() {
+        console.log(mStageCard.x);
+        console.log(mStageCard.y);
+        console.log(stagePlace.x);
+        console.log(stagePlace.y);
+    }
+    function getX() { return mStageCard === null ? stagePlace.x : mStageCard.x; }
+    function getY() { return mStageCard === null ? stagePlace.y : mStageCard.y; }
 
     function destroyCardInfo() {
         if (mCardInfo !== null) {

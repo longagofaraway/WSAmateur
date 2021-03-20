@@ -39,12 +39,12 @@ void Stage::setAttr(int row, ProtoCardAttribute attr, int value) {
 }
 
 void Stage::mainPhase() {
-    mQmlObject->connect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(switchPositions(int, int)));
+    mQmlObject->connect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(sendSwitchPositions(int, int)));
     mQmlObject->setProperty("mDragEnabled", true);
 }
 
 void Stage::endMainPhase() {
-    mQmlObject->disconnect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(switchPositions(int, int)));
+    mQmlObject->disconnect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(sendSwitchPositions(int, int)));
     mQmlObject->setProperty("mDragEnabled", false);
 }
 
@@ -119,4 +119,8 @@ void Stage::deactivateEncoreStep() {
     }
     mQmlObject->setProperty("state", "");
     mQmlObject->disconnect(mQmlObject, SIGNAL(encoreCharacter(int)), mPlayer, SLOT(sendEncore(int)));
+}
+
+void Stage::swapCards(int from, int to) {
+    QMetaObject::invokeMethod(mQmlObject, "swapCards", Q_ARG(QVariant, from), Q_ARG(QVariant, to));
 }

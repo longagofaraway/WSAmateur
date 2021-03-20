@@ -140,7 +140,7 @@ private:
     void payCostChoice();
 
 public slots:
-    void switchPositions(int from, int to);
+    void sendSwitchPositions(int from, int to);
     void sendFromStageToWr(int pos);
     void sendAttackDeclaration(int pos, bool sideAttack);
     void sendEncore(int pos);
