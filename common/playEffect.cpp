@@ -299,7 +299,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         }
     } else if (e.target.type == asn::TargetType::ThisCard) {
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
-            toIndex = thisCard().card->pos();
+            toIndex = thisCard().card->prevStagePos();
         cardsToMove[thisCard().id] = thisCard().card;
     }
 

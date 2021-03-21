@@ -37,9 +37,9 @@ public:
     virtual void switchPositions(int pos1, int pos2);
     virtual std::unique_ptr<ServerCard> takeCard(int index);
     std::unique_ptr<ServerCard> takeTopCard();
-    std::unique_ptr<ServerCard> takeCardFromPos(int pos);
     ServerCard* card(int index);
     ServerCard* topCard();
     bool hasCardWithColor(char color) const;
     void shuffle();
+    void resetPositions();
 };

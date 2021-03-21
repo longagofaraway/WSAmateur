@@ -17,6 +17,7 @@ std::unique_ptr<ServerCard> ServerStage::takeCard(int index) {
         return {};
 
     auto card = std::move(mCards[index]);
+    card->setPrevStagePos(card->pos());
     mCards[index].reset(nullptr);
     return card;
 }

@@ -8,11 +8,14 @@ ServerCardZone::ServerCardZone(ServerPlayer *player, const std::string_view name
     : mPlayer(player), mName(name), mType(type) {}
 
 void ServerCardZone::addCard(std::shared_ptr<CardInfo> info) {
-    mCards.emplace_back(std::make_unique<ServerCard>(info, this));
+    auto addedCard = mCards.emplace_back(std::make_unique<ServerCard>(info, this)).get();
+    addedCard->setPos(static_cast<int>(mCards.size()) - 1);
+    addedCard->setZone(this);
 }
 
 ServerCard* ServerCardZone::addCard(std::unique_ptr<ServerCard> card) {
     auto addedCard = mCards.emplace_back(std::move(card)).get();
+    addedCard->setPos(static_cast<int>(mCards.size()) - 1);
     addedCard->setZone(this);
     return addedCard;
 }
@@ -28,6 +31,12 @@ void ServerCardZone::switchPositions(int, int) {
 
 void ServerCardZone::shuffle() {
     std::shuffle(mCards.begin(), mCards.end(), std::mt19937((unsigned int)time(0)));
+    resetPositions();
+}
+
+void ServerCardZone::resetPositions() {
+    for (size_t i = 0; i < mCards.size(); ++i)
+        mCards[i]->setPos(static_cast<int>(i));
 }
 
 std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
@@ -36,6 +45,7 @@ std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
 
     auto card = std::move(mCards[index]);
     mCards.erase(mCards.begin() + index);
+    resetPositions();
     return card;
 }
 
@@ -45,12 +55,6 @@ std::unique_ptr<ServerCard> ServerCardZone::takeTopCard() {
 
     auto card = std::move(mCards[mCards.size() - 1]);
     mCards.pop_back();
-    return card;
-}
-
-std::unique_ptr<ServerCard> ServerCardZone::takeCardFromPos(int pos) {
-    auto card = std::move(mCards[pos]);
-    mCards[pos].reset();
     return card;
 }
 

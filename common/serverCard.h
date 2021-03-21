@@ -47,9 +47,9 @@ class ServerCard : public CardBase
     std::vector<ContAttributeChange> mContBuffs;
     std::vector<AbilityState> mAbilities;
 
-    // stage position
     StageRow mRow;
     int mPosition;
+    int mPreviousStagePosition = 0;
 
     int mPower;
     int mSoul;
@@ -64,6 +64,8 @@ public:
 
     void setPos(int pos);
     int pos() const;
+    void setPrevStagePos(int pos) { mPreviousStagePosition = pos; }
+    int prevStagePos() const { return mPreviousStagePosition; }
     void setZone(ServerCardZone *zone) { mZone = zone; }
     ServerCardZone* zone() const { return mZone; }
     ServerPlayer* player() const;
