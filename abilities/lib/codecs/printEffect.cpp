@@ -181,16 +181,23 @@ std::string printNonMandatory(const NonMandatory &e) {
 
 std::string printMoveCard(const MoveCard &e) {
     std::string s;
-    if (e.to[0].pos == Position::SlotThisWasIn)
-        s += "return ";
-    else if (e.from.zone == Zone::Hand)
-        s += "discard ";
-    else if (e.to[0].pos == Position::EmptySlotBackRow)
-        s += "move ";
-    else
-        s += "put ";
 
-    if (e.target.type == TargetType::ChosenCards) {
+    if (e.executor == Player::Opponent)
+        s += "your opponent ";
+    if (e.to[0].pos == Position::SlotThisWasIn)
+        s += "return";
+    else if (e.from.zone == Zone::Hand)
+        s += "discard";
+    else if (e.to[0].pos == Position::EmptySlotBackRow)
+        s += "move";
+    else
+        s += "put";
+    if (e.executor == Player::Opponent)
+        s += "s";
+    s += " ";
+
+
+    if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards) {
         if ((gChosenCardsNumber.mod == NumModifier::ExactMatch ||
             gChosenCardsNumber.mod == NumModifier::UpTo) &&
             gChosenCardsNumber.value == 1) {
@@ -216,17 +223,25 @@ std::string printMoveCard(const MoveCard &e) {
         if (i)
             s += "or ";
 
-        if (e.to[0].pos == Position::EmptySlotBackRow)
+        if (e.to[i].pos == Position::EmptySlotBackRow)
             return s + "to an empty slot in the back stage ";
         if (e.to[i].pos == asn::Position::SlotThisWasIn) {
             s += "to its previous position as" + printState(asn::State::Rested);
             return s;
         }
-        s += "into ";
+        if (e.to[i].zone == Zone::Stage) {
+            s += "on ";
+            if (e.to[i].pos == Position::NotSpecified)
+                s += "any position of ";
+        } else {
+            s += "into ";
+        }
         if (e.to[i].owner == Player::Player)
             s += "your ";
         else if (e.to[i].owner == Player::Both)
             s += "its owner's ";
+        else if (e.to[i].owner == Player::Opponent && e.executor == Player::Opponent)
+            s += "their ";
         else if (e.to[i].owner == Player::Opponent)
             s += "your opponent's ";
         s += printZone(e.to[i].zone) + " ";

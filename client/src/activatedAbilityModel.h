@@ -10,6 +10,11 @@
 
 #include "abilities.h"
 
+enum class ChoiceType {
+    Card,
+    DestinationIndex
+};
+
 struct ActivatedAbility {
     uint32_t uniqueId;
     ProtoAbilityType type;
@@ -28,6 +33,7 @@ struct ActivatedAbility {
     QString playBtnText;
     QString cancelBtnText;
 
+    ChoiceType choiceType = ChoiceType::Card;
     std::variant<std::monostate, asn::ChooseCard, asn::SearchCard, asn::AbilityGain, asn::MoveCard> effect;
 
     ActivatedAbility() : playBtnText("Play") {}

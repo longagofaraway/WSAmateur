@@ -78,6 +78,12 @@ void Player::setDeck(const std::string &deck) {
     zone("deck")->model().addCards(cardCount);
 }
 
+Player* Player::getOpponent() const {
+    if (mOpponent)
+        return mGame->player();
+    return mGame->opponent();
+}
+
 CardZone* Player::zone(std::string_view name) const {
     if (!mZones.count(name))
         return nullptr;

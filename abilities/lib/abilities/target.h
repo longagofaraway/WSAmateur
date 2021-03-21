@@ -16,7 +16,8 @@ enum class TargetType : uint8_t {
     BattleOpponent,
     MentionedCards,
     CharInBattle,
-    OppositeThis
+    OppositeThis,
+    LastMovedCards
 };
 
 enum class TargetMode : uint8_t {

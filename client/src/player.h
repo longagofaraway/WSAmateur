@@ -57,6 +57,7 @@ public:
     bool activePlayer() const { return mActivePlayer; }
     void setActivePlayer(bool active) { mActivePlayer = active; }
     void setDeck(const std::string &deck);
+    Player* getOpponent() const;
 
     int id() const { return mId; }
     CardZone* zone(std::string_view name) const;
@@ -76,6 +77,7 @@ public:
     Q_INVOKABLE void playAbility(int index);
     Q_INVOKABLE void cancelAbility(int index);
     Q_INVOKABLE void chooseCard(int index, QString qzone, bool opponent = false);
+    Q_INVOKABLE void chooseCardOrPosition(int index, QString qzone, bool opponent = false);
     Q_INVOKABLE void sendChoice(int index);
 
     //test section

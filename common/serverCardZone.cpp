@@ -40,8 +40,10 @@ void ServerCardZone::resetPositions() {
 }
 
 std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
-    if (static_cast<size_t>(index) >= mCards.size())
+    if (static_cast<size_t>(index) >= mCards.size()) {
+        assert(false);
         return {};
+    }
 
     auto card = std::move(mCards[index]);
     mCards.erase(mCards.begin() + index);
@@ -50,8 +52,10 @@ std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
 }
 
 std::unique_ptr<ServerCard> ServerCardZone::takeTopCard() {
-    if (!mCards.size())
+    if (!mCards.size()) {
+        assert(false);
         return {};
+    }
 
     auto card = std::move(mCards[mCards.size() - 1]);
     mCards.pop_back();
@@ -59,8 +63,10 @@ std::unique_ptr<ServerCard> ServerCardZone::takeTopCard() {
 }
 
 ServerCard *ServerCardZone::card(int index) {
-    if (static_cast<size_t>(index) >= mCards.size())
+    if (static_cast<size_t>(index) >= mCards.size()) {
+        assert(false);
         return nullptr;
+    }
 
     return mCards[index].get();
 }

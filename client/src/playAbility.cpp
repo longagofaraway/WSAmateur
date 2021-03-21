@@ -195,17 +195,21 @@ void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &even
 }
 
 void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexChoice &event) {
-    if (mOpponent)
+    auto effect = decodeMoveCard(event.effect());
+    if ((mOpponent && effect.executor == asn::Player::Player) ||
+        (!mOpponent && effect.executor == asn::Player::Opponent))
         return;
 
-    auto effect = decodeMoveCard(event.effect());
-    assert(effect.executor == asn::Player::Player);
     assert(effect.to.size() == 1);
-
+    auto &a = mAbilityList->ability(mAbilityList->activeId());
+    a.effect = effect;
+    a.choiceType = ChoiceType::DestinationIndex;
     if (effect.to[0].pos == asn::Position::EmptySlotBackRow) {
         mStage->model().setGlow(3, true);
         mStage->model().setGlow(4, true);
-        mAbilityList->ability(mAbilityList->activeId()).effect = effect;
+    } else if (effect.to[0].zone == asn::Zone::Stage && effect.to[0].pos == asn::Position::NotSpecified) {
+        auto player = effect.executor == asn::Player::Opponent ? getOpponent() : this;
+        highlightAllCards(player->zone("stage"), true);
     }
 }
 
@@ -493,10 +497,22 @@ void Player::cancelAbility(int) {
     sendGameCommand(CommandCancelEffect());
 }
 
-void Player::chooseCard(int, QString qzone, bool opponent) {
-    if (!mAbilityList->count())
+void Player::chooseCardOrPosition(int index, QString qzone, bool opponent) {
+    if (!mAbilityList->count()) {
+        if (mOpponent)
+            return;
+        getOpponent()->chooseCardOrPosition(index, qzone, opponent);
         return;
+    }
 
+    int activeId = mAbilityList->activeId();
+    if (mAbilityList->ability(activeId).choiceType == ChoiceType::Card)
+        chooseCard(index, qzone, opponent);
+    else
+        sendChoice(index);
+}
+
+void Player::chooseCard(int, QString qzone, bool opponent) {
     CardZone *pzone;
     if (!opponent)
         pzone = zone(qzone.toStdString());

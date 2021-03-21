@@ -141,8 +141,6 @@ std::map<int, ServerCard*> AbilityPlayer::processCommandChooseCard(const Command
 }
 
 Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
-    assert(e.executor == asn::Player::Player);
-
     if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
         ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
             mentionedCards().empty()) ||
@@ -156,6 +154,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     std::map<int, ServerCard*> cardsToMove;
     if (chooseCards) {
         assert(e.to.size() == 1);
+        assert(e.executor == asn::Player::Player);
         std::vector<uint8_t> buf;
         encodeMoveCard(e, buf);
 
@@ -183,6 +182,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         }
         mPlayer->clearExpectedComands();
     } else if (!mandatory()) {
+        assert(e.executor == asn::Player::Player);
         std::vector<uint8_t> buf;
         encodeMoveCard(e, buf);
 
@@ -217,6 +217,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     // choice of a destination
     int toZoneIndex = 0;
     if (e.to.size() > 1) {
+        assert(e.executor == asn::Player::Player);
         assert(mandatory());
         std::vector<uint8_t> buf;
         encodeMoveCard(e, buf);
@@ -243,12 +244,13 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     }
 
     int toIndex = 0;
-    if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
+    if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow ||
+        (e.to[toZoneIndex].zone == asn::Zone::Stage && e.to[toZoneIndex].pos == asn::Position::NotSpecified)) {
         assert(mandatory());
-        auto player = owner(e.to[toZoneIndex].owner);
-        auto stage = player->zone("stage");
         bool positionSet = false;
         if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
+            auto player = owner(e.to[toZoneIndex].owner);
+            auto stage = player->zone("stage");
             if (stage->card(3) && !stage->card(4)) {
                 positionSet = true;
                 toIndex = 4;
@@ -267,8 +269,9 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             ev.set_mandatory(true);
             mPlayer->sendToBoth(ev);
 
-            mPlayer->clearExpectedComands();
-            mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+            auto player = owner(e.executor);
+            player->clearExpectedComands();
+            player->addExpectedCommand(CommandChoice::GetDescriptor()->name());
 
             while (true) {
                 auto cmd = co_await waitForCommand();
@@ -276,12 +279,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                     CommandChoice choiceCmd;
                     cmd.command().UnpackTo(&choiceCmd);
                     toIndex = choiceCmd.choice();
-                    if (toIndex >= stage->count())
+                    if (toIndex >= 5)
                         continue;
                     break;
                 }
             }
-            mPlayer->clearExpectedComands();
+            player->clearExpectedComands();
         }
     }
 
@@ -301,10 +304,17 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
             toIndex = thisCard().card->prevStagePos();
         cardsToMove[thisCard().id] = thisCard().card;
+    } else if (e.target.type == asn::TargetType::LastMovedCards) {
+        for (const auto &card: lastMovedCards()) {
+            player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
+            cardsToMove[card.id] = card.card;
+        }
     }
 
+    clearLastMovedCards();
     for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
         player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+        addLastMovedCard(CardImprint(it->second->zone()->name(), it->second->pos(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
             player->setCardState(it->second, CardState::StateRested);

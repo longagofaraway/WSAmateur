@@ -17,6 +17,7 @@ class AbilityPlayer {
     int mAbilityId;
     std::vector<CardImprint> mChosenCards;
     std::vector<CardImprint> mMentionedCards;
+    std::vector<CardImprint> mLastMovedCards;
     CardImprint mThisCard;
     std::optional<asn::Cost> mCost;
 
@@ -44,6 +45,9 @@ public:
     std::vector<CardImprint>& chosenCards() { return mChosenCards; }
     void addMentionedCard(CardImprint &&c) { mMentionedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& mentionedCards() { return mMentionedCards; }
+    void addLastMovedCard(CardImprint &&c) { mLastMovedCards.emplace_back(std::move(c)); }
+    std::vector<CardImprint>& lastMovedCards() { return mLastMovedCards; }
+    void clearLastMovedCards() { mLastMovedCards.clear(); }
 
     Resumable playAbility(const asn::Ability &a);
     Resumable playAutoAbility(const asn::AutoAbility &a);
