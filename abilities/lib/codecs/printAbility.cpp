@@ -26,6 +26,11 @@ std::string printSpecificAbility(const T &a) {
         s += printTrigger(a.trigger);
     }
 
+    if constexpr (std::is_same_v<T, ActAbility>) {
+        s += printCost(a.cost);
+        prefixLen = s.size();
+    }
+
     s += printEffects(a.effects);
 
     s[prefixLen] = std::toupper(s[prefixLen]);

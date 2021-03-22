@@ -178,7 +178,7 @@ PerformEffect parsePerformEffect(const QJsonObject &json) {
 }
 
 FlipOver parseFlipOver(const QJsonObject &json) {
-    if (!json.contains("number") || !json["number"].isDouble())
+    if (!json.contains("number") || !json["number"].isObject())
         throw std::runtime_error("no number in FlipOver");
     if (!json.contains("forEach") || !json["forEach"].isObject())
         throw std::runtime_error("no forEach in FlipOver");

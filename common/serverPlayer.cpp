@@ -512,11 +512,11 @@ bool ServerPlayer::canAttack() {
 }
 
 Resumable ServerPlayer::startAttackPhase() {
+    clearExpectedComands();
     if (canAttack()) {
         co_await startOfAttackPhase();
         attackDeclarationStep();
-    }
-    else {
+    } else {
         co_await mGame->encoreStep();
     }
 }

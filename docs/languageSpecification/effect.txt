@@ -186,7 +186,7 @@ MoveWrToDeck {
 }
 
 
-// reveal 'number' cards from top deck, for each 'forEach' do 'effect'
+// flip over 'number' cards from top deck, for each 'forEach' do 'effect'
 FlipOver {
   number Number,
   forEach Card,

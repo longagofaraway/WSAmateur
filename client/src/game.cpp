@@ -21,7 +21,7 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="1" code="IMC/W43-127"/>
-        <card number="20" code="KGL/S79-008"/>
+        <card number="20" code="KGL/S79-009"/>
         <card number="20" code="KGL/S79-007"/>
         <card number="1" code="IMC/W43-046"/>
         <card number="1" code="IMC/W43-009"/>

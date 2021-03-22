@@ -72,12 +72,25 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::CardType) {
-            if (std::get<CardType>(cardSpec.specifier) == CardType::Char) {
+            switch (std::get<CardType>(cardSpec.specifier)) {
+            case CardType::Char:
                 s += "character";
+                break;
+            case CardType::Climax:
+                s += "climax";
                 if (plural)
-                    s += 's';
-                s += " ";
+                    s += "e";
+                break;
+            case CardType::Event:
+                s += "event";
+                break;
+            case CardType::Marker:
+                s += "marker";
+                break;
             }
+            if (plural)
+                s += 's';
+            s += " ";
         }
     }
 

@@ -42,11 +42,15 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
             s += "you ";
 
         s += "have ";
-        if ((c.howMany.mod == NumModifier::AtLeast ||
-            c.howMany.mod == NumModifier::ExactMatch) &&
-            c.howMany.value == 1 && c.excludingThis)
-            s += "another ";
-        else if (c.howMany.mod == NumModifier::AtLeast) {
+        if (c.howMany.mod == NumModifier::AtLeast ||
+            c.howMany.mod == NumModifier::ExactMatch) {
+            if (c.howMany.value == 1 && c.excludingThis) {
+                s += "another ";
+            } else if (c.howMany.value == 0 && c.excludingThis) {
+                plural = true;
+                s += "no other ";
+            }
+        } else if (c.howMany.mod == NumModifier::AtLeast) {
             plural = true;
             s += std::to_string(c.howMany.value) + " or more ";
             if (c.excludingThis)

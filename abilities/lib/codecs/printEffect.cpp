@@ -331,6 +331,26 @@ std::string printMoveWrToDeck(const MoveWrToDeck &e) {
     return s;
 }
 
+std::string printFlipOver(const FlipOver &e) {
+    std::string s;
+
+    s += "Flip over " + std::to_string(e.number.value);
+    s += " cards from the top of your deck, and put them into your waiting room. ";
+    s += "For each " + printCard(e.forEach, false, false) + " revealed, ";
+    s += printEffects(e.effect);
+
+    return s;
+}
+
+std::string printChangeState(const ChangeState &e) {
+    std::string s;
+
+    s += printState(e.state);
+    s += printTarget(e.target);
+
+    return s;
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -370,6 +390,12 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::MoveWrToDeck:
         s += printMoveWrToDeck(std::get<MoveWrToDeck>(e.effect));
+        break;
+    case EffectType::FlipOver:
+        s += printFlipOver(std::get<FlipOver>(e.effect));
+        break;
+    case EffectType::ChangeState:
+        s += printChangeState(std::get<ChangeState>(e.effect));
         break;
     }
 
