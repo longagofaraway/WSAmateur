@@ -117,3 +117,8 @@ message EventRemoveAbility {
     string zone = 2;
     sint32 abilityId = 3;
 }
+
+message CommandPlayAct {
+    sint32 cardId = 1;
+    sint32 abilityId = 2;
+}

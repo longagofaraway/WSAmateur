@@ -166,3 +166,16 @@ asn::Player protoPlayerToPlayer(ProtoOwner player) {
     assert(false);
     return asn::Player::Player;
 }
+
+asn::State protoStateToState(CardState state) {
+    switch (state) {
+    case StateStanding:
+        return asn::State::Standing;
+    case StateRested:
+        return asn::State::Rested;
+    case StateReversed:
+        return asn::State::Reversed;
+    }
+    assert(false);
+    return asn::State::Standing;
+}

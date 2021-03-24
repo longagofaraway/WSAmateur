@@ -3,6 +3,7 @@
 #include <QQmlContext>
 
 #include "game.h"
+#include "player.h"
 
 void ChoiceDialogModel::clear() {
     if (!mData.size())
@@ -10,6 +11,12 @@ void ChoiceDialogModel::clear() {
     beginRemoveRows(QModelIndex(), 0, static_cast<int>(mData.size()) - 1);
     mData.clear();
     endRemoveRows();
+}
+
+void ChoiceDialogModel::addRow(const QString &data) {
+    beginInsertRows(QModelIndex(), rowCount(), rowCount());
+    mData.push_back(data);
+    endInsertRows();
 }
 
 void ChoiceDialogModel::setChoice(const std::vector<QString> &data) {
@@ -40,14 +47,31 @@ QHash<int, QByteArray> ChoiceDialogModel::roleNames() const {
     return *roles;
 }
 
-ChoiceDialog::ChoiceDialog(Game *game) {
+ChoiceDialogBase::ChoiceDialogBase(Game *game) : mPlayer(game->player()) {
     QQmlComponent component(game->engine(), "qrc:/qml/ChoiceDialog.qml");
-    QQmlContext *context = new QQmlContext(game->context(), game);
+    QQmlContext *context = new QQmlContext(game->context(), this);
     context->setContextProperty("innerModel", QVariant::fromValue(&mModel));
     QObject *obj = component.create(context);
     mQmlObject = qobject_cast<QQuickItem*>(obj);
     mQmlObject->setParentItem(game);
-    mQmlObject->setParent(game);
+    mQmlObject->setParent(this);
+    mQmlObject->connect(mQmlObject, SIGNAL(destroySignal()), this, SLOT(destroy()));
+}
+
+ChoiceDialogBase::~ChoiceDialogBase() noexcept {
+    mQmlObject->disconnect(mQmlObject, SIGNAL(destroySignal()), this, SLOT(destroy()));
+}
+
+void ChoiceDialogBase::destroy() {
+    mPlayer->resetChoiceDialog();
+}
+
+ChoiceDialog::ChoiceDialog(Game *game) : ChoiceDialogBase(game) {
+    mQmlObject->connect(mQmlObject, SIGNAL(choiceMade(int)), this, SLOT(processChoice(int)));
+}
+
+ChoiceDialog::~ChoiceDialog() noexcept {
+    mQmlObject->disconnect(mQmlObject, SIGNAL(choiceMade(int)), this, SLOT(processChoice(int)));
 }
 
 void ChoiceDialog::setData(const QString &header, const std::vector<QString> &data) {
@@ -59,4 +83,28 @@ void ChoiceDialog::setData(const QString &header, const std::vector<QString> &da
     else
         mQmlObject->setProperty("mLongtext", false);
     mModel.setChoice(data);
+}
+
+void ChoiceDialog::processChoice(int choice) {
+    mPlayer->sendChoice(choice);
+}
+
+ActChoiceDialog::ActChoiceDialog(Game *game) : ChoiceDialogBase(game) {
+    mQmlObject->connect(mQmlObject, SIGNAL(choiceMade(int)), this, SLOT(processChoice(int)));
+}
+
+void ActChoiceDialog::addAbility(int cardPos, int abilityId, const QString &text) {
+    mAbilities.emplace_back(AbilityData{abilityId, cardPos});
+    mModel.addRow(text);
+}
+
+void ActChoiceDialog::show() {
+    mQmlObject->setProperty("mHeaderText", "Play Act ability");
+    mQmlObject->setProperty("mLongtext", true);
+    mQmlObject->setProperty("mCancelable", true);
+    mQmlObject->setProperty("state", "active");
+}
+
+void ActChoiceDialog::processChoice(int choice) {
+    mPlayer->sendPlayActAbility(mAbilities[choice].cardPos, mAbilities[choice].abilityId);
 }

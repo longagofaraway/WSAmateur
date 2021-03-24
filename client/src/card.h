@@ -65,6 +65,7 @@ public:
     const std::string& name() const override { return mInfo->name(); }
     QString text(int abilityId) const { return mAbilityModel->text(abilityId); }
     AbilityModel* textModel() { return mAbilityModel.get(); }
+    int abilityCount() const { return mAbilityModel->count(); }
     const asn::Ability& ability(int abilityId) const { return mAbilityModel->ability(abilityId); }
     void addAbility(const asn::Ability &a);
     void removeAbility(int id);

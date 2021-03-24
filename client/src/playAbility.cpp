@@ -171,7 +171,9 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
     auto effectText = printMoveCard(effect) + '?';
     effectText[0] = std::toupper(effectText[0]);
     std::vector<QString> data { "Yes", "No" };
-    mChoiceDialog->setData(QString::fromStdString(effectText), data);
+    auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+    choiceDlg->setData(QString::fromStdString(effectText), data);
+    mChoiceDialog = std::move(choiceDlg);
 }
 
 void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &event) {
@@ -189,7 +191,9 @@ void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &even
             data.push_back(asnZoneToReadableString(to.zone));
         }
 
-        mChoiceDialog->setData("Choose where to put the card", data);
+        auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+        choiceDlg->setData("Choose where to put the card", data);
+        mChoiceDialog = std::move(choiceDlg);
         return;
     }
 }
@@ -241,7 +245,10 @@ void Player::processDrawChoice(const EventDrawChoice &event) {
     header.push_back('?');
     if (!event.mandatory()) {
         std::vector<QString> data { "Yes", "No" };
-        mChoiceDialog->setData(QString::fromStdString(header), data);
+
+        auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+        choiceDlg->setData(QString::fromStdString(header), data);
+        mChoiceDialog = std::move(choiceDlg);
     }
 }
 
@@ -254,7 +261,10 @@ void Player::processAbilityChoice(const EventAbilityChoice &event) {
         std::vector<QString> data;
         for (const auto &a: effect.abilities)
             data.push_back(QString::fromStdString(printAbility(a)));
-        mChoiceDialog->setData("Choose ability", data);
+
+        auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+        choiceDlg->setData("Choose ability", data);
+        mChoiceDialog = std::move(choiceDlg);
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
     }
 }
@@ -344,14 +354,17 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
     if (!mOpponent) {
         int playableCount = 0;
         for (int i = 0; i < mAbilityList->count(); ++i) {
-            if (canPlay(mAbilityList->ability(i).ability))
+            const auto &abInStandby = mAbilityList->ability(i);
+            if (canPlay(correspondingCard(abInStandby), abInStandby.ability))
                 ++playableCount;
         }
         if (playableCount > 1) {
             // show 'Play' button on playable abilities
-            for (int i = 0; i < mAbilityList->count(); ++i)
-                if (canPlay(mAbilityList->ability(i).ability))
+            for (int i = 0; i < mAbilityList->count(); ++i) {
+                const auto &abInStandby = mAbilityList->ability(i);
+                if (canPlay(correspondingCard(abInStandby), abInStandby.ability))
                     mAbilityList->activatePlay(i, true);
+            }
         }
     }
     if (mAbilityList->count())
@@ -415,14 +428,17 @@ void Player::abilityResolved() {
     if (!mOpponent) {
         int playableCount = 0;
         for (int i = 0; i < mAbilityList->count(); ++i) {
-            if (canPlay(mAbilityList->ability(i).ability))
+            const auto &abInStandby = mAbilityList->ability(i);
+            if (canPlay(correspondingCard(abInStandby), abInStandby.ability))
                 ++playableCount;
         }
         if (playableCount > 1) {
             // show 'Play' button on playable abilities
-            for (int i = 0; i < mAbilityList->count(); ++i)
-                if (canPlay(mAbilityList->ability(i).ability))
+            for (int i = 0; i < mAbilityList->count(); ++i) {
+                const auto &abInStandby = mAbilityList->ability(i);
+                if (canPlay(correspondingCard(abInStandby), abInStandby.ability))
                     mAbilityList->activatePlay(i, true);
+            }
         }
     }
 }
@@ -490,6 +506,18 @@ void Player::payCostChoice() {
 
     mAbilityList->activatePlay(mAbilityList->activeId(), true, "Pay cost");
     mAbilityList->activateCancel(mAbilityList->activeId(), true);
+}
+
+const Card &Player::correspondingCard(const ActivatedAbility &abilityDescriptor) {
+    static Card dummyCard;
+    auto pzone = zone(abilityDescriptor.zone);
+    if (pzone->model().count() <= abilityDescriptor.cardId)
+        return dummyCard;
+    const auto &card = pzone->cards()[abilityDescriptor.cardId];
+    if (card.code() != abilityDescriptor.code)
+        return dummyCard;
+    // we miss the situation when the card is replaced with card with the same code
+    return card;
 }
 
 void Player::cancelAbility(int) {
@@ -589,7 +617,33 @@ void Player::sendChoice(int index) {
     doneChoosing();
 }
 
-bool Player::canPay(const asn::CostItem &c) const {
+void Player::playActAbility(int index) {
+    if (mGame->phase() != asn::Phase::MainPhase || mAbilityList->count())
+        return;
+
+    const auto &card = mStage->cards()[index];
+    if (!card.cardPresent())
+        return;
+
+    std::unique_ptr<ActChoiceDialog> choiceDlg;
+    for (int i = 0; i < card.abilityCount(); ++i){
+        const auto &ab = card.ability(i);
+        if (ab.type == asn::AbilityType::Act) {
+            if (canPlay(card, ab)) {
+                if (!choiceDlg)
+                    choiceDlg = std::make_unique<ActChoiceDialog>(mGame);
+                choiceDlg->addAbility(index, i, card.text(i));
+            }
+        }
+    }
+
+    if (choiceDlg) {
+        choiceDlg->show();
+        mChoiceDialog = std::move(choiceDlg);
+    }
+}
+
+bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
     if (c.type == asn::CostType::Stock) {
         const auto &item = std::get<asn::StockCost>(c.costItem);
         if (item.value > zone("stock")->model().count())
@@ -602,20 +656,29 @@ bool Player::canPay(const asn::CostItem &c) const {
             if (e.from.zone == asn::Zone::Hand &&
                 e.target.targetSpecification->number.value > zone("hand")->model().count())
                 return false;
+        } else if (item.type == asn::EffectType::ChangeState) {
+            const auto &e = std::get<asn::ChangeState>(item.effect);
+            if (e.state == protoStateToState(thisCard.state()))
+                return false;
         }
         return true;
     }
 }
 
-bool Player::canPlay(const asn::Ability &a) const {
+bool Player::canPlay(const Card &thisCard, const asn::Ability &a) const {
     if (a.type == asn::AbilityType::Auto) {
         const auto &aa = std::get<asn::AutoAbility>(a.ability);
         if (!aa.cost)
             return true;
         for (const auto &costItem: aa.cost->items)
-            if (!canPay(costItem))
+            if (!canPay(thisCard, costItem))
                 return false;
         return true;
+    } else if (a.type == asn::AbilityType::Act) {
+        const auto &aa = std::get<asn::ActAbility>(a.ability);
+        for (const auto &costItem: aa.cost.items)
+            if (!canPay(thisCard, costItem))
+                return false;
     }
 
     return true;

@@ -42,6 +42,7 @@ Player::Player(int id, Game *game, bool opponent)
     auto clock = std::make_unique<CommonCardZone>(this, game, "clock");
     mZones.emplace("clock", std::move(clock));
     auto stock = std::make_unique<CommonCardZone>(this, game, "stock");
+    stock->model().addCard();
     mZones.emplace("stock", std::move(stock));
     auto stage= std::make_unique<Stage>(this, game);
     mStage = stage.get();
@@ -55,7 +56,6 @@ Player::Player(int id, Game *game, bool opponent)
     auto resolutionZone = std::make_unique<CommonCardZone>(this, game, "res");
     mZones.emplace("res", std::move(resolutionZone));
     mAbilityList = std::make_unique<ActivatedAbilities>(this, game);
-    mChoiceDialog = std::make_unique<ChoiceDialog>(game);
     auto orderedView = std::make_unique<CommonCardZone>(this, game, "view");
     mZones.emplace("view", std::move(orderedView));
 
@@ -600,6 +600,13 @@ void Player::sendDiscardCard(int id) {
     sendGameCommand(cmd);
 }
 
+void Player::sendPlayActAbility(int cardPos, int abilityId) {
+    CommandPlayAct cmd;
+    cmd.set_cardid(cardPos);
+    cmd.set_abilityid(abilityId);
+    sendGameCommand(cmd);
+}
+
 void Player::cardPlayed(int handId, int stageId) {
     CommandPlayCard cmd;
     cmd.set_handid(handId);
@@ -616,6 +623,11 @@ void Player::sendSwitchPositions(int from, int to) {
 
 void Player::sendFromStageToWr(int pos) {
     createMovingCard(mStage->cards()[pos].qcode(), "stage", pos, "wr", 0, true, false, true);
+}
+
+void Player::resetChoiceDialog() {
+    auto ptr = mChoiceDialog.release();
+    ptr->deleteLater();
 }
 
 void Player::testAction()

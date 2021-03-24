@@ -63,10 +63,8 @@ std::unique_ptr<ServerCard> ServerCardZone::takeTopCard() {
 }
 
 ServerCard *ServerCardZone::card(int index) {
-    if (static_cast<size_t>(index) >= mCards.size()) {
-        assert(false);
+    if (static_cast<size_t>(index) >= mCards.size())
         return nullptr;
-    }
 
     return mCards[index].get();
 }

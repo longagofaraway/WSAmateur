@@ -169,6 +169,8 @@ ListView {
                     } else if (model.glow) {
                         model.selected = !model.selected;
                         gGame.getPlayer().chooseCardOrPosition(model.index, "stage", stage.opponent);
+                    } else if (!opponent && mStageCard !== null) {
+                        gGame.getPlayer().playActAbility(mIndex);
                     }
                 }
             }

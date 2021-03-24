@@ -6,17 +6,20 @@ Rectangle {
     id: dialog
 
     property bool mLongtext: false
+    property bool mCancelable: false
     property string mHeaderText: "Choose a card"
     property ChoiceDialogModel mModel: innerModel
+    signal destroySignal()
+    signal choiceMade(int choice)
 
     x: gGame.width / 2 - width / 2
     y: gGame.height / 2 - height / 2
     radius: 5
     border.width: 1
     color: "#F0564747"
-    z: 160
+    z: 500
     width: mLongtext ? 375 : (Math.max(200, header.contentWidth) + 25)
-    height: childrenRect.height + 11
+    height: header.contentHeight + lview.height + 11
     opacity: 0
     scale: 0
 
@@ -29,8 +32,33 @@ Rectangle {
         }
     }
 
-    transitions: Transition {
-        NumberAnimation { properties: "opacity, scale"; duration: 200 }
+    transitions: [
+        Transition {
+            from: "*"
+            to: "active"
+            NumberAnimation { properties: "opacity, scale"; duration: 200 }
+        },
+        Transition {
+            from: "active"
+            to: "*"
+            SequentialAnimation {
+                NumberAnimation { properties: "opacity, scale"; duration: 200 }
+                ScriptAction { script: destroySignal() }
+            }
+        }
+    ]
+
+    MouseArea {
+        x: -dialog.x
+        y: -dialog.y
+        width: gGame.width
+        height: gGame.height
+        z: -1
+        hoverEnabled: true
+        onClicked: {
+            if (mCancelable)
+                dialog.state = "";
+        }
     }
 
     Text {
@@ -44,6 +72,26 @@ Rectangle {
         font.family: "Futura Bk BT"
         font.pointSize: 22
         color: "white"
+    }
+
+    Image {
+        visible: mCancelable
+        id: closeBtn
+        anchors {
+            right: dialog.right
+            rightMargin: 5
+            top: dialog.top
+            topMargin: 5
+        }
+        source: "qrc:///resources/images/closeButton"
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: closeBtn.source = "qrc:///resources/images/closeButtonHighlighted"
+            onExited: closeBtn.source = "qrc:///resources/images/closeButton"
+            onClicked: dialog.state = "";
+        }
     }
 
     ListView {
@@ -101,7 +149,7 @@ Rectangle {
                 onClicked: {
                     dialog.state = "";
                     gGame.pause(200);
-                    gGame.getPlayer().sendChoice(model.index);
+                    choiceMade(model.index);
                 }
             }
         }

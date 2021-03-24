@@ -43,7 +43,7 @@ private:
     DeckView *mDeckView;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
     std::unique_ptr<ActivatedAbilities> mAbilityList;
-    std::unique_ptr<ChoiceDialog> mChoiceDialog;
+    std::unique_ptr<ChoiceDialogBase> mChoiceDialog;
 
     int mLevel = 0;
     int mAttackingId = 0;
@@ -79,6 +79,9 @@ public:
     Q_INVOKABLE void chooseCard(int index, QString qzone, bool opponent = false);
     Q_INVOKABLE void chooseCardOrPosition(int index, QString qzone, bool opponent = false);
     Q_INVOKABLE void sendChoice(int index);
+    Q_INVOKABLE void playActAbility(int index);
+
+    void resetChoiceDialog();
 
     //test section
     void testAction();
@@ -112,8 +115,8 @@ private:
     void endGame(bool victory);
 
     bool canPlay(const Card &card) const;
-    bool canPlay(const asn::Ability &a) const;
-    bool canPay(const asn::CostItem &c) const;
+    bool canPlay(const Card &thisCard, const asn::Ability &a) const;
+    bool canPay(const Card &thisCard, const asn::CostItem &c) const;
 
     void restoreUiState();
     void stopUiInteractions();
@@ -141,10 +144,13 @@ private:
     void conditionNotMet();
     void payCostChoice();
 
+    const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
+
 public slots:
     void sendSwitchPositions(int from, int to);
     void sendFromStageToWr(int pos);
     void sendAttackDeclaration(int pos, bool sideAttack);
     void sendEncore(int pos);
     void sendDiscardCard(int id);
+    void sendPlayActAbility(int cardPos, int abilityId);
 };
