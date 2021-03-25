@@ -27,18 +27,6 @@ class CommandDeclareAttack;
 class CommandLevelUp;
 class CommandEncoreCharacter;
 
-/*struct AbilityContext {
-    bool mandatory = true;
-    bool canceled = false;
-    bool revealChosen = false;
-    bool revert = false; // revert results of cont ability
-    int abilityId;
-    std::vector<CardImprint> chosenCards;
-    std::vector<CardImprint> mentionedCards;
-    CardImprint thisCard;
-    std::optional<asn::Cost> cost;
-};*/
-
 struct TriggeredAbility {
     CardImprint card;
     ProtoAbilityType type;
@@ -129,6 +117,7 @@ public:
     void moveWrToDeck();
     void sendPhaseEvent(asn::Phase phase);
     void sendEndGame(bool victory);
+    Resumable processPlayActCmd(const CommandPlayAct &cmd);
 
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);
@@ -139,18 +128,14 @@ public:
     void setCardState(ServerCard *card, CardState state);
     void endOfTurnEffectValidation();
 
-private:
-    std::vector<TriggeredAbility> mQueue;
-
-public:
     void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
     void checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *attCard);
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
 
-    bool canBePayed(const asn::CostItem &c);
-    bool canBePlayed(const asn::Ability &a);
+    bool canBePayed(ServerCard *thisCard, const asn::CostItem &c);
+    bool canBePlayed(ServerCard *thisCard, const asn::Ability &a);
 
     Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
     Resumable processRuleActions(bool &ruleActionFound);
@@ -160,4 +145,7 @@ public:
 
     bool hasActivatedAbilities() const;
     Resumable checkTiming();
+
+private:
+    std::vector<TriggeredAbility> mQueue;
 };

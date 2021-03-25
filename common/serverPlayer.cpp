@@ -69,6 +69,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         mGame->startAsyncTask(mGame->continueFromDamageStep());
     } else if (cmd.command().Is<CommandEncoreStep>()) {
         mGame->startAsyncTask(mGame->encoreStep());
+    } else if (cmd.command().Is<CommandPlayAct>()) {
+        CommandPlayAct actCmd;
+        cmd.command().UnpackTo(&actCmd);
+        mGame->startAsyncTask(processPlayActCmd(actCmd));
     }
 
     if (mGame->ended()) {
@@ -344,10 +348,10 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
 
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
+    addExpectedCommand(CommandPlayAct::GetDescriptor()->name());
     addExpectedCommand(CommandClimaxPhase::GetDescriptor()->name());
     addExpectedCommand(CommandAttackPhase::GetDescriptor()->name());
     addExpectedCommand(CommandSwitchStagePositions::GetDescriptor()->name());
-    //TODO activate ability
 }
 
 Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
@@ -802,6 +806,27 @@ void ServerPlayer::sendEndGame(bool victory) {
     EventGameEnded eventOpp;
     eventOpp.set_victory(!victory);
     mGame->opponentOfPlayer(mId)->sendGameEvent(eventOpp);
+}
+
+Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct &cmd) {
+    auto stage = zone("stage");
+    if (cmd.cardid() >= stage->count())
+        co_return;
+
+    auto card = stage->card(cmd.cardid());
+    if (!card)
+        co_return;
+
+    if (static_cast<size_t>(cmd.abilityid()) >= card->abilities().size())
+        co_return;
+
+    TriggeredAbility ta;
+    ta.card = CardImprint(card->zone()->name(), cmd.cardid(), card);
+    ta.type = ProtoCard;
+    ta.abilityId = cmd.abilityid();
+    mQueue.push_back(ta);
+
+    co_await mGame->checkTiming();
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {

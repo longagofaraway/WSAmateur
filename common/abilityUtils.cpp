@@ -179,3 +179,16 @@ asn::State protoStateToState(CardState state) {
     assert(false);
     return asn::State::Standing;
 }
+
+CardState stateToProtoState(asn::State state) {
+    switch (state) {
+    case asn::State::Standing:
+        return StateStanding;
+    case asn::State::Rested:
+        return StateRested;
+    case asn::State::Reversed:
+        return StateReversed;
+    }
+    assert(false);
+    return StateStanding;
+}

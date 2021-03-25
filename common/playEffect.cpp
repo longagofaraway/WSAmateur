@@ -47,6 +47,12 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::MoveWrToDeck:
         playMoveWrToDeck(std::get<asn::MoveWrToDeck>(e.effect));
         break;
+    case asn::EffectType::ChangeState:
+        playChangeState(std::get<asn::ChangeState>(e.effect));
+        break;
+    case asn::EffectType::FlipOver:
+        co_await playFlipOver(std::get<asn::FlipOver>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -619,4 +625,33 @@ void AbilityPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {
         opponent->moveWrToDeck();
         opponent->sendToBoth(EventRefresh());
     }
+}
+
+void AbilityPlayer::playChangeState(const asn::ChangeState &e) {
+    if (e.target.type == asn::TargetType::ThisCard) {
+        if (thisCard().zone != thisCard().card->zone()->name())
+            return;
+        mPlayer->setCardState(thisCard().card, stateToProtoState(e.state));
+    } else {
+        assert(false);
+    }
+}
+
+Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
+    assert(e.number.mod == asn::NumModifier::ExactMatch);
+    for (int i = 0; i < e.number.value; ++i)
+        mPlayer->moveTopDeck("res");
+
+    auto res = mPlayer->zone("res");
+    int count = 0;
+    for (int i = 0; i < e.number.value; ++i) {
+        auto card = res->card(res->count() - 1);
+        if (checkCard(e.forEach.cardSpecifiers, *card))
+            ++count;
+        mPlayer->moveCard("res", res->count() - 1, "wr");
+    }
+
+    for (int i = 0; i < count; ++i)
+        for (const auto &effect: e.effect)
+            co_await playEffect(effect);
 }

@@ -42,7 +42,6 @@ Player::Player(int id, Game *game, bool opponent)
     auto clock = std::make_unique<CommonCardZone>(this, game, "clock");
     mZones.emplace("clock", std::move(clock));
     auto stock = std::make_unique<CommonCardZone>(this, game, "stock");
-    stock->model().addCard();
     mZones.emplace("stock", std::move(stock));
     auto stage= std::make_unique<Stage>(this, game);
     mStage = stage.get();
@@ -408,8 +407,7 @@ void Player::moveCard(const EventMoveCard &event) {
         code = cards[event.startid()].qcode();
 
     bool dontFinishAction = false;
-    if (event.targetzone() == "res" &&
-        (mGame->phase() == asn::Phase::DamageStep || mGame->phase() == asn::Phase::TriggerStep)) {
+    if (event.targetzone() == "res") {
         mGame->pause(800);
         dontFinishAction = true;
     }

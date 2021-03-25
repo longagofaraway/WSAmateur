@@ -33,6 +33,13 @@ Resumable AbilityPlayer::playAutoAbility(const asn::AutoAbility &a) {
         co_await playEffect(effect);
 }
 
+Resumable AbilityPlayer::playActAbility(const asn::ActAbility &a) {
+    setCost(a.cost);
+    co_await payCost();
+    for (const auto &effect: a.effects)
+        co_await playEffect(effect);
+}
+
 void AbilityPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
     if (a.effects.size() == 0)
         return;
@@ -57,6 +64,9 @@ Resumable AbilityPlayer::playAbility(const asn::Ability &a) {
         break;
     case asn::AbilityType::Event:
         co_await playEventAbility(std::get<asn::EventAbility>(a.ability));
+        break;
+    case asn::AbilityType::Act:
+        co_await playActAbility(std::get<asn::ActAbility>(a.ability));
         break;
     default:
         break;
@@ -95,7 +105,7 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     sendToBoth(EventEndResolvingAbilties());
 }
 
-bool ServerPlayer::canBePayed(const asn::CostItem &c) {
+bool ServerPlayer::canBePayed(ServerCard *thisCard, const asn::CostItem &c) {
     if (c.type == asn::CostType::Stock) {
         const auto &item = std::get<asn::StockCost>(c.costItem);
         if (item.value > zone("stock")->count())
@@ -108,23 +118,32 @@ bool ServerPlayer::canBePayed(const asn::CostItem &c) {
             if (e.from.zone == asn::Zone::Hand &&
                 e.target.targetSpecification->number.value > zone("hand")->count())
                 return false;
+        } else if (item.type == asn::EffectType::ChangeState) {
+            const auto &e = std::get<asn::ChangeState>(item.effect);
+            if (e.state == protoStateToState(thisCard->state()))
+                return false;
         }
         return true;
     }
 }
 
-bool ServerPlayer::canBePlayed(const asn::Ability &a) {
+bool ServerPlayer::canBePlayed(ServerCard *thisCard, const asn::Ability &a) {
     if (a.type == asn::AbilityType::Auto) {
         const auto &aa = std::get<asn::AutoAbility>(a.ability);
         if (!aa.cost)
             return true;
         for (const auto &costItem: aa.cost->items)
-            if (!canBePayed(costItem))
+            if (!canBePayed(thisCard, costItem))
                 return false;
         return true;
+    } else if (a.type == asn::AbilityType::Act) {
+        const auto &aa = std::get<asn::ActAbility>(a.ability);
+        for (const auto &costItem: aa.cost.items)
+            if (!canBePayed(thisCard, costItem))
+                return false;
     }
 
-    return false;
+    return true;
 }
 
 void ServerPlayer::resolveAllContAbilities() {
@@ -344,7 +363,7 @@ Resumable ServerPlayer::checkTiming() {
         uint32_t uniqueId;
         int playableCount = 0;
         for (size_t i = 0; i < mQueue.size(); ++i) {
-            if (canBePlayed(mQueue[i].getAbility())) {
+            if (canBePlayed(mQueue[i].card.card, mQueue[i].getAbility())) {
                 uniqueId = mQueue[i].uniqueId;
                 playableCount++;
             }

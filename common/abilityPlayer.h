@@ -51,6 +51,7 @@ public:
 
     Resumable playAbility(const asn::Ability &a);
     Resumable playAutoAbility(const asn::AutoAbility &a);
+    Resumable playActAbility(const asn::ActAbility &a);
     Resumable playEventAbility(const asn::EventAbility &a);
 
     void playContAbility(const asn::ContAbility &a, bool &active);
@@ -68,6 +69,8 @@ public:
     void playShuffle(const asn::Shuffle &e);
     Resumable playAbilityGain(const asn::AbilityGain &e);
     void playMoveWrToDeck(const asn::MoveWrToDeck &e);
+    void playChangeState(const asn::ChangeState &e);
+    Resumable playFlipOver(const asn::FlipOver &e);
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);

@@ -444,7 +444,7 @@ void Player::abilityResolved() {
 }
 
 void Player::stopUiInteractions() {
-    if (mOpponent)
+    if (mOpponent || !mActivePlayer)
         return;
 
     switch (mGame->phase()) {
@@ -462,7 +462,7 @@ void Player::stopUiInteractions() {
 }
 
 void Player::restoreUiState() {
-    if (mOpponent)
+    if (mOpponent || !mActivePlayer)
         return;
 
     switch (mGame->phase()) {
