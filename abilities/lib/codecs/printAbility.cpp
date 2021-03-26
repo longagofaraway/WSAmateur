@@ -26,14 +26,25 @@ std::string printSpecificAbility(const T &a) {
         s += printTrigger(a.trigger);
     }
 
+    bool isBackup = false;
     if constexpr (std::is_same_v<T, ActAbility>) {
-        s += printCost(a.cost);
-        prefixLen = s.size();
+        if (!(a.keywords.size() && a.keywords[0] == Keyword::Backup)) {
+            s += printCost(a.cost);
+            prefixLen = s.size();
+        } else {
+            isBackup = true;
+        }
     }
 
     s += printEffects(a.effects);
 
-    s[prefixLen] = std::toupper(s[prefixLen]);
+    if constexpr (std::is_same_v<T, ActAbility>) {
+        if (isBackup)
+            s += printCost(a.cost);
+    }
+
+    if (!isBackup)
+        s[prefixLen] = std::toupper(s[prefixLen]);
     if (s[s.size() - 1] == ' ')
         s.pop_back();
     if (s[s.size() - 1] == ',')

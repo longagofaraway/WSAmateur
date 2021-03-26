@@ -444,46 +444,51 @@ void Player::abilityResolved() {
 }
 
 void Player::stopUiInteractions() {
-    if (mOpponent || !mActivePlayer)
+    if (mOpponent)
         return;
 
     switch (mGame->phase()) {
     case asn::Phase::MainPhase:
-        mHand->endMainPhase();
-        mStage->endMainPhase();
-        mGame->pauseMainPhase();
+        if (mActivePlayer) {
+            mHand->endMainPhase();
+            mStage->endMainPhase();
+            mGame->pauseMainPhase();
+        }
         break;
-    case asn::Phase::AttackPhase:
-        mStage->unhighlightAttacker();
+    case asn::Phase::AttackPhase: {
+        Player *activePlayer = mActivePlayer ? this : mGame->opponent();
+        activePlayer->mStage->unhighlightAttacker();
         break;
+    }
     default:
         break;
     }
 }
 
 void Player::restoreUiState() {
-    if (mOpponent || !mActivePlayer)
+    if (mOpponent)
         return;
 
     switch (mGame->phase()) {
     case asn::Phase::MainPhase: {
-        const auto &cards = mHand->cards();
-        for (int i = 0; i < mHand->model().count(); ++i) {
-            if (canPlay(cards[i]))
-                mHand->model().setGlow(i, true);
-        }
+        if (mActivePlayer) {
+            const auto &cards = mHand->cards();
+            for (int i = 0; i < mHand->model().count(); ++i) {
+                if (canPlay(cards[i]))
+                    mHand->model().setGlow(i, true);
+            }
 
-        mHand->mainPhase();
-        mStage->mainPhase();
-        mGame->mainPhase();
+            mHand->mainPhase();
+            mStage->mainPhase();
+            mGame->mainPhase();
+        }
         break;
     }
     case asn::Phase::AttackPhase: {
         Player *activePlayer = mActivePlayer ? this : mGame->opponent();
-        auto pzone = activePlayer->zone("stage");
-        const auto &card = pzone->cards()[activePlayer->mAttackingId];
+        const auto &card = activePlayer->mStage->cards()[activePlayer->mAttackingId];
         if (card.cardPresent() && card.state() == StateRested)
-            pzone->model().setSelected(activePlayer->mAttackingId, true);
+            activePlayer->mStage->model().setSelected(activePlayer->mAttackingId, true);
         break;
     }
     default:

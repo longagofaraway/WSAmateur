@@ -124,6 +124,11 @@ void encodeShuffle(const Shuffle &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.owner));
 }
 
+void encodeBackup(const Backup &e, Buf &buf) {
+    toBufLE(zzenc_32(e.power), buf);
+    buf.push_back(zzenc_8(e.level));
+}
+
 void encodeEffect(const Effect &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.type));
     encodeCondition(e.cond, buf);
@@ -160,7 +165,7 @@ void encodeEffect(const Effect &e, Buf &buf) {
         encodeFlipOver(std::get<FlipOver>(e.effect), buf);
         break;
     case EffectType::Backup:
-        toBufLE(zzenc_32(std::get<Backup>(e.effect).power), buf);
+        encodeBackup(std::get<Backup>(e.effect), buf);
         break;
     case EffectType::NonMandatory:
         encodeNonMandatory(std::get<NonMandatory>(e.effect), buf);

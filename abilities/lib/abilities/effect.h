@@ -115,6 +115,7 @@ struct FlipOver {
 
 struct Backup {
     int32_t power;
+    int8_t level;
 };
 
 struct NonMandatory {

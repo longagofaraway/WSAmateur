@@ -199,7 +199,7 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         e.effect = decodeFlipOver(it, end);
         break;
     case EffectType::Backup:
-        e.effect = Backup{ decodeInt32(it, end) };
+        e.effect = Backup{ decodeInt32(it, end), decodeInt8(it, end) };
         break;
     case EffectType::NonMandatory:
         e.effect = decodeNonMandatory(it, end);

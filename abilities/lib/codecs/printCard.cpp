@@ -6,7 +6,7 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
     std::string s;
 
     if (c.cardSpecifiers.empty()) {
-        if (article)
+        if (!plural && article)
             s += "a ";
         s += "card";
         if (plural)
@@ -100,6 +100,10 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
                 s += "with a soul trigger ";
     }
 
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::LevelHigherThanOpp)
+            s += "with level higher than your opponent's level ";
+    }
 
     if (s[s.size() - 1] == ' ')
         s.pop_back();

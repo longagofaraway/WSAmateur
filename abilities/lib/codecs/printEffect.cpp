@@ -213,12 +213,19 @@ std::string printMoveCard(const MoveCard &e) {
     } else if (e.target.type == TargetType::ThisCard) {
         s += "this card ";
     } else if(e.target.type == TargetType::SpecificCards) {
-        if (e.from.pos == Position::Top && e.target.targetSpecification->number.mod == NumModifier::ExactMatch &&
-            e.target.targetSpecification->number.value == 1) {
+        const auto &spec = *e.target.targetSpecification;
+        if (e.from.pos == Position::Top && spec.number.mod == NumModifier::ExactMatch &&
+            spec.number.value == 1) {
             s += "the top ";
-            s += printCard(e.target.targetSpecification->cards, false, false) + " of ";
+            s += printCard(spec.cards, false, false) + " of ";
         } else {
-            s += printCard(e.target.targetSpecification->cards) + " from ";
+            bool plural = false;
+            if (spec.number.value > 1 || spec.number.mod == NumModifier::UpTo) {
+                if (spec.number.value > 1)
+                    plural = true;
+                s += printNumber(spec.number);
+            }
+            s += printCard(spec.cards, plural) + " from ";
         }
         s += printPlayer(e.from.owner);
         s += printZone(e.from.zone) + " ";
@@ -356,6 +363,14 @@ std::string printChangeState(const ChangeState &e) {
     return s;
 }
 
+std::string printBackup(const Backup &e) {
+    std::string s;
+
+    s += "<b>" + std::to_string(e.power) + ", Level " + std::to_string(e.level) + "</b> ";
+
+    return s;
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -401,6 +416,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::ChangeState:
         s += printChangeState(std::get<ChangeState>(e.effect));
+        break;
+    case EffectType::Backup:
+        s += printBackup(std::get<Backup>(e.effect));
         break;
     }
 

@@ -195,7 +195,8 @@ FlipOver {
 
 
 Backup {
-  power Int32
+  power Int32,
+  level Int8
 }
 
 

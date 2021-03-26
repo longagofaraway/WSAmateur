@@ -339,9 +339,12 @@ Shuffle parseShuffle(const QJsonObject &json) {
 Backup parseBackup(const QJsonObject &json) {
     if (!json.contains("power") || !json["power"].isDouble())
         throw std::runtime_error("no power in Backup");
+    if (!json.contains("level") || !json["level"].isDouble())
+        throw std::runtime_error("no level in Backup");
 
     Backup e;
     e.power = json["power"].toInt();
+    e.level = json["level"].toInt();
     return e;
 }
 
