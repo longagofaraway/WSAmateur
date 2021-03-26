@@ -508,10 +508,17 @@ void Player::setCardState(const EventSetCardState &event) {
 }
 
 void Player::counterStep() {
+    mGame->setPhase(asn::Phase::CounterStep);
     if (mOpponent)
         return;
 
+    mHand->mainPhase();
     mGame->counterStep();
+    auto &cards = mHand->cards();
+    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
+        if (canPlayCounter(cards[i]))
+            mHand->model().setGlow(i, true);
+    }
 }
 
 void Player::levelUp() {
@@ -628,17 +635,26 @@ void Player::resetChoiceDialog() {
     ptr->deleteLater();
 }
 
+void Player::sendPlayCounter(int handId) {
+    mHand->endMainPhase();
+    mGame->endCounterStep();
+
+    CommandPlayCounter cmd;
+    cmd.set_handid(handId);
+    sendGameCommand(cmd);
+}
+
 void Player::testAction()
 {
     //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
 
-    createMovingCard("IMC/W43-046", "stage", 1, "memory", 0, true, false, true);
+    createMovingCard("IMC/W43-046", "hand", 1, "wr", 0, true, false, true);
     //QMetaObject::invokeMethod(zone("stage")->visualItem(), "getCardPos", Q_ARG(QVariant, 1));
 }
 
 bool Player::playCards(CardModel &hand) {
     auto &cards = mStage->cards();
-    for (int i = 1; i < 5; ++i) {
+    for (int i = 2; i < 5; ++i) {
         if (cards[i].cardPresent())
             continue;
         auto &handCards = hand.cards();

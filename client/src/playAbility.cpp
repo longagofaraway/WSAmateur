@@ -368,7 +368,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         }
     }
     if (mAbilityList->count())
-        mGame->pause(250);
+        mGame->pause(450);
 }
 
 void Player::startResolvingAbility(const EventStartResolvingAbility &event) {
@@ -455,7 +455,8 @@ void Player::stopUiInteractions() {
             mGame->pauseMainPhase();
         }
         break;
-    case asn::Phase::AttackPhase: {
+    case asn::Phase::AttackPhase:
+    case asn::Phase::CounterStep: {
         Player *activePlayer = mActivePlayer ? this : mGame->opponent();
         activePlayer->mStage->unhighlightAttacker();
         break;
@@ -484,7 +485,8 @@ void Player::restoreUiState() {
         }
         break;
     }
-    case asn::Phase::AttackPhase: {
+    case asn::Phase::AttackPhase:
+    case asn::Phase::CounterStep: {
         Player *activePlayer = mActivePlayer ? this : mGame->opponent();
         const auto &card = activePlayer->mStage->cards()[activePlayer->mAttackingId];
         if (card.cardPresent() && card.state() == StateRested)
@@ -687,4 +689,23 @@ bool Player::canPlay(const Card &thisCard, const asn::Ability &a) const {
     }
 
     return true;
+}
+
+bool Player::canPlayCounter(const Card &card) const {
+    if (!card.isCounter())
+        return false;
+    if (card.type() == CardType::Event)
+        return true;
+    for (int i = 0; i < card.abilityCount(); ++i) {
+        const auto &a = card.ability(i);
+        if (a.type != asn::AbilityType::Act)
+            continue;
+        const auto &aa = std::get<asn::ActAbility>(a.ability);
+        if (aa.keywords.empty() || aa.keywords[0] != asn::Keyword::Backup)
+            continue;
+        if (canPlay(card, a))
+            return true;
+    }
+
+    return false;
 }

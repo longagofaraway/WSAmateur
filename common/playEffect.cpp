@@ -53,6 +53,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::FlipOver:
         co_await playFlipOver(std::get<asn::FlipOver>(e.effect));
         break;
+    case asn::EffectType::Backup:
+        playBackup(std::get<asn::Backup>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -654,4 +657,10 @@ Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
     for (int i = 0; i < count; ++i)
         for (const auto &effect: e.effect)
             co_await playEffect(effect);
+}
+
+void AbilityPlayer::playBackup(const asn::Backup &e) {
+    auto opponent = mPlayer->getOpponent();
+    auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
+    mPlayer->addAttributeBuff(asn::AttributeType::Power, charInBattle->pos(), e.power, 1);
 }

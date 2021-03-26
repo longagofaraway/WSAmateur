@@ -53,6 +53,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandPlayCard playCmd;
         cmd.command().UnpackTo(&playCmd);
         mGame->startAsyncTask(playCard(playCmd));
+    } else if (cmd.command().Is<CommandPlayCounter>()) {
+        CommandPlayCounter counterCmd;
+        cmd.command().UnpackTo(&counterCmd);
+        mGame->startAsyncTask(playCounter(counterCmd));
     } else if (cmd.command().Is<CommandSwitchStagePositions>()) {
         CommandSwitchStagePositions switchCmd;
         cmd.command().UnpackTo(&switchCmd);
@@ -366,6 +370,23 @@ Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
         co_await playClimax(cmd.handid());
 }
 
+Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
+    auto *hand = zone("hand");
+    auto card = hand->card(cmd.handid());
+    if (!card)
+        co_return;
+
+    if (card->type() != CardType::Char)
+        co_return;
+
+    clearExpectedComands();
+
+    triggerBackupAbility(card);
+    co_await mGame->checkTiming();
+
+    co_await mGame->continueFromDamageStep();
+}
+
 Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     ServerCardZone *hand = zone("hand");
     ServerCardZone *stage = zone("stage");
@@ -598,6 +619,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
 
 void ServerPlayer::counterStep() {
     addExpectedCommand(CommandTakeDamage::GetDescriptor()->name());
+    addExpectedCommand(CommandPlayCounter::GetDescriptor()->name());
     sendToBoth(EventCounterStep());
 }
 
@@ -846,6 +868,10 @@ ServerCard *ServerPlayer::oppositeCard(ServerCard *card) const {
         return nullptr;
 
     return opponent->zone("stage")->card(card->pos());
+}
+
+ServerPlayer* ServerPlayer::getOpponent() {
+    return mGame->opponentOfPlayer(mId);
 }
 
 asn::Ability TriggeredAbility::getAbility() const {

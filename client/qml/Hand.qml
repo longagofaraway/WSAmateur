@@ -16,6 +16,7 @@ ListView {
     property MulliganHeader mHeader: null
     property string moveDestination: "wr"
     property CardModel mModel: innerModel
+    property var mLastDragPosition: null
 
     width: length
     height: root.cardHeight
@@ -283,13 +284,15 @@ ListView {
                         }
                         let point = cardImgDelegate.mapToItem(handView, mouse.x, mouse.y);
                         if (point.y < -170 && !model.selected
-                                && (cardImgDelegate.cardType === "Climax" || cardImgDelegate.cardType === "Event")) {
+                                && (cardImgDelegate.cardType === "Climax" || cardImgDelegate.cardType === "Event"
+                                    || gGame.isCounterStep())) {
                             if (cardImgDelegate.cardType === "Climax")
                                 cardImgDelegate.rotation = -90;
                             setSelected(model.index, true);
                         }
                         else if (point.y >= -170 && model.selected
-                                 && (cardImgDelegate.cardType === "Climax" || cardImgDelegate.cardType === "Event")) {
+                                 && (cardImgDelegate.cardType === "Climax" || cardImgDelegate.cardType === "Event"
+                                     || gGame.isCounterStep())) {
                             if (cardImgDelegate.cardType === "Climax")
                                 cardImgDelegate.rotation = 0;
                             setSelected(model.index, false);
@@ -315,7 +318,15 @@ ListView {
                         }
                         dragActive = false;
                         if (model.selected) {
-                            startPlayingClimax(cardImgDelegate, model.code, model.index);
+                            if (cardImgDelegate.cardType === "Climax")
+                                startPlayingClimax(cardImgDelegate, model.code, model.index);
+                            else if (cardImgDelegate.cardType === "Event")
+                                console.log("not implemented");
+                            else if (gGame.isCounterStep()) {
+                                handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
+                                gGame.player.sendPlayCounter(model.index);
+                                return;
+                            }
                         }
                         cardImgDelegate.state = "";
                         mDropAnim.start();
@@ -496,7 +507,20 @@ ListView {
     }
 
     function getXForNewCard() { return handView.x + handDelegate.count * root.cardWidth * 2/3; }
-    function getXForCard(modelId) { return handView.x + getVisualIndexFromModelIndex(modelId) * root.cardWidth * 2/3; }
     function getYForNewCard() { return handView.y + getFanOffset(handDelegate.count); }
-    function getYForCard(modelId) { return handView.y + getFanOffset(getVisualIndexFromModelIndex(modelId)); }
+    function getXForCard(modelId) {
+        if (handView.mLastDragPosition !== null)
+            return handView.mLastDragPosition.x;
+
+        return handView.x + getVisualIndexFromModelIndex(modelId) * root.cardWidth * 2/3;
+    }
+    function getYForCard(modelId) {
+        if (handView.mLastDragPosition !== null) {
+            const y = handView.mLastDragPosition.y;
+            handView.mLastDragPosition = null;
+            return y;
+        }
+
+        return handView.y + getFanOffset(getVisualIndexFromModelIndex(modelId));
+    }
 }

@@ -80,6 +80,7 @@ public:
     Q_INVOKABLE void chooseCardOrPosition(int index, QString qzone, bool opponent = false);
     Q_INVOKABLE void sendChoice(int index);
     Q_INVOKABLE void playActAbility(int index);
+    Q_INVOKABLE void sendPlayCounter(int handId);
 
     void resetChoiceDialog();
 
@@ -117,6 +118,7 @@ private:
     bool canPlay(const Card &card) const;
     bool canPlay(const Card &thisCard, const asn::Ability &a) const;
     bool canPay(const Card &thisCard, const asn::CostItem &c) const;
+    bool canPlayCounter(const Card &card) const;
 
     void restoreUiState();
     void stopUiInteractions();

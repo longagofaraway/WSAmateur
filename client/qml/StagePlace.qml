@@ -73,7 +73,8 @@ ListView {
                         return;
                     if (drag.source.cardType === "Climax"
                         || drag.source.cardType === "Event"
-                        || drag.source.cardType === undefined)
+                        || drag.source.cardType === undefined
+                        || gGame.isCounterStep())
                         return;
                     if (drag.source.index === mIndex)
                         return;
@@ -217,12 +218,6 @@ ListView {
         }
     }
 
-    function getCardPos() {
-        console.log(mStageCard.x);
-        console.log(mStageCard.y);
-        console.log(stagePlace.x);
-        console.log(stagePlace.y);
-    }
     function getX() { return mStageCard === null ? stagePlace.x : mStageCard.x; }
     function getY() { return mStageCard === null ? stagePlace.y : mStageCard.y; }
 

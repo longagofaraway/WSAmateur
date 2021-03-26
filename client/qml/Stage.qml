@@ -56,7 +56,6 @@ Item {
     function getYForNewCard(pos) { return mPositions[pos].y; }
     function getXForCard(pos) { return mStagePlaces[pos].getX(); }
     function getYForCard(pos) { return mStagePlaces[pos].getY(); }
-    function getCardPos(pos) { mStagePlaces[pos].getCardPos(); }
     function addCard(code, pos, startZone, startPos) {
         if (startZone === "stage")
             throw "use special function";

@@ -290,6 +290,28 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
     }
 }
 
+void ServerPlayer::triggerBackupAbility(ServerCard *card) {
+    if (!card->isCounter())
+        return;
+
+    auto &abs = card->abilities();
+    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+        if (abs[i].ability.type != asn::AbilityType::Act)
+            continue;
+        const auto &actab = std::get<asn::ActAbility>(abs[i].ability.ability);
+        if (actab.keywords.empty() || actab.keywords[0] != asn::Keyword::Backup)
+            continue;
+
+        TriggeredAbility a;
+        a.card = CardImprint(card->zone()->name(), card->pos(), card);
+        a.type = ProtoCard;
+        a.abilityId = i;
+        mQueue.push_back(a);
+
+        return;
+    }
+}
+
 void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpp) {
     auto &abs = attCard->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {

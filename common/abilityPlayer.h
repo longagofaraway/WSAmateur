@@ -71,6 +71,7 @@ public:
     void playMoveWrToDeck(const asn::MoveWrToDeck &e);
     void playChangeState(const asn::ChangeState &e);
     Resumable playFlipOver(const asn::FlipOver &e);
+    void playBackup(const asn::Backup &e);
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);

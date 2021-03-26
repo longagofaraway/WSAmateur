@@ -78,6 +78,7 @@ public:
     int soul() const { return mSoul; }
     CardType type() const override { return mCardInfo->type(); }
     char color() const { return mCardInfo->color(); }
+    bool isCounter() const { return mCardInfo->isCounter(); }
     CardState state() const { return mState; }
     void setState(CardState state) { mState = state; }
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }

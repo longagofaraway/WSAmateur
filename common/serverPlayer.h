@@ -22,6 +22,7 @@ class ServerProtocolHandler;
 class CommandMulligan;
 class CommandClockPhase;
 class CommandPlayCard;
+class CommandPlayCounter;
 class CommandSwitchStagePositions;
 class CommandDeclareAttack;
 class CommandLevelUp;
@@ -52,6 +53,8 @@ class ServerPlayer
     AttackType mAttackType;
     int mLevel = 0;
 
+    std::vector<TriggeredAbility> mQueue;
+
 public:
     ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id);
 
@@ -67,6 +70,7 @@ public:
     void setAttackingCard(ServerCard *card) { mAttackingCard = card; }
     AttackType attackType() const { return mAttackType; }
     void setAttackType(AttackType type) { mAttackType = type; }
+    ServerPlayer* getOpponent();
 
     void clearExpectedComands();
     void addExpectedCommand(const std::string &command);
@@ -94,6 +98,7 @@ public:
     void moveTopDeck(std::string_view targetZoneName);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard &cmd);
+    Resumable playCounter(const CommandPlayCounter &cmd);
     Resumable playCharacter(const CommandPlayCard &cmd);
     Resumable playClimax(int handIndex);
     void switchPositions(const CommandSwitchStagePositions &cmd);
@@ -133,6 +138,7 @@ public:
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *attCard);
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
+    void triggerBackupAbility(ServerCard *card);
 
     bool canBePayed(ServerCard *thisCard, const asn::CostItem &c);
     bool canBePlayed(ServerCard *thisCard, const asn::Ability &a);
@@ -145,7 +151,4 @@ public:
 
     bool hasActivatedAbilities() const;
     Resumable checkTiming();
-
-private:
-    std::vector<TriggeredAbility> mQueue;
 };

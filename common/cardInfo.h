@@ -15,6 +15,7 @@ class CardInfo
     int mCost;
     int mSoul;
     char mColor;
+    bool mCounter;
     CardType mType;
     std::string mCode;
     std::string mName;
@@ -37,6 +38,8 @@ public:
     void setColor(char color) { mColor = color; }
     CardType type() const { return mType; }
     void setType(CardType type) { mType = type; }
+    bool isCounter() const { return mCounter; }
+    void setCounter(bool counter) { mCounter = counter; }
     const std::string& code() const { return mCode; }
     void setCode(const std::string &code) { mCode = code; }
     const std::string& name() const { return mName; }

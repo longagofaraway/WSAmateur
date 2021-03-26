@@ -21,7 +21,7 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="20" code="IMC/W43-127"/>
-        <card number="20" code="KGL/S79-009"/>
+        <card number="20" code="KGL/S79-010"/>
         <card number="20" code="KGL/S79-007"/>
         <card number="1" code="IMC/W43-046"/>
         <card number="1" code="IMC/W43-009"/>
@@ -245,6 +245,10 @@ void Game::counterStep() {
     QMetaObject::invokeMethod(this, "counterStep");
 }
 
+void Game::endCounterStep() {
+    QMetaObject::invokeMethod(this, "endCounterStep");
+}
+
 void Game::encoreStep() {
     QMetaObject::invokeMethod(this, "encoreStep");
 }
@@ -318,7 +322,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         //    sendGameCommand(CommandAttackPhase(), mOpponent->id());
     } else if (event->event().Is<EventAttackDeclarationStep>()) {
         //timing problems
-        //mOpponent->attackWithAll();
+        mOpponent->attackWithAll();
 
         sendGameCommand(CommandEncoreStep(), mOpponent->id());
     } else if (event->event().Is<EventCounterStep>()) {

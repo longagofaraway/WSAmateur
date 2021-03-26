@@ -59,6 +59,7 @@ public:
     Q_INVOKABLE void sendTakeDamageCommand();
     Q_INVOKABLE void sendEncoreCommand();
     Q_INVOKABLE void sendEndTurn();
+    Q_INVOKABLE bool isCounterStep() { return mCurrentPhase == asn::Phase::CounterStep; }
     Q_INVOKABLE QQuickItem* getZone(QString name, bool opponent) {
         auto zoneName = name.toStdString();
         if (!opponent) {
@@ -88,6 +89,7 @@ public:
     void attackDeclarationStep();
     void attackDeclarationStepFinished();
     void counterStep();
+    void endCounterStep();
     void encoreStep();
     void pauseEncoreStep();
     void discardTo7();

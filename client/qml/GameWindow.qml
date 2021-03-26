@@ -52,6 +52,7 @@ Item {
 
         anchors.fill: parent
 
+        Hand{}
         MainButton {
             id: mainButton
             x: root.width * 0.75
@@ -220,15 +221,18 @@ Item {
             mainButton.state = "active";
             mainButton.mText = "Take damage";
             mainButton.mSubText = "";
-            mainButton.clicked.connect(endCounterStep);
+            mainButton.clicked.connect(sendTakeDamage);
+        }
+
+        function sendTakeDamage() {
+            endCounterStep();
+            gGame.sendTakeDamageCommand();
         }
 
         function endCounterStep() {
-            mainButton.clicked.disconnect(endCounterStep);
+            mainButton.clicked.disconnect(sendTakeDamage);
             startHelpTextDestruction();
             mainButton.state = "oppTurn";
-
-            gGame.sendTakeDamageCommand();
         }
 
         function showText(mainText, subText) {

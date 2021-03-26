@@ -10,6 +10,8 @@ class CardDatabase
     std::unordered_map<std::string, std::shared_ptr<CardInfo>> mDb;
 
     CardDatabase();
+    CardDatabase(const CardDatabase&) = delete;
+    CardDatabase& operator=(const CardDatabase&) = delete;
 public:
     static CardDatabase& get();
 
