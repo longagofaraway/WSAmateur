@@ -8,15 +8,20 @@
 class QQuickItem;
 
 class CardModel;
+class Player;
 
 class CardZone
 {
 protected:
+    Player *mPlayer;
     CardModel mCardsModel;
     std::string mName;
 
 public:
+    CardZone(Player *player) : mPlayer(player) {}
     virtual ~CardZone() {}
+
+    Player* player() { return mPlayer; }
 
     virtual const std::string& name() const { return mName; }
     virtual QQuickItem* visualItem() const = 0;

@@ -31,7 +31,7 @@ QString qmlModuleFromZoneName(std::string_view v) {
 }
 
 CommonCardZone::CommonCardZone(Player *player, Game *game, std::string_view name)
-    : mPlayer(player), mGame(game) {
+    : CardZone(player), mGame(game) {
     mName = name;
     QQmlComponent component(mGame->engine(), "qrc:/qml/" + qmlModuleFromZoneName(name) + ".qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame);

@@ -663,4 +663,5 @@ void AbilityPlayer::playBackup(const asn::Backup &e) {
     auto opponent = mPlayer->getOpponent();
     auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
     mPlayer->addAttributeBuff(asn::AttributeType::Power, charInBattle->pos(), e.power, 1);
+    mPlayer->checkOnBackup(thisCard().card);
 }

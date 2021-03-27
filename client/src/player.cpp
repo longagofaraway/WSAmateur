@@ -74,7 +74,8 @@ void Player::setDeck(const std::string &deck) {
             cardCount++;
     }
 
-    zone("deck")->model().addCards(cardCount);
+    auto deckZone = zone("deck");
+    deckZone->model().addCards(cardCount, deckZone);
 }
 
 Player* Player::getOpponent() const {
@@ -237,7 +238,7 @@ void Player::mainPhase() {
         return;
 
     mGame->mainPhase();
-    mHand->mainPhase();
+    mHand->playTiming();
     mStage->mainPhase();
     auto &cards = mHand->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
@@ -306,10 +307,15 @@ void Player::clockPhaseFinished() {
 }
 
 void Player::mainPhaseFinished() {
-    mHand->endMainPhase();
+    mHand->endPlayTiming();
     mStage->endMainPhase();
     CommandAttackPhase cmd;
     sendGameCommand(cmd);
+}
+
+void Player::counterStepFinished() {
+    mHand->endPlayTiming();
+    mGame->endCounterStep();
 }
 
 void Player::sendClimaxPhaseCommand() {
@@ -322,12 +328,13 @@ void Player::sendClimaxPhaseCommand() {
     // 3. Player sends 'play climax' command. Climax effects are resolved.
     // If there are 'At the start of climax phase' abilities that mess with card count in hand or
     // smth like that we are fcked;
-    mHand->endMainPhase();
+    mHand->endPlayTiming();
     mStage->endMainPhase();
     sendGameCommand(CommandClimaxPhase());
 }
 
 void Player::sendTakeDamageCommand() {
+    counterStepFinished();
     sendGameCommand(CommandTakeDamage());
 }
 
@@ -512,7 +519,7 @@ void Player::counterStep() {
     if (mOpponent)
         return;
 
-    mHand->mainPhase();
+    mHand->playTiming();
     mGame->counterStep();
     auto &cards = mHand->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
@@ -561,7 +568,7 @@ void Player::refresh() {
     auto deck = zone("deck");
     for (int i = wr->model().count() - 1; i >= 0; --i) {
         wr->model().removeCard(i);
-        deck->model().addCard();
+        deck->model().addCard(deck);
     }
 }
 
@@ -636,12 +643,16 @@ void Player::resetChoiceDialog() {
 }
 
 void Player::sendPlayCounter(int handId) {
-    mHand->endMainPhase();
-    mGame->endCounterStep();
+    counterStepFinished();
 
     CommandPlayCounter cmd;
     cmd.set_handid(handId);
     sendGameCommand(cmd);
+}
+
+void Player::addCard(QString code, QString zoneName) {
+    auto pzone = zone(zoneName.toStdString());
+    pzone->model().addCard(code.toStdString(), pzone);
 }
 
 void Player::testAction()

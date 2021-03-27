@@ -516,7 +516,7 @@ void Player::payCostChoice() {
 }
 
 const Card &Player::correspondingCard(const ActivatedAbility &abilityDescriptor) {
-    static Card dummyCard;
+    static Card dummyCard(zone("deck"));
     auto pzone = zone(abilityDescriptor.zone);
     if (pzone->model().count() <= abilityDescriptor.cardId)
         return dummyCard;

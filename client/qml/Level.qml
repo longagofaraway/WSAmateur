@@ -118,7 +118,7 @@ ListView {
         return (levelZone.count - 1) * mMargin + root.cardHeight;
     }
 
-    function addCard(code) { levelZone.mModel.addCard(code); }
+    function addCard(code) { gGame.getPlayer(opponent).addCard(code, "level"); }
     function removeCard(index) { levelZone.mModel.removeCard(index); }
     function getXForNewCard() { return levelZone.x; }
     function getYForNewCard() {

@@ -22,6 +22,7 @@ public:
     virtual const std::vector<TriggerIcon>& triggers() const = 0;
     virtual const std::vector<std::string>& traits() const = 0;
     virtual CardType type() const = 0;
+    virtual bool levelGtPlayerLevel() const = 0;
 };
 
 enum StageRow {
@@ -83,6 +84,7 @@ public:
     void setState(CardState state) { mState = state; }
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
+    bool levelGtPlayerLevel() const override;
 
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional = false);

@@ -8,10 +8,10 @@
 #include <QDebug>
 
 Stage::Stage(Player *player, Game *game)
-    : mPlayer(player), mGame(game) {
-    mCardsModel.addCards(5);
-
+    : CardZone(player), mGame(game) {
     mName = "stage";
+    mCardsModel.addCards(5, this);
+
     QQmlComponent component(mGame->engine(), "qrc:/qml/Stage.qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame);
     context->setContextProperty("innerModel", QVariant::fromValue(&mCardsModel));

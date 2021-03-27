@@ -7,7 +7,7 @@
 #include "game.h"
 
 Hand::Hand(Player *player, Game *game)
-    : mPlayer(player), mGame(game) {
+    : CardZone(player), mGame(game) {
     mName = "hand";
     QQmlComponent component(mGame->engine(), "qrc:/qml/Hand.qml");
     QQmlContext *context = new QQmlContext(mGame->context(), mGame);
@@ -20,11 +20,11 @@ Hand::Hand(Player *player, Game *game)
 }
 
 void Hand::addCard() {
-    mCardsModel.addCard();
+    mCardsModel.addCard(this);
 }
 
 void Hand::addCard(const std::string &code) {
-    mCardsModel.addCard(code);
+    mCardsModel.addCard(code, this);
 }
 
 void Hand::startMulligan() {
@@ -43,11 +43,11 @@ void Hand::endClockPhase() {
     QMetaObject::invokeMethod(mQmlHand, "endClockPhase");
 }
 
-void Hand::mainPhase() {
-    mQmlHand->setProperty("state", "main");
+void Hand::playTiming() {
+    mQmlHand->setProperty("state", "playTiming");
 }
 
-void Hand::endMainPhase() {
+void Hand::endPlayTiming() {
     mQmlHand->setProperty("state", "");
     QMetaObject::invokeMethod(mQmlHand, "glowAllCards", Q_ARG(QVariant, false));
 }

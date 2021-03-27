@@ -87,7 +87,7 @@ ListView {
 
     function addCard(code, handIndex) {
         climaxZone.mHandIndex = handIndex;
-        climaxZone.mModel.addCard(code);
+        gGame.getPlayer(opponent).addCard(code, "climax");
     }
     function removeCard(index) { climaxZone.mModel.removeCard(index); }
     function getXForNewCard() { return climaxZone.x; }

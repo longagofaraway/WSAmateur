@@ -96,7 +96,7 @@ Card {
 
     function addCard(code) {
         memory.mSource = code;
-        memory.mModel.addCard(code);
+        gGame.getPlayer(opponent).addCard(code, "memory");
     }
     function removeCard(index) { memory.mModel.removeCard(index); }
     function getXForNewCard() { return memory.x; }

@@ -14,7 +14,6 @@ class Game;
 
 class Hand: public CardZone
 {
-    Player *mPlayer;
     Game *mGame;
     QQuickItem *mQmlHand;
 
@@ -28,8 +27,8 @@ public:
     void endMulligan();
     void clockPhase();
     void endClockPhase();
-    void mainPhase();
-    void endMainPhase();
+    void playTiming();
+    void endPlayTiming();
     void discardCard();
     void deactivateDiscarding();
 };

@@ -7,7 +7,6 @@ class Game;
 
 class CommonCardZone: public CardZone
 {
-    Player *mPlayer;
     Game *mGame;
     QQuickItem *mQmlObject;
 

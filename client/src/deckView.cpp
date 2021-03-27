@@ -6,7 +6,7 @@
 #include "game.h"
 
 DeckView::DeckView(Player *player, Game *game)
-    : mPlayer(player) {
+    : CardZone(player) {
     mName = "deckView";
     QQmlComponent component(game->engine(), "qrc:/qml/CardsView.qml");
     QQmlContext *context = new QQmlContext(game->context(), game);

@@ -14,7 +14,6 @@ ListView {
     property real length: getHandLength(count)
     property int dragIndex: -1
     property MulliganHeader mHeader: null
-    property string moveDestination: "wr"
     property CardModel mModel: innerModel
     property var mLastDragPosition: null
 
@@ -262,7 +261,7 @@ ListView {
                             gGame.getPlayer(opponent).sendDiscardCard(model.index);
                             glowAllCards(false);
                             handView.state = "";
-                        } else if (handView.state !== "main") {
+                        } else if (handView.state !== "playTiming") {
                             if (!model.glow)
                                 return;
                             model.selected = !model.selected;
@@ -272,7 +271,7 @@ ListView {
 
                     // we need manual drag because I couldn't adjust center of the card to the cursor
                     onPositionChanged: {
-                        if (handView.state !== "main" || !model.glow)
+                        if (handView.state !== "playTiming" || !model.glow)
                             return;
                         if (!dragActive) {
                             handView.dragIndex = cardDelegate.visualIndex;
@@ -494,8 +493,8 @@ ListView {
     }
 
     function addCard(code) {
-        if (hidden) handView.mModel.addCard();
-        else handView.mModel.addCard(code);
+        if (hidden) gGame.getPlayer(opponent).addCard("", "hand");
+        else gGame.getPlayer(opponent).addCard(code, "hand");
     }
     function removeCard(index) { handView.mModel.removeCard(index); }
 

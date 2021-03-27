@@ -9,7 +9,6 @@ class Game;
 
 class DeckView : public CardZone
 {
-    Player *mPlayer;
     QQuickItem *mQmlObject;
 
 public:
@@ -21,7 +20,7 @@ public:
     void setCards(const T &arr) {
         mCardsModel.clear();
         for (const auto &str: arr)
-            mCardsModel.addCard(str);
+            mCardsModel.addCard(str, this);
         mQmlObject->setProperty("visible", true);
     }
 

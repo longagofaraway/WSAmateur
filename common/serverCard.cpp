@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "serverCardZone.h"
+#include "serverPlayer.h"
 
 ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone)
     : mCardInfo(info), mZone(zone) {
@@ -49,6 +50,10 @@ int ServerCard::pos() const {
 
 ServerPlayer* ServerCard::player() const {
     return mZone->player();
+}
+
+bool ServerCard::levelGtPlayerLevel() const {
+    return mLevel > mZone->player()->level();
 }
 
 void ServerCard::addAttrBuff(asn::AttributeType attr, int delta, int duration) {

@@ -300,7 +300,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         event->event().UnpackTo(&ev);
         for (int i = 0; i < ev.codes_size(); ++i) {
             mOpponent->zone("deck")->model().removeCard(mOpponent->zone("deck")->model().count());
-            hand.addCard(ev.codes(i));
+            hand.addCard(ev.codes(i), mOpponent->zone("hand"));
         }
         CommandMulligan cmd;
         //cmd.add_ids(0);
@@ -339,7 +339,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         EventMoveCard ev;
         event->event().UnpackTo(&ev);
         if (ev.startzone() == "deck" && ev.targetzone() == "hand") {
-            hand.addCard(ev.code());
+            hand.addCard(ev.code(), mOpponent->zone("hand"));
         }
     } else if (event->event().Is<EventDiscardDownTo7>()) {
         CommandMoveCard cmd;

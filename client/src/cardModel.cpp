@@ -18,27 +18,23 @@ void CardModel::clear() {
     emit countChanged();
 }
 
-void CardModel::addCard() {
+void CardModel::addCard(CardZone *zone) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mCards.emplace_back(Card());
+    mCards.emplace_back(Card(zone));
     endInsertRows();
     emit countChanged();
 }
 
-void CardModel::addCard(QString code) {
-    addCard(code.toStdString());
-}
-
-void CardModel::addCard(const std::string &code) {
+void CardModel::addCard(const std::string &code, CardZone *zone) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mCards.emplace_back(code);
+    mCards.emplace_back(code, zone);
     endInsertRows();
     emit countChanged();
 }
 
-void CardModel::addCards(int count) {
+void CardModel::addCards(int count, CardZone *zone) {
     for (int i = 0; i < count; ++i)
-        addCard();
+        addCard(zone);
 }
 
 void CardModel::setCard(int row, QString code) {

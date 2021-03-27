@@ -135,7 +135,7 @@ ListView {
         }
     }
 
-    function addCard(code) { clockView.mModel.addCard(code); }
+    function addCard(code) { gGame.getPlayer(opponent).addCard(code, "clock"); }
     function removeCard(index) { clockView.mModel.removeCard(index); }
     function getXForNewCard() { return clockView.x + clockView.count * mMargin; }
     function getYForNewCard() { return clockView.y; }

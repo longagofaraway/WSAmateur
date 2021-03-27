@@ -71,6 +71,7 @@ public:
     AttackType attackType() const { return mAttackType; }
     void setAttackType(AttackType type) { mAttackType = type; }
     ServerPlayer* getOpponent();
+    int level() const { return mLevel; }
 
     void clearExpectedComands();
     void addExpectedCommand(const std::string &command);
@@ -138,6 +139,7 @@ public:
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *attCard);
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
+    void checkOnBackup(ServerCard *card);
     void triggerBackupAbility(ServerCard *card);
 
     bool canBePayed(ServerCard *thisCard, const asn::CostItem &c);

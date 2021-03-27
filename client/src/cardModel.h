@@ -8,6 +8,7 @@
 
 #include "card.h"
 
+class CardZone;
 
 class CardModel : public QAbstractListModel
 {
@@ -35,10 +36,9 @@ public:
     CardModel(QObject *parent = 0);
 
     std::vector<Card>& cards() { return mCards; }
-    void addCards(int count);
-    void addCard(const std::string &code);
-    Q_INVOKABLE void addCard();
-    Q_INVOKABLE void addCard(QString code);
+    void addCards(int count, CardZone *zone);
+    void addCard(const std::string &code, CardZone *zone);
+    void addCard(CardZone *zone);
     Q_INVOKABLE void setCard(int row, QString code);
     Q_INVOKABLE void swapCards(int from, int to);
     Q_INVOKABLE void removeCard(int row);

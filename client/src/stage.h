@@ -8,7 +8,6 @@ class Game;
 
 class Stage: public CardZone
 {
-    Player *mPlayer;
     Game *mGame;
     QQuickItem *mQmlObject;
 

@@ -12,6 +12,8 @@
 #include "serverCard.h"
 #include "abilityModel.h"
 
+class CardZone;
+
 class Card : public CardBase {
     std::string mCode;
     bool mGlow = false;
@@ -28,14 +30,16 @@ class Card : public CardBase {
     std::unique_ptr<AbilityModel> mAbilityModel;
 
     std::shared_ptr<CardInfo> mInfo;
+    CardZone *mZone;
 
 public:
-    Card() = default;
+    Card(CardZone *zone) : mZone(zone) {}
     Card(const Card&) = delete;
+    Card& operator=(const Card&) = delete;
     Card(Card&&) = default;
     Card& operator=(Card &&other) = default;
 
-    Card(const std::string &code);
+    Card(const std::string &code, CardZone *zone);
 
     void init(const std::string &code);
     void clear();
@@ -64,6 +68,8 @@ public:
     QString qcode() const { return QString::fromStdString(mCode); }
     const std::string& code() const { return mCode; }
     const std::string& name() const override { return mInfo->name(); }
+    bool levelGtPlayerLevel() const;
+
     QString text(int abilityId) const { return mAbilityModel->text(abilityId); }
     AbilityModel* textModel() { return mAbilityModel.get(); }
     int abilityCount() const { return mAbilityModel->count(); }

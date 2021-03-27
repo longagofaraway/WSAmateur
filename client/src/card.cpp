@@ -4,8 +4,10 @@
 
 #include "cardDatabase.h"
 #include "cardInfo.h"
+#include "cardZone.h"
+#include "player.h"
 
-Card::Card(const std::string &code) : mCode(code) {
+Card::Card(const std::string &code, CardZone *zone) : mCode(code), mZone(zone) {
     if (mCode.empty())
         return;
 
@@ -70,6 +72,10 @@ QString Card::qtype() const {
         break;
     }
     return "";
+}
+
+bool Card::levelGtPlayerLevel() const {
+    return mLevel > mZone->player()->level();
 }
 
 void Card::addAbility(const asn::Ability &a) {

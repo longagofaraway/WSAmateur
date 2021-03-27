@@ -111,14 +111,13 @@ Card {
             }
             mView.mOpponent = opponent;
             mView.closeSignal.connect(() => mView.visible = !mView.visible);
-            return;
         }
         mView.visible = open;
     }
 
     function addCard(code) {
         waitingRoom.mSource = code;
-        waitingRoom.mModel.addCard(code);
+        gGame.getPlayer(opponent).addCard(code, "wr");
     }
     function removeCard(index) {
         waitingRoom.mModel.removeCard(index);

@@ -60,13 +60,16 @@ public:
     Player* getOpponent() const;
 
     int id() const { return mId; }
+    int level() const { return mLevel; }
     CardZone* zone(std::string_view name) const;
+
     void processGameEvent(const std::shared_ptr<GameEvent> event);
     void sendGameCommand(const google::protobuf::Message &command);
 
     void mulliganFinished();
     void clockPhaseFinished();
     void mainPhaseFinished();
+    void counterStepFinished();
     void sendClimaxPhaseCommand();
     void sendTakeDamageCommand();
     void sendEncoreCommand();
@@ -81,6 +84,7 @@ public:
     Q_INVOKABLE void sendChoice(int index);
     Q_INVOKABLE void playActAbility(int index);
     Q_INVOKABLE void sendPlayCounter(int handId);
+    Q_INVOKABLE void addCard(QString code, QString zoneName);
 
     void resetChoiceDialog();
 

@@ -225,7 +225,6 @@ Item {
         }
 
         function sendTakeDamage() {
-            endCounterStep();
             gGame.sendTakeDamageCommand();
         }
 
