@@ -10,6 +10,9 @@ void ServerPlayer::endOfTurnEffectValidation() {
         auto card = stage->card(i);
         if (!card)
             continue;
+
+        card->setTriggerCheckTwice(false);
+
         auto oldAttrs = card->attributes();
         card->validateBuffs();
         sendChangedAttrs(card, oldAttrs);

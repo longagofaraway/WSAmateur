@@ -451,6 +451,7 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::PutRestedInSameSlot:
     case EffectType::SideAttackWithoutPenalty:
     case EffectType::Standby:
+        break;
     default:
         throw std::runtime_error("wrong effect type");
     }

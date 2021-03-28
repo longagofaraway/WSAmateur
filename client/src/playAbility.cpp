@@ -450,7 +450,7 @@ void Player::stopUiInteractions() {
     switch (mGame->phase()) {
     case asn::Phase::MainPhase:
         if (mActivePlayer) {
-            mHand->endMainPhase();
+            mHand->endPlayTiming();
             mStage->endMainPhase();
             mGame->pauseMainPhase();
         }
@@ -479,7 +479,7 @@ void Player::restoreUiState() {
                     mHand->model().setGlow(i, true);
             }
 
-            mHand->mainPhase();
+            mHand->playTiming();
             mStage->mainPhase();
             mGame->mainPhase();
         }

@@ -56,6 +56,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::Backup:
         playBackup(std::get<asn::Backup>(e.effect));
         break;
+    case asn::EffectType::TriggerCheckTwice:
+        playTriggerCheckTwice();
+        break;
     default:
         assert(false);
         break;
@@ -664,4 +667,8 @@ void AbilityPlayer::playBackup(const asn::Backup &e) {
     auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
     mPlayer->addAttributeBuff(asn::AttributeType::Power, charInBattle->pos(), e.power, 1);
     mPlayer->checkOnBackup(thisCard().card);
+}
+
+void AbilityPlayer::playTriggerCheckTwice() {
+    thisCard().card->setTriggerCheckTwice(true);
 }

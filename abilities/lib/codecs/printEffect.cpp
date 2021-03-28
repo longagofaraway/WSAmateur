@@ -371,6 +371,10 @@ std::string printBackup(const Backup &e) {
     return s;
 }
 
+std::string printTriggerCheckTwice() {
+    return "during that attack, perform a trigger check 2 times on the trigger step ";
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -419,6 +423,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::Backup:
         s += printBackup(std::get<Backup>(e.effect));
+        break;
+    case EffectType::TriggerCheckTwice:
+        s += printTriggerCheckTwice();
         break;
     }
 

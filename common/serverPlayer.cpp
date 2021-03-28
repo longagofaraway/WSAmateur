@@ -596,6 +596,20 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
 
 Resumable ServerPlayer::triggerStep(int pos) {
     sendPhaseEvent(asn::Phase::TriggerStep);
+
+    co_await performTriggerStep(pos);
+    if (mAttackingCard->triggerCheckTwice()) {
+        co_await performTriggerStep(pos);
+        mAttackingCard->setTriggerCheckTwice(false);
+    }
+
+    if (attackType() == FrontAttack)
+        mGame->opponentOfPlayer(mId)->counterStep();
+    else
+        co_await mGame->continueFromDamageStep();
+}
+
+Resumable ServerPlayer::performTriggerStep(int pos) {
     moveTopDeck("res");
     auto card = zone("res")->card(0);
     // end of game
@@ -610,11 +624,6 @@ Resumable ServerPlayer::triggerStep(int pos) {
     moveCard("res", 0, "stock");
 
     co_await mGame->checkTiming();
-
-    if (attackType() == FrontAttack)
-        mGame->opponentOfPlayer(mId)->counterStep();
-    else
-        co_await mGame->continueFromDamageStep();
 }
 
 void ServerPlayer::counterStep() {

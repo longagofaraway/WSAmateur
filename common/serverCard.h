@@ -57,6 +57,8 @@ class ServerCard : public CardBase
     int mLevel;
     CardState mState = StateStanding;
 
+    bool mTriggerCheckTwice = false;
+
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
     ServerCard(int pos, ServerCardZone *zone);
@@ -85,6 +87,9 @@ public:
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
     bool levelGtPlayerLevel() const override;
+
+    bool triggerCheckTwice() const { return mTriggerCheckTwice; }
+    void setTriggerCheckTwice(bool t) { mTriggerCheckTwice = t; }
 
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional = false);

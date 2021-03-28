@@ -113,6 +113,7 @@ public:
     void attackDeclarationStep();
     Resumable declareAttack(const CommandDeclareAttack &cmd);
     Resumable triggerStep(int pos);
+    Resumable performTriggerStep(int pos);
     void counterStep();
     Resumable damageStep();
     Resumable levelUp();
