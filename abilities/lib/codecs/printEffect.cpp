@@ -189,6 +189,7 @@ std::string printMoveCard(const MoveCard &e) {
 
     if (e.executor == Player::Opponent)
         s += "your opponent ";
+
     if (e.to[0].pos == Position::SlotThisWasIn)
         s += "return";
     else if (e.from.zone == Zone::Hand)
@@ -202,7 +203,8 @@ std::string printMoveCard(const MoveCard &e) {
     s += " ";
 
 
-    if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards) {
+    if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards
+            || e.target.type == TargetType::MentionedCards) {
         if ((gChosenCardsNumber.mod == NumModifier::ExactMatch ||
             gChosenCardsNumber.mod == NumModifier::UpTo) &&
             gChosenCardsNumber.value == 1) {
@@ -245,6 +247,9 @@ std::string printMoveCard(const MoveCard &e) {
             s += "on ";
             if (e.to[i].pos == Position::NotSpecified)
                 s += "any position of ";
+        } else if (e.to[i].zone == Zone::Deck) {
+            if (e.to[i].pos == Position::Top)
+                s += "on the top of ";
         } else {
             s += "into ";
         }
@@ -257,6 +262,9 @@ std::string printMoveCard(const MoveCard &e) {
         else if (e.to[i].owner == Player::Opponent)
             s += "your opponent's ";
         s += printZone(e.to[i].zone) + " ";
+
+        if (e.order == Order::Any)
+            s += "in any order ";
     }
 
     return s;
@@ -375,6 +383,31 @@ std::string printTriggerCheckTwice() {
     return "during that attack, perform a trigger check 2 times on the trigger step ";
 }
 
+std::string printLook(const Look &e) {
+    std::string s = "look at ";
+
+    if (e.number.mod != NumModifier::UpTo)
+        s += "the top ";
+
+    if (!(e.number.mod == NumModifier::ExactMatch && e.number.value == 1))
+        s += printNumber(e.number);
+
+    s += "card";
+    if (e.number.value > 1)
+        s += "s";
+    s += " ";
+
+    if (e.number.mod != NumModifier::UpTo)
+        s += "of ";
+    else
+        s += "from the top of ";
+
+    s += printPlayer(e.place.owner);
+    s += printZone(e.place.zone) + " ";
+
+    return s;
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -426,6 +459,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::TriggerCheckTwice:
         s += printTriggerCheckTwice();
+        break;
+    case EffectType::Look:
+        s += printLook(std::get<Look>(e.effect));
         break;
     }
 

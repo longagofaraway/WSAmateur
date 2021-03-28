@@ -94,7 +94,7 @@ MoveCard parseMoveCard(const QJsonObject &json) {
     if (json.contains("order"))
         e.order = static_cast<Order>(json["order"].toInt());
     else
-        e.order = Order::Any;
+        e.order = Order::NotSpecified;
 
     return e;
 }
