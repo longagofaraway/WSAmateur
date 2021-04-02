@@ -53,9 +53,10 @@ std::string printAttributeGain(const AttributeGain &e) {
     if (!gAttributeGainChaining) {
         switch (e.target.type) {
         case TargetType::ChosenCards:
-            if (gChosenCardsNumber.mod == NumModifier::ExactMatch &&
-                gChosenCardsNumber.value == 1) {
+            if (gChosenCardsNumber.value == 1) {
                 res += "that character gets ";
+            } else if (gChosenCardsNumber.value > 1) {
+                res += "they get ";
             }
             break;
         case TargetType::ThisCard:

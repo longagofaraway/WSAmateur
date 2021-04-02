@@ -405,7 +405,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-012_1.txt");
+    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-012_2.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

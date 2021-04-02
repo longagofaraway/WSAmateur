@@ -103,10 +103,37 @@ int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place 
         if (!mandatory)
             mAbilityList->activateCancel(mAbilityList->activeId(), true);
     } else {
-        mGame->pause(800);
+        mGame->pause(500);
         sendGameCommand(CommandCancelEffect());
     }
     return eligibleCount;
+}
+
+void Player::sendChooseCard(const asn::ChooseCard &e) {
+    int count = 0;
+    CardZone *from;
+    if (e.placeType == asn::PlaceType::Selection) {
+        from = zone("view");
+    } else {
+        if (e.place->owner == asn::Player::Player)
+            from = zone(asnZoneToString(e.place->zone));
+        else if (e.place->owner == asn::Player::Opponent)
+            from = mGame->opponent()->zone(asnZoneToString(e.place->zone));
+    }
+
+    CommandChooseCard cmd;
+    auto zoneName = from->name();
+    if (zoneName == "deckView")
+        zoneName = "deck";
+    cmd.set_zone(zoneName);
+    cmd.set_owner(e.place->owner == asn::Player::Player ? ProtoPlayer : ProtoOpponent);
+    const auto &cards = from->cards();
+    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
+        if (cards[i].selected()) {
+            cmd.add_ids(i);
+        }
+    }
+    sendGameCommand(cmd);
 }
 
 void Player::dehighlightCards(const asn::Place &place) {
@@ -457,8 +484,14 @@ void Player::playAbility(int index) {
                         cmd.add_codes(codes[i].toStdString());
                     sendGameCommand(cmd);
                     QMetaObject::invokeMethod(view->visualItem(), "clear");
+                    doneChoosing();
                 }
             }
+        } else if (std::holds_alternative<asn::ChooseCard>(ab.effect)) {
+            const auto &chooseEffect = std::get<asn::ChooseCard>(ab.effect);
+            if (chooseEffect.placeType == asn::PlaceType::SpecificPlace)
+                sendChooseCard(chooseEffect);
+            doneChoosing();
         } else {
             sendGameCommand(CommandPlayEffect());
         }
@@ -630,6 +663,7 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
     else
         pzone = mGame->opponent()->zone(qzone.toStdString());
 
+    // someday we'll need to count selected and highlighted in all needed zones
     int selected = pzone->numOfSelectedCards();
     int highlighted = pzone->numOfHighlightedCards();
 
@@ -656,8 +690,9 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
     }
 
     if (number->value != selected && selected < highlighted) {
-        if (number->mod == asn::NumModifier::UpTo)
-            mAbilityList->activatePlay(activeId, true, "Choose");
+        if (number->mod == asn::NumModifier::UpTo) {
+            mAbilityList->activatePlay(activeId, selected != 0, "Choose");
+        }
         return;
     }
 

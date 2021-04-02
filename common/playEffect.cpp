@@ -124,9 +124,9 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
                 if ((spec->number.mod == asn::NumModifier::ExactMatch &&
                     spec->number.value != chooseCmd.ids_size()) ||
                     (spec->number.mod == asn::NumModifier::AtLeast &&
-                     spec->number.value < chooseCmd.ids_size()) ||
+                     spec->number.value > chooseCmd.ids_size()) ||
                     (spec->number.mod == asn::NumModifier::UpTo &&
-                     spec->number.value > chooseCmd.ids_size()))
+                     spec->number.value < chooseCmd.ids_size()))
                 continue;
             }
             //TODO: add checks

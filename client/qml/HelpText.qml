@@ -17,30 +17,31 @@ Item {
     RadialGradient {
         anchors.fill: parent
         horizontalRadius: width
-        verticalRadius: 80
+        verticalRadius: 100
         gradient: Gradient {
             GradientStop { position: 0.0; color: "white" }
             GradientStop { position: 0.5; color: "#00FFFFFF" }
         }
     }
-    Row {
-        anchors.centerIn: parent
-        spacing: 10
     Text {
         id: mainText
+        anchors.centerIn: parent
+        width: 800
         text: mText
         color: "black"
         font.pointSize: 25
         font.bold: true
+        horizontalAlignment: Text.AlignHCenter
+        fontSizeMode: Text.HorizontalFit
     }
     Text {
-        anchors.bottom: mainText.bottom
-        anchors.bottomMargin: 5
+        anchors.top: mainText.bottom
+        anchors.horizontalCenter: mainText.horizontalCenter
         text: mHelpText
         color: "black"
         font.pointSize: 12
         font.bold: false
-    }
+        horizontalAlignment: Text.AlignHCenter
     }
 
     NumberAnimation on opacity { to: 1; duration: 100 }
