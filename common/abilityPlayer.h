@@ -2,11 +2,14 @@
 
 #include <vector>
 
+#include "gameEvent.pb.h"
+
 #include "abilities.h"
 #include "cardImprint.h"
 #include "coroutineTask.h"
 
 class ServerPlayer;
+class CommandSwitchPositions;
 
 class AbilityPlayer {
     ServerPlayer *mPlayer;
@@ -20,6 +23,8 @@ class AbilityPlayer {
     std::vector<CardImprint> mLastMovedCards;
     CardImprint mThisCard;
     std::optional<asn::Cost> mCost;
+
+    std::optional<GameCommand> mLastCommand;
 
 public:
     AbilityPlayer(ServerPlayer *player) : mPlayer(player) {}
@@ -56,7 +61,8 @@ public:
 
     void playContAbility(const asn::ContAbility &a, bool &active);
     void playContEffect(const asn::Effect &e);
-    Resumable playEffect(const asn::Effect &e);
+    Resumable playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect = {});
+    Resumable playEffects(const std::vector<asn::Effect> &e);
     Resumable playNonMandatory(const asn::NonMandatory &e);
     Resumable playChooseCard(const asn::ChooseCard &e);
     Resumable playMoveCard(const asn::MoveCard &e);
@@ -73,11 +79,13 @@ public:
     Resumable playFlipOver(const asn::FlipOver &e);
     void playBackup(const asn::Backup &e);
     void playTriggerCheckTwice();
+    Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {});
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
     bool evaluateConditionHaveCard(const asn::ConditionHaveCard &c);
     bool evaluateConditionAnd(const asn::ConditionAnd &c);
 
+    void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
 };

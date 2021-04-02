@@ -216,6 +216,14 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventRemoveAbility ev;
         event->event().UnpackTo(&ev);
         processRemoveAbility(ev);
+    } else if (event->event().Is<EventLookTopDeck>()) {
+        EventLookTopDeck ev;
+        event->event().UnpackTo(&ev);
+        lookTopDeck(ev);
+    } else if (event->event().Is<EventLook>()) {
+        EventLook ev;
+        event->event().UnpackTo(&ev);
+        processLook(ev);
     }
 }
 
@@ -419,7 +427,19 @@ void Player::moveCard(const EventMoveCard &event) {
         dontFinishAction = true;
     }
 
-    createMovingCard(code, event.startzone(), event.startid(), event.targetzone(), event.targetid(), false, dontFinishAction);
+    int startId = event.startid();
+    auto startZoneStr = event.startzone();
+    auto deckView = zone("view");
+    if (event.startzone() == "deck" && deckView->model().count()) {
+        auto deck = zone("deck");
+        if (deck->model().count() - 1 - event.startid() < deckView->model().count()) {
+            startId = deck->model().count();
+            startZoneStr = "view";
+            deck->model().removeCard(event.startid());
+        }
+    }
+
+    createMovingCard(code, startZoneStr, startId, event.targetzone(), event.targetid(), false, dontFinishAction);
 }
 
 void Player::playCard(const EventPlayCard &event) {
@@ -658,8 +678,15 @@ void Player::addCard(QString code, QString zoneName) {
 void Player::testAction()
 {
     //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
+    QVariant arr;
+    //QMetaObject::invokeMethod(zone("view")->visualItem(), "getCardOrder");
+    QMetaObject::invokeMethod(zone("view")->visualItem(), "getCardOrder", Q_RETURN_ARG(QVariant, arr));
+    auto sl = arr.toStringList();
 
-    createMovingCard("IMC/W43-046", "hand", 1, "wr", 0, true, false, true);
+    qDebug() << sl.size();
+    for (int i = 0; i < sl.size(); ++i)
+        qDebug() << sl[i];
+    //createMovingCard("IMC/W43-046", "hand", 1, "wr", 0, true, false, true);
     //QMetaObject::invokeMethod(zone("stage")->visualItem(), "getCardPos", Q_ARG(QVariant, 1));
 }
 

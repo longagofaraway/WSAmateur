@@ -52,7 +52,6 @@ Item {
 
         anchors.fill: parent
 
-        Hand{}
         MainButton {
             id: mainButton
             x: root.width * 0.75

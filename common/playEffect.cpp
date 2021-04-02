@@ -1,5 +1,5 @@
 #include "abilities.pb.h"
-#include "gameEvent.pb.h"
+#include "moveCommands.pb.h"
 
 #include "abilityPlayer.h"
 #include "abilityUtils.h"
@@ -7,7 +7,7 @@
 #include "serverPlayer.h"
 #include "codecs/encode.h"
 
-Resumable AbilityPlayer::playEffect(const asn::Effect &e) {
+Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect) {
     if (!evaluateCondition(e.cond)) {
         mPlayer->sendToBoth(EventConditionNotMet());
         co_return;
@@ -59,11 +59,23 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e) {
     case asn::EffectType::TriggerCheckTwice:
         playTriggerCheckTwice();
         break;
+    case asn::EffectType::Look:
+        co_await playLook(std::get<asn::Look>(e.effect), nextEffect);
+        break;
     default:
         assert(false);
         break;
     }
     setMandatory(true);
+}
+
+Resumable AbilityPlayer::playEffects(const std::vector<asn::Effect> &e) {
+    for (size_t i = 0; i < e.size(); ++i) {
+        if (e[i].type == asn::EffectType::Look && (i != e.size() - 1))
+            co_await playEffect(e[i], e[i + 1]);
+        else
+            co_await playEffect(e[i]);
+    }
 }
 
 void AbilityPlayer::playContEffect(const asn::Effect &e) {
@@ -78,8 +90,7 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
 
 Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
     setMandatory(false);
-    for (const auto &effect: e.effect)
-        co_await playEffect(effect);
+    co_await playEffects(e.effect);
     setMandatory(true);
     setCanceled(false);
 }
@@ -226,6 +237,30 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     if (canceled())
         co_return;
 
+    if (e.target.type == asn::TargetType::MentionedCards && e.order == asn::Order::Any) {
+        // coming here from look effect
+        assert(e.to.size() == 1);
+        while (true) {
+            GameCommand cmd;
+            if (mLastCommand)
+                cmd = *mLastCommand;
+            else
+                cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandMoveInOrder>()) {
+                CommandMoveInOrder moveCmd;
+                cmd.command().UnpackTo(&moveCmd);
+                if (mentionedCards().size() && mentionedCards()[0].card->zone()->name() == asnZoneToString(e.to[0].zone)) {
+                    if (static_cast<int>(mentionedCards().size()) != moveCmd.codes_size())
+                        co_return;
+                    mPlayer->reorderTopCards(moveCmd, e.to[0].zone);
+                    co_return;
+                }
+            } else if (cmd.command().Is<CommandConfirmMove>()) {
+                break;
+            }
+        }
+    }
+
     // choice of a destination
     int toZoneIndex = 0;
     if (e.to.size() > 1) {
@@ -256,6 +291,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     }
 
     int toIndex = 0;
+    //choosing target stage position
     if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow ||
         (e.to[toZoneIndex].zone == asn::Zone::Stage && e.to[toZoneIndex].pos == asn::Position::NotSpecified)) {
         assert(mandatory());
@@ -493,12 +529,10 @@ Resumable AbilityPlayer::playPayCost(const asn::PayCost &e) {
     mPlayer->clearExpectedComands();
 
     if (!canceled())
-        for (const auto &effect: e.ifYouDo)
-            co_await playEffect(effect);
+        co_await playEffects(e.ifYouDo);
 
     if (canceled())
-        for (const auto &effect: e.ifYouDont)
-            co_await playEffect(effect);
+        co_await playEffects(e.ifYouDont);
     co_return;
 }
 
@@ -658,8 +692,7 @@ Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
     }
 
     for (int i = 0; i < count; ++i)
-        for (const auto &effect: e.effect)
-            co_await playEffect(effect);
+        co_await playEffects(e.effect);
 }
 
 void AbilityPlayer::playBackup(const asn::Backup &e) {
@@ -671,4 +704,86 @@ void AbilityPlayer::playBackup(const asn::Backup &e) {
 
 void AbilityPlayer::playTriggerCheckTwice() {
     thisCard().card->setTriggerCheckTwice(true);
+}
+
+Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect) {
+    assert(e.place.owner == asn::Player::Player);
+    assert(e.place.zone == asn::Zone::Deck);
+    auto deck = mPlayer->zone("deck");
+    if (!deck->count())
+        co_return;
+
+    if (e.number.mod == asn::NumModifier::UpTo) {
+        std::vector<uint8_t> buf;
+        encodeLook(e, buf);
+
+        EventLook ev;
+        ev.set_effect(buf.data(), buf.size());
+        if (nextEffect) {
+            ev.set_nexteffecttype(static_cast<int>(nextEffect->type));
+            std::vector<uint8_t> nextBuf;
+            if (nextEffect->type == asn::EffectType::MoveCard)
+                encodeMoveCard(std::get<asn::MoveCard>(nextEffect->effect), nextBuf);
+            else if (nextEffect->type == asn::EffectType::ChooseCard)
+                encodeChooseCard(std::get<asn::ChooseCard>(nextEffect->effect), nextBuf);
+            ev.set_nexteffect(nextBuf.data(), nextBuf.size());
+        }
+        mPlayer->sendToBoth(ev);
+
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandLookTopDeck::GetDescriptor()->name());
+        if (nextEffect) {
+            if (nextEffect->type == asn::EffectType::ChooseCard)
+                mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+            if (nextEffect->type == asn::EffectType::MoveCard) {
+                mPlayer->addExpectedCommand(CommandConfirmMove::GetDescriptor()->name());
+                const auto &moveEffect = std::get<asn::MoveCard>(nextEffect->effect);
+                if (moveEffect.order == asn::Order::Any)
+                    mPlayer->addExpectedCommand(CommandMoveInOrder::GetDescriptor()->name());
+            }
+        }
+
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandCancelEffect>()) {
+                break;
+            } else if (cmd.command().Is<CommandLookTopDeck>()) {
+                if (e.number.value == static_cast<int>(mMentionedCards.size()))
+                    break;
+
+                auto card = deck->card(deck->count() - 1 - static_cast<int>(mMentionedCards.size()));
+                if (!card)
+                    break;
+
+                sendLookCard(card);
+                if (static_cast<size_t>(deck->count()) <= mMentionedCards.size() || mMentionedCards.size() == static_cast<size_t>(e.number.value))
+                    break;
+            } else if (cmd.command().Is<CommandChooseCard>() ||
+                       cmd.command().Is<CommandMoveInOrder>() ||
+                       cmd.command().Is<CommandConfirmMove>()) {
+                mLastCommand = cmd;
+                break;
+            }
+        }
+    } else {
+        for (int i = 0; i < e.number.value && i < deck->count(); ++i) {
+            auto card = deck->card(deck->count() - 1 - i);
+            if (!card)
+                break;
+
+            sendLookCard(card);
+        }
+    }
+}
+
+void AbilityPlayer::sendLookCard(ServerCard *card) {
+    EventLookTopDeck privateEvent;
+    EventLookTopDeck publicEvent;
+
+    privateEvent.set_code(card->code());
+    mPlayer->sendGameEvent(privateEvent);
+    mPlayer->game()->sendPublicEvent(publicEvent, mPlayer->id());
+
+    addMentionedCard(CardImprint(card->zone()->name(), card->pos(), card, card->zone()->player() != mPlayer));
 }

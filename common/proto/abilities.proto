@@ -85,9 +85,20 @@ message CommandChoice {
     sint32 choice = 1;
 }
 
-message EventLookCard {
-    sint32 number = 1;
-    ProtoOwner owner = 2;
+message EventLook {
+    bytes effect = 1;
+    sint32 nextEffectType = 2;
+    bytes nextEffect = 3;
+}
+
+message CommandLookTopDeck {}
+message CommandConfirmMove {}
+message CommandMoveInOrder {
+    repeated string codes = 1;
+}
+
+message EventLookTopDeck {
+    string code = 1;
 }
 
 message EventRevealTopDeck {

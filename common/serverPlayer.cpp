@@ -20,6 +20,8 @@
 #include "serverProtocolHandler.h"
 #include "serverStage.h"
 
+#include <QDebug>
+
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
     : mGame(game), mClient(client), mId(id) { }
 
@@ -163,8 +165,8 @@ Resumable ServerPlayer::startTurn() {
     addExpectedCommand(CommandClockPhase::GetDescriptor()->name());
 }
 
-void ServerPlayer::addExpectedCommand(const std::string &command) {
-    mExpectedCommands.push_back(command);
+void ServerPlayer::addExpectedCommand(const std::string &command, int maxCount) {
+    mExpectedCommands.emplace_back(command, maxCount);
 }
 
 void ServerPlayer::clearExpectedComands() {
@@ -858,6 +860,21 @@ Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct &cmd) {
     mQueue.push_back(ta);
 
     co_await mGame->checkTiming();
+}
+
+void ServerPlayer::reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone){
+    auto pzone = zone(asnZoneToString(destZone));
+    if (pzone->count() < cmd.codes_size() || !cmd.codes_size())
+        return;
+    for (int i = 0; i < cmd.codes_size() - 1; ++i) {
+        for (int j = i; j < pzone->count(); ++j) {
+            if (pzone->card(pzone->count() - 1 - j)->code() == cmd.codes(i)) {
+                if (i != j)
+                    pzone->switchPositions(pzone->count() - 1 - i, pzone->count() - 1 - j);
+                break;
+            }
+        }
+    }
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {

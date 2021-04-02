@@ -85,6 +85,7 @@ public:
     Q_INVOKABLE void playActAbility(int index);
     Q_INVOKABLE void sendPlayCounter(int handId);
     Q_INVOKABLE void addCard(QString code, QString zoneName);
+    Q_INVOKABLE void lookOrRevealTopDeck();
 
     void resetChoiceDialog();
 
@@ -144,7 +145,9 @@ private:
     void processAbilityChoice(const EventAbilityChoice &event);
     void processAbilityGain(const EventAbilityGain &event);
     void processRemoveAbility(const EventRemoveAbility &event);
+    void processLook(const EventLook &event);
     void revealTopDeck(const EventRevealTopDeck &event);
+    void lookTopDeck(const EventLookTopDeck &event);
     void doneChoosing();
     void makeAbilityActive(const EventPlayAbility &event);
     void conditionNotMet();

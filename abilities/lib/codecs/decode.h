@@ -78,3 +78,4 @@ asn::MoveCard decodeMoveCard(Iterator &it, Iterator end);
 asn::DrawCard decodeDrawCard(Iterator &it, Iterator end);
 asn::SearchCard decodeSearchCard(Iterator &it, Iterator end);
 asn::AbilityGain decodeAbilityGain(Iterator &it, Iterator end);
+asn::Look decodeLook(Iterator &it, Iterator end);

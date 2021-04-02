@@ -21,7 +21,7 @@ public:
     Client(std::unique_ptr<ClientConnection> &&connection);
 
     void sendCommand(std::shared_ptr<CommandContainer> command) {
-        // this should going to different thread
+        // this should go to a different thread
         emit queueCommand(command);
     }
 

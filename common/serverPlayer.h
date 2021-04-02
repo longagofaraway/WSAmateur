@@ -24,6 +24,7 @@ class CommandClockPhase;
 class CommandPlayCard;
 class CommandPlayCounter;
 class CommandSwitchStagePositions;
+class CommandSwitchPositions;
 class CommandDeclareAttack;
 class CommandLevelUp;
 class CommandEncoreCharacter;
@@ -74,7 +75,7 @@ public:
     int level() const { return mLevel; }
 
     void clearExpectedComands();
-    void addExpectedCommand(const std::string &command);
+    void addExpectedCommand(const std::string &command, int maxCount = 0);
     bool expectsCommand(const GameCommand &command);
 
     void processGameCommand(GameCommand &cmd);
@@ -125,6 +126,7 @@ public:
     void sendPhaseEvent(asn::Phase phase);
     void sendEndGame(bool victory);
     Resumable processPlayActCmd(const CommandPlayAct &cmd);
+    void reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone);
 
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);

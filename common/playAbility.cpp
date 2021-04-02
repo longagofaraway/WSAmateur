@@ -22,22 +22,19 @@ Resumable AbilityPlayer::payCost() {
 }
 
 Resumable AbilityPlayer::playEventAbility(const asn::EventAbility &a) {
-    for (const auto &effect: a.effects)
-        co_await playEffect(effect);
+    co_await playEffects(a.effects);
 }
 
 Resumable AbilityPlayer::playAutoAbility(const asn::AutoAbility &a) {
     if (a.cost)
         setCost(*a.cost);
-    for (const auto &effect: a.effects)
-        co_await playEffect(effect);
+    co_await playEffects(a.effects);
 }
 
 Resumable AbilityPlayer::playActAbility(const asn::ActAbility &a) {
     setCost(a.cost);
     co_await payCost();
-    for (const auto &effect: a.effects)
-        co_await playEffect(effect);
+    co_await playEffects(a.effects);
 }
 
 void AbilityPlayer::playContAbility(const asn::ContAbility &a, bool &active) {

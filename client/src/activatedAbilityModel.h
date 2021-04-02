@@ -34,7 +34,15 @@ struct ActivatedAbility {
     QString cancelBtnText;
 
     ChoiceType choiceType = ChoiceType::Card;
-    std::variant<std::monostate, asn::ChooseCard, asn::SearchCard, asn::AbilityGain, asn::MoveCard> effect;
+    std::variant<std::monostate,
+                 asn::ChooseCard,
+                 asn::SearchCard,
+                 asn::AbilityGain,
+                 asn::MoveCard,
+                 asn::Look> effect;
+    std::variant<std::monostate,
+                 asn::MoveCard,
+                 asn::ChooseCard> nextEffect;
 
     ActivatedAbility() : playBtnText("Play") {}
 };

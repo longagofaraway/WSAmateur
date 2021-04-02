@@ -25,8 +25,12 @@ std::unique_ptr<ServerCard> ServerCardZone::putOnStage(std::unique_ptr<ServerCar
     return {};
 }
 
-void ServerCardZone::switchPositions(int, int) {
-    assert(false);
+void ServerCardZone::switchPositions(int pos1, int pos2) {
+    std::swap(mCards[pos1], mCards[pos2]);
+    if (mCards[pos1])
+        mCards[pos1]->setPos(pos1);
+    if (mCards[pos2])
+        mCards[pos2]->setPos(pos2);
 }
 
 void ServerCardZone::shuffle() {

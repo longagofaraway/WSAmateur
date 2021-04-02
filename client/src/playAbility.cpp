@@ -41,6 +41,11 @@ asn::Ability decodeAbility(const std::string &buf) {
     auto it = binbuf.begin();
     return ::decodeAbility(it, binbuf.end());
 }
+asn::Look decodeLook(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.begin();
+    return ::decodeLook(it, binbuf.end());
+}
 
 void highlightAllCards(CardZone *zone, bool highlight) {
     for (int i = 0; i < zone->model().count(); ++i)
@@ -286,12 +291,60 @@ void Player::processRemoveAbility(const EventRemoveAbility &event) {
     card.removeAbility(event.abilityid());
 }
 
+void Player::processLook(const EventLook &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodeLook(event.effect());
+    if (effect.number.mod != asn::NumModifier::UpTo)
+        return;
+
+    auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
+    activatedAbility.effect = effect;
+    if (static_cast<asn::EffectType>(event.nexteffecttype()) == asn::EffectType::MoveCard) {
+        activatedAbility.nextEffect = decodeMoveCard(event.nexteffect());
+        auto &moveEffect = std::get<asn::MoveCard>(activatedAbility.nextEffect);
+        if (moveEffect.order == asn::Order::Any)
+            zone("view")->visualItem()->setProperty("mDragEnabled", true);
+    } else if (static_cast<asn::EffectType>(event.nexteffecttype()) == asn::EffectType::ChooseCard)
+        mAbilityList->ability(mAbilityList->activeId()).nextEffect = decodeChooseCard(event.nexteffect());
+
+    zone("deck")->visualItem()->setProperty("mGlow", true);
+    mAbilityList->activateCancel(mAbilityList->activeId(), true);
+}
+
 void Player::revealTopDeck(const EventRevealTopDeck &event) {
     zone("view")->visualItem()->setProperty("mViewMode", Game::RevealMode);
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(400);
     createMovingCard(code, "deck", 0, "view", 0, false, true, true);
+}
+
+void Player::lookTopDeck(const EventLookTopDeck &event) {
+    auto view = zone("view");
+    view->visualItem()->setProperty("mViewMode", Game::LookMode);
+
+    QString code = QString::fromStdString(event.code());
+    mGame->pause(400);
+    createMovingCard(code, "deck", 0, "view", 0, false, true, true);
+
+    if (!mAbilityList->count())
+        return;
+
+    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    if (std::holds_alternative<asn::Look>(effect)) {
+        const auto &look = std::get<asn::Look>(effect);
+        if (look.number.mod == asn::NumModifier::UpTo) {
+            if (view->model().count() + 1 < look.number.value)
+                zone("deck")->visualItem()->setProperty("mGlow", true);
+            else
+                zone("deck")->visualItem()->setProperty("mGlow", false);
+        }
+        if (std::holds_alternative<asn::MoveCard>(mAbilityList->ability(mAbilityList->activeId()).nextEffect)) {
+            mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
+        }
+    }
 }
 
 void Player::activateAbilities(const EventAbilityActivated &event) {
@@ -390,7 +443,25 @@ void Player::playAbility(int index) {
     if (ab.active) {
         mAbilityList->activatePlay(index, false);
         mAbilityList->activateCancel(index, false);
-        sendGameCommand(CommandPlayEffect());
+        if (std::holds_alternative<asn::Look>(ab.effect)) {
+            if (std::holds_alternative<asn::MoveCard>(ab.nextEffect)) {
+                const auto &moveEffect = std::get<asn::MoveCard>(ab.nextEffect);
+                if (moveEffect.order == asn::Order::Any) {
+                    auto view = zone("view");
+                    view->visualItem()->setProperty("mDragEnabled", false);
+                    QVariant codesv;
+                    QMetaObject::invokeMethod(view->visualItem(), "getCardOrder", Q_RETURN_ARG(QVariant, codesv));
+                    CommandMoveInOrder cmd;
+                    auto codes = codesv.toStringList();
+                    for (int i = 0; i < codes.size(); ++i)
+                        cmd.add_codes(codes[i].toStdString());
+                    sendGameCommand(cmd);
+                    QMetaObject::invokeMethod(view->visualItem(), "clear");
+                }
+            }
+        } else {
+            sendGameCommand(CommandPlayEffect());
+        }
     } else {
         mAbilityList->setActive(index, true);
         for (int i = 0; i < mAbilityList->count(); ++i) {
@@ -414,6 +485,8 @@ void Player::doneChoosing() {
         dehighlightCards(ef.to[0]);
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         mDeckView->hide();
+    } else if (std::holds_alternative<asn::Look>(effect)) {
+        zone("deck")->visualItem()->setProperty("mGlow", false);
     }
     mGame->hideText();
 }
@@ -527,8 +600,11 @@ const Card &Player::correspondingCard(const ActivatedAbility &abilityDescriptor)
     return card;
 }
 
-void Player::cancelAbility(int) {
+void Player::cancelAbility(int index) {
     doneChoosing();
+
+    mAbilityList->activatePlay(index, false);
+    mAbilityList->activateCancel(index, false);
     sendGameCommand(CommandCancelEffect());
 }
 
@@ -708,4 +784,17 @@ bool Player::canPlayCounter(const Card &card) const {
     }
 
     return false;
+}
+
+void Player::lookOrRevealTopDeck() {
+    if (!mAbilityList->count())
+        return;
+
+    auto effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    if (std::holds_alternative<asn::Look>(effect)) {
+        zone("view")->visualItem()->setProperty("mGlow", false);
+        mAbilityList->activateCancel(mAbilityList->activeId(), false);
+        mAbilityList->activatePlay(mAbilityList->activeId(), false);
+        sendGameCommand(CommandLookTopDeck());
+    }
 }

@@ -7,6 +7,7 @@ Card {
     property bool opponent
     property bool hidden: true
     property CardModel mModel: innerModel
+    property bool mGlow: false
     Connections {
         target: mModel
         function onCountChanged() {
@@ -37,6 +38,11 @@ Card {
         hoverEnabled: true
         onEntered: deckOverlay.opacity = 1
         onExited: deckOverlay.opacity = 0
+        onClicked: {
+            if (mGlow) {
+                gGame.player.lookOrRevealTopDeck();
+            }
+        }
     }
 
     Rectangle {
@@ -65,6 +71,10 @@ Card {
                 height: 44 * 0.8
             }
         }
+    }
+
+    CardGlow {
+        glow: mGlow
     }
 
     function addCard(code) { gGame.getPlayer(opponent).addCard(code, "deck"); }

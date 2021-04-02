@@ -158,6 +158,13 @@ Rectangle {
         ScriptAction { script: cardsView.mModel.clear(); }
     }
 
+    function getCardOrder() {
+        let codes = []
+        for (let i = 0; i < visualModel.count; i++)
+            codes.push(visualModel.items.get(i).model.code);
+        return codes;
+    }
+
     function destroyTextFrame(frameParent) {
         if (frameParent.cardTextFrame !== null) {
             frameParent.cardTextFrame.destroy();
