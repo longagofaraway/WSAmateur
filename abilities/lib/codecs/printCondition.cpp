@@ -2,6 +2,7 @@
 
 using namespace asn;
 
+extern Number gMentionedCardsNumber;
 namespace {
 bool isPartOfAndOr = false;
 }
@@ -11,9 +12,12 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
 
     bool article = true;
     if (c.target.type == TargetType::MentionedCards ||
-        c.target.type == TargetType::ChosenCards)
-        s += "that card is ";
-    else if (c.target.type == TargetType::SpecificCards) {
+        c.target.type == TargetType::ChosenCards) {
+        if (gMentionedCardsNumber.value == 1)
+            s += "that card is ";
+        else
+            s += "those cards are ";
+    } else if (c.target.type == TargetType::SpecificCards) {
         if (c.target.targetSpecification->mode == TargetMode::All) {
             s += "all of ";
             s += printCard(c.target.targetSpecification->cards, true);
@@ -22,8 +26,10 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
         }
     }
 
-    for (const auto &card: c.neededCard) {
-        s += printCard(card, false, article);
+    for (size_t i = 0; i < c.neededCard.size(); ++i) {
+        if (i)
+            s += " or ";
+        s += printCard(c.neededCard[i], false, article);
     }
 
     if (!isPartOfAndOr)

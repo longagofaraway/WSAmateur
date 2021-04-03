@@ -5,6 +5,7 @@
 
 using namespace asn;
 
+Number gMentionedCardsNumber;
 namespace {
     Number gChosenCardsNumber;
     bool gAttributeGainChaining = false;
@@ -32,7 +33,7 @@ std::string printEffects(const std::vector<Effect> &effects) {
         }
         auto effectText = printEffect(effects[i]);
         if (makeUpper)
-            effectText = std::toupper(effectText[0]);
+            effectText[0] = std::toupper(effectText[0]);
         s += effectText;
 
         if (effects[i].type == EffectType::AttributeGain && effects.size() > i + 1 &&
@@ -159,6 +160,7 @@ std::string printRevealCard(const RevealCard &e) {
     std::string s = "reveal ";
 
     if (e.type == RevealType::TopDeck) {
+        gMentionedCardsNumber = e.number;
         if (e.number.mod == NumModifier::ExactMatch) {
             if (e.number.value == 1)
                 s += "the top card of your deck ";
@@ -199,13 +201,13 @@ std::string printMoveCard(const MoveCard &e) {
         s += "move";
     else
         s += "put";
+
     if (e.executor == Player::Opponent)
         s += "s";
     s += " ";
 
 
-    if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards
-            || e.target.type == TargetType::MentionedCards) {
+    if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards) {
         if ((gChosenCardsNumber.mod == NumModifier::ExactMatch ||
             gChosenCardsNumber.mod == NumModifier::UpTo) &&
             gChosenCardsNumber.value == 1) {
@@ -213,6 +215,11 @@ std::string printMoveCard(const MoveCard &e) {
         } else {
             s += "them ";
         }
+    } else if (e.target.type == TargetType::MentionedCards) {
+        if (gMentionedCardsNumber.value == 1)
+            s += "it ";
+        else
+            s += "them ";
     } else if (e.target.type == TargetType::ThisCard) {
         s += "this card ";
     } else if(e.target.type == TargetType::SpecificCards) {

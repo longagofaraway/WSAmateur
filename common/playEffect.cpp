@@ -9,6 +9,7 @@
 
 Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect) {
     if (!evaluateCondition(e.cond)) {
+        mConditionNotMet = true;
         mPlayer->sendToBoth(EventConditionNotMet());
         co_return;
     }
@@ -75,6 +76,10 @@ Resumable AbilityPlayer::playEffects(const std::vector<asn::Effect> &e) {
             co_await playEffect(e[i], e[i + 1]);
         else
             co_await playEffect(e[i]);
+        if (mConditionNotMet) {
+            mConditionNotMet = false;
+            break;
+        }
     }
 }
 
@@ -96,6 +101,7 @@ Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
 }
 
 Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
+    clearChosenCards();
     std::vector<uint8_t> buf;
     encodeChooseCard(e, buf);
 
@@ -342,6 +348,11 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
             cardsToMove[card.id] = card.card;
         }
+    } else if (e.target.type == asn::TargetType::MentionedCards) {
+        for (const auto &card: mentionedCards()) {
+            player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
+            cardsToMove[card.id] = card.card;
+        }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
         if (e.from.pos == asn::Position::Top) {
             player = owner(e.from.owner);
@@ -409,6 +420,7 @@ Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
 void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
     switch (e.type) {
     case asn::RevealType::TopDeck:
+        clearMentionedCards();
         if (e.number.mod == asn::NumModifier::ExactMatch) {
             for (int i = 0; i < e.number.value; ++i) {
                 auto deck = mPlayer->zone("deck");
@@ -709,6 +721,7 @@ void AbilityPlayer::playTriggerCheckTwice() {
 Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect) {
     assert(e.place.owner == asn::Player::Player);
     assert(e.place.zone == asn::Zone::Deck);
+    clearMentionedCards();
     auto deck = mPlayer->zone("deck");
     if (!deck->count())
         co_return;
@@ -757,6 +770,7 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
                     break;
 
                 sendLookCard(card);
+
                 if (static_cast<size_t>(deck->count()) <= mMentionedCards.size() || mMentionedCards.size() == static_cast<size_t>(e.number.value))
                     break;
             } else if (cmd.command().Is<CommandChooseCard>() ||

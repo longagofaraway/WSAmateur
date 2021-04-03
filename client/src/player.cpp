@@ -433,7 +433,7 @@ void Player::moveCard(const EventMoveCard &event) {
     if (event.startzone() == "deck" && deckView->model().count()) {
         auto deck = zone("deck");
         if (deck->model().count() - 1 - event.startid() < deckView->model().count()) {
-            startId = deck->model().count();
+            startId = deck->model().count() - 1 - event.startid();
             startZoneStr = "view";
             deck->model().removeCard(event.startid());
         }

@@ -17,6 +17,7 @@ class AbilityPlayer {
     bool mCanceled = false;
     bool mRevealChosen = false;
     bool mRevert = false; // revert effect of cont ability
+    bool mConditionNotMet = false;
     int mAbilityId;
     std::vector<CardImprint> mChosenCards;
     std::vector<CardImprint> mMentionedCards;
@@ -48,8 +49,10 @@ public:
     void setThisCard(const CardImprint &c) { mThisCard = c; }
     void addChosenCard(CardImprint &&c) { mChosenCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& chosenCards() { return mChosenCards; }
+    void clearChosenCards() { mChosenCards.clear(); }
     void addMentionedCard(CardImprint &&c) { mMentionedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& mentionedCards() { return mMentionedCards; }
+    void clearMentionedCards() { mMentionedCards.clear(); }
     void addLastMovedCard(CardImprint &&c) { mLastMovedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& lastMovedCards() { return mLastMovedCards; }
     void clearLastMovedCards() { mLastMovedCards.clear(); }

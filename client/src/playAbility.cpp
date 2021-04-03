@@ -344,7 +344,7 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
     zone("view")->visualItem()->setProperty("mViewMode", Game::RevealMode);
 
     QString code = QString::fromStdString(event.code());
-    mGame->pause(400);
+    mGame->pause(600);
     createMovingCard(code, "deck", 0, "view", 0, false, true, true);
 }
 

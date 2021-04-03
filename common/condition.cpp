@@ -25,10 +25,17 @@ bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
     if (c.target.type == asn::TargetType::MentionedCards) {
         for (const auto &card: mentionedCards()) {
             assert(card.card);
-            for (const auto &neededCard: c.neededCard)
-                if (checkCard(neededCard.cardSpecifiers, *card.card))
-                    return true;
+            bool ok = false;
+            for (const auto &neededCard: c.neededCard) {
+                if (checkCard(neededCard.cardSpecifiers, *card.card)) {
+                    ok = true;
+                    break;
+                }
+            }
+            if (!ok)
+                return false;
         }
+        return true;
     } else if (c.target.type == asn::TargetType::SpecificCards) {
         assert(c.neededCard.size() == 1);
         const auto &spec = *c.target.targetSpecification;
