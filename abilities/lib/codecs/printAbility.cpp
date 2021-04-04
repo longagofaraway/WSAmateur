@@ -2,10 +2,13 @@
 
 using namespace asn;
 
+PrintState gPrintState;
 
 template<typename T>
 std::string printSpecificAbility(const T &a) {
     std::string s;
+
+    gPrintState = { Number(), Number(), false, false };
 
     if constexpr (std::is_same_v<T, AutoAbility>)
         s += "【AUTO】 ";
@@ -50,6 +53,9 @@ std::string printSpecificAbility(const T &a) {
     if (s[s.size() - 1] == ',')
         s.pop_back();
     s.push_back('.');
+
+    gPrintState = { Number(), Number(), false, false };
+
     return s;
 }
 

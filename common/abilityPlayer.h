@@ -31,6 +31,7 @@ public:
     AbilityPlayer(ServerPlayer *player) : mPlayer(player) {}
 
     ServerPlayer* owner(asn::Player player) const;
+    ServerPlayer* owner(ServerCard *card) const;
 
     bool mandatory() const { return mMandatory; }
     void setMandatory(bool mandatory) { mMandatory = mandatory; }

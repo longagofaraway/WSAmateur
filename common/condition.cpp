@@ -44,10 +44,18 @@ bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
             bool verified = true;
             for (int i = 0; i < stage->count(); ++i)
                 if (stage->card(i) && !checkCard(c.neededCard[0].cardSpecifiers, *stage->card(i)))
-                        verified = false;
+                    verified = false;
             if (verified)
                 return true;
         }
+    } else if (c.target.type == asn::TargetType::BattleOpponent) {
+        if (thisCard().card->zone()->name() != "stage")
+            return false;
+        auto card = mPlayer->oppositeCard(thisCard().card);
+        if (!card)
+            return false;
+
+        return checkCard(c.neededCard[0].cardSpecifiers, *card);
     }
     return false;
 }

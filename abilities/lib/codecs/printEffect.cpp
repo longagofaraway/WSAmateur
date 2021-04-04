@@ -5,18 +5,14 @@
 
 using namespace asn;
 
-Number gMentionedCardsNumber;
-namespace {
-    Number gChosenCardsNumber;
-    bool gAttributeGainChaining = false;
-}
+extern PrintState gPrintState;
 
 std::string printEffects(const std::vector<Effect> &effects) {
     std::string s;
 
     for (size_t i = 0; i < effects.size(); ++i) {
         bool makeUpper = false;
-        if (!gAttributeGainChaining) {
+        if (!gPrintState.attributeGainChaining) {
             if (i != 0 && effects[i].cond.type != ConditionType::NoCondition) {
                 s[s.size() - 1] = '.';
                 s.push_back(' ');
@@ -41,7 +37,7 @@ std::string printEffects(const std::vector<Effect> &effects) {
             const auto &attGain1 = std::get<AttributeGain>(effects[i].effect);
             const auto &attGain2 = std::get<AttributeGain>(effects[i + 1].effect);
             if (attGain1.target == attGain2.target)
-                gAttributeGainChaining = true;
+                gPrintState.attributeGainChaining = true;
         }
     }
 
@@ -51,12 +47,12 @@ std::string printEffects(const std::vector<Effect> &effects) {
 std::string printAttributeGain(const AttributeGain &e) {
     std::string res;
 
-    if (!gAttributeGainChaining) {
+    if (!gPrintState.attributeGainChaining) {
         switch (e.target.type) {
         case TargetType::ChosenCards:
-            if (gChosenCardsNumber.value == 1) {
+            if (gPrintState.chosenCardsNumber.value == 1) {
                 res += "that character gets ";
-            } else if (gChosenCardsNumber.value > 1) {
+            } else if (gPrintState.chosenCardsNumber.value > 1) {
                 res += "they get ";
             }
             break;
@@ -84,7 +80,7 @@ std::string printAttributeGain(const AttributeGain &e) {
         }
     } else {
         res += "and ";
-        gAttributeGainChaining = false;
+        gPrintState.attributeGainChaining = false;
     }
 
     if (e.value > 0)
@@ -144,7 +140,7 @@ std::string printChooseCard(const ChooseCard &e) {
         else if (spec.mode == TargetMode::AllOther)
             s += "other ";
 
-        gChosenCardsNumber = spec.number;
+        gPrintState.chosenCardsNumber = spec.number;
         s += printCard(spec.cards, plural, article) + " ";
     }
 
@@ -160,13 +156,13 @@ std::string printRevealCard(const RevealCard &e) {
     std::string s = "reveal ";
 
     if (e.type == RevealType::TopDeck) {
-        gMentionedCardsNumber = e.number;
+        gPrintState.mentionedCardsNumber = e.number;
         if (e.number.mod == NumModifier::ExactMatch) {
             if (e.number.value == 1)
                 s += "the top card of your deck ";
         }
     } else if (e.type == RevealType::ChosenCards) {
-        if (gChosenCardsNumber.value == 1)
+        if (gPrintState.chosenCardsNumber.value == 1)
             s += "it ";
     }
 
@@ -221,15 +217,20 @@ std::string printMoveCard(const MoveCard &e) {
 
 
     if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards) {
-        if ((gChosenCardsNumber.mod == NumModifier::ExactMatch ||
-            gChosenCardsNumber.mod == NumModifier::UpTo) &&
-            gChosenCardsNumber.value == 1) {
+        if ((gPrintState.chosenCardsNumber.mod == NumModifier::ExactMatch ||
+            gPrintState.chosenCardsNumber.mod == NumModifier::UpTo) &&
+            gPrintState.chosenCardsNumber.value == 1) {
             s += "it ";
         } else {
             s += "them ";
         }
+    } else if (e.target.type == TargetType::BattleOpponent) {
+        if (gPrintState.battleOpponentMentioned)
+            s += "that character ";
+        else
+            s += "this card's battle opponent ";
     } else if (e.target.type == TargetType::MentionedCards) {
-        if (gMentionedCardsNumber.value == 1)
+        if (gPrintState.mentionedCardsNumber.value == 1)
             s += "it ";
         else
             s += "them ";
@@ -278,7 +279,8 @@ std::string printMoveCard(const MoveCard &e) {
             s += "your ";
         else if (e.to[i].owner == Player::Both)
             s += "its owner's ";
-        else if (e.to[i].owner == Player::Opponent && e.executor == Player::Opponent)
+        else if (e.to[i].owner == Player::Opponent &&
+            (e.executor == Player::Opponent || e.target.type == TargetType::SpecificCards))
             s += "their ";
         else if (e.to[i].owner == Player::Opponent)
             s += "your opponent's ";
@@ -323,7 +325,7 @@ std::string printSearchCard(const SearchCard &e) {
     assert(e.targets.size() == 1);
     assert(e.targets[0].cards.size() == 1);
     s += printNumber(e.targets[0].number);
-    gChosenCardsNumber = e.targets[0].number;
+    gPrintState.chosenCardsNumber = e.targets[0].number;
     s += printCard(e.targets[0].cards[0], false, false) + " ";
 
     return s;

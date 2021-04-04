@@ -2,7 +2,7 @@
 
 using namespace asn;
 
-extern Number gMentionedCardsNumber;
+extern PrintState gPrintState;
 namespace {
 bool isPartOfAndOr = false;
 }
@@ -10,10 +10,18 @@ bool isPartOfAndOr = false;
 std::string printConditionIsCard(const ConditionIsCard &c) {
     std::string s = isPartOfAndOr ? "" : "if ";
 
+    if (c.target.type == TargetType::BattleOpponent && c.neededCard.size() &&
+        c.neededCard[0].cardSpecifiers.size() &&
+        c.neededCard[0].cardSpecifiers[0].type == CardSpecifierType::LevelHigherThanOpp) {
+        s += " the level of this card's battle opponent is higher than your opponent's level, ";
+        gPrintState.battleOpponentMentioned = true;
+        return s;
+    }
+
     bool article = true;
     if (c.target.type == TargetType::MentionedCards ||
         c.target.type == TargetType::ChosenCards) {
-        if (gMentionedCardsNumber.value == 1)
+        if (gPrintState.mentionedCardsNumber.value == 1)
             s += "that card is ";
         else
             s += "those cards are ";

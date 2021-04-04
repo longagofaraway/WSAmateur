@@ -75,6 +75,11 @@ ServerPlayer* AbilityPlayer::owner(asn::Player player) const {
     return player == asn::Player::Player ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
 }
 
+ServerPlayer* AbilityPlayer::owner(ServerCard *card) const {
+    bool player = card->zone()->player() == mPlayer;
+    return player ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
+}
+
 Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigger) {
     EventAbilityActivated event;
     auto ab = event.add_abilities();

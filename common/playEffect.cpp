@@ -181,8 +181,18 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
         co_return;
 
-    if (e.from.pos == asn::Position::Top && mPlayer->zone(asnZoneToString(e.from.zone))->count() == 0)
+    if ((e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom) &&
+        mPlayer->zone(asnZoneToString(e.from.zone))->count() == 0)
         co_return;
+
+    if (e.target.type == asn::TargetType::BattleOpponent) {
+        if (thisCard().card->zone()->name() != "stage")
+            co_return;
+
+        auto card = mPlayer->oppositeCard(thisCard().card);
+        if (!card)
+            co_return;
+    }
 
     bool chooseCards = (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified);
     std::map<int, ServerCard*> cardsToMove;
@@ -359,11 +369,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             cardsToMove[card.id] = card.card;
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
-        if (e.from.pos == asn::Position::Top) {
-            player = owner(e.from.owner);
-            auto zone = mPlayer->zone(asnZoneToString(e.from.zone));
+        player = owner(e.from.owner);
+        auto zone = mPlayer->zone(asnZoneToString(e.from.zone));
+        if (e.from.pos == asn::Position::Top)
             cardsToMove[zone->count() - 1] = zone->card(zone->count() - 1);
-        }
+        else if (e.from.pos == asn::Position::Bottom)
+            cardsToMove[0] = zone->card(0);
     } else if (e.target.type == asn::TargetType::ThisCard) {
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
             toIndex = thisCard().card->prevStagePos();
@@ -373,6 +384,10 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
             cardsToMove[card.id] = card.card;
         }
+    } else if (e.target.type == asn::TargetType::BattleOpponent) {
+        auto card = mPlayer->oppositeCard(thisCard().card);
+        player = owner(card);
+        cardsToMove[card->pos()] = card;
     }
 
     clearLastMovedCards();

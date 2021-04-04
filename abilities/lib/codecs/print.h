@@ -2,6 +2,13 @@
 
 #include "abilities.h"
 
+struct PrintState {
+    asn::Number mentionedCardsNumber;
+    asn::Number chosenCardsNumber;
+    bool battleOpponentMentioned = false;
+    bool attributeGainChaining = false;
+};
+
 // utils
 std::string printDigit(int8_t value);
 std::string printTrait(const std::string &trait);
