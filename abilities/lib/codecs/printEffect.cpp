@@ -178,11 +178,24 @@ std::string printNonMandatory(const NonMandatory &e) {
 
     s += printEffects(e.effect);
 
-    if (e.ifYouDo.size() || e.ifYouDont.size())
+    if (e.ifYouDo.size() || e.ifYouDont.size()) {
         s[s.size() - 1] = '.';
+        s.push_back(' ');
+    }
 
-    s += printEffects(e.ifYouDo);
-    s += printEffects(e.ifYouDont);
+    if (e.ifYouDo.size()) {
+        s += "If you do, ";
+        s += printEffects(e.ifYouDo);
+
+        if (e.ifYouDont.size()) {
+            s[s.size() - 1] = '.';
+            s.push_back(' ');
+        }
+    }
+    if (e.ifYouDont.size()) {
+        s += "If you don't, ";
+        s += printEffects(e.ifYouDont);
+    }
 
     return s;
 }
@@ -237,7 +250,7 @@ std::string printMoveCard(const MoveCard &e) {
             }
             s += printCard(spec.cards, plural) + " from ";
         }
-        s += printPlayer(e.from.owner);
+        s += printPlayer(e.from.owner, e.executor);
         s += printZone(e.from.zone) + " ";
     }
 

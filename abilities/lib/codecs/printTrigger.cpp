@@ -42,6 +42,9 @@ std::string printBattleOpponentReversedTrigger(const BattleOpponentReversedTrigg
 std::string printOnBackupOfThis() {
     return "When you use this card's \"<b>Backup</b>\", ";
 }
+std::string printOnReversed() {
+    return "When this card becomes" + printState(State::Reversed) + ", ";
+}
 std::string printPhaseTrigger(const PhaseTrigger &t) {
     std::string s;
 
@@ -71,6 +74,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnBackupOfThis:
         s += printOnBackupOfThis();
+        break;
+    case TriggerType::OnReversed:
+        s += printOnReversed();
         break;
     }
 

@@ -218,6 +218,7 @@ Trigger parseTrigger(const QJsonObject &json) {
     case TriggerType::OnEndOfThisCardsAttack:
     case TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
     case TriggerType::OnEndOfThisTurn:
+    case TriggerType::OnReversed:
          break;
     default:
         throw std::runtime_error("wrong trigger type");
@@ -405,7 +406,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-013_1.txt");
+    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-013_2.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

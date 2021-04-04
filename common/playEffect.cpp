@@ -97,7 +97,12 @@ Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
     setMandatory(false);
     co_await playEffects(e.effect);
     setMandatory(true);
+    bool youDo = !canceled();
     setCanceled(false);
+    if (youDo)
+        co_await playEffects(e.ifYouDo);
+    else
+        co_await playEffects(e.ifYouDont);
 }
 
 Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {

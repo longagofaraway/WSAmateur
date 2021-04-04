@@ -8,7 +8,7 @@ std::string printTrait(const std::string &trait);
 std::string printCard(const asn::Card &c, bool plural = false, bool article = true, asn::TargetMode mode = asn::TargetMode::Any);
 std::string printNumber(const asn::Number &n);
 std::string printZone(asn::Zone zone);
-std::string printPlayer(const asn::Player &p);
+std::string printPlayer(asn::Player p, asn::Player executor = asn::Player::Player);
 std::string printState(asn::State s);
 std::string printPhase(asn::Phase p);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);

@@ -79,7 +79,7 @@ std::string printState(State s) {
     return "";
 }
 
-std::string printPlayer(const Player &p) {
+std::string printPlayer(Player p, Player executor) {
     std::string s;
 
     switch (p) {
@@ -90,7 +90,10 @@ std::string printPlayer(const Player &p) {
         s += "your or your opponent's ";
         break;
     case Player::Opponent:
-        s += "your opponent's ";
+        if (executor == Player::Player)
+            s += "your opponent's ";
+        else
+            s += "their ";
         break;
     case Player::NotSpecified:
     default:

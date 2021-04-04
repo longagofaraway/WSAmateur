@@ -562,7 +562,8 @@ void Player::stopUiInteractions() {
         }
         break;
     case asn::Phase::AttackPhase:
-    case asn::Phase::CounterStep: {
+    case asn::Phase::CounterStep:
+    case asn::Phase::DamageStep: {
         Player *activePlayer = mActivePlayer ? this : mGame->opponent();
         activePlayer->mStage->unhighlightAttacker();
         break;

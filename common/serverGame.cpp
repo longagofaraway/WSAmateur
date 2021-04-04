@@ -155,8 +155,11 @@ Resumable ServerGame::battleStep() {
         attPlayer->setCardState(attCard, StateReversed);
         opponent->setCardState(battleOpponent, StateReversed);
     }
+    if (attCard->state() == CardState::StateReversed)
+        attPlayer->checkOnReversed(attCard);
     if (battleOpponent->state() == CardState::StateReversed &&
         battleOpponent->state() != oppState) {
+        opponent->checkOnReversed(battleOpponent);
         attPlayer->checkOnBattleOpponentReversed(attCard, battleOpponent);
     }
     co_await checkTiming();

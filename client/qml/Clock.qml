@@ -54,6 +54,11 @@ ListView {
                     model.selected = !model.selected;
                     glow7Cards(false);
                     gGame.getPlayer(opponent).cardSelectedForLevelUp(model.index);
+                } else {
+                    if (!model.glow)
+                        return;
+                    model.selected = !model.selected;
+                    gGame.getPlayer().chooseCard(model.index, "clock", clockView.opponent);
                 }
             }
 

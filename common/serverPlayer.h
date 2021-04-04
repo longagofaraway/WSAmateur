@@ -137,6 +137,7 @@ public:
     void setCardState(ServerCard *card, CardState state);
     void endOfTurnEffectValidation();
 
+    void checkOnReversed(ServerCard *card);
     void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
     void checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
     void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
