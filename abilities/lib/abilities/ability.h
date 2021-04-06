@@ -37,7 +37,8 @@ enum class Keyword : uint8_t {
     Bond,
     Replay,
     Alarm,
-    Change
+    Change,
+    Assist
 };
 
 struct AutoAbility {

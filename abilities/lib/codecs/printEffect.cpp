@@ -65,8 +65,14 @@ std::string printAttributeGain(const AttributeGain &e) {
             if (spec.mode == TargetMode::All || spec.mode == TargetMode::AllOther) {
                 plural = true;
                 res += "all of ";
+            } else if (spec.mode == TargetMode::InFrontOfThis) {
+                plural = true;
+                res += "all of your ";
             }
-            res += printCard(spec.cards, plural, true, spec.mode) + " get";
+            res += printCard(spec.cards, plural, true, spec.mode);
+            if (spec.mode == TargetMode::InFrontOfThis)
+                res += " in front of this card";
+            res += " get";
             if (!plural)
                 res += "s";
             res += " ";

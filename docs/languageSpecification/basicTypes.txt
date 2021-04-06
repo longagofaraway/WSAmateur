@@ -10,22 +10,6 @@ enum Player {
   both = 3
 }
 
-Trait {
-  value String
-}
-
-ExactName {
-  value String
-}
-
-NameContains {
-  value String
-}
-
-Level {
-  number Number
-}
-
 CostSpecifier {
   number Number
 }

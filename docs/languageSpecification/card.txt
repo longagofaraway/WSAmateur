@@ -40,3 +40,19 @@ enum CardType {
   event = 3,
   marker = 4
 }
+
+Trait {
+  value String
+}
+
+ExactName {
+  value String
+}
+
+NameContains {
+  value String
+}
+
+Level {
+  number Number
+}

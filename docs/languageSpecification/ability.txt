@@ -25,7 +25,8 @@ enum Keyword {
   bond = 7,
   replay = 8,
   alarm = 9,
-  change = 10
+  change = 10,
+  assist = 11
 }
 
 enum AbilityItem {

@@ -107,6 +107,8 @@ std::string printKeyword(Keyword keyword) {
     switch (keyword) {
     case Keyword::Alarm:
         return "Alarm";
+    case Keyword::Assist:
+        return "Assist";
     case Keyword::Backup:
         return "Backup";
     case Keyword::Bond:
