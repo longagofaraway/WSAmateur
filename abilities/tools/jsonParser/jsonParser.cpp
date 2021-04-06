@@ -187,6 +187,15 @@ PhaseTrigger parsePhaseTrigger(const QJsonObject &json) {
     return p;
 }
 
+OtherTrigger parseOtherTrigger(const QJsonObject &json) {
+    if (!json.contains("cardCode") || !json["cardCode"].isString())
+        throw std::runtime_error("no cardCode");
+
+    OtherTrigger t;
+    t.cardCode = json["cardCode"].toString().toStdString();
+    return t;
+}
+
 Trigger parseTrigger(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no trigger type");
@@ -220,6 +229,9 @@ Trigger parseTrigger(const QJsonObject &json) {
     case TriggerType::OnEndOfThisTurn:
     case TriggerType::OnReversed:
          break;
+    case TriggerType::OtherTrigger:
+        t.trigger = parseOtherTrigger(json["trigger"].toObject());
+        break;
     default:
         throw std::runtime_error("wrong trigger type");
     }
@@ -406,7 +418,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-016_1.txt");
+    QFile loadFile("F:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-016_2.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

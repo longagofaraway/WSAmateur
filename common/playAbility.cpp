@@ -309,6 +309,35 @@ void ServerPlayer::checkOnBackup(ServerCard *card) {
     }
 }
 
+void ServerPlayer::checkOtherTrigger(const std::string &code) {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Auto)
+                continue;
+
+            const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            if (autoab.trigger.type != asn::TriggerType::OtherTrigger)
+                continue;
+
+            const auto &trig = std::get<asn::OtherTrigger>(autoab.trigger.trigger);
+            if (code != trig.cardCode)
+                continue;
+
+            TriggeredAbility a;
+            a.card = CardImprint(card->zone()->name(), card->pos(), card);
+            a.type = ProtoCard;
+            a.abilityId = i;
+            mQueue.push_back(a);
+        }
+    }
+}
+
 void ServerPlayer::triggerBackupAbility(ServerCard *card) {
     if (!card->isCounter())
         return;

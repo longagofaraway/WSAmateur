@@ -45,6 +45,9 @@ Trigger decodeTrigger(Iterator &it, Iterator end) {
     case TriggerType::OnAttack:
         t.trigger = OnAttackTrigger{ decodeTarget(it, end) };
         break;
+    case TriggerType::OtherTrigger:
+        t.trigger = OtherTrigger{ decodeString(it, end) };
+        break;
     default:
         break;
     }

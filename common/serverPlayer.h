@@ -144,6 +144,7 @@ public:
     void checkOnAttack(ServerCard *attCard);
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
     void checkOnBackup(ServerCard *card);
+    void checkOtherTrigger(const std::string &code);
     void triggerBackupAbility(ServerCard *card);
 
     bool canBePayed(ServerCard *thisCard, const asn::CostItem &c);

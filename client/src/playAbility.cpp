@@ -110,7 +110,6 @@ int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place 
 }
 
 void Player::sendChooseCard(const asn::ChooseCard &e) {
-    int count = 0;
     CardZone *from;
     if (e.placeType == asn::PlaceType::Selection) {
         from = zone("view");
@@ -378,7 +377,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
     // this function adds activated abilities to the list
     // there's another event to make an ability active
     if (!mAbilityList->count())
-        stopUiInteractions();
+        mGame->player()->stopUiInteractions();
 
     for (int i = 0; i < event.abilities_size(); ++i) {
         auto protoa = event.abilities(i);
@@ -462,7 +461,7 @@ void Player::startResolvingAbility(const EventStartResolvingAbility &event) {
 
 void Player::endResolvingAbilties() {
     mAbilityList->clear();
-    restoreUiState();
+    mGame->player()->restoreUiState();
 }
 
 void Player::playAbility(int index) {

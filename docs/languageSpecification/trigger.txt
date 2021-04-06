@@ -7,6 +7,7 @@ Trigger {
     TriggerRevealTrigger,
     OnPlayTrigger,
     OnAttackTrigger,
+    OtherTrigger,
     Nothing
   }
 }
@@ -24,11 +25,8 @@ enum TriggerType {
   onOppCharPlacedByStandbyTriggerReveal = 10,
   onEndOfThisTurn = 11,
   
-  KGL/S79-016 = 50
+  otherTrigger = 255
 }
-
-KGL/S79-016 - When your Opponent uses BRAINSTORM and the effect puts at least 1 Climax
-card in the Waiting Room,
 
 ZoneChangeTrigger {
   target Array of Target,  // targets are ORed
@@ -56,4 +54,8 @@ OnAttackTrigger {
 
 BattleOpponentReversedTrigger {
   card Card
+}
+
+OtherTrigger {
+  cardCode String
 }

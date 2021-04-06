@@ -35,6 +35,9 @@ void encodeTrigger(const Trigger &t, Buf &buf) {
     case TriggerType::OnAttack:
         encodeTarget(std::get<OnAttackTrigger>(t.trigger).target, buf);
         break;
+    case TriggerType::OtherTrigger:
+        encodeString(std::get<OtherTrigger>(t.trigger).cardCode, buf);
+        break;
     default:
         break;
     }

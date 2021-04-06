@@ -731,13 +731,18 @@ Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
         mPlayer->moveTopDeck("res");
 
     auto res = mPlayer->zone("res");
-    int count = 0;
-    for (int i = 0; i < e.number.value; ++i) {
+    int count = 0, climaxCount = 0;
+    int cardCount = res->count();
+    for (int i = 0; i < cardCount; ++i) {
         auto card = res->card(res->count() - 1);
         if (checkCard(e.forEach.cardSpecifiers, *card))
             ++count;
+        if (card->type() == asn::CardType::Climax)
+            ++climaxCount;
         mPlayer->moveCard("res", res->count() - 1, "wr");
     }
+    if (climaxCount)
+        owner(asn::Player::Opponent)->checkOtherTrigger("KGL/S79-016");
 
     for (int i = 0; i < count; ++i)
         co_await playEffects(e.effect);

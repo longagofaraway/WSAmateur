@@ -1,8 +1,16 @@
 #include "print.h"
 
 #include <string>
+#include <unordered_map>
 
 using namespace asn;
+
+namespace {
+std::unordered_map<std::string, std::string> gOtherTriggers {
+    { "KGL/S79-016", "When your opponent uses \"<b>Brainstorm</b>\" and that effect puts at least 1 climax\
+ card in their waiting room, " }
+};
+}
 
 std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
     std::string s = "When ";
@@ -56,6 +64,10 @@ std::string printPhaseTrigger(const PhaseTrigger &t) {
     return s;
 }
 
+std::string printOtherTrigger(const OtherTrigger &t) {
+    return gOtherTriggers[t.cardCode];
+}
+
 std::string printTrigger(const Trigger &t) {
     std::string s;
 
@@ -77,6 +89,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnReversed:
         s += printOnReversed();
+        break;
+    case TriggerType::OtherTrigger:
+        s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));
         break;
     }
 

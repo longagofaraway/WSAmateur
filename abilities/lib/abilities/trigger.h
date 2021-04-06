@@ -16,7 +16,9 @@ enum class TriggerType : uint8_t {
     OnPhaseEvent,
     OnEndOfThisCardsAttack,
     OnOppCharPlacedByStandbyTriggerReveal,
-    OnEndOfThisTurn
+    OnEndOfThisTurn,
+
+    OtherTrigger = 255
 };
 
 struct ZoneChangeTrigger {
@@ -69,6 +71,10 @@ struct BattleOpponentReversedTrigger {
     Card card;
 };
 
+struct OtherTrigger {
+    std::string cardCode;
+};
+
 struct Trigger {
     TriggerType type;
     std::variant<
@@ -78,7 +84,8 @@ struct Trigger {
         TriggerRevealTrigger,
         OnPlayTrigger,
         OnAttackTrigger,
-        BattleOpponentReversedTrigger
+        BattleOpponentReversedTrigger,
+        OtherTrigger
     > trigger;
 };
 
