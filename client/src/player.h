@@ -138,6 +138,7 @@ private:
     void abilityResolved();
     void processChooseCard(const EventChooseCard &event);
     void sendChooseCard(const asn::ChooseCard &e);
+    void sendChooseCard(const asn::SearchCard &e);
     void processSearchCard(const EventSearchCard &event);
     void processMoveChoice(const EventMoveChoice &event);
     void processMoveDestinationChoice(const EventMoveDestinationChoice &event);

@@ -623,9 +623,9 @@ Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
             if ((e.targets[0].number.mod == asn::NumModifier::ExactMatch &&
                 e.targets[0].number.value != chooseCmd.ids_size()) ||
                 (e.targets[0].number.mod == asn::NumModifier::AtLeast &&
-                e.targets[0].number.value < chooseCmd.ids_size()) ||
+                e.targets[0].number.value > chooseCmd.ids_size()) ||
                 (e.targets[0].number.mod == asn::NumModifier::UpTo &&
-                e.targets[0].number.value > chooseCmd.ids_size()))
+                e.targets[0].number.value < chooseCmd.ids_size()))
                 continue;
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {

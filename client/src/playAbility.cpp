@@ -135,6 +135,25 @@ void Player::sendChooseCard(const asn::ChooseCard &e) {
     sendGameCommand(cmd);
 }
 
+void Player::sendChooseCard(const asn::SearchCard &e) {
+    auto player = e.place.owner == asn::Player::Player ? this : mGame->opponent();
+    auto zoneName = asnZoneToString(e.place.zone);
+    if (zoneName == "deck")
+        zoneName = "deckView";
+    auto from = player->zone(zoneName);
+
+    CommandChooseCard cmd;
+    cmd.set_zone(std::string(asnZoneToString(e.place.zone)));
+    cmd.set_owner(e.place.owner == asn::Player::Player ? ProtoPlayer : ProtoOpponent);
+    const auto &cards = from->cards();
+    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
+        if (cards[i].selected()) {
+            cmd.add_ids(i);
+        }
+    }
+    sendGameCommand(cmd);
+}
+
 void Player::dehighlightCards(const asn::Place &place) {
     if (place.zone == asn::Zone::WaitingRoom) {
         QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
@@ -500,6 +519,10 @@ void Player::playAbility(int index) {
             const auto &chooseEffect = std::get<asn::ChooseCard>(ab.effect);
             if (chooseEffect.placeType == asn::PlaceType::SpecificPlace)
                 sendChooseCard(chooseEffect);
+            doneChoosing();
+        } else if (std::holds_alternative<asn::SearchCard>(ab.effect)) {
+            const auto &searchEffect = std::get<asn::SearchCard>(ab.effect);
+            sendChooseCard(searchEffect);
             doneChoosing();
         } else {
             sendGameCommand(CommandPlayEffect());

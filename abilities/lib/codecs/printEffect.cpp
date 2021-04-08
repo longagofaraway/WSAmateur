@@ -170,6 +170,8 @@ std::string printRevealCard(const RevealCard &e) {
     } else if (e.type == RevealType::ChosenCards) {
         if (gPrintState.chosenCardsNumber.value == 1)
             s += "it ";
+        else
+            s += "them ";
     }
 
     return s;
@@ -332,7 +334,11 @@ std::string printSearchCard(const SearchCard &e) {
     assert(e.targets[0].cards.size() == 1);
     s += printNumber(e.targets[0].number);
     gPrintState.chosenCardsNumber = e.targets[0].number;
-    s += printCard(e.targets[0].cards[0], false, false) + " ";
+
+    bool plural = false;
+    if (e.targets[0].number.value > 1)
+        plural = true;
+    s += printCard(e.targets[0].cards[0], plural, false) + " ";
 
     return s;
 }

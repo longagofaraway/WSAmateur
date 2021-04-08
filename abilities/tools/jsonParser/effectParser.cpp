@@ -121,7 +121,7 @@ SearchCard parseSearchCard(const QJsonObject &json) {
     SearchCard e;
     e.targets = parseArray(json["targets"].toArray(), parseSearchTarget);
     if (json.contains("place"))
-        e.place = parsePlace(json["from"].toObject());
+        e.place = parsePlace(json["place"].toObject());
     else {
         Place p { Position::NotSpecified, Zone::Deck, Player::Player };
         e.place = p;
