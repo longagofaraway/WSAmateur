@@ -53,9 +53,10 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         s += "a card named ";
     } else {
         if (c.who == Player::Player)
-            s += "you ";
+            s += "you have ";
+        else if (c.who == Player::Opponent)
+            s += "your opponent has ";
 
-        s += "have ";
         if (c.howMany.mod == NumModifier::AtLeast ||
             c.howMany.mod == NumModifier::ExactMatch) {
             if (c.howMany.value == 1 && c.excludingThis) {
@@ -63,12 +64,12 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
             } else if (c.howMany.value == 0 && c.excludingThis) {
                 plural = true;
                 s += "no other ";
+            } else {
+                plural = true;
+                s += std::to_string(c.howMany.value) + " or more ";
+                if (c.excludingThis)
+                    s += "other ";
             }
-        } else if (c.howMany.mod == NumModifier::AtLeast) {
-            plural = true;
-            s += std::to_string(c.howMany.value) + " or more ";
-            if (c.excludingThis)
-                s += "other ";
         }
     }
 

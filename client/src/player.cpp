@@ -248,11 +248,7 @@ void Player::mainPhase() {
     mGame->mainPhase();
     mHand->playTiming();
     mStage->mainPhase();
-    auto &cards = mHand->cards();
-    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
-        if (canPlay(cards[i]))
-            mHand->model().setGlow(i, true);
-    }
+    highlightPlayableCards();
 }
 
 void Player::attackDeclarationStep() {
@@ -521,10 +517,25 @@ void Player::playClimax() {
 }
 
 void Player::setCardAttr(const EventSetCardAttr &event) {
-    if (event.stageid() >= 5)
+    if (event.attr() == ProtoCardAttribute::ProtoAttrLevel) {
+        qDebug() << QString::fromStdString(event.zone());
+        qDebug() << event.cardid();
+        qDebug() << "level " << event.value();
+    }
+    auto pzone = zone(event.zone());
+    if (!pzone)
         return;
 
-    mStage->setAttr(event.stageid(), event.attr(), event.value());
+    if (event.cardid() >= pzone->model().count())
+        return;
+
+    if (event.zone() == "stage") {
+        mStage->setAttr(event.cardid(), event.attr(), event.value());
+    } else {
+        pzone->model().setAttr(event.cardid(), event.attr(), event.value());
+        if (event.zone() == "hand" && mHand->isPlayTiming())
+            highlightPlayableCards();
+    }
 }
 
 void Player::setCardState(const EventSetCardState &event) {

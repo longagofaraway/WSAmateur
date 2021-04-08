@@ -1,3 +1,5 @@
+#include <array>
+
 #include "abilities.pb.h"
 
 #include "abilityPlayer.h"
@@ -149,18 +151,27 @@ bool ServerPlayer::canBePlayed(ServerCard *thisCard, const asn::Ability &a) {
 }
 
 void ServerPlayer::resolveAllContAbilities() {
-    auto stage = zone("stage");
-    for (int i = 0; i < stage->count(); ++i) {
-        auto card = stage->card(i);
-        if (!card)
-            continue;
+    std::array<std::string_view, 3> zones{ "stage", "climax", "hand" };
+    for (auto zoneName: zones) {
+        auto pzone = zone(zoneName);
+        for (int i = 0; i < pzone->count(); ++i) {
+            auto card = pzone->card(i);
+            if (!card)
+                continue;
 
-        playContAbilities(card);
+            playContAbilities(card);
+        }
     }
+}
 
-    auto climax = zone("climax");
-    if (climax->count() > 0)
-        playContAbilities(climax->card(0));
+namespace {
+bool checkAbilityValidForZone(const asn::ContAbility &a, const std::string &name) {
+    if (a.effects[0].type == asn::EffectType::EarlyPlay && name != "hand")
+        return false;
+    if (a.effects[0].type != asn::EffectType::EarlyPlay && name == "hand")
+        return false;
+    return true;
+}
 }
 
 void ServerPlayer::playContAbilities(ServerCard *card) {
@@ -170,6 +181,9 @@ void ServerPlayer::playContAbilities(ServerCard *card) {
             continue;
         const auto &cont = std::get<asn::ContAbility>(abs[i].ability.ability);
 
+        if (!checkAbilityValidForZone(cont, card->zone()->name()))
+            return;
+
         AbilityPlayer a(this);
         a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
         a.setAbilityId(i);
@@ -178,15 +192,18 @@ void ServerPlayer::playContAbilities(ServerCard *card) {
 }
 
 void ServerPlayer::deactivateContAbilities(ServerCard *source) {
-    auto stage = zone("stage");
-    for (int i = 0; i < stage->count(); ++i) {
-        auto card = stage->card(i);
-        if (!card)
-            continue;
+    std::array<std::string_view, 2> zones{ "stage", "hand" };
+    for (auto  zoneName: zones) {
+        auto stage = zone(zoneName);
+        for (int i = 0; i < stage->count(); ++i) {
+            auto card = stage->card(i);
+            if (!card)
+                continue;
 
-        auto oldAttrs = card->attributes();
-        card->removeContBuffsBySource(source);
-        sendChangedAttrs(card, oldAttrs);
+            auto oldAttrs = card->attributes();
+            card->removeContBuffsBySource(source);
+            sendChangedAttrs(card, oldAttrs);
+        }
     }
 }
 

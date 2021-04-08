@@ -75,7 +75,7 @@ public:
 
     const std::string& code() const { return mCode; }
     const std::string& name() const override { return mCardInfo->name(); }
-    int level() const override { return mCardInfo->level(); }
+    int level() const override { return mLevel; }
     int cost() const override { return mCardInfo->cost(); }
     int power() const { return mPower; }
     int soul() const { return mSoul; }

@@ -39,10 +39,14 @@ void ServerPlayer::endOfTurnEffectValidation() {
 
 void ServerPlayer::sendAttrChange(ServerCard *card, asn::AttributeType attr) {
     EventSetCardAttr event;
-    event.set_stageid(card->pos());
+    event.set_cardid(card->pos());
+    event.set_zone(card->zone()->name());
     event.set_attr(attrTypeToProto(attr));
     event.set_value(card->attrByType(attr));
-    sendToBoth(event);
+    if (card->zone()->type() == ZoneType::PrivateZone)
+        sendGameEvent(event);
+    else
+        sendToBoth(event);
 }
 
 void ServerPlayer::sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs) {

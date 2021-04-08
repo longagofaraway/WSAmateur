@@ -84,6 +84,7 @@ public:
     void playBackup(const asn::Backup &e);
     void playTriggerCheckTwice();
     Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {});
+    void playEarlyPlay();
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);

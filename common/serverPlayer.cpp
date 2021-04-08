@@ -261,9 +261,9 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     ServerCard *card = targetZone->addCard(std::move(cardPtr));
     int newCardId = targetZone->count() - 1;
 
-    if (startZoneName == "stage" || startZoneName == "climax") {
-        mGame->deactivateContAbilities(card);
+    if (startZoneName == "stage" || startZoneName == "climax" || startZoneName == "hand") {
         card->reset();
+        mGame->deactivateContAbilities(card);
     }
 
     EventMoveCard eventPublic;
@@ -289,8 +289,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
-    if (startZoneName == "stage" || targetZoneName == "stage")
-        mGame->resolveAllContAbilities();
+    mGame->resolveAllContAbilities();
 
     checkZoneChangeTrigger(card, newCardId, startZoneName, targetZoneName);
     if (enableGlobEncore)
@@ -302,9 +301,12 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
 bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, ServerCardZone *targetZone, int targetId) {
     if (targetId >= 5)
         return false;
+
     auto card = startZone->takeCard(startId);
     if (!card)
         return false;
+
+    card->reset();
 
     auto oldStageCard = targetZone->putOnStage(std::move(card), targetId);
     auto cardOnStage = targetZone->card(targetId);
@@ -401,6 +403,9 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
 
     if (!canPlay(cardPtr))
         co_return;
+
+    // assuming cont abilities that take effect while in hand don't affect other cards
+    cardPtr->reset();
 
     auto card = hand->takeCard(cmd.handid());
 

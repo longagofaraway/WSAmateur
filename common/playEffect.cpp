@@ -72,6 +72,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::Look:
         co_await playLook(std::get<asn::Look>(e.effect), nextEffect);
         break;
+    case asn::EffectType::EarlyPlay:
+        playEarlyPlay();
+        break;
     default:
         assert(false);
         break;
@@ -96,6 +99,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     switch (e.type) {
     case asn::EffectType::AttributeGain:
         playAttributeGain(std::get<asn::AttributeGain>(e.effect), true);
+        break;
+    case asn::EffectType::EarlyPlay:
+        playEarlyPlay();
         break;
     default:
         break;
@@ -841,4 +847,11 @@ void AbilityPlayer::sendLookCard(ServerCard *card) {
     mPlayer->game()->sendPublicEvent(publicEvent, mPlayer->id());
 
     addMentionedCard(CardImprint(card->zone()->name(), card->pos(), card, card->zone()->player() != mPlayer));
+}
+
+void AbilityPlayer::playEarlyPlay() {
+    if (revert())
+        mPlayer->removeContAttributeBuff(thisCard().card, thisCard().card, abilityId(), asn::AttributeType::Level);
+    else
+        mPlayer->addContAttributeBuff(thisCard().card, thisCard().card, abilityId(), asn::AttributeType::Level, -1);
 }

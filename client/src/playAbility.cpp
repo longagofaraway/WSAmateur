@@ -151,6 +151,16 @@ void Player::dehighlightCards(const asn::Place &place) {
     }
 }
 
+void Player::highlightPlayableCards() {
+    auto &cards = mHand->cards();
+    for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
+        if (canPlay(cards[i]))
+            mHand->model().setGlow(i, true);
+        else
+            mHand->model().setGlow(i, false);
+    }
+}
+
 void Player::processChooseCard(const EventChooseCard &event) {
     if (mOpponent)
         return;
@@ -579,12 +589,7 @@ void Player::restoreUiState() {
     switch (mGame->phase()) {
     case asn::Phase::MainPhase: {
         if (mActivePlayer) {
-            const auto &cards = mHand->cards();
-            for (int i = 0; i < mHand->model().count(); ++i) {
-                if (canPlay(cards[i]))
-                    mHand->model().setGlow(i, true);
-            }
-
+            highlightPlayableCards();
             mHand->playTiming();
             mStage->mainPhase();
             mGame->mainPhase();

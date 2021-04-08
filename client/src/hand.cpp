@@ -59,3 +59,7 @@ void Hand::discardCard() {
 void Hand::deactivateDiscarding() {
 }
 
+bool Hand::isPlayTiming() {
+    return mQmlHand->property("state").toString() == "playTiming" ? true : false;
+}
+

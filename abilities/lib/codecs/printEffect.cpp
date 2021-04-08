@@ -437,6 +437,10 @@ std::string printLook(const Look &e) {
     return s;
 }
 
+std::string printEarlyPlay() {
+    return "this card gets -1 level while in your hand ";
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -491,6 +495,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::Look:
         s += printLook(std::get<Look>(e.effect));
+        break;
+    case EffectType::EarlyPlay:
+        s += printEarlyPlay();
         break;
     }
 

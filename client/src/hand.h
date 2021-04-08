@@ -31,4 +31,5 @@ public:
     void endPlayTiming();
     void discardCard();
     void deactivateDiscarding();
+    bool isPlayTiming();
 };

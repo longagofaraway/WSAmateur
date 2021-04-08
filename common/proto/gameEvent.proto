@@ -19,9 +19,10 @@ message EventDeclareAttack {
 }
 
 message EventSetCardAttr {
-    sint32 stageid = 1;
-    ProtoCardAttribute attr = 2;
-    sint32 value = 3;
+    sint32 cardId = 1;
+    string zone = 2;
+    ProtoCardAttribute attr = 3;
+    sint32 value = 4;
 }
 
 message EventSetCardState {

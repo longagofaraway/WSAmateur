@@ -121,10 +121,8 @@ void CardModel::setAttr(int row, ProtoCardAttribute attr, int value) {
         role = SoulRole;
     else if (attr == ProtoAttrPower)
         role = PowerRole;
-    else {
-        role = PowerRole;
-        assert(false);
-    }
+    else
+        role = LevelRole;
     setData(index, value, role);
 }
 
