@@ -133,3 +133,8 @@ message CommandPlayAct {
     sint32 cardId = 1;
     sint32 abilityId = 2;
 }
+
+message EventSetCannotPlay {
+    sint32 handId = 1;
+    bool cannotPlay = 2;
+}

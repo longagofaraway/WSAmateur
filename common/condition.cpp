@@ -78,16 +78,16 @@ bool AbilityPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
 
             if (c.howMany.mod == asn::NumModifier::AtLeast &&
                 count >= c.howMany.value)
-                return true;
+                return c.invert ? false : true;
         }
     }
     if ((c.howMany.mod == asn::NumModifier::ExactMatch &&
          c.howMany.value == count) ||
         (c.howMany.mod == asn::NumModifier::UpTo &&
          c.howMany.value >= count))
-        return true;
+        return c.invert ? false : true;
 
-    return false;
+    return c.invert ? true : false;
 }
 
 bool AbilityPlayer::evaluateConditionAnd(const asn::ConditionAnd &c) {

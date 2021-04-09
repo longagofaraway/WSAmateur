@@ -34,6 +34,9 @@ void ServerCard::reset() {
     mPower = mCardInfo->power();
     mSoul = mCardInfo->soul();
     mLevel = mCardInfo->level();
+
+    mTriggerCheckTwice = false;
+    mCannotPlay = false;
 }
 
 void ServerCard::setPos(int pos) {

@@ -105,6 +105,11 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
     }
 
     for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::NameContains)
+            s += "with \"" + std::get<NameContains>(cardSpec.specifier).value + "\" in its card name ";
+    }
+
+    for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::LevelHigherThanOpp)
             s += "with level higher than your opponent's level ";
     }

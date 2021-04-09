@@ -16,9 +16,9 @@ const asn::Ability &AbilityModel::ability(int row) const {
     return mAbilities[row].ability;
 }
 
-void AbilityModel::addAbility(const asn::Ability &a, bool permanent) {
+void AbilityModel::addAbility(const asn::Ability &a, asn::CardType cardType,  bool permanent) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mAbilities.emplace_back(QString::fromStdString(printAbility(a)), a, permanent);
+    mAbilities.emplace_back(QString::fromStdString(printAbility(a, cardType)), a, permanent);
     endInsertRows();
 }
 

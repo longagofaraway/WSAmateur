@@ -32,6 +32,8 @@ class Card : public CardBase {
     std::shared_ptr<CardInfo> mInfo;
     CardZone *mZone;
 
+    bool mCannotPlay = false;
+
 public:
     Card(CardZone *zone) : mZone(zone) {}
     Card(const Card&) = delete;
@@ -69,6 +71,8 @@ public:
     const std::string& code() const { return mCode; }
     const std::string& name() const override { return mInfo->name(); }
     bool levelGtPlayerLevel() const;
+    bool cannotPlay() const { return mCannotPlay; }
+    void setCannotPlay(bool p) { mCannotPlay = p; }
 
     QString text(int abilityId) const { return mAbilityModel->text(abilityId); }
     AbilityModel* textModel() { return mAbilityModel.get(); }

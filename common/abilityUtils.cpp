@@ -84,6 +84,8 @@ ProtoCardAttribute attrTypeToProto(asn::AttributeType t) {
 
 bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card) {
     bool eligible = true;
+    bool hasNameContains = false;
+    bool nameContains = false;
     for (const auto &spec: specs) {
         switch (spec.type) {
         case asn::CardSpecifierType::CardType:
@@ -132,6 +134,13 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
                 eligible = false;
             break;
         }
+        case asn::CardSpecifierType::NameContains: {
+            hasNameContains = true;
+            const auto &name = std::get<asn::NameContains>(spec.specifier).value;
+            if (card.name().find(name) != std::string::npos)
+                nameContains = true;
+            break;
+        }
         case asn::CardSpecifierType::LevelHigherThanOpp:
             if (!card.levelGtPlayerLevel())
                 eligible = false;
@@ -143,10 +152,10 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             assert(false);
             break;
         }
-        if (!eligible)
-            return false;
     }
-    return true;
+    if (hasNameContains && !nameContains)
+        eligible = false;
+    return eligible;
 }
 
 bool checkNumber(const asn::Number &numObj, int n) {

@@ -166,11 +166,9 @@ void ServerPlayer::resolveAllContAbilities() {
 
 namespace {
 bool checkAbilityValidForZone(const asn::ContAbility &a, const std::string &name) {
-    if (a.effects[0].type == asn::EffectType::EarlyPlay && name != "hand")
-        return false;
-    if (a.effects[0].type != asn::EffectType::EarlyPlay && name == "hand")
-        return false;
-    return true;
+    std::array<asn::EffectType, 2> e{ asn::EffectType::EarlyPlay,
+                                      asn::EffectType::CannotPlay };
+    return std::any_of(e.begin(), e.end(),[a](asn::EffectType type){ return a.effects[0].type == type; }) == (name == "hand");
 }
 }
 

@@ -155,6 +155,7 @@ private:
     void makeAbilityActive(const EventPlayAbility &event);
     void conditionNotMet();
     void payCostChoice();
+    void setCannotPlay(const EventSetCannotPlay &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
 

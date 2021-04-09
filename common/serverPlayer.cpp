@@ -502,6 +502,8 @@ void ServerPlayer::switchPositions(int from, int to) {
 }
 
 bool ServerPlayer::canPlay(ServerCard *card) {
+    if (card->cannotPlay())
+        return false;
     if (mGame->phase() == ServerPhase::Climax && card->type() != CardType::Climax)
         return false;
     if (card->level() > mLevel)

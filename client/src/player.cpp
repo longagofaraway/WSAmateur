@@ -224,6 +224,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventLook ev;
         event->event().UnpackTo(&ev);
         processLook(ev);
+    } else if (event->event().Is<EventSetCannotPlay>()) {
+        EventSetCannotPlay ev;
+        event->event().UnpackTo(&ev);
+        setCannotPlay(ev);
     }
 }
 
@@ -468,9 +472,6 @@ void Player::playCard(const EventPlayCard &event) {
 }
 
 void Player::switchStagePositions(const EventSwitchStagePositions &event) {
-    //if (!mOpponent)
-        //return;
-
     if (size_t(event.stageidfrom()) >= mStage->cards().size()
         || size_t(event.stageidto()) >= mStage->cards().size())
         return;
@@ -479,6 +480,8 @@ void Player::switchStagePositions(const EventSwitchStagePositions &event) {
 }
 
 bool Player::canPlay(const Card &card) const {
+    if (card.cannotPlay())
+        return false;
     if (card.level() > mLevel)
         return false;
     if (card.cost() > static_cast<int>(zone("stock")->cards().size()))
@@ -517,11 +520,6 @@ void Player::playClimax() {
 }
 
 void Player::setCardAttr(const EventSetCardAttr &event) {
-    if (event.attr() == ProtoCardAttribute::ProtoAttrLevel) {
-        qDebug() << QString::fromStdString(event.zone());
-        qDebug() << event.cardid();
-        qDebug() << "level " << event.value();
-    }
     auto pzone = zone(event.zone());
     if (!pzone)
         return;

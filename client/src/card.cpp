@@ -28,7 +28,7 @@ void Card::init(const std::string &code) {
     // we will be returning this pointer via Q_INVOKABLE, so we must set ownership explicitly
     QQmlEngine::setObjectOwnership(mAbilityModel.get(), QQmlEngine::CppOwnership);
     for (const auto &abBuf: mInfo->abilities())
-        mAbilityModel->addAbility(decodeAbility(abBuf));
+        mAbilityModel->addAbility(decodeAbility(abBuf), mType);
 }
 
 void Card::clear() {
@@ -79,7 +79,7 @@ bool Card::levelGtPlayerLevel() const {
 }
 
 void Card::addAbility(const asn::Ability &a) {
-    mAbilityModel->addAbility(a, false);
+    mAbilityModel->addAbility(a, mType, false);
 }
 
 void Card::removeAbility(int id) {

@@ -49,7 +49,17 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
     std::string s = isPartOfAndOr ? "" : "if ";
 
     bool plural = false;
-    if (haveExactName(c.whichCards.cardSpecifiers)) {
+
+    if (c.invert) {
+        if (c.howMany.mod == NumModifier::AtLeast &&
+            c.howMany.value == 1) {
+            s += "you do not have ";
+        }
+
+        s += printCard(c.whichCards) + ", ";
+
+        return s;
+    } else if (haveExactName(c.whichCards.cardSpecifiers)) {
         s += "a card named ";
     } else {
         if (c.who == Player::Player)

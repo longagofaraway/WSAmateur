@@ -649,6 +649,15 @@ void Player::payCostChoice() {
     mAbilityList->activateCancel(mAbilityList->activeId(), true);
 }
 
+void Player::setCannotPlay(const EventSetCannotPlay &event) {
+    if (event.handid() >= mHand->model().count())
+        return;
+
+    mHand->cards()[event.handid()].setCannotPlay(event.cannotplay());
+    if (mHand->isPlayTiming())
+        highlightPlayableCards();
+}
+
 const Card &Player::correspondingCard(const ActivatedAbility &abilityDescriptor) {
     static Card dummyCard(zone("deck"));
     auto pzone = zone(abilityDescriptor.zone);

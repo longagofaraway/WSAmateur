@@ -103,6 +103,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::EarlyPlay:
         playEarlyPlay();
         break;
+    case asn::EffectType::CannotPlay:
+        playCannotPlay();
+        break;
     default:
         break;
     }
@@ -854,4 +857,13 @@ void AbilityPlayer::playEarlyPlay() {
         mPlayer->removeContAttributeBuff(thisCard().card, thisCard().card, abilityId(), asn::AttributeType::Level);
     else
         mPlayer->addContAttributeBuff(thisCard().card, thisCard().card, abilityId(), asn::AttributeType::Level, -1);
+}
+
+void AbilityPlayer::playCannotPlay() {
+    thisCard().card->setCannotPlay(!revert());
+
+    EventSetCannotPlay ev;
+    ev.set_handid(thisCard().card->pos());
+    ev.set_cannotplay(thisCard().card->cannotPlay());
+    mPlayer->sendGameEvent(ev);
 }

@@ -27,7 +27,7 @@ public:
 
     QString text(int row) const;
     const asn::Ability& ability(int row) const;
-    void addAbility(const asn::Ability &a, bool permanent = true);
+    void addAbility(const asn::Ability &a, asn::CardType cardType = asn::CardType::Char, bool permanent = true);
     void removeAbility(int row);
     int rowCount(const QModelIndex & = QModelIndex()) const override { return static_cast<int>(mAbilities.size()); }
     int count() const { return rowCount(); }

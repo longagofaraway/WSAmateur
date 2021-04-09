@@ -58,6 +58,7 @@ class ServerCard : public CardBase
     CardState mState = StateStanding;
 
     bool mTriggerCheckTwice = false;
+    bool mCannotPlay = false;
 
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
@@ -83,11 +84,13 @@ public:
     char color() const { return mCardInfo->color(); }
     bool isCounter() const { return mCardInfo->isCounter(); }
     CardState state() const { return mState; }
-    void setState(CardState state) { mState = state; }
+    void setState(CardState st) { mState = st; }
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
     bool levelGtPlayerLevel() const override;
 
+    bool cannotPlay() const { return mCannotPlay; }
+    void setCannotPlay(bool cn) { mCannotPlay = cn; }
     bool triggerCheckTwice() const { return mTriggerCheckTwice; }
     void setTriggerCheckTwice(bool t) { mTriggerCheckTwice = t; }
 

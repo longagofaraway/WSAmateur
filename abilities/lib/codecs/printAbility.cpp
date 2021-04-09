@@ -5,16 +5,17 @@ using namespace asn;
 PrintState gPrintState;
 
 template<typename T>
-std::string printSpecificAbility(const T &a) {
+std::string printSpecificAbility(const T &a, CardType cardType) {
     std::string s;
 
     gPrintState = { Number(), Number(), false, false };
 
     if constexpr (std::is_same_v<T, AutoAbility>)
         s += "【AUTO】 ";
-    else if constexpr (std::is_same_v<T, ContAbility>)
-        s += "【CONT】 ";
-    else if constexpr (std::is_same_v<T, ActAbility>)
+    else if constexpr (std::is_same_v<T, ContAbility>) {
+        if (cardType != CardType::Event)
+            s += "【CONT】 ";
+    } else if constexpr (std::is_same_v<T, ActAbility>)
         s += "【ACT】 ";
 
     s += printKeywords(a.keywords);
@@ -59,16 +60,16 @@ std::string printSpecificAbility(const T &a) {
     return s;
 }
 
-std::string printAbility(const Ability &a) {
+std::string printAbility(const Ability &a, CardType cardType) {
     switch (a.type) {
     case AbilityType::Auto:
-        return printSpecificAbility(std::get<AutoAbility>(a.ability));
+        return printSpecificAbility(std::get<AutoAbility>(a.ability), cardType);
     case AbilityType::Cont:
-        return printSpecificAbility(std::get<ContAbility>(a.ability));
+        return printSpecificAbility(std::get<ContAbility>(a.ability), cardType);
     case AbilityType::Event:
-        return printSpecificAbility(std::get<EventAbility>(a.ability));
+        return printSpecificAbility(std::get<EventAbility>(a.ability), cardType);
     case AbilityType::Act:
-        return printSpecificAbility(std::get<ActAbility>(a.ability));
+        return printSpecificAbility(std::get<ActAbility>(a.ability), cardType);
     }
 
     return "";
