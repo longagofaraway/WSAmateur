@@ -443,8 +443,8 @@ void Player::moveCard(const EventMoveCard &event) {
 }
 
 void Player::playCard(const EventPlayCard &event) {
-    // we trust players to do this themselves for smooth animations
-    // so process only opponent's events
+    // player's chars and climaxes are played before events from the server
+    // TODO: play player's chars and climaxes using EventMoveCard as the rest of the cards
     if (!mOpponent)
         return;
 

@@ -372,6 +372,8 @@ Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
         co_await playCharacter(cmd);
     else if (cardPtr->type() == CardType::Climax)
         co_await playClimax(cmd.handid());
+    else if (cardPtr->type() == CardType::Event)
+        co_await playEvent(cmd.handid());
 }
 
 Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
@@ -443,8 +445,9 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     auto climaxZone = zone("climax");
 
     auto card = hand->takeCard(handIndex);
-    climaxZone->addCard(std::move(card));
-    auto cardPtr = climaxZone->card(0);
+    if (!card)
+        co_return;
+    auto cardPtr = climaxZone->addCard(std::move(card));
 
     EventPlayCard eventPublic;
     eventPublic.set_handid(static_cast<google::protobuf::uint32>(handIndex));
@@ -460,6 +463,20 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     co_await mGame->checkTiming();
 
     co_await startAttackPhase();
+}
+
+Resumable ServerPlayer::playEvent(int handIndex) {
+    auto hand = zone("hand");
+    auto resZone = zone("res");
+
+    auto card = hand->takeCard(handIndex);
+    auto cardPtr = resZone->addCard(std::move(card));
+
+    moveCard("hand", handIndex, "res");
+
+    co_await playEventEffects(cardPtr);
+
+    co_await mGame->checkTiming();
 }
 
 void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {

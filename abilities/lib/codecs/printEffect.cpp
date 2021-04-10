@@ -224,7 +224,9 @@ std::string printMoveCard(const MoveCard &e) {
     s += " ";
 
 
-    if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards) {
+    if (e.target.type == TargetType::RestOfTheCards) {
+        s += "the rest ";
+    } else if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards) {
         if ((gPrintState.chosenCardsNumber.mod == NumModifier::ExactMatch ||
             gPrintState.chosenCardsNumber.mod == NumModifier::UpTo) &&
             gPrintState.chosenCardsNumber.value == 1) {

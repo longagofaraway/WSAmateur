@@ -56,3 +56,7 @@ NameContains {
 Level {
   number Number
 }
+
+CostSpecifier {
+  number Number
+}

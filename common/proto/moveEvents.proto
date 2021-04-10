@@ -17,7 +17,7 @@ message EventMoveCard {
 message EventPlayCard {
     sint32 handId = 1;
     sint32 stageId = 2;
-	string code = 3;
+    string code = 3;
 }
 
 message EventSwitchStagePositions {

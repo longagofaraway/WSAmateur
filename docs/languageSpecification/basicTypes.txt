@@ -10,10 +10,6 @@ enum Player {
   both = 3
 }
 
-CostSpecifier {
-  number Number
-}
-
 enum TriggerIcon {
   soul = 1,
   wind = 2,

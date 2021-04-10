@@ -410,6 +410,47 @@ void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard
     }
 }
 
+Resumable ServerPlayer::playEventEffects(ServerCard *card) {
+    auto expectedCopy = mExpectedCommands;
+    clearExpectedComands();
+
+    auto &abs = card->abilities();
+    bool needEndEvent = false;
+    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+        if (abs[i].ability.type != asn::AbilityType::Event)
+            continue;
+
+        needEndEvent = true;
+        EventAbilityActivated event;
+        auto eventAbility = event.add_abilities();
+        eventAbility->set_zone(card->zone()->name());
+        eventAbility->set_type(ProtoCard);
+        eventAbility->set_cardid(card->pos());
+        eventAbility->set_abilityid(i);
+        eventAbility->set_cardcode(card->code());
+        auto uniqueId = abilityHash(*eventAbility);
+        eventAbility->set_uniqueid(uniqueId);
+        sendToBoth(event);
+
+        EventStartResolvingAbility evStart;
+        evStart.set_uniqueid(uniqueId);
+        sendToBoth(evStart);
+
+        AbilityPlayer a(this);
+        a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
+        co_await a.playAbility(abs[i].ability);
+
+        EventAbilityResolved evEnd;
+        evEnd.set_uniqueid(uniqueId);
+        sendToBoth(evEnd);
+    }
+
+    if (needEndEvent)
+        sendToBoth(EventEndResolvingAbilties());
+
+    mExpectedCommands = expectedCopy;
+}
+
 Resumable ServerPlayer::checkTiming() {
     // protocol for playing abilities
     // 1. Server sends EventAbilityActivated with activated abilities. Client shows them.
@@ -423,7 +464,7 @@ Resumable ServerPlayer::checkTiming() {
     //    and perform checkTiming as active player. If new abilities appeared during check timing,
     //    proceed to point 1 but send EventAbilityActivated only with new abilities. If there are no new abilities,
     //    but not all abilities are resolved, proceed to point 2.
-    // 6. After all abilities are resolved server sends EventEndResolvingAbilties.
+    // 6. After all abilities are resolved, server sends EventEndResolvingAbilties.
     //    Client uses this signal to restore ui state after playing abilities.
     if (mQueue.empty())
         co_return;
@@ -504,9 +545,9 @@ Resumable ServerPlayer::checkTiming() {
                 // not a reliable way to get temporary ability (in case the card changed zone)
                 co_await a.playAbility(mQueue[j].getAbility());
 
-                EventAbilityResolved ev2;
-                ev2.set_uniqueid(uniqueId);
-                sendToBoth(ev2);
+                EventAbilityResolved evEnd;
+                evEnd.set_uniqueid(uniqueId);
+                sendToBoth(evEnd);
                 mQueue.erase(mQueue.begin() + j);
 
                 break;

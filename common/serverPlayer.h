@@ -103,6 +103,7 @@ public:
     Resumable playCounter(const CommandPlayCounter &cmd);
     Resumable playCharacter(const CommandPlayCard &cmd);
     Resumable playClimax(int handIndex);
+    Resumable playEvent(int handIndex);
     void switchPositions(const CommandSwitchStagePositions &cmd);
     void switchPositions(int from, int to);
     bool canPlay(ServerCard *card);
@@ -150,6 +151,7 @@ public:
     bool canBePayed(ServerCard *thisCard, const asn::CostItem &c);
     bool canBePlayed(ServerCard *thisCard, const asn::Ability &a);
 
+    Resumable playEventEffects(ServerCard *card);
     Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
     Resumable processRuleActions(bool &ruleActionFound);
     void playContAbilities(ServerCard *card);
