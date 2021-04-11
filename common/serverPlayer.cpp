@@ -469,12 +469,13 @@ Resumable ServerPlayer::playEvent(int handIndex) {
     auto hand = zone("hand");
     auto resZone = zone("res");
 
-    auto card = hand->takeCard(handIndex);
-    auto cardPtr = resZone->addCard(std::move(card));
+    auto card = hand->card(handIndex);
 
     moveCard("hand", handIndex, "res");
 
-    co_await playEventEffects(cardPtr);
+    co_await playEventEffects(card);
+
+    moveCard("res", card->pos(), "wr");
 
     co_await mGame->checkTiming();
 }

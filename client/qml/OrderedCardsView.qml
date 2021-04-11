@@ -94,6 +94,7 @@ Rectangle {
 
                     property int visualIndex: delegateRoot.visualIndex
                     property CardTextFrame cardTextFrame: null
+                    Component.onDestruction: destroyTextFrame(cardImg)
 
                     mSource: {
                         if (model.code)
@@ -141,6 +142,21 @@ Rectangle {
                     transitions: Transition {
                         from: "hovered"
                         ScriptAction { script: destroyTextFrame(cardImg); }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            if (!model.glow)
+                                return;
+                            model.selected = !model.selected;
+                            gGame.getPlayer().chooseCard(model.index, "view", cardsView.opponent);
+                        }
+                    }
+
+                    CardGlow {
+                        glow: model.glow
+                        selected: model.selected
                     }
                 }
             }

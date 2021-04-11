@@ -102,6 +102,7 @@ Card {
 
     function finishMove() {
         insertCard();
+        gGame.getPlayer(opponent).cardInserted(targetZone);
         completeAction();
     }
 
@@ -150,7 +151,7 @@ Card {
                 NumberAnimation { target: yRot; property: "angle"; from: -90; to: 0; duration: 100; }
             }
         }
-        ScriptAction { script: { insertCard(); completeAction(); } }
+        ScriptAction { script: { finishMove(); } }
     }
 
     ParallelAnimation {

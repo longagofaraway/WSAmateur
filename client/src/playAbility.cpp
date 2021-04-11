@@ -85,7 +85,7 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
 }
 }
 
-int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place &place, bool mandatory) {
+int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place &place) {
     const auto &specs = target.targetSpecification->cards.cardSpecifiers;
     int eligibleCount = 0;
     if (place.owner == asn::Player::Player || place.owner == asn::Player::Both) {
@@ -96,9 +96,13 @@ int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place 
         auto from = mGame->opponent()->zone(asnZoneToString(place.zone));
         eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode, mAbilityList->ability(mAbilityList->activeId()));
     }
+    return eligibleCount;
+}
+
+void Player::processChooseCardInternal(int eligibleCount, OptionalPlace place, bool mandatory) {
     if (eligibleCount) {
-        if (place.zone == asn::Zone::WaitingRoom &&
-            place.owner == asn::Player::Player)
+        if (place && place->get().zone == asn::Zone::WaitingRoom &&
+            place->get().owner == asn::Player::Player)
             QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
         if (!mandatory)
             mAbilityList->activateCancel(mAbilityList->activeId(), true);
@@ -106,7 +110,6 @@ int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place 
         mGame->pause(500);
         sendGameCommand(CommandCancelEffect());
     }
-    return eligibleCount;
 }
 
 void Player::sendChooseCard(const asn::ChooseCard &e) {
@@ -122,14 +125,17 @@ void Player::sendChooseCard(const asn::ChooseCard &e) {
 
     CommandChooseCard cmd;
     auto zoneName = from->name();
-    if (zoneName == "deckView")
+    if (zoneName == "deckView" || zoneName == "view")
         zoneName = "deck";
     cmd.set_zone(zoneName);
     cmd.set_owner(e.place->owner == asn::Player::Player ? ProtoPlayer : ProtoOpponent);
     const auto &cards = from->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
-            cmd.add_ids(i);
+            if (from->name() == "view")
+                cmd.add_ids(from->model().count() - 1 - i);
+            else
+                cmd.add_ids(i);
         }
     }
     sendGameCommand(cmd);
@@ -154,17 +160,23 @@ void Player::sendChooseCard(const asn::SearchCard &e) {
     sendGameCommand(cmd);
 }
 
-void Player::dehighlightCards(const asn::Place &place) {
-    if (place.zone == asn::Zone::WaitingRoom) {
+void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
+    if (placeType == asn::PlaceType::Selection) {
+        auto from = zone("view");
+        highlightAllCards(from, false);
+        selectAllCards(from, false);
+        return;
+    }
+    if (place->get().zone == asn::Zone::WaitingRoom) {
         QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
     }
-    if (place.owner == asn::Player::Player || place.owner == asn::Player::Both) {
-        auto from = zone(asnZoneToString(place.zone));
+    if (place->get().owner == asn::Player::Player || place->get().owner == asn::Player::Both) {
+        auto from = zone(asnZoneToString(place->get().zone));
         highlightAllCards(from, false);
         selectAllCards(from, false);
     }
-    if (place.owner == asn::Player::Opponent || place.owner == asn::Player::Both) {
-        auto from = mGame->opponent()->zone(asnZoneToString(place.zone));
+    if (place->get().owner == asn::Player::Opponent || place->get().owner == asn::Player::Both) {
+        auto from = mGame->opponent()->zone(asnZoneToString(place->get().zone));
         highlightAllCards(from, false);
         selectAllCards(from, false);
     }
@@ -185,19 +197,27 @@ void Player::processChooseCard(const EventChooseCard &event) {
         return;
 
     auto effect = decodeChooseCard(event.effect());
-    if (effect.placeType != asn::PlaceType::SpecificPlace ||
-        effect.targets.size() != 1 ||
+    if (effect.targets.size() != 1 ||
         effect.targets[0].type != asn::TargetType::SpecificCards) {
         assert(false);
         return;
     }
 
+    const auto &spec = *effect.targets[0].targetSpecification;
     bool mandatory = event.mandatory();
-    if (effect.targets[0].targetSpecification->number.mod == asn::NumModifier::UpTo)
+    if (spec.number.mod == asn::NumModifier::UpTo)
         mandatory = false;
 
-    if (highlightCardsForChoice(effect.targets[0], *effect.place, mandatory))
+    int eligibleCardsNum;
+    bool fromView = effect.placeType == asn::PlaceType::Selection;
+    if (fromView)
+        eligibleCardsNum = highlightEligibleCards(zone("view"), spec.cards.cardSpecifiers,
+                                                  spec.mode, mAbilityList->ability(mAbilityList->activeId()));
+    else
+        eligibleCardsNum = highlightCardsForChoice(effect.targets[0], *effect.place);
+    if (eligibleCardsNum)
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
+    processChooseCardInternal(eligibleCardsNum, fromView ? std::nullopt : OptionalPlace(*effect.place), mandatory);
 }
 
 void Player::processSearchCard(const EventSearchCard &event) {
@@ -289,9 +309,10 @@ void Player::processMoveTargetChoice(const EventMoveTargetChoice &event) {
     auto effectText = printMoveCard(effect);
     effectText[0] = std::toupper(effectText[0]);
     mGame->showText(QString::fromStdString(effectText));
-    int eligibleCount = highlightCardsForChoice(effect.target, effect.from, event.mandatory());
+    int eligibleCount = highlightCardsForChoice(effect.target, effect.from);
     if (eligibleCount)
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
+    processChooseCardInternal(eligibleCount, effect.from, event.mandatory());
 }
 
 void Player::processDrawChoice(const EventDrawChoice &event) {
@@ -387,7 +408,8 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
     if (!mAbilityList->count())
         return;
 
-    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    auto &activeAbility = mAbilityList->ability(mAbilityList->activeId());
+    auto &effect = activeAbility.effect;
     if (std::holds_alternative<asn::Look>(effect)) {
         const auto &look = std::get<asn::Look>(effect);
         if (look.number.mod == asn::NumModifier::UpTo) {
@@ -396,8 +418,15 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
             else
                 zone("deck")->visualItem()->setProperty("mGlow", false);
         }
-        if (std::holds_alternative<asn::MoveCard>(mAbilityList->ability(mAbilityList->activeId()).nextEffect)) {
+        if (std::holds_alternative<asn::MoveCard>(activeAbility.nextEffect)) {
             mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
+        } else if (std::holds_alternative<asn::ChooseCard>(activeAbility.nextEffect)) {
+            const auto &chooseEffect = std::get<asn::ChooseCard>(activeAbility.nextEffect);
+            if (chooseEffect.targets[0].type == asn::TargetType::SpecificCards) {
+                const auto &spec = *chooseEffect.targets[0].targetSpecification;
+                if (spec.number.mod == asn::NumModifier::UpTo)
+                    mAbilityList->activateCancel(mAbilityList->activeId(), true);
+            }
         }
     }
 }
@@ -413,12 +442,13 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         auto zoneptr = zone(protoa.zone());
         if (!zoneptr)
             return;
+
         const auto &cards = zoneptr->cards();
         if (protoa.cardid() < 0)
             return;
 
         bool nocard = false;
-        if (static_cast<size_t>(protoa.cardid()) > cards.size() ||
+        if (static_cast<size_t>(protoa.cardid()) >= cards.size() ||
             cards[protoa.cardid()].code() != protoa.cardcode())
             nocard = true;
 
@@ -514,11 +544,14 @@ void Player::playAbility(int index) {
                     QMetaObject::invokeMethod(view->visualItem(), "clear");
                     doneChoosing();
                 }
+            } else if (std::holds_alternative<asn::ChooseCard>(ab.nextEffect)) {
+                const auto &chooseEffect = std::get<asn::ChooseCard>(ab.effect);
+                sendChooseCard(chooseEffect);
+                doneChoosing();
             }
         } else if (std::holds_alternative<asn::ChooseCard>(ab.effect)) {
             const auto &chooseEffect = std::get<asn::ChooseCard>(ab.effect);
-            if (chooseEffect.placeType == asn::PlaceType::SpecificPlace)
-                sendChooseCard(chooseEffect);
+            sendChooseCard(chooseEffect);
             doneChoosing();
         } else if (std::holds_alternative<asn::SearchCard>(ab.effect)) {
             const auto &searchEffect = std::get<asn::SearchCard>(ab.effect);
@@ -539,19 +572,23 @@ void Player::playAbility(int index) {
 }
 
 void Player::doneChoosing() {
+    auto &a = mAbilityList->ability(mAbilityList->activeId());
     auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
     if (std::holds_alternative<asn::ChooseCard>(effect)) {
         auto &ef = std::get<asn::ChooseCard>(effect);
-        assert(ef.placeType == asn::PlaceType::SpecificPlace);
-        dehighlightCards(*ef.place);
+        dehighlightCards(ef.placeType, ef.place ? OptionalPlace(*ef.place) : std::nullopt);
     } else if (std::holds_alternative<asn::MoveCard>(effect)) {
         auto &ef = std::get<asn::MoveCard>(effect);
-        dehighlightCards(ef.from);
-        dehighlightCards(ef.to[0]);
+        dehighlightCards(asn::PlaceType::SpecificPlace, ef.from);
+        dehighlightCards(asn::PlaceType::SpecificPlace, ef.to[0]);
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         mDeckView->hide();
     } else if (std::holds_alternative<asn::Look>(effect)) {
         zone("deck")->visualItem()->setProperty("mGlow", false);
+        if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
+            auto &ef = std::get<asn::ChooseCard>(a.nextEffect);
+            dehighlightCards(ef.placeType, ef.place ? OptionalPlace(*ef.place) : std::nullopt);
+        }
     }
     mGame->hideText();
 }
@@ -706,9 +743,11 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
 
     int activeId = mAbilityList->activeId();
     auto &effect = mAbilityList->ability(activeId).effect;
-    asn::Number *number;
-    if (std::holds_alternative<asn::ChooseCard>(effect)) {
-        auto &ef = std::get<asn::ChooseCard>(effect);
+    const asn::Number *number;
+    if (std::holds_alternative<asn::ChooseCard>(effect) || std::holds_alternative<asn::Look>(effect)) {
+        const auto &ef = std::holds_alternative<asn::ChooseCard>(effect) ?
+                    std::get<asn::ChooseCard>(effect) :
+                    std::get<asn::ChooseCard>(mAbilityList->ability(activeId).nextEffect);
         assert(ef.targets.size() == 1);
         if (ef.targets[0].type != asn::TargetType::SpecificCards)
             return;
@@ -738,14 +777,17 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
 
     CommandChooseCard cmd;
     std::string cmdZone = qzone.toStdString();
-    if (cmdZone == "deckView")
+    if (cmdZone == "deckView" || cmdZone == "view")
         cmdZone = "deck";
     cmd.set_zone(cmdZone);
     cmd.set_owner(opponent ? ProtoOpponent : ProtoPlayer);
     const auto &cards = pzone->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
-            cmd.add_ids(i);
+            if (qzone == "view")
+                cmd.add_ids(zone("deck")->model().count() - 1 - i);
+            else
+                cmd.add_ids(i);
         }
     }
     sendGameCommand(cmd);
@@ -864,9 +906,35 @@ void Player::lookOrRevealTopDeck() {
 
     auto effect = mAbilityList->ability(mAbilityList->activeId()).effect;
     if (std::holds_alternative<asn::Look>(effect)) {
-        zone("view")->visualItem()->setProperty("mGlow", false);
+        zone("deck")->visualItem()->setProperty("mGlow", false);
+
+        // deactivate buttons until a new card is revealed
         mAbilityList->activateCancel(mAbilityList->activeId(), false);
         mAbilityList->activatePlay(mAbilityList->activeId(), false);
         sendGameCommand(CommandLookTopDeck());
+    }
+}
+
+void Player::cardInserted(QString targetZone) {
+    if (mOpponent)
+        return;
+
+    if (targetZone == "view") {
+        if (!mAbilityList->count())
+            return;
+
+        auto &a = mAbilityList->ability(mAbilityList->activeId());
+        if (std::holds_alternative<asn::Look>(a.effect)) {
+            if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
+                const auto &chooseEffect = std::get<asn::ChooseCard>(a.nextEffect);
+                if (chooseEffect.targets[0].type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *chooseEffect.targets[0].targetSpecification;
+                    if (chooseEffect.placeType == asn::PlaceType::Selection) {
+                        auto from = zone("view");
+                        highlightEligibleCards(from, spec.cards.cardSpecifiers, spec.mode, a);
+                    }
+                }
+            }
+        }
     }
 }

@@ -82,6 +82,10 @@ ServerPlayer* AbilityPlayer::owner(ServerCard *card) const {
     return player ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
 }
 
+void AbilityPlayer::removeMentionedCard(int cardPos) {
+    std::erase_if(mMentionedCards, [cardPos](CardImprint &im) { return cardPos == im.id; });
+}
+
 Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigger) {
     EventAbilityActivated event;
     auto ab = event.add_abilities();

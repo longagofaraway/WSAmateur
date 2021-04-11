@@ -139,7 +139,13 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
     mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
     while (true) {
-        auto cmd = co_await waitForCommand();
+        GameCommand cmd;
+        if (mLastCommand) {
+            cmd = *mLastCommand;
+            mLastCommand.reset();
+        } else {
+            cmd = co_await waitForCommand();
+        }
         if (cmd.command().Is<CommandCancelEffect>()) {
             setCanceled(true);
             break;
@@ -168,6 +174,8 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
                 if (!card)
                     break;
                 addChosenCard(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+                if (e.placeType == asn::PlaceType::Selection)
+                    removeMentionedCard(chooseCmd.ids(i));
             }
             break;
         }
@@ -214,6 +222,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
 
     bool chooseCards = (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified);
     std::map<int, ServerCard*> cardsToMove;
+    bool moveCanceled = false;
     if (chooseCards) {
         assert(e.to.size() == 1);
         assert(e.executor == asn::Player::Player);
@@ -233,6 +242,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         while (true) {
             auto cmd = co_await waitForCommand();
             if (cmd.command().Is<CommandCancelEffect>()) {
+                moveCanceled = true;
                 setCanceled(true);
                 break;
             } else if (cmd.command().Is<CommandChooseCard>()) {
@@ -261,6 +271,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         while (true) {
             auto cmd = co_await waitForCommand();
             if (cmd.command().Is<CommandCancelEffect>()) {
+                moveCanceled = true;
                 setCanceled(true);
                 break;
             } else if (cmd.command().Is<CommandChoice>()) {
@@ -273,7 +284,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         }
         mPlayer->clearExpectedComands();
     }
-    if (canceled())
+    if (moveCanceled)
         co_return;
 
     if (e.target.type == asn::TargetType::MentionedCards && e.order == asn::Order::Any) {
@@ -281,10 +292,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         assert(e.to.size() == 1);
         while (true) {
             GameCommand cmd;
-            if (mLastCommand)
+            if (mLastCommand) {
                 cmd = *mLastCommand;
-            else
+                mLastCommand.reset();
+            } else {
                 cmd = co_await waitForCommand();
+            }
             if (cmd.command().Is<CommandMoveInOrder>()) {
                 CommandMoveInOrder moveCmd;
                 cmd.command().UnpackTo(&moveCmd);
@@ -381,7 +394,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
             cardsToMove[card.id] = card.card;
         }
-    } else if (e.target.type == asn::TargetType::MentionedCards) {
+    } else if (e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) {
         for (const auto &card: mentionedCards()) {
             player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
             cardsToMove[card.id] = card.card;
@@ -810,6 +823,9 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
         while (true) {
             auto cmd = co_await waitForCommand();
             if (cmd.command().Is<CommandCancelEffect>()) {
+                // if we have already looked at at least 1 card, than this cancel refers to the next effect
+                if (mMentionedCards.size())
+                    mLastCommand = cmd;
                 break;
             } else if (cmd.command().Is<CommandLookTopDeck>()) {
                 if (e.number.value == static_cast<int>(mMentionedCards.size()))

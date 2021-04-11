@@ -86,6 +86,7 @@ public:
     Q_INVOKABLE void sendPlayCounter(int handId);
     Q_INVOKABLE void addCard(QString code, QString zoneName);
     Q_INVOKABLE void lookOrRevealTopDeck();
+    Q_INVOKABLE void cardInserted(QString targetZone);
 
     void resetChoiceDialog();
 
@@ -128,8 +129,9 @@ private:
     void restoreUiState();
     void stopUiInteractions();
 
-    int highlightCardsForChoice(const asn::Target &target, const asn::Place &place, bool mandatory);
-    void dehighlightCards(const asn::Place &place);
+    using OptionalPlace = std::optional<std::reference_wrapper<const asn::Place>>;
+    int highlightCardsForChoice(const asn::Target &target, const asn::Place &place);
+    void dehighlightCards(asn::PlaceType placeType, OptionalPlace place);
     void highlightPlayableCards();
 
     void activateAbilities(const EventAbilityActivated &event);
@@ -137,6 +139,7 @@ private:
     void endResolvingAbilties();
     void abilityResolved();
     void processChooseCard(const EventChooseCard &event);
+    void processChooseCardInternal(int eligibleCount, OptionalPlace place, bool mandatory);
     void sendChooseCard(const asn::ChooseCard &e);
     void sendChooseCard(const asn::SearchCard &e);
     void processSearchCard(const EventSearchCard &event);
