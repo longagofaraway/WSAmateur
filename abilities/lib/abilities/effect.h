@@ -10,6 +10,7 @@
 namespace asn {
 
 struct Ability;
+struct EventAbility;
 struct Effect;
 
 enum class PlaceType : uint8_t {
@@ -90,7 +91,7 @@ struct AbilityGain {
 struct PerformEffect {
     int numberOfEffects;
     int numberOfTimes;
-    std::vector<Effect> effects;
+    std::vector<EventAbility> effects;
 };
 
 struct SearchTarget {

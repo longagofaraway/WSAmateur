@@ -172,7 +172,7 @@ PerformEffect parsePerformEffect(const QJsonObject &json) {
     PerformEffect e;
     e.numberOfEffects = json["numberOfEffects"].toInt();
     e.numberOfTimes = json["numberOfTimes"].toInt();
-    e.effects = parseArray(json["effects"].toArray(), parseEffect);
+    e.effects = parseArray(json["effects"].toArray(), parseEventAbility);
 
     return e;
 }

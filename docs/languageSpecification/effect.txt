@@ -164,7 +164,7 @@ AbilityGain {
 PerformEffect {
   numberOfEffects UInt8,
   numberOfTimes UInt8,
-  effects Array of Effect
+  effects Array of EventAbility
 }
 
 // almost the same as 'choose' effect, but it exists for translation purposes

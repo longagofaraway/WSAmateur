@@ -8,6 +8,7 @@ struct PrintState {
     bool battleOpponentMentioned = false;
     bool attributeGainChaining = false;
 };
+extern PrintState gPrintState;
 
 // utils
 std::string printDigit(int8_t value);
@@ -32,3 +33,58 @@ std::string printTarget(const asn::Target &t);
 std::string printMoveCard(const asn::MoveCard &e);
 std::string printDrawCard(const asn::DrawCard &e);
 
+template<typename T>
+std::string printSpecificAbility(const T &a, asn::CardType cardType) {
+    std::string s;
+
+    gPrintState = { asn::Number(), asn::Number(), false, false };
+
+    if constexpr (std::is_same_v<T, asn::AutoAbility>)
+        s += "【AUTO】 ";
+    else if constexpr (std::is_same_v<T, asn::ContAbility>) {
+        if (cardType != asn::CardType::Event)
+            s += "【CONT】 ";
+    } else if constexpr (std::is_same_v<T, asn::ActAbility>)
+        s += "【ACT】 ";
+
+    s += printKeywords(a.keywords);
+    size_t prefixLen = s.size();
+
+    if constexpr (std::is_same_v<T, asn::AutoAbility>) {
+        if (a.cost) {
+            s += printCost(*a.cost);
+            prefixLen = s.size();
+        }
+
+        s += printTrigger(a.trigger);
+    }
+
+    bool isBackup = false;
+    if constexpr (std::is_same_v<T, asn::ActAbility>) {
+        if (!(a.keywords.size() && a.keywords[0] == asn::Keyword::Backup)) {
+            s += printCost(a.cost);
+            prefixLen = s.size();
+        } else {
+            isBackup = true;
+        }
+    }
+
+    s += printEffects(a.effects);
+
+    if constexpr (std::is_same_v<T, asn::ActAbility>) {
+        if (isBackup)
+            s += printCost(a.cost);
+    }
+
+    if (!isBackup)
+        s[prefixLen] = std::toupper(s[prefixLen]);
+    if (s.size() && s[s.size() - 1] == ' ')
+        s.pop_back();
+    if (s.size() && s[s.size() - 1] == ',')
+        s.pop_back();
+    s.push_back('.');
+
+    gPrintState = { asn::Number(), asn::Number(), false, false };
+
+    return s;
+}

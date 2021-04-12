@@ -10,6 +10,7 @@ inline void toBufLE(uint32_t val, Buf &buf) {
 }
 
 void encodeAbility(const asn::Ability &a, Buf &buf);
+void encodeEventAbility(const asn::EventAbility &a, Buf &buf);
 void encodeTrigger(const asn::Trigger &t, Buf &buf);
 void encodeTarget(const asn::Target &t, Buf &buf);
 void encodeNumber(const asn::Number &n, Buf &buf);
@@ -25,6 +26,7 @@ void encodeMoveCard(const asn::MoveCard &e, Buf &buf);
 void encodeDrawCard(const asn::DrawCard &e, Buf &buf);
 void encodeSearchCard(const asn::SearchCard &e, Buf &buf);
 void encodeAbilityGain(const asn::AbilityGain &e, Buf &buf);
+void encodePerformEffect(const asn::PerformEffect &e, Buf &buf);
 void encodeLook(const asn::Look &e, Buf &buf);
 
 template<typename T>

@@ -71,6 +71,7 @@ asn::Target parseTarget(const QJsonObject &json);
 asn::Condition parseCondition(const QJsonObject &json);
 asn::Effect parseEffect(const QJsonObject &json);
 asn::Ability parseAbility(const QJsonObject &json);
+asn::EventAbility parseEventAbility(const QJsonObject &json);
 
 class JsonParser : public QQuickItem {
     Q_OBJECT

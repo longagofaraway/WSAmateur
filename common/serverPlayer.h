@@ -128,6 +128,7 @@ public:
     void sendEndGame(bool victory);
     Resumable processPlayActCmd(const CommandPlayAct &cmd);
     void reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone);
+    void addAbilityToCard(ServerCard *card, const asn::Ability &a, int duration);
 
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);

@@ -63,6 +63,7 @@ inline bool decodeBool(Iterator &it, Iterator end) {
 }
 
 asn::Ability decodeAbility(Iterator &it, Iterator end);
+asn::EventAbility decodeEventAbility(Iterator &it, Iterator end);
 asn::Effect decodeEffect(Iterator &it, Iterator end);
 asn::Trigger decodeTrigger(Iterator &it, Iterator end);
 std::string decodeString(Iterator &it, Iterator end);
@@ -78,4 +79,5 @@ asn::MoveCard decodeMoveCard(Iterator &it, Iterator end);
 asn::DrawCard decodeDrawCard(Iterator &it, Iterator end);
 asn::SearchCard decodeSearchCard(Iterator &it, Iterator end);
 asn::AbilityGain decodeAbilityGain(Iterator &it, Iterator end);
+asn::PerformEffect decodePerformEffect(Iterator &it, Iterator end);
 asn::Look decodeLook(Iterator &it, Iterator end);

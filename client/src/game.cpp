@@ -21,8 +21,8 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="1" code="IMC/W43-127"/>
-        <card number="20" code="KGL/S79-018"/>
-        <card number="20" code="KGL/S79-015"/>
+        <card number="20" code="KGL/S79-019"/>
+        <card number="20" code="KGL/S79-017"/>
         <card number="1" code="IMC/W43-046"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-111"/>
@@ -36,7 +36,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="0" code="IMC/W43-127"/>
-        <card number="40" code="IMC/W43-046"/>
+        <card number="40" code="KGL/S79-019"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-091"/>
     </main>
@@ -345,6 +345,17 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         cmd.set_startid(0);
         cmd.set_startzone("hand");
         cmd.set_targetzone("wr");
+        sendGameCommand(cmd, mOpponent->id());
+    } else if (event->event().Is<EventEffectChoice>()) {
+        CommandChoice cmd;
+        cmd.set_choice(1);
+        sendGameCommand(cmd, mOpponent->id());
+    } else if (event->event().Is<EventChooseCard>()) {
+        CommandChooseCard cmd;
+        cmd.set_zone("stage");
+        cmd.set_owner(ProtoOwner::ProtoOpponent);
+        cmd.add_ids(1);
+        cmd.add_ids(2);
         sendGameCommand(cmd, mOpponent->id());
     }
 }

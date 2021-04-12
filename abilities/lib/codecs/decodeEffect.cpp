@@ -77,7 +77,7 @@ PerformEffect decodePerformEffect(Iterator &it, Iterator end) {
     PerformEffect e;
     e.numberOfEffects = decodeUInt8(it, end);
     e.numberOfTimes = decodeUInt8(it, end);
-    e.effects = decodeArray(it, end, decodeEffect);
+    e.effects = decodeArray(it, end, decodeEventAbility);
     return e;
 }
 

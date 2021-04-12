@@ -138,3 +138,7 @@ message EventSetCannotPlay {
     sint32 handId = 1;
     bool cannotPlay = 2;
 }
+
+message EventEffectChoice {
+    bytes effect = 1;
+}

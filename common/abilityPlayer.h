@@ -81,6 +81,7 @@ public:
     Resumable playSearchCard(const asn::SearchCard &e);
     void playShuffle(const asn::Shuffle &e);
     Resumable playAbilityGain(const asn::AbilityGain &e);
+    Resumable playPerformEffect(const asn::PerformEffect &e);
     void playMoveWrToDeck(const asn::MoveWrToDeck &e);
     void playChangeState(const asn::ChangeState &e);
     Resumable playFlipOver(const asn::FlipOver &e);
@@ -97,4 +98,5 @@ public:
 
     void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
+    Resumable getStagePosition(int &position, const asn::MoveCard &e);
 };

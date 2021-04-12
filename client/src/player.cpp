@@ -228,6 +228,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventSetCannotPlay ev;
         event->event().UnpackTo(&ev);
         setCannotPlay(ev);
+    } else if (event->event().Is<EventEffectChoice>()) {
+        EventEffectChoice ev;
+        event->event().UnpackTo(&ev);
+        processEffectChoice(ev);
     }
 }
 

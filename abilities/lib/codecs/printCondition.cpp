@@ -83,11 +83,11 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         }
     }
 
-    s += printCard(c.whichCards, plural, false);
+    s += printCard(c.whichCards, plural, false) + " ";
 
     if (c.where.zone != Zone::Stage) {
         if (haveExactName(c.whichCards.cardSpecifiers)) {
-            s += " is ";
+            s += "is ";
         }
         s += "in ";
         if (c.where.owner == Player::Player)

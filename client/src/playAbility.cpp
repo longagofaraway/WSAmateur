@@ -11,40 +11,17 @@
 #include "stage.h"
 
 namespace {
-asn::ChooseCard decodeChooseCard(const std::string &buf) {
+
+template<typename F>
+auto decodingWrapper(const std::string &buf, F &decodeFunction) {
     std::vector<uint8_t> binbuf(buf.begin(), buf.end());
     auto it = binbuf.begin();
-    return ::decodeChooseCard(it, binbuf.end());
-}
-asn::MoveCard decodeMoveCard(const std::string &buf) {
-    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.begin();
-    return ::decodeMoveCard(it, binbuf.end());
-}
-asn::DrawCard decodeDrawCard(const std::string &buf) {
-    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.begin();
-    return ::decodeDrawCard(it, binbuf.end());
-}
-asn::SearchCard decodeSearchCard(const std::string &buf) {
-    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.begin();
-    return ::decodeSearchCard(it, binbuf.end());
-}
-asn::AbilityGain decodeAbilityGain(const std::string &buf) {
-    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.begin();
-    return ::decodeAbilityGain(it, binbuf.end());
+    return decodeFunction(it, binbuf.end());
 }
 asn::Ability decodeAbility(const std::string &buf) {
     std::vector<uint8_t> binbuf(buf.begin(), buf.end());
     auto it = binbuf.begin();
     return ::decodeAbility(it, binbuf.end());
-}
-asn::Look decodeLook(const std::string &buf) {
-    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.begin();
-    return ::decodeLook(it, binbuf.end());
 }
 
 void highlightAllCards(CardZone *zone, bool highlight) {
@@ -176,7 +153,7 @@ void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
         selectAllCards(from, false);
     }
     if (place->get().owner == asn::Player::Opponent || place->get().owner == asn::Player::Both) {
-        auto from = mGame->opponent()->zone(asnZoneToString(place->get().zone));
+        auto from = getOpponent()->zone(asnZoneToString(place->get().zone));
         highlightAllCards(from, false);
         selectAllCards(from, false);
     }
@@ -196,7 +173,7 @@ void Player::processChooseCard(const EventChooseCard &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodeChooseCard(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeChooseCard);
     if (effect.targets.size() != 1 ||
         effect.targets[0].type != asn::TargetType::SpecificCards) {
         assert(false);
@@ -221,7 +198,7 @@ void Player::processChooseCard(const EventChooseCard &event) {
 }
 
 void Player::processSearchCard(const EventSearchCard &event) {
-    auto effect = decodeSearchCard(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeSearchCard);
     assert(effect.place.zone == asn::Zone::Deck);
     assert(effect.targets.size() == 1);
     assert(effect.targets[0].cards.size() == 1);
@@ -244,7 +221,7 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodeMoveCard(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeMoveCard);
     assert(effect.executor == asn::Player::Player);
     assert(!event.mandatory());
 
@@ -260,7 +237,7 @@ void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &even
     if (mOpponent)
         return;
 
-    auto effect = decodeMoveCard(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeMoveCard);
     assert(effect.executor == asn::Player::Player);
 
     if (effect.to.size() > 1) {
@@ -279,7 +256,7 @@ void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &even
 }
 
 void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexChoice &event) {
-    auto effect = decodeMoveCard(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeMoveCard);
     if ((mOpponent && effect.executor == asn::Player::Player) ||
         (!mOpponent && effect.executor == asn::Player::Opponent))
         return;
@@ -288,12 +265,18 @@ void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexCh
     auto &a = mAbilityList->ability(mAbilityList->activeId());
     a.effect = effect;
     a.choiceType = ChoiceType::DestinationIndex;
+    auto player = effect.to[0].owner == asn::Player::Opponent ? getOpponent() : this;
+    auto stage = player->zone("stage");
     if (effect.to[0].pos == asn::Position::EmptySlotBackRow) {
-        mStage->model().setGlow(3, true);
-        mStage->model().setGlow(4, true);
+        stage->model().setGlow(3, true);
+        stage->model().setGlow(4, true);
+    } else if (effect.to[0].pos == asn::Position::EmptySlot) {
+        for (int i = 0; i < stage->model().count(); ++i) {
+            if (!stage->cards()[i].cardPresent())
+                stage->model().setGlow(i, true);
+        }
     } else if (effect.to[0].zone == asn::Zone::Stage && effect.to[0].pos == asn::Position::NotSpecified) {
-        auto player = effect.executor == asn::Player::Opponent ? getOpponent() : this;
-        highlightAllCards(player->zone("stage"), true);
+        highlightAllCards(stage, true);
     }
 }
 
@@ -301,7 +284,7 @@ void Player::processMoveTargetChoice(const EventMoveTargetChoice &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodeMoveCard(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeMoveCard);
     assert(effect.executor == asn::Player::Player);
     assert(effect.target.type == asn::TargetType::SpecificCards);
     assert(effect.from.pos == asn::Position::NotSpecified);
@@ -319,7 +302,7 @@ void Player::processDrawChoice(const EventDrawChoice &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodeDrawCard(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeDrawCard);
 
     auto header = printDrawCard(effect);
     header[0] = std::toupper(header[0]);
@@ -337,7 +320,7 @@ void Player::processAbilityChoice(const EventAbilityChoice &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodeAbilityGain(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeAbilityGain);
     if (static_cast<size_t>(effect.number) < effect.abilities.size()) {
         std::vector<QString> data;
         for (const auto &a: effect.abilities)
@@ -348,6 +331,23 @@ void Player::processAbilityChoice(const EventAbilityChoice &event) {
         mChoiceDialog = std::move(choiceDlg);
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
     }
+}
+
+void Player::processEffectChoice(const EventEffectChoice &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodingWrapper(event.effect(), decodePerformEffect);
+    if (static_cast<size_t>(effect.numberOfEffects) >= effect.effects.size())
+        return;
+
+    std::vector<QString> data;
+    for (const auto &a: effect.effects)
+        data.push_back(QString::fromStdString(printSpecificAbility(a, asn::CardType::Char)));
+
+    auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+    choiceDlg->setData("Choose effect to perform", data);
+    mChoiceDialog = std::move(choiceDlg);
 }
 
 void Player::processAbilityGain(const EventAbilityGain &event) {
@@ -371,19 +371,19 @@ void Player::processLook(const EventLook &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodeLook(event.effect());
+    auto effect = decodingWrapper(event.effect(), decodeLook);
     if (effect.number.mod != asn::NumModifier::UpTo)
         return;
 
     auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
     activatedAbility.effect = effect;
     if (static_cast<asn::EffectType>(event.nexteffecttype()) == asn::EffectType::MoveCard) {
-        activatedAbility.nextEffect = decodeMoveCard(event.nexteffect());
+        auto effect = decodingWrapper(event.nexteffect(), decodeMoveCard);
         auto &moveEffect = std::get<asn::MoveCard>(activatedAbility.nextEffect);
         if (moveEffect.order == asn::Order::Any)
             zone("view")->visualItem()->setProperty("mDragEnabled", true);
     } else if (static_cast<asn::EffectType>(event.nexteffecttype()) == asn::EffectType::ChooseCard)
-        mAbilityList->ability(mAbilityList->activeId()).nextEffect = decodeChooseCard(event.nexteffect());
+        mAbilityList->ability(mAbilityList->activeId()).nextEffect = decodingWrapper(event.nexteffect(), decodeChooseCard);
 
     zone("deck")->visualItem()->setProperty("mGlow", true);
     mAbilityList->activateCancel(mAbilityList->activeId(), true);
@@ -572,8 +572,15 @@ void Player::playAbility(int index) {
 }
 
 void Player::doneChoosing() {
-    auto &a = mAbilityList->ability(mAbilityList->activeId());
-    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    if (!hasActivatedAbilities()) {
+        if (mOpponent)
+            return;
+
+        getOpponent()->doneChoosing();
+        return;
+    }
+    auto &a = activeAbility();
+    auto &effect = a.effect;
     if (std::holds_alternative<asn::ChooseCard>(effect)) {
         auto &ef = std::get<asn::ChooseCard>(effect);
         dehighlightCards(ef.placeType, ef.place ? OptionalPlace(*ef.place) : std::nullopt);
@@ -716,15 +723,15 @@ void Player::cancelAbility(int index) {
 }
 
 void Player::chooseCardOrPosition(int index, QString qzone, bool opponent) {
-    if (!mAbilityList->count()) {
-        if (mOpponent)
-            return;
-        getOpponent()->chooseCardOrPosition(index, qzone, opponent);
+    if (!hasActivatedAbilities() && !getOpponent()->hasActivatedAbilities())
         return;
-    }
 
-    int activeId = mAbilityList->activeId();
-    if (mAbilityList->ability(activeId).choiceType == ChoiceType::Card)
+    ActivatedAbility *a;
+    if (hasActivatedAbilities())
+        a = &activeAbility();
+    else
+        a = &getOpponent()->activeAbility();
+    if (a->choiceType == ChoiceType::Card)
         chooseCard(index, qzone, opponent);
     else
         sendChoice(index);
@@ -795,17 +802,19 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
 }
 
 void Player::sendChoice(int index) {
-    int activeId = mAbilityList->activeId();
-    auto &effect = mAbilityList->ability(activeId).effect;
-    if (std::holds_alternative<asn::AbilityGain>(effect)) {
-        auto &ef = std::get<asn::AbilityGain>(effect);
-        if (static_cast<size_t>(index) > ef.abilities.size())
-            return;
-        if (ef.target.type == asn::TargetType::ThisCard) {
-            auto pzone = zone(mAbilityList->ability(activeId).zone);
-            auto &card = pzone->cards()[mAbilityList->ability(activeId).cardId];
-            if (!card.cardPresent())
+    if (hasActivatedAbilities()) {
+        auto &a = activeAbility();
+        auto &effect = a.effect;
+        if (std::holds_alternative<asn::AbilityGain>(effect)) {
+            auto &ef = std::get<asn::AbilityGain>(effect);
+            if (static_cast<size_t>(index) > ef.abilities.size())
                 return;
+            if (ef.target.type == asn::TargetType::ThisCard) {
+                auto pzone = zone(a.zone);
+                auto &card = pzone->cards()[a.cardId];
+                if (!card.cardPresent())
+                    return;
+            }
         }
     }
     CommandChoice cmd;

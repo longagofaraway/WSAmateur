@@ -254,7 +254,10 @@ std::string printMoveCard(const MoveCard &e) {
             s += printCard(spec.cards, false, false) + " of ";
         } else {
             bool plural = false;
-            if (spec.number.value > 1 || spec.number.mod == NumModifier::UpTo) {
+            if (spec.mode == TargetMode::All) {
+                plural = true;
+                s += "all ";
+            } else if (spec.number.value > 1 || spec.number.mod == NumModifier::UpTo) {
                 if (spec.number.value > 1)
                     plural = true;
                 s += printNumber(spec.number);
@@ -452,6 +455,27 @@ std::string printCannotPlay() {
     return "this card cannot be played from your hand ";
 }
 
+std::string printPerformEffect(const PerformEffect &e) {
+    std::string s;
+
+    if (e.numberOfEffects < static_cast<int>(e.effects.size())) {
+        s += "choose " + std::to_string(e.numberOfEffects) + " of the following " + std::to_string(e.effects.size()) + " effects and perform ";
+        if (e.numberOfEffects == 1)
+            s += "it";
+        else
+            s += "them";
+        s += ".";
+    }
+
+    for (const auto &ab: e.effects) {
+        s += "<br>\"";
+        s += printSpecificAbility(ab, asn::CardType::Char);
+        s += "\"";
+    }
+
+    return s;
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -512,6 +536,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CannotPlay:
         s += printCannotPlay();
+        break;
+    case EffectType::PerformEffect:
+        s += printPerformEffect(std::get<PerformEffect>(e.effect));
         break;
     }
 

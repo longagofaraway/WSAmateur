@@ -15,7 +15,6 @@ Card {
         function onCountChanged() {
             if (mModel.count == 0) {
                 memory.visible = false;
-                mView.visible = false;
             } else if (!memory.visible) {
                 memory.visible = true;
             }
@@ -98,7 +97,13 @@ Card {
         memory.mSource = code;
         gGame.getPlayer(opponent).addCard(code, "memory");
     }
-    function removeCard(index) { memory.mModel.removeCard(index); }
+    function removeCard(index) {
+        memory.mModel.removeCard(index);
+        if (memory.mModel.count > 0) {
+            let modelIndex = memory.mModel.index(memory.mModel.count - 1, 0);
+            memory.mSource = memory.mModel.data(modelIndex, CardModel.CodeRole);
+        }
+    }
     function getXForNewCard() { return memory.x; }
     function getYForNewCard() { return memory.y }
     function getXForCard() { return memory.x; }

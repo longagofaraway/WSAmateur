@@ -90,6 +90,9 @@ public:
 
     void resetChoiceDialog();
 
+    bool hasActivatedAbilities() const { return mAbilityList->count(); }
+    ActivatedAbility& activeAbility() { return mAbilityList->ability(mAbilityList->activeId()); }
+
     //test section
     void testAction();
     bool playCards(CardModel &hand);
@@ -149,6 +152,7 @@ private:
     void processMoveTargetChoice(const EventMoveTargetChoice &event);
     void processDrawChoice(const EventDrawChoice &event);
     void processAbilityChoice(const EventAbilityChoice &event);
+    void processEffectChoice(const EventEffectChoice &event);
     void processAbilityGain(const EventAbilityGain &event);
     void processRemoveAbility(const EventRemoveAbility &event);
     void processLook(const EventLook &event);

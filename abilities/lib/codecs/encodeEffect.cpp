@@ -62,7 +62,7 @@ void encodeAbilityGain(const AbilityGain &e, Buf &buf) {
 void encodePerformEffect(const PerformEffect &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.numberOfEffects));
     buf.push_back(static_cast<uint8_t>(e.numberOfTimes));
-    encodeArray(e.effects, buf, encodeEffect);
+    encodeArray(e.effects, buf, encodeEventAbility);
 }
 
 void encodeFlipOver(const FlipOver &e, Buf &buf) {

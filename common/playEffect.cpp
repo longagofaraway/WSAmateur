@@ -75,6 +75,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::EarlyPlay:
         playEarlyPlay();
         break;
+    case asn::EffectType::PerformEffect:
+        co_await playPerformEffect(std::get<asn::PerformEffect>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -198,6 +201,35 @@ std::map<int, ServerCard*> AbilityPlayer::processCommandChooseCard(const Command
         res[cmd.ids(i)] = card;
     }
     return res;
+}
+
+Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e) {
+    std::vector<uint8_t> buf;
+    encodeMoveCard(e, buf);
+    EventMoveDestinationIndexChoice ev;
+    ev.set_effect(buf.data(), buf.size());
+    ev.set_mandatory(true);
+    mPlayer->sendToBoth(ev);
+
+    auto player = owner(e.executor);
+    player->clearExpectedComands();
+    player->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+
+    int pos = 0;
+    while (true) {
+        auto cmd = co_await waitForCommand();
+        if (cmd.command().Is<CommandChoice>()) {
+            CommandChoice choiceCmd;
+            cmd.command().UnpackTo(&choiceCmd);
+            pos = choiceCmd.choice();
+            if (pos >= 5)
+                continue;
+            break;
+        }
+    }
+
+    position = pos;
+    player->clearExpectedComands();
 }
 
 Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
@@ -344,8 +376,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
 
     int toIndex = 0;
     //choosing target stage position
-    if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow ||
-        (e.to[toZoneIndex].zone == asn::Zone::Stage && e.to[toZoneIndex].pos == asn::Position::NotSpecified)) {
+    if (e.to[toZoneIndex].zone == asn::Zone::Stage) {
         assert(mandatory());
         bool positionSet = false;
         if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
@@ -362,29 +393,23 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             }
         }
         if (!positionSet) {
-            std::vector<uint8_t> buf;
-            encodeMoveCard(e, buf);
-            EventMoveDestinationIndexChoice ev;
-            ev.set_effect(buf.data(), buf.size());
-            ev.set_mandatory(true);
-            mPlayer->sendToBoth(ev);
-
-            auto player = owner(e.executor);
-            player->clearExpectedComands();
-            player->addExpectedCommand(CommandChoice::GetDescriptor()->name());
-
-            while (true) {
-                auto cmd = co_await waitForCommand();
-                if (cmd.command().Is<CommandChoice>()) {
-                    CommandChoice choiceCmd;
-                    cmd.command().UnpackTo(&choiceCmd);
-                    toIndex = choiceCmd.choice();
-                    if (toIndex >= 5)
-                        continue;
-                    break;
+            if (e.target.type == asn::TargetType::LastMovedCards) {
+                ServerPlayer *executor = mPlayer;
+                for (const auto &card: lastMovedCards()) {
+                    executor = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
+                    cardsToMove[card.id] = card.card;
                 }
+
+                clearLastMovedCards();
+                for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
+                    co_await getStagePosition(toIndex, e);
+                    executor->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+                }
+
+                co_return;
+            } else {
+                co_await getStagePosition(toIndex, e);
             }
-            player->clearExpectedComands();
         }
     }
 
@@ -560,7 +585,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
                     else
                         mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, positional);
                 } else {
-                    mPlayer->addAttributeBuff(e.type, thisCard().id, value, e.duration);
+                    mPlayer->addAttributeBuff(e.type, i, value, e.duration);
                 }
             }
         }
@@ -696,14 +721,7 @@ Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
             auto card = thisCard().card;
             if (!card || card->zone()->name() != thisCard().zone)
                 co_return;
-            card->addAbility(e.abilities[chosenAbilityId], e.duration);
-            EventAbilityGain ev;
-            ev.set_zone(card->zone()->name());
-            ev.set_cardid(card->pos());
-
-            std::vector<uint8_t> abilityBuf = encodeAbility(e.abilities[chosenAbilityId]);
-            ev.set_ability(abilityBuf.data(), abilityBuf.size());
-            mPlayer->sendToBoth(ev);
+            mPlayer->addAbilityToCard(card, e.abilities[chosenAbilityId], e.duration);
         }
         co_return;
     }
@@ -712,17 +730,44 @@ Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
         auto card = thisCard().card;
         if (!card || card->zone()->name() != thisCard().zone)
             co_return;
-        for (const auto &a: e.abilities) {
-            card->addAbility(a, e.duration);
-            EventAbilityGain ev;
-            ev.set_zone(card->zone()->name());
-            ev.set_cardid(card->pos());
-
-            std::vector<uint8_t> abilityBuf = encodeAbility(a);
-            ev.set_ability(abilityBuf.data(), abilityBuf.size());
-            mPlayer->sendToBoth(ev);
-        }
+        for (const auto &a: e.abilities)
+            mPlayer->addAbilityToCard(card, a, e.duration);
     }
+}
+
+Resumable AbilityPlayer::playPerformEffect(const asn::PerformEffect &e) {
+    if (static_cast<size_t>(e.numberOfEffects) < e.effects.size()) {
+        std::vector<uint8_t> buf;
+        encodePerformEffect(e, buf);
+
+        EventEffectChoice event;
+        event.set_effect(buf.data(), buf.size());
+        mPlayer->sendToBoth(event);
+
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+
+        int chosenEffectId;
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandChoice>()) {
+                CommandChoice choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                chosenEffectId = choiceCmd.choice();
+                if (static_cast<size_t>(chosenEffectId) >= e.effects.size())
+                    continue;
+                break;
+            }
+        }
+        mPlayer->clearExpectedComands();
+
+        co_await playEventAbility(e.effects[chosenEffectId]);
+
+        co_return;
+    }
+
+    for (const auto &a: e.effects)
+        co_await playEventAbility(a);
 }
 
 void AbilityPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {
