@@ -75,7 +75,6 @@ Card {
 
     function openView(open) {
         if (mView === null) {
-            console.log("asdf");
             let comp = Qt.createComponent("CardsView.qml");
             mView = comp.createObject(gGame);
             mView.mModel = mModel;

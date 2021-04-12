@@ -247,11 +247,15 @@ std::string printMoveCard(const MoveCard &e) {
     } else if (e.target.type == TargetType::ThisCard) {
         s += "this card ";
     } else if(e.target.type == TargetType::SpecificCards) {
+        bool plural = false;
         const auto &spec = *e.target.targetSpecification;
-        if (e.from.pos == Position::Top && spec.number.mod == NumModifier::ExactMatch &&
-            spec.number.value == 1) {
+        if (e.from.pos == Position::Top && spec.number.mod == NumModifier::ExactMatch) {
             s += "the top ";
-            s += printCard(spec.cards, false, false) + " of ";
+            if (spec.number.value > 1) {
+                plural = true;
+                s += std::to_string(spec.number.value) + " ";
+            }
+            s += printCard(spec.cards, plural, false) + " of ";
         } else {
             bool plural = false;
             if (spec.mode == TargetMode::All) {

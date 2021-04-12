@@ -22,7 +22,7 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <main>
         <card number="1" code="IMC/W43-127"/>
         <card number="20" code="KGL/S79-019"/>
-        <card number="20" code="KGL/S79-017"/>
+        <card number="20" code="KGL/S79-666"/>
         <card number="1" code="IMC/W43-046"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-111"/>
@@ -348,7 +348,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventEffectChoice>()) {
         CommandChoice cmd;
-        cmd.set_choice(1);
+        cmd.set_choice(2);
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventChooseCard>()) {
         CommandChooseCard cmd;

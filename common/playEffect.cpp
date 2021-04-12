@@ -232,6 +232,25 @@ Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e)
     player->clearExpectedComands();
 }
 
+Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex) {
+    auto player = owner(e.from.owner);
+    auto zone = player->zone(asnZoneToString(e.from.zone));
+    const auto &spec = *e.target.targetSpecification;
+    auto deck = player->zone("deck");
+    clearLastMovedCards();
+    for (int i = 0; i < spec.number.value; ++i) {
+        auto card = deck->topCard();
+        player->moveCard(asnZoneToString(e.from.zone), deck->count() - 1, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+        addLastMovedCard(CardImprint(card->zone()->name(), card->pos(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
+
+        // TODO: refresh and levelup are triggered at the same time, give choice
+        if (player->zone("deck")->count() == 0)
+            player->refresh();
+        if (e.to[toZoneIndex].zone == asn::Zone::Clock && player->zone("clock")->count() >= 7)
+            co_await player->levelUp();
+    }
+}
+
 Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
         ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
@@ -252,10 +271,10 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             co_return;
     }
 
-    bool chooseCards = (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified);
     std::map<int, ServerCard*> cardsToMove;
     bool moveCanceled = false;
-    if (chooseCards) {
+    if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified
+        && e.target.targetSpecification->mode != asn::TargetMode::All) {
         assert(e.to.size() == 1);
         assert(e.executor == asn::Player::Player);
         std::vector<uint8_t> buf;
@@ -425,12 +444,23 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             cardsToMove[card.id] = card.card;
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
-        player = owner(e.from.owner);
-        auto zone = mPlayer->zone(asnZoneToString(e.from.zone));
         if (e.from.pos == asn::Position::Top)
-            cardsToMove[zone->count() - 1] = zone->card(zone->count() - 1);
-        else if (e.from.pos == asn::Position::Bottom)
+            co_await moveTopDeck(e, toZoneIndex, toIndex);
+        player = owner(e.from.owner);
+        auto zone = player->zone(asnZoneToString(e.from.zone));
+        const auto &spec = *e.target.targetSpecification;
+        if (e.from.pos == asn::Position::Bottom)
             cardsToMove[0] = zone->card(0);
+        else if (spec.mode == asn::TargetMode::All) {
+            for (int i = 0; i < zone->count(); ++i) {
+                auto card = zone->card(i);
+                if (!card)
+                    continue;
+
+                if (checkCard(spec.cards.cardSpecifiers, *card))
+                    cardsToMove[i] = card;
+            }
+        }
     } else if (e.target.type == asn::TargetType::ThisCard) {
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
             toIndex = thisCard().card->prevStagePos();

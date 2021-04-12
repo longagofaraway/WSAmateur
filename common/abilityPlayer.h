@@ -99,4 +99,5 @@ public:
     void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
     Resumable getStagePosition(int &position, const asn::MoveCard &e);
+    Resumable moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex);
 };
