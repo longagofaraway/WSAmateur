@@ -15,6 +15,7 @@ void encodeAttributeGain(const AttributeGain &e, Buf &buf) {
 }
 
 void encodeChooseCard(const ChooseCard &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.executor));
     encodeArray(e.targets, buf, encodeTarget);
     encodeArray(e.excluding, buf, encodeCard);
     buf.push_back(static_cast<uint8_t>(e.placeType));
@@ -129,6 +130,11 @@ void encodeBackup(const Backup &e, Buf &buf) {
     buf.push_back(zzenc_8(e.level));
 }
 
+void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
+    encodeString(e.cardCode, buf);
+    buf.push_back(zzenc_8(e.effectId));
+}
+
 void encodeEffect(const Effect &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.type));
     encodeCondition(e.cond, buf);
@@ -202,6 +208,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::Shuffle:
         encodeShuffle(std::get<Shuffle>(e.effect), buf);
+        break;
+    case EffectType::OtherEffect:
+        encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);
         break;
     default:
         break;

@@ -60,15 +60,10 @@ void ServerPlayer::sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> 
 }
 
 
-void ServerPlayer::addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration) {
-    auto stage = zone("stage");
-    auto card = stage->card(pos);
-    if (!card)
-        return;
-
+void ServerPlayer::addAttributeBuff(ServerCard *card, asn::AttributeType attr, int delta, int duration) {
     card->addAttrBuff(attr, delta, duration);
 
-    sendAttrChange(card, attr);
+    card->player()->sendAttrChange(card, attr);
 }
 
 void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta, bool positional) {

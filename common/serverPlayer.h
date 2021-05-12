@@ -132,7 +132,7 @@ public:
 
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);
-    void addAttributeBuff(asn::AttributeType attr, int pos, int delta, int duration = 1);
+    void addAttributeBuff(ServerCard *card, asn::AttributeType attr, int delta, int duration = 1);
     void addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta, bool positional = false);
     void removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr);
     void removePositionalContBuffsBySource(ServerCard *card);

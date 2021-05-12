@@ -16,6 +16,7 @@ AttributeGain decodeAttributeGain(Iterator &it, Iterator end) {
 
 ChooseCard decodeChooseCard(Iterator &it, Iterator end) {
     ChooseCard e;
+    e.executor = decodeEnum<Player>(it, end);
     e.targets = decodeArray(it, end, decodeTarget);
     e.excluding = decodeArray(it, end, decodeCard);
     e.placeType = decodeEnum<PlaceType>(it, end);
@@ -162,6 +163,13 @@ Shuffle decodeShuffle(Iterator &it, Iterator end) {
     return e;
 }
 
+OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
+    OtherEffect e;
+    e.cardCode = decodeString(it, end);
+    e.effectId = decodeInt8(it, end);
+    return e;
+}
+
 Effect decodeEffect(Iterator &it, Iterator end) {
     Effect e;
 
@@ -236,6 +244,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::Shuffle:
         e.effect = decodeShuffle(it, end);
+        break;
+    case EffectType::OtherEffect:
+        e.effect = decodeOtherEffect(it, end);
         break;
     default:
         break;

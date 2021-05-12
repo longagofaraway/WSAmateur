@@ -19,6 +19,7 @@ enum class PlaceType : uint8_t {
 };
 
 struct ChooseCard {
+    Player executor;
     std::vector<Target> targets;
     std::vector<Card> excluding;
     PlaceType placeType;
@@ -184,6 +185,11 @@ struct Shuffle {
     Player owner;
 };
 
+struct OtherEffect {
+    std::string cardCode;
+    int effectId;
+};
+
 
 enum class EffectType : uint8_t {
     AttributeGain = 1,
@@ -221,7 +227,9 @@ enum class EffectType : uint8_t {
     SideAttackWithoutPenalty,
     Standby,
     HardcodedEffects,
-    Shuffle
+    Shuffle,
+
+    OtherEffect = 255
 };
 
 struct Effect {
@@ -252,7 +260,8 @@ struct Effect {
         Replay,
         DrawCard,
         HardcodedEffect,
-        Shuffle
+        Shuffle,
+        OtherEffect
     > effect;
 };
 

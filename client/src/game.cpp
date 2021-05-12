@@ -21,8 +21,8 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="1" code="IMC/W43-127"/>
-        <card number="20" code="KGL/S79-019"/>
-        <card number="20" code="KGL/S79-666"/>
+        <card number="20" code="KGL/S79-020"/>
+        <card number="20" code="KGL/S79-017"/>
         <card number="1" code="IMC/W43-046"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-111"/>
@@ -36,7 +36,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="0" code="IMC/W43-127"/>
-        <card number="40" code="KGL/S79-019"/>
+        <card number="40" code="KGL/S79-015"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-091"/>
     </main>

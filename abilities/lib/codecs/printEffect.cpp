@@ -2,10 +2,20 @@
 
 #include <cassert>
 #include <string>
+#include <unordered_map>
 
 using namespace asn;
 
 extern PrintState gPrintState;
+
+namespace {
+std::unordered_map<std::string, std::string> gOtherEffects {
+    { "KGL/S79-020-3", "Both players reveal the top card of their deck. If your revealed card's level is higher than \
+opponent's revealed card's level, choose 1 " + printTrait("Shuchiin") + " character from your waiting room and \
+return it to hand. If opponent's revealed card's level is higher, opponent chooses 1 of their characters, \
+and that character gets +5000 power until end of turn" }
+};
+}
 
 std::string printEffects(const std::vector<Effect> &effects) {
     std::string s;
@@ -480,6 +490,10 @@ std::string printPerformEffect(const PerformEffect &e) {
     return s;
 }
 
+std::string printOtherEffect(const OtherEffect &e) {
+    return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
+}
+
 std::string printEffect(const Effect &e) {
     std::string s;
 
@@ -543,6 +557,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::PerformEffect:
         s += printPerformEffect(std::get<PerformEffect>(e.effect));
+        break;
+    case EffectType::OtherEffect:
+        s += printOtherEffect(std::get<OtherEffect>(e.effect));
         break;
     }
 

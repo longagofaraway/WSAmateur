@@ -611,9 +611,9 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     sendToBoth(event);
 
     if (type == AttackType::DirectAttack)
-        addAttributeBuff(asn::AttributeType::Soul, cmd.stageid(), 1);
+        addAttributeBuff(attCard, asn::AttributeType::Soul, 1);
     else if (type == AttackType::SideAttack)
-        addAttributeBuff(asn::AttributeType::Soul, cmd.stageid(), -battleOpp->level());
+        addAttributeBuff(attCard, asn::AttributeType::Soul, -battleOpp->level());
 
     checkOnAttack(attCard);
     co_await mGame->checkTiming();
@@ -644,7 +644,7 @@ Resumable ServerPlayer::performTriggerStep(int pos) {
         co_await std::suspend_always();
     for (auto trigger: card->triggers()) {
         if (trigger == TriggerIcon::Soul)
-            addAttributeBuff(asn::AttributeType::Soul, pos, 1);
+            addAttributeBuff(attackingCard(), asn::AttributeType::Soul, 1);
         else
             co_await resolveTrigger(card, trigger);
     }

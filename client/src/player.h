@@ -142,7 +142,7 @@ private:
     void endResolvingAbilties();
     void abilityResolved();
     void processChooseCard(const EventChooseCard &event);
-    void processChooseCardInternal(int eligibleCount, OptionalPlace place, bool mandatory);
+    void processChooseCardInternal(int eligibleCount, OptionalPlace place, bool mandatory, asn::Player executor);
     void sendChooseCard(const asn::ChooseCard &e);
     void sendChooseCard(const asn::SearchCard &e);
     void processSearchCard(const EventSearchCard &event);

@@ -33,8 +33,10 @@ AttributeGain parseAttributeGain(const QJsonObject &json) {
 }
 
 ChooseCard parseChooseCard(const QJsonObject &json) {
-    if (json.contains("targets") && !json["targets"].isArray())
-        throw std::runtime_error("wrong targets in ChooseCard");
+    if (json.contains("executor") && !json["executor"].isDouble())
+        throw std::runtime_error("wrong executor in ChooseCard");
+    if (!json.contains("targets") || !json["targets"].isArray())
+        throw std::runtime_error("no targets in ChooseCard");
     if (json.contains("excluding") && !json["excluding"].isArray())
         throw std::runtime_error("wrong excluding in ChooseCard");
     if (!json.contains("placeType") || !json["placeType"].isDouble())
@@ -43,8 +45,11 @@ ChooseCard parseChooseCard(const QJsonObject &json) {
         throw std::runtime_error("wrong place in ChooseCard");
 
     ChooseCard e;
-    if (json.contains("targets"))
-        e.targets = parseArray(json["targets"].toArray(), parseTarget);
+    if (json.contains("executor"))
+        e.executor = static_cast<Player>(json["executor"].toInt());
+    else
+        e.executor = Player::Player;
+    e.targets = parseArray(json["targets"].toArray(), parseTarget);
     if (json.contains("excluding"))
         e.excluding = parseArray(json["excluding"].toArray(), parseCard);
     e.placeType = static_cast<PlaceType>(json["placeType"].toInt());
@@ -357,6 +362,18 @@ MoveWrToDeck parseMoveWrToDeck(const QJsonObject &json) {
     return e;
 }
 
+OtherEffect parseOtherEffect(const QJsonObject &json) {
+    if (!json.contains("cardCode") || !json["cardCode"].isString())
+        throw std::runtime_error("no cardCode in OtherEffect");
+    if (!json.contains("effectId") || !json["effectId"].isDouble())
+        throw std::runtime_error("no effectId in OtherEffect");
+
+    OtherEffect e;
+    e.cardCode = json["cardCode"].toString().toStdString();
+    e.effectId = json["effectId"].toInt();
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -451,6 +468,9 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::PutRestedInSameSlot:
     case EffectType::SideAttackWithoutPenalty:
     case EffectType::Standby:
+        break;
+    case EffectType::OtherEffect:
+        e.effect = parseOtherEffect(json["effect"].toObject());
         break;
     default:
         throw std::runtime_error("wrong effect type");

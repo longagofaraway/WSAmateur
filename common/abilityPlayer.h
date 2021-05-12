@@ -90,6 +90,8 @@ public:
     Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {});
     void playEarlyPlay();
     void playCannotPlay();
+    Resumable playOtherEffect(const asn::OtherEffect &e);
+    Resumable playS79_20();
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);

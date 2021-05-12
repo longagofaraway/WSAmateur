@@ -25,6 +25,7 @@ Effect {
     Replay,
     DrawCard,
     HardcodedEffect,
+    OtherEffect,
     Nothing
   }
 }
@@ -65,7 +66,9 @@ enum EffectType {
   sideAttackWithoutPenalty = 33,
   standby = 34,
   hardcodedEffects = 35,
-  shuffle = 36
+  shuffle = 36,
+  
+  otherEffect = 255
 }
 
 enum AttributeType {
@@ -93,6 +96,7 @@ enum ValueType {
 }
 
 ChooseCard {
+  executor Player,
   targets Array of Target,
   excluding Array of Card,
   placeType PlaceType,
@@ -267,4 +271,9 @@ Possible values: "KGL/S79-020"
 Shuffle {
   zone Zone,
   owner Player
+}
+
+OtherEffect {
+  cardCode String,
+  effectId Int8
 }

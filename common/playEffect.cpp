@@ -78,6 +78,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::PerformEffect:
         co_await playPerformEffect(std::get<asn::PerformEffect>(e.effect));
         break;
+    case asn::EffectType::OtherEffect:
+        co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
+        break;
     default:
         assert(false);
         break;
@@ -136,10 +139,11 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
     ev.set_mandatory(mandatory());
     mPlayer->sendToBoth(ev);
 
-    mPlayer->clearExpectedComands();
-    mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+    auto player = owner(e.executor);
+    player->clearExpectedComands();
+    player->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
     // TODO: check for legitimacy of cancel
-    mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+    player->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
 
     while (true) {
         GameCommand cmd;
@@ -169,21 +173,29 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
             }
             //TODO: add checks
             for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
-                auto pzone = owner(protoPlayerToPlayer(chooseCmd.owner()))->zone(chooseCmd.zone());
+                auto playerType = protoPlayerToPlayer(chooseCmd.owner());
+                if (e.executor == asn::Player::Opponent) {
+                    // revert sides
+                    if (playerType == asn::Player::Player)
+                        playerType = asn::Player::Opponent;
+                    else
+                        playerType = asn::Player::Player;
+                }
+                auto pzone = owner(playerType)->zone(chooseCmd.zone());
                 if (!pzone)
                     break;
 
                 auto card = pzone->card(chooseCmd.ids(i));
                 if (!card)
                     break;
-                addChosenCard(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+                addChosenCard(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, card->player() != mPlayer));
                 if (e.placeType == asn::PlaceType::Selection)
                     removeMentionedCard(chooseCmd.ids(i));
             }
             break;
         }
     }
-    mPlayer->clearExpectedComands();
+    player->clearExpectedComands();
 }
 
 std::map<int, ServerCard*> AbilityPlayer::processCommandChooseCard(const CommandChooseCard &cmd) {
@@ -576,7 +588,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
 
     if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards())
-            mPlayer->addAttributeBuff(e.type, card.id, value, e.duration);
+            card.card->player()->addAttributeBuff(card.card, e.type, value, e.duration);
     } else if (e.target.type == asn::TargetType::ThisCard) {
         if (thisCard().card == nullptr ||
             (thisCard().card->zone()->name() != "stage" && thisCard().card->zone()->name() != "climax"))
@@ -588,7 +600,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
             else
                 mPlayer->addContAttributeBuff(thisCard().card, thisCard().card, abilityId(), e.type, value);
         } else {
-            mPlayer->addAttributeBuff(e.type, thisCard().id, value, e.duration);
+            mPlayer->addAttributeBuff(thisCard().card, e.type, value, e.duration);
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.target.targetSpecification;
@@ -615,7 +627,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
                     else
                         mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, positional);
                 } else {
-                    mPlayer->addAttributeBuff(e.type, i, value, e.duration);
+                    mPlayer->addAttributeBuff(card, e.type, value, e.duration);
                 }
             }
         }
@@ -628,7 +640,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
                 else
                     mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, true);
             } else {
-                mPlayer->game()->opponentOfPlayer(mPlayer->id())->addAttributeBuff(e.type, thisCard().id, value, e.duration);
+                mPlayer->addAttributeBuff(card, e.type, value, e.duration);
             }
         }
     }
@@ -848,7 +860,7 @@ Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
 void AbilityPlayer::playBackup(const asn::Backup &e) {
     auto opponent = mPlayer->getOpponent();
     auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
-    mPlayer->addAttributeBuff(asn::AttributeType::Power, charInBattle->pos(), e.power, 1);
+    mPlayer->addAttributeBuff(charInBattle, asn::AttributeType::Power, e.power, 1);
     mPlayer->checkOnBackup(thisCard().card);
 }
 
@@ -958,3 +970,83 @@ void AbilityPlayer::playCannotPlay() {
     ev.set_cannotplay(thisCard().card->cannotPlay());
     mPlayer->sendGameEvent(ev);
 }
+
+Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {
+    auto key = e.cardCode + '-' + std::to_string(e.effectId);
+    if (key == "KGL/S79-020-3") {
+        co_await playS79_20();
+    }
+}
+
+Resumable AbilityPlayer::playS79_20() {
+    auto opponent = mPlayer->getOpponent();
+    auto pDeck = mPlayer->zone("deck");
+    auto oDeck = opponent->zone("deck");
+
+    EventRevealTopDeck eventPlayer;
+    eventPlayer.set_code(pDeck->card(pDeck->count() - 1)->code());
+    mPlayer->sendToBoth(eventPlayer);
+
+    EventRevealTopDeck eventOpponent;
+    eventOpponent.set_code(oDeck->card(oDeck->count() - 1)->code());
+    opponent->sendToBoth(eventOpponent);
+
+    auto pCard = pDeck->topCard();
+    auto oCard = oDeck->topCard();
+
+    if (pCard->level() > oCard->level()) {
+        asn::ChooseCard c;
+        c.placeType = asn::PlaceType::SpecificPlace;
+        asn::Target t;
+        t.type = asn::TargetType::SpecificCards;
+        asn::TargetSpecificCards spec;
+        spec.mode = asn::TargetMode::Any;
+        spec.number = asn::Number{asn::NumModifier::ExactMatch, 1, std::nullopt};
+        spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::CardType, asn::CardType::Char});
+        spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::Trait, asn::Trait{"Shuchiin"}});
+        t.targetSpecification = spec;
+        c.executor = asn::Player::Player;
+        c.targets.push_back(t);
+        c.place = asn::Place{asn::Position::NotSpecified, asn::Zone::WaitingRoom, asn::Player::Player};
+
+        co_await playChooseCard(c);
+
+        asn::MoveCard m;
+        asn::Target t2;
+        t2.type = asn::TargetType::ChosenCards;
+        m.target = t2;
+        m.executor = asn::Player::Player;
+        m.order = asn::Order::NotSpecified;
+        m.from = asn::Place{asn::Position::NotSpecified, asn::Zone::WaitingRoom, asn::Player::Player};
+        m.to.push_back(asn::Place{asn::Position::NotSpecified, asn::Zone::Hand, asn::Player::Player});
+
+        co_await playMoveCard(m);
+    } else if (pCard->level() < oCard->level()) {
+        asn::ChooseCard c;
+        asn::Target t;
+        t.type = asn::TargetType::SpecificCards;
+        asn::TargetSpecificCards spec;
+        spec.mode = asn::TargetMode::Any;
+        spec.number = asn::Number{asn::NumModifier::ExactMatch, 1, std::nullopt};
+        spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::CardType, asn::CardType::Char});
+        t.targetSpecification = spec;
+        c.placeType = asn::PlaceType::SpecificPlace;
+        c.targets.push_back(t);
+        c.place = asn::Place{asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Opponent};
+        c.executor = asn::Player::Opponent;
+
+        co_await playChooseCard(c);
+
+        asn::AttributeGain a;
+        asn::Target t2;
+        t2.type = asn::TargetType::ChosenCards;
+        a.target = t2;
+        a.type = asn::AttributeType::Power;
+        a.gainType = asn::ValueType::Raw;
+        a.value = 5000;
+        a.duration = 1;
+
+        playAttributeGain(a);
+    }
+}
+
