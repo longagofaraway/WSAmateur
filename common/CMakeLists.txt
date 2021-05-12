@@ -42,13 +42,16 @@ find_package(Qt5 COMPONENTS Quick REQUIRED)
 add_library(wsamateurCommon STATIC ${commonSources})
 
 target_include_directories(wsamateurCommon
-    INTERFACE
+    PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
         ${QtCore_INCLUDE_DIRS}
 )
 
 target_compile_features(wsamateurCommon PRIVATE cxx_std_20)
+if (UNIX)
+	target_compile_options(wsamateurCommon PUBLIC -fcoroutines)
+endif (UNIX)
 
 target_link_libraries(wsamateurCommon PUBLIC wsamateurProto wsamateurAbilities
     PRIVATE Qt5::Core)

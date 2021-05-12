@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     qmlRegisterType<Game>("wsamateur", 1, 0, "Game");
-    qmlRegisterAnonymousType<Player>("wsamateur", 1);
+    qmlRegisterUncreatableType<Player>("wsamateur", 1, 0, "Player", "Player cannot be created in QML");
     qmlRegisterType<CardModel>("wsamateur", 1, 0, "CardModel");
     qmlRegisterType<ActivatedAbilityModel>("wsamateur", 1, 0, "ActivatedAbilityModel");
     qmlRegisterType<ChoiceDialogModel>("wsamateur", 1, 0, "ChoiceDialogModel");

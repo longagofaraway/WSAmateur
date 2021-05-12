@@ -141,9 +141,9 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
 
     auto player = owner(e.executor);
     player->clearExpectedComands();
-    player->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+    player->addExpectedCommand(CommandChooseCard::descriptor()->name());
     // TODO: check for legitimacy of cancel
-    player->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+    player->addExpectedCommand(CommandCancelEffect::descriptor()->name());
 
     while (true) {
         GameCommand cmd;
@@ -225,7 +225,7 @@ Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e)
 
     auto player = owner(e.executor);
     player->clearExpectedComands();
-    player->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+    player->addExpectedCommand(CommandChoice::descriptor()->name());
 
     int pos = 0;
     while (true) {
@@ -298,9 +298,9 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         mPlayer->sendToBoth(ev);
 
         mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandChooseCard::descriptor()->name());
         // TODO: check for legitimacy of cancel
-        mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
@@ -327,9 +327,9 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         mPlayer->sendToBoth(ev);
 
         mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
         // TODO: check for legitimacy of cancel
-        mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
@@ -389,7 +389,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         mPlayer->sendToBoth(ev);
 
         mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
@@ -516,7 +516,7 @@ Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
         mPlayer->sendToBoth(ev);
 
         mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
@@ -650,8 +650,8 @@ Resumable AbilityPlayer::playPayCost(const asn::PayCost &e) {
     mPlayer->sendToBoth(EventPayCost());
 
     mPlayer->clearExpectedComands();
-    mPlayer->addExpectedCommand(CommandPlayEffect::GetDescriptor()->name());
-    mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+    mPlayer->addExpectedCommand(CommandPlayEffect::descriptor()->name());
+    mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
 
     while (true) {
         auto cmd = co_await waitForCommand();
@@ -690,9 +690,9 @@ Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
     mPlayer->game()->sendPublicEvent(eventPublic, mPlayer->id());
 
     mPlayer->clearExpectedComands();
-    mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+    mPlayer->addExpectedCommand(CommandChooseCard::descriptor()->name());
     // TODO: check for legitimacy of cancel
-    mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
+    mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
 
     while (true) {
         auto cmd = co_await waitForCommand();
@@ -743,7 +743,7 @@ Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
         mPlayer->sendToBoth(event);
 
         mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
 
         int chosenAbilityId;
         while (true) {
@@ -787,7 +787,7 @@ Resumable AbilityPlayer::playPerformEffect(const asn::PerformEffect &e) {
         mPlayer->sendToBoth(event);
 
         mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandChoice::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
 
         int chosenEffectId;
         while (true) {
@@ -894,16 +894,16 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
         mPlayer->sendToBoth(ev);
 
         mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandCancelEffect::GetDescriptor()->name());
-        mPlayer->addExpectedCommand(CommandLookTopDeck::GetDescriptor()->name());
+        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
+        mPlayer->addExpectedCommand(CommandLookTopDeck::descriptor()->name());
         if (nextEffect) {
             if (nextEffect->type == asn::EffectType::ChooseCard)
-                mPlayer->addExpectedCommand(CommandChooseCard::GetDescriptor()->name());
+                mPlayer->addExpectedCommand(CommandChooseCard::descriptor()->name());
             if (nextEffect->type == asn::EffectType::MoveCard) {
-                mPlayer->addExpectedCommand(CommandConfirmMove::GetDescriptor()->name());
+                mPlayer->addExpectedCommand(CommandConfirmMove::descriptor()->name());
                 const auto &moveEffect = std::get<asn::MoveCard>(nextEffect->effect);
                 if (moveEffect.order == asn::Order::Any)
-                    mPlayer->addExpectedCommand(CommandMoveInOrder::GetDescriptor()->name());
+                    mPlayer->addExpectedCommand(CommandMoveInOrder::descriptor()->name());
             }
         }
 

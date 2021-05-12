@@ -43,7 +43,7 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     int newId = ++mNextPlayerId;
     auto player = std::make_unique<ServerPlayer>(this, client, newId);
     mPlayers.emplace(newId, std::move(player));
-    mPlayers[newId]->addExpectedCommand(CommandSetDeck::GetDescriptor()->name());
+    mPlayers[newId]->addExpectedCommand(CommandSetDeck::descriptor()->name());
 
     client->addGameAndPlayer(mId, newId);
 

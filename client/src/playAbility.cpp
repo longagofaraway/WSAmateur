@@ -15,12 +15,12 @@ namespace {
 template<typename F>
 auto decodingWrapper(const std::string &buf, F &decodeFunction) {
     std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.begin();
+    auto it = binbuf.cbegin();
     return decodeFunction(it, binbuf.end());
 }
 asn::Ability decodeAbility(const std::string &buf) {
     std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.begin();
+    auto it = binbuf.cbegin();
     return ::decodeAbility(it, binbuf.end());
 }
 

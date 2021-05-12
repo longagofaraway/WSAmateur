@@ -12,6 +12,14 @@
 #include "abilities.h"
 
 asn::Number parseNumber(const QJsonObject &json);
+asn::Multiplier parseMultiplier(const QJsonObject &json);
+asn::Place parsePlace(const QJsonObject &json);
+asn::Card parseCard(const QJsonObject &json);
+asn::Target parseTarget(const QJsonObject &json);
+asn::Condition parseCondition(const QJsonObject &json);
+asn::Effect parseEffect(const QJsonObject &json);
+asn::Ability parseAbility(const QJsonObject &json);
+
 template<typename T>
 std::vector<T> parseArray(const QJsonArray &json, T(*parseType)(const QJsonObject &json)) {
     if (!json.count())
@@ -64,15 +72,7 @@ T parseTargetType(const QJsonObject &json) {
     return p;
 }
 
-asn::Multiplier parseMultiplier(const QJsonObject &json);
-asn::Place parsePlace(const QJsonObject &json);
-asn::Card parseCard(const QJsonObject &json);
-asn::Target parseTarget(const QJsonObject &json);
-asn::Condition parseCondition(const QJsonObject &json);
-asn::Effect parseEffect(const QJsonObject &json);
-asn::Ability parseAbility(const QJsonObject &json);
 asn::EventAbility parseEventAbility(const QJsonObject &json);
-
 class JsonParser : public QQuickItem {
     Q_OBJECT
 public:

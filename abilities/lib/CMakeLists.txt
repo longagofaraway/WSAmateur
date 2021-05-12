@@ -41,4 +41,4 @@ target_include_directories(wsamateurAbilities
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_compile_features(wsamateurAbilities PRIVATE cxx_std_17)
+target_compile_features(wsamateurAbilities PRIVATE cxx_std_20)
