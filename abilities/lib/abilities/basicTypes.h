@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace asn {
 
 enum class State : uint8_t {

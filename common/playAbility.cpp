@@ -517,7 +517,7 @@ Resumable ServerPlayer::checkTiming() {
 
         if (playableCount > 1) {
             clearExpectedComands();
-            addExpectedCommand(CommandPlayAbility::GetDescriptor()->name());
+            addExpectedCommand(CommandPlayAbility::descriptor()->name());
             while (true) {
                 auto cmd = co_await waitForCommand();
                 if (cmd.command().Is<CommandPlayAbility>()) {

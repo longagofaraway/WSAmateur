@@ -102,7 +102,7 @@ void ServerPlayer::sendToBoth(const google::protobuf::Message &event) {
 
 void ServerPlayer::addDeck(const std::string &deck) {
     mDeck = std::make_unique<DeckList>(deck);
-    mExpectedCommands.push_back(CommandReadyToStart::GetDescriptor()->name());
+    mExpectedCommands.push_back(CommandReadyToStart::descriptor()->name());
 }
 
 ServerCardZone* ServerPlayer::addZone(std::string_view name, ZoneType type) {
@@ -144,7 +144,7 @@ void ServerPlayer::createStage() {
 
 void ServerPlayer::startGame() {
     mExpectedCommands.clear();
-    mExpectedCommands.emplace_back(CommandMulligan::GetDescriptor()->name(), 1);
+    mExpectedCommands.emplace_back(CommandMulligan::descriptor()->name(), 1);
 }
 
 Resumable ServerPlayer::startTurn() {
@@ -162,7 +162,7 @@ Resumable ServerPlayer::startTurn() {
 
     sendToBoth(EventClockPhase());
 
-    addExpectedCommand(CommandClockPhase::GetDescriptor()->name());
+    addExpectedCommand(CommandClockPhase::descriptor()->name());
 }
 
 void ServerPlayer::addExpectedCommand(const std::string &command, int maxCount) {
@@ -355,11 +355,11 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
     sendToBoth(EventMainPhase());
 
     clearExpectedComands();
-    addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
-    addExpectedCommand(CommandPlayAct::GetDescriptor()->name());
-    addExpectedCommand(CommandClimaxPhase::GetDescriptor()->name());
-    addExpectedCommand(CommandAttackPhase::GetDescriptor()->name());
-    addExpectedCommand(CommandSwitchStagePositions::GetDescriptor()->name());
+    addExpectedCommand(CommandPlayCard::descriptor()->name());
+    addExpectedCommand(CommandPlayAct::descriptor()->name());
+    addExpectedCommand(CommandClimaxPhase::descriptor()->name());
+    addExpectedCommand(CommandAttackPhase::descriptor()->name());
+    addExpectedCommand(CommandSwitchStagePositions::descriptor()->name());
 }
 
 Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
@@ -544,7 +544,7 @@ void ServerPlayer::climaxPhase() {
     sendToBoth(event);
 
     clearExpectedComands();
-    addExpectedCommand(CommandPlayCard::GetDescriptor()->name());
+    addExpectedCommand(CommandPlayCard::descriptor()->name());
     sendToBoth(EventClimaxPhase());
 }
 
@@ -580,8 +580,8 @@ Resumable ServerPlayer::startOfAttackPhase() {
 
 void ServerPlayer::attackDeclarationStep() {
     mGame->setPhase(ServerPhase::AttackDeclarationStep);
-    addExpectedCommand(CommandDeclareAttack::GetDescriptor()->name());
-    addExpectedCommand(CommandEncoreStep::GetDescriptor()->name());
+    addExpectedCommand(CommandDeclareAttack::descriptor()->name());
+    addExpectedCommand(CommandEncoreStep::descriptor()->name());
     sendToBoth(EventAttackDeclarationStep());
 }
 
@@ -654,8 +654,8 @@ Resumable ServerPlayer::performTriggerStep(int pos) {
 }
 
 void ServerPlayer::counterStep() {
-    addExpectedCommand(CommandTakeDamage::GetDescriptor()->name());
-    addExpectedCommand(CommandPlayCounter::GetDescriptor()->name());
+    addExpectedCommand(CommandTakeDamage::descriptor()->name());
+    addExpectedCommand(CommandPlayCounter::descriptor()->name());
     sendToBoth(EventCounterStep());
 }
 
@@ -701,7 +701,7 @@ Resumable ServerPlayer::levelUp() {
         sendEndGame(false);
         co_await std::suspend_always();
     }
-    addExpectedCommand(CommandLevelUp::GetDescriptor()->name());
+    addExpectedCommand(CommandLevelUp::descriptor()->name());
     sendToBoth(EventLevelUp());
 
     auto cmd = co_await waitForCommand();
@@ -750,8 +750,8 @@ Resumable ServerPlayer::encoreStep() {
     };
 
     if (needEncore()) {
-        addExpectedCommand(CommandEncoreCharacter::GetDescriptor()->name());
-        addExpectedCommand(CommandEndTurn::GetDescriptor()->name());
+        addExpectedCommand(CommandEncoreCharacter::descriptor()->name());
+        addExpectedCommand(CommandEndTurn::descriptor()->name());
 
         while (true) {
             sendToBoth(EventEncoreStep());
@@ -799,7 +799,7 @@ Resumable ServerPlayer::endPhase() {
         auto hand = zone("hand");
         while (hand->count() > 7) {
             sendToBoth(EventDiscardDownTo7());
-            addExpectedCommand(CommandMoveCard::GetDescriptor()->name());
+            addExpectedCommand(CommandMoveCard::descriptor()->name());
             auto cmd = co_await waitForCommand();
 
             if (cmd.command().Is<CommandMoveCard>()) {
