@@ -246,17 +246,19 @@ Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e)
 
 Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex) {
     auto player = owner(e.from.owner);
-    auto zone = player->zone(asnZoneToString(e.from.zone));
+    auto pzone = player->zone(asnZoneToString(e.from.zone));
     const auto &spec = *e.target.targetSpecification;
-    auto deck = player->zone("deck");
     clearLastMovedCards();
     for (int i = 0; i < spec.number.value; ++i) {
-        auto card = deck->topCard();
-        player->moveCard(asnZoneToString(e.from.zone), deck->count() - 1, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+        auto card = pzone->topCard();
+        if (!card)
+            break;
+
+        player->moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
         addLastMovedCard(CardImprint(card->zone()->name(), card->pos(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
         // TODO: refresh and levelup are triggered at the same time, give choice
-        if (player->zone("deck")->count() == 0)
+        if (e.from.zone == asn::Zone::Deck && player->zone("deck")->count() == 0)
             player->refresh();
         if (e.to[toZoneIndex].zone == asn::Zone::Clock && player->zone("clock")->count() >= 7)
             co_await player->levelUp();
@@ -476,7 +478,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             cardsToMove[card.id] = card.card;
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
-        // can't process top cards in the main cycle below,
+        // can't process top cards of deck in the main cycle below,
         // because we don't know ids of next cards in case of refresh
         if (e.from.pos == asn::Position::Top) {
             co_await moveTopDeck(e, toZoneIndex, toIndex);
@@ -521,7 +523,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             player->setCardState(it->second, CardState::StateRested);
 
         // TODO: refresh and levelup are triggered at the same time, give choice
-        if (player->zone("deck")->count() == 0)
+        if (e.from.zone == asn::Zone::Deck && player->zone("deck")->count() == 0)
             player->refresh();
         if (e.to[toZoneIndex].zone == asn::Zone::Clock && player->zone("clock")->count() >= 7)
             co_await player->levelUp();
