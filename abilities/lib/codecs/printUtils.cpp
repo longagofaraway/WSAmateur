@@ -43,7 +43,12 @@ std::string printTarget(const Target &t) {
 
     if (t.type == TargetType::ThisCard)
         s += "this card ";
-    else if (t.type == TargetType::SpecificCards) {
+    else if (t.type == TargetType::ChosenCards) {
+        if (gPrintState.chosenCardsNumber.value == 1)
+            s += "it ";
+        else
+            s += "them ";
+    } else if (t.type == TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
         bool plural = false;
         bool article = true;

@@ -284,6 +284,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     }
 
     std::map<int, ServerCard*> cardsToMove;
+    // 'canceled' flag could be set in another effect, and it serves other purposes
+    // we'll use local flag
     bool moveCanceled = false;
     if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified
         && e.target.targetSpecification->mode != asn::TargetMode::All) {
@@ -341,7 +343,11 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 CommandChoice choiceCmd;
                 cmd.command().UnpackTo(&choiceCmd);
                 // 0 is yes, 'yes' will be the first choice on client's side
-                setCanceled(choiceCmd.choice());
+                int choice = choiceCmd.choice();
+                if (choice) {
+                    setCanceled(true);
+                    moveCanceled = true;
+                }
                 break;
             }
         }
@@ -408,9 +414,23 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     int toIndex = 0;
     //choosing target stage position
     if (e.to[toZoneIndex].zone == asn::Zone::Stage) {
-        assert(mandatory());
         bool positionSet = false;
-        if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
+        if (e.to[toZoneIndex].pos == asn::Position::EmptySlotFrontRow) {
+            auto player = owner(e.to[toZoneIndex].owner);
+            auto stage = player->zone("stage");
+            if (!stage->card(0) && stage->card(1) && stage->card(2)) {
+                positionSet = true;
+                toIndex = 0;
+            } else if (stage->card(0) && !stage->card(1) && stage->card(2)) {
+                positionSet = true;
+                toIndex = 1;
+            } else if (stage->card(0) && stage->card(1) && !stage->card(2)) {
+                positionSet = true;
+                toIndex = 2;
+            } else if (stage->card(0) && stage->card(1) && stage->card(2)) {
+                co_return;
+            }
+        } else if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
             auto player = owner(e.to[toZoneIndex].owner);
             auto stage = player->zone("stage");
             if (stage->card(3) && !stage->card(4)) {
@@ -456,8 +476,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             cardsToMove[card.id] = card.card;
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
-        if (e.from.pos == asn::Position::Top)
+        // can't process top cards in the main cycle below,
+        // because we don't know ids of next cards in case of refresh
+        if (e.from.pos == asn::Position::Top) {
             co_await moveTopDeck(e, toZoneIndex, toIndex);
+            co_return;
+        }
         player = owner(e.from.owner);
         auto zone = player->zone(asnZoneToString(e.from.zone));
         const auto &spec = *e.target.targetSpecification;
@@ -829,6 +853,11 @@ void AbilityPlayer::playChangeState(const asn::ChangeState &e) {
         if (thisCard().zone != thisCard().card->zone()->name())
             return;
         mPlayer->setCardState(thisCard().card, stateToProtoState(e.state));
+    } else if (e.target.type == asn::TargetType::ChosenCards) {
+        for (const auto &card: chosenCards()) {
+            auto player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
+            player->setCardState(card.card, stateToProtoState(e.state));
+        }
     } else {
         assert(false);
     }

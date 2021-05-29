@@ -145,8 +145,7 @@ Resumable ServerGame::battleStep() {
     if (!battleOpponent)
         co_return;
 
-
-    auto oppState = battleOpponent->state();
+    auto savedOppState = battleOpponent->state();
     if (attCard->power() > battleOpponent->power()) {
         opponent->setCardState(battleOpponent, StateReversed);
     } else if (attCard->power() < battleOpponent->power()) {
@@ -155,10 +154,12 @@ Resumable ServerGame::battleStep() {
         attPlayer->setCardState(attCard, StateReversed);
         opponent->setCardState(battleOpponent, StateReversed);
     }
-    if (attCard->state() == CardState::StateReversed)
+
+    if (attCard->state() == CardState::StateReversed) {
         attPlayer->checkOnReversed(attCard);
-    if (battleOpponent->state() == CardState::StateReversed &&
-        battleOpponent->state() != oppState) {
+        opponent->checkOnBattleOpponentReversed(battleOpponent, attCard);
+    } if (battleOpponent->state() == CardState::StateReversed &&
+        battleOpponent->state() != savedOppState) {
         opponent->checkOnReversed(battleOpponent);
         attPlayer->checkOnBattleOpponentReversed(attCard, battleOpponent);
     }

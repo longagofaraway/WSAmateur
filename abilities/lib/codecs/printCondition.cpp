@@ -25,6 +25,8 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
             s += "that card is ";
         else
             s += "those cards are ";
+    } else if (c.target.type == TargetType::LastMovedCards) {
+        s += "that card is ";
     } else if (c.target.type == TargetType::SpecificCards) {
         if (c.target.targetSpecification->mode == TargetMode::All) {
             s += "all of ";

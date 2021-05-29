@@ -271,7 +271,13 @@ void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexCh
     a.choiceType = ChoiceType::DestinationIndex;
     auto player = effect.to[0].owner == asn::Player::Opponent ? getOpponent() : this;
     auto stage = player->zone("stage");
-    if (effect.to[0].pos == asn::Position::EmptySlotBackRow) {
+    if (effect.to[0].pos == asn::Position::EmptySlotFrontRow) {
+        for (int i = 0; i < 3; ++i) {
+            if (!stage->cards()[i].cardPresent())
+                stage->model().setGlow(i, true);
+        }
+    } if (effect.to[0].pos == asn::Position::EmptySlotBackRow) {
+        // highlight all row, because otherwise the move will be either auto-performed or auto-declined
         stage->model().setGlow(3, true);
         stage->model().setGlow(4, true);
     } else if (effect.to[0].pos == asn::Position::EmptySlot) {

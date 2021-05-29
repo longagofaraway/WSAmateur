@@ -288,10 +288,11 @@ std::string printMoveCard(const MoveCard &e) {
 
         if (e.to[i].pos == Position::EmptySlotBackRow)
             return s + "to an empty slot in the back stage ";
-        if (e.to[i].pos == asn::Position::SlotThisWasIn) {
-            s += "to its previous position as" + printState(asn::State::Rested);
-            return s;
-        }
+        else if (e.to[i].pos == Position::EmptySlotFrontRow)
+            return s + "to an empty slot in the center stage";
+        else if (e.to[i].pos == asn::Position::SlotThisWasIn)
+            return s + "to its previous position as" + printState(asn::State::Rested);
+
         if (e.to[i].zone == Zone::Stage) {
             s += "on ";
             if (e.to[i].pos == Position::NotSpecified)
@@ -419,7 +420,7 @@ std::string printFlipOver(const FlipOver &e) {
 std::string printChangeState(const ChangeState &e) {
     std::string s;
 
-    s += printState(e.state);
+    s += printState(e.state) + " ";
     s += printTarget(e.target);
 
     return s;

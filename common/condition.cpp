@@ -22,8 +22,13 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
 }
 
 bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
-    if (c.target.type == asn::TargetType::MentionedCards) {
-        for (const auto &card: mentionedCards()) {
+    if (c.target.type == asn::TargetType::MentionedCards ||
+        c.target.type == asn::TargetType::LastMovedCards) {
+        const auto &cards = c.target.type == asn::TargetType::MentionedCards ?
+                    mentionedCards() : lastMovedCards();
+        if (cards.empty())
+            return false;
+        for (const auto &card: cards) {
             assert(card.card);
             bool ok = false;
             for (const auto &neededCard: c.neededCard) {
