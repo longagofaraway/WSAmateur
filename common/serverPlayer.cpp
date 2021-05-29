@@ -662,33 +662,14 @@ Resumable ServerPlayer::damageStep() {
     mGame->setPhase(ServerPhase::DamageStep);
 
     clearExpectedComands();
-    auto attCard = mGame->opponentOfPlayer(mId)->attackingCard();
+    auto attCard = getOpponent()->attackingCard();
     if (!attCard)
         co_return;
 
     if (attCard->zone()->name() != "stage")
         co_return;
 
-    auto resZone = zone("res");
-    bool canceled = false;
-    for (int i = 0; i < attCard->soul(); ++i) {
-        moveTopDeck("res");
-        auto card = resZone->topCard();
-        // it should be the end of the game since deck AND wr is empty
-        // or some unrecoverable error, so halt execution
-        if (!card)
-            co_await std::suspend_always();
-        if (card->type() == CardType::Climax) {
-            canceled = true;
-            break;
-        }
-    }
-
-    while (resZone->card(0))
-        moveCard("res", 0, canceled ? "wr" : "clock");
-
-    if (zone("clock")->count() >= 7)
-        co_await levelUp();
+    co_await takeDamage(attCard->soul());
 
     co_await mGame->checkTiming();
 }
@@ -933,6 +914,50 @@ ServerCard *ServerPlayer::oppositeCard(ServerCard *card) const {
 
 ServerPlayer* ServerPlayer::getOpponent() {
     return mGame->opponentOfPlayer(mId);
+}
+
+Resumable ServerPlayer::takeDamage(int damage) {
+    auto resZone = zone("res");
+    bool canceled = false;
+    for (int i = 0; i < damage; ++i) {
+        moveTopDeck("res");
+        auto card = resZone->topCard();
+        // it should be the end of the game since deck AND wr is empty
+        // or some unrecoverable error, so halt execution
+        if (!card)
+            co_await std::suspend_always();
+        if (card->type() == CardType::Climax) {
+            canceled = true;
+            break;
+        }
+    }
+
+    while (resZone->card(0))
+        moveCard("res", 0, canceled ? "wr" : "clock");
+
+    if (zone("clock")->count() >= 7)
+        co_await levelUp();
+}
+
+int ServerPlayer::getMultiplierValue(const asn::Multiplier &m, const ServerCard *thisCard) {
+    assert(m.type == asn::MultiplierType::ForEach);
+    assert(m.forEach->type == asn::TargetType::SpecificCards);
+    auto pzone = zone(asnZoneToString(m.zone));
+    int cardCount = 0;
+    for (int i = 0; i < pzone->count(); ++i) {
+        auto card = pzone->card(i);
+        if (!card)
+            continue;
+
+        const auto &tspec = m.forEach->targetSpecification;
+        if (tspec->mode == asn::TargetMode::AllOther && card == thisCard)
+            continue;
+
+        if (checkCard(tspec->cards.cardSpecifiers, *card))
+            cardCount++;
+    }
+
+    return cardCount;
 }
 
 asn::Ability TriggeredAbility::getAbility() const {

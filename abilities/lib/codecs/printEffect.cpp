@@ -480,6 +480,15 @@ std::string printPerformEffect(const PerformEffect &e) {
         else
             s += "them";
         s += ".";
+    } else {
+        s += "perform the following effect";
+        if (e.numberOfEffects > 1)
+            s += "s";
+        if (e.numberOfTimes == 2)
+            s += " twice";
+        else if (e.numberOfTimes == 3)
+            s += " three times";
+        s += ".";
     }
 
     for (const auto &ab: e.effects) {
@@ -487,6 +496,26 @@ std::string printPerformEffect(const PerformEffect &e) {
         s += printSpecificAbility(ab, asn::CardType::Char);
         s += "\"";
     }
+
+    return s;
+}
+
+std::string printDealDamage(const DealDamage &e) {
+    std::string s = "deal ";
+
+    if (e.damageType == ValueType::Multiplier)
+        s += "X";
+    else
+        s += std::to_string(e.damage);
+
+    s += " damage to your opponent";
+
+    if (e.damageType == ValueType::Multiplier) {
+        s += ". X is equal to ";
+        if (e.modifier->type == MultiplierType::ForEach)
+            s += "the number of " + printTarget(*e.modifier->forEach) + "in your " + printZone(e.modifier->zone);
+    } else
+        s += " ";
 
     return s;
 }
@@ -558,6 +587,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::PerformEffect:
         s += printPerformEffect(std::get<PerformEffect>(e.effect));
+        break;
+    case EffectType::DealDamage:
+        s += printDealDamage(std::get<DealDamage>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

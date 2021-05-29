@@ -90,6 +90,7 @@ public:
     Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {});
     void playEarlyPlay();
     void playCannotPlay();
+    Resumable playDealDamage(const asn::DealDamage &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

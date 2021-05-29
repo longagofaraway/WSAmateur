@@ -78,6 +78,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::PerformEffect:
         co_await playPerformEffect(std::get<asn::PerformEffect>(e.effect));
         break;
+    case asn::EffectType::DealDamage:
+        co_await playDealDamage(std::get<asn::DealDamage>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -591,26 +594,8 @@ void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
 
 void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
     int value = e.value;
-    if (e.gainType == asn::ValueType::Multiplier) {
-        assert(e.modifier->type == asn::MultiplierType::ForEach);
-        assert(e.modifier->forEach->type == asn::TargetType::SpecificCards);
-        auto pzone = mPlayer->zone(asnZoneToString(e.modifier->zone));
-        int cardCount = 0;
-        for (int i = 0; i < pzone->count(); ++i) {
-            auto card = pzone->card(i);
-            if (!card)
-                continue;
-
-            const auto &tspec = *e.modifier->forEach->targetSpecification;
-            if (tspec.mode == asn::TargetMode::AllOther && card == thisCard().card)
-                continue;
-
-            if (checkCard(tspec.cards.cardSpecifiers, *card))
-                cardCount++;
-        }
-
-        value = cardCount * e.value;
-    }
+    if (e.gainType == asn::ValueType::Multiplier)
+        value = mPlayer->getMultiplierValue(*e.modifier, thisCard().card) * e.value;
 
     if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards())
@@ -834,8 +819,9 @@ Resumable AbilityPlayer::playPerformEffect(const asn::PerformEffect &e) {
         co_return;
     }
 
-    for (const auto &a: e.effects)
-        co_await playEventAbility(a);
+    for (int i = 0; i < e.numberOfTimes; ++i)
+        for (const auto &a: e.effects)
+            co_await playEventAbility(a);
 }
 
 void AbilityPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {
@@ -1000,6 +986,16 @@ void AbilityPlayer::playCannotPlay() {
     ev.set_handid(thisCard().card->pos());
     ev.set_cannotplay(thisCard().card->cannotPlay());
     mPlayer->sendGameEvent(ev);
+}
+
+Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
+    int damage;
+    if (e.damageType == asn::ValueType::Multiplier)
+        damage = mPlayer->getMultiplierValue(*e.modifier, thisCard().card) * e.damage;
+    else
+        damage = e.damage;
+
+    co_await mPlayer->getOpponent()->takeDamage(damage);
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

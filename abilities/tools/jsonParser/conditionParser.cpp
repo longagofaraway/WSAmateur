@@ -40,7 +40,7 @@ ConditionHaveCard parseConditionHaveCard(const QJsonObject &json) {
         throw std::runtime_error("no whichCards in ConditionHaveCard");
     if (!json.contains("where") || !json["where"].isObject())
         throw std::runtime_error("no where in ConditionHaveCard");
-    if (!json.contains("excludingThis") || !json["excludingThis"].isBool())
+    if (json.contains("excludingThis") && !json["excludingThis"].isBool())
         throw std::runtime_error("no excludingThis in ConditionHaveCard");
 
     ConditionHaveCard c;
@@ -52,7 +52,10 @@ ConditionHaveCard parseConditionHaveCard(const QJsonObject &json) {
     c.howMany = parseNumber(json["howMany"].toObject());
     c.whichCards = parseCard(json["whichCards"].toObject());
     c.where = parsePlace(json["where"].toObject());
-    c.excludingThis = json["excludingThis"].toBool();
+    if (json.contains("excludingThis"))
+        c.excludingThis = json["excludingThis"].toBool();
+    else
+        c.excludingThis = false;
 
     return c;
 }
