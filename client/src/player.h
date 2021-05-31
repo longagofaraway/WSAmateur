@@ -48,6 +48,9 @@ private:
     int mLevel = 0;
     int mAttackingId = 0;
 
+    bool mCanPlayEvents = true;
+    bool mCanPlayBackups = true;
+
 public:
     Player(int id, Game *game, bool opponent);
     Player(const Player&) = delete;
@@ -163,6 +166,7 @@ private:
     void conditionNotMet();
     void payCostChoice();
     void setCannotPlay(const EventSetCannotPlay &event);
+    void setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
 

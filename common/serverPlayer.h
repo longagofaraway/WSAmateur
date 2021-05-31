@@ -54,6 +54,9 @@ class ServerPlayer
     AttackType mAttackType;
     int mLevel = 0;
 
+    bool mCanPlayEvents = true;
+    bool mCanPlayBackups = true;
+
     std::vector<TriggeredAbility> mQueue;
 
 public:
@@ -73,6 +76,11 @@ public:
     void setAttackType(AttackType type) { mAttackType = type; }
     ServerPlayer* getOpponent();
     int level() const { return mLevel; }
+
+    bool canPlayEvents() const { return mCanPlayEvents; }
+    bool canPlayBackups() const { return mCanPlayBackups; }
+    void setCanPlayEvents(bool value) { mCanPlayEvents = value; }
+    void setCanPlayBackups(bool value) { mCanPlayBackups = value; }
 
     void clearExpectedComands();
     void addExpectedCommand(const std::string &command, int maxCount = 0);

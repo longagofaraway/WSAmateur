@@ -262,10 +262,13 @@ CannotUseBackupOrEvent parseCannotUseBackupOrEvent(const QJsonObject &json) {
         throw std::runtime_error("no what in CannotUseBackupOrEvent");
     if (!json.contains("player") || !json["player"].isDouble())
         throw std::runtime_error("no player in CannotUseBackupOrEvent");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in AbilityGain");
 
     CannotUseBackupOrEvent e;
     e.what = static_cast<BackupOrEvent>(json["what"].toInt());
     e.player = static_cast<Player>(json["player"].toInt());
+    e.duration = json["duration"].toInt();
 
     return e;
 }

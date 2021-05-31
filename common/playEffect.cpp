@@ -115,6 +115,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::CannotPlay:
         playCannotPlay();
         break;
+    case asn::EffectType::CannotUseBackupOrEvent:
+        playCannotUseBackupOrEvent(std::get<asn::CannotUseBackupOrEvent>(e.effect));
+        break;
     default:
         break;
     }
@@ -986,6 +989,29 @@ void AbilityPlayer::playCannotPlay() {
     ev.set_handid(thisCard().card->pos());
     ev.set_cannotplay(thisCard().card->cannotPlay());
     mPlayer->sendGameEvent(ev);
+}
+
+namespace {
+void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type) {
+    bool forbidEvents = (type == asn::BackupOrEvent::Event || type == asn::BackupOrEvent::Both);
+    bool forbidBackups = (type == asn::BackupOrEvent::Backup || type == asn::BackupOrEvent::Both);
+    if (forbidEvents == player->canPlayEvents() || forbidBackups == player->canPlayBackups()) {
+        player->setCanPlayEvents(!forbidEvents);
+        player->setCanPlayBackups(!forbidBackups);
+
+        EventSetPlayEventOrBackup ev;
+        ev.set_can_play_events(!forbidEvents);
+        ev.set_can_play_backups(!forbidBackups);
+        player->sendGameEvent(ev);
+    }
+}
+}
+
+void AbilityPlayer::playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e) {
+    if (e.player == asn::Player::Player || e.player == asn::Player::Both)
+        setCannotPlayBackupOrEvent(mPlayer, e.what);
+    else if (e.player == asn::Player::Opponent || e.player == asn::Player::Both)
+        setCannotPlayBackupOrEvent(mPlayer->getOpponent(), e.what);
 }
 
 Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {

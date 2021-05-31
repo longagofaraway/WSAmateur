@@ -59,6 +59,7 @@ class ServerCard : public CardBase
 
     bool mTriggerCheckTwice = false;
     bool mCannotPlay = false;
+    bool mInBattle = false;
 
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);

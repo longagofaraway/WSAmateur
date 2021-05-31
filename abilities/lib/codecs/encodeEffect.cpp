@@ -93,6 +93,7 @@ void encodeDealDamage(const DealDamage &e, Buf &buf) {
 void encodeCannotUseBackupOrEvent(const CannotUseBackupOrEvent &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.what));
     buf.push_back(static_cast<uint8_t>(e.player));
+    buf.push_back(static_cast<uint8_t>(e.duration));
 }
 
 void encodeSwapCards(const SwapCards &e, Buf &buf) {

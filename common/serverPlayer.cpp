@@ -377,7 +377,10 @@ Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
 }
 
 Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
-    auto *hand = zone("hand");
+    if (!mCanPlayBackups)
+        co_return;
+
+    auto hand = zone("hand");
     auto card = hand->card(cmd.handid());
     if (!card)
         co_return;
@@ -466,6 +469,9 @@ Resumable ServerPlayer::playClimax(int handIndex) {
 }
 
 Resumable ServerPlayer::playEvent(int handIndex) {
+    if (!mCanPlayEvents)
+        co_return;
+
     auto hand = zone("hand");
     auto resZone = zone("res");
 
@@ -891,6 +897,9 @@ void ServerPlayer::addAbilityToCard(ServerCard *card, const asn::Ability &a, int
     std::vector<uint8_t> abilityBuf = encodeAbility(a);
     ev.set_ability(abilityBuf.data(), abilityBuf.size());
     sendToBoth(ev);
+
+    if (a.type == asn::AbilityType::Cont)
+        playContAbilities(card);
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {

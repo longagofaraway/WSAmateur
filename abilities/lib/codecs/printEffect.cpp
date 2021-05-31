@@ -520,9 +520,39 @@ std::string printDealDamage(const DealDamage &e) {
     return s;
 }
 
+std::string printCannotUseBackupOrEvent(const CannotUseBackupOrEvent &e) {
+    std::string s;
+
+    if (e.player == Player::Player)
+        s += "you ";
+    else if (e.player == Player::Opponent)
+        s += "your opponent ";
+    else
+        s += "you and your opponent ";
+
+    s += "cannot play ";
+
+    switch (e.what) {
+    case BackupOrEvent::Backup:
+        s += "\"Backup\"";
+        break;
+    case BackupOrEvent::Event:
+        s += "event cards";
+        break;
+    case BackupOrEvent::Both:
+        s += "event cards or \"Backup\"";
+        break;
+    }
+
+    s += " from hand ";
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
+
 
 std::string printEffect(const Effect &e) {
     std::string s;
@@ -590,6 +620,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::DealDamage:
         s += printDealDamage(std::get<DealDamage>(e.effect));
+        break;
+    case EffectType::CannotUseBackupOrEvent:
+        s += printCannotUseBackupOrEvent(std::get<CannotUseBackupOrEvent>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

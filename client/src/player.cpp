@@ -232,6 +232,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventEffectChoice ev;
         event->event().UnpackTo(&ev);
         processEffectChoice(ev);
+    } else if (event->event().Is<EventSetPlayEventOrBackup>()) {
+        EventSetPlayEventOrBackup ev;
+        event->event().UnpackTo(&ev);
+        setCannotPlayEventOrBackup(ev);
     }
 }
 

@@ -226,13 +226,14 @@ DealDamage {
 
 CannotUseBackupOrEvent {
   what BackupOrEvent,
-  player Player
+  player Player,
+  duration UInt8
 }
 
 enum BackupOrEvent {
-  backup,
-  event,
-  both
+  backup = 1,
+  event = 2,
+  both = 3
 }
 
 SwapCards {

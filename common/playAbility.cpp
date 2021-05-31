@@ -195,10 +195,10 @@ void ServerPlayer::playContAbilities(ServerCard *card) {
 
 void ServerPlayer::deactivateContAbilities(ServerCard *source) {
     std::array<std::string_view, 2> zones{ "stage", "hand" };
-    for (auto  zoneName: zones) {
-        auto stage = zone(zoneName);
-        for (int i = 0; i < stage->count(); ++i) {
-            auto card = stage->card(i);
+    for (auto zoneName: zones) {
+        auto pzone = zone(zoneName);
+        for (int i = 0; i < pzone->count(); ++i) {
+            auto card = pzone->card(i);
             if (!card)
                 continue;
 

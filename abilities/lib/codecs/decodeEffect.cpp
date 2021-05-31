@@ -118,6 +118,7 @@ CannotUseBackupOrEvent decodeCannotUseBackupOrEvent(Iterator &it, Iterator end) 
     CannotUseBackupOrEvent e;
     e.what = decodeEnum<BackupOrEvent>(it, end);
     e.player = decodeEnum<Player>(it, end);
+    e.duration = decodeUInt8(it, end);
     return e;
 }
 

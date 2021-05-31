@@ -146,6 +146,7 @@ enum class BackupOrEvent : uint8_t {
 struct CannotUseBackupOrEvent {
     BackupOrEvent what;
     Player player;
+    int duration;
 };
 
 struct SwapCards {

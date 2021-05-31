@@ -139,6 +139,11 @@ message EventSetCannotPlay {
     bool cannotPlay = 2;
 }
 
+message EventSetPlayEventOrBackup {
+    bool can_play_events = 1;
+    bool can_play_backups = 2;
+}
+
 message EventEffectChoice {
     bytes effect = 1;
 }

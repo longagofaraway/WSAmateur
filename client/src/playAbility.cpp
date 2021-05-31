@@ -715,6 +715,11 @@ void Player::setCannotPlay(const EventSetCannotPlay &event) {
         highlightPlayableCards();
 }
 
+void Player::setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event) {
+    mCanPlayEvents = event.can_play_events();
+    mCanPlayBackups = event.can_play_backups();
+}
+
 const Card &Player::correspondingCard(const ActivatedAbility &abilityDescriptor) {
     static Card dummyCard(zone("deck"));
     auto pzone = zone(abilityDescriptor.zone);
@@ -836,6 +841,7 @@ void Player::sendChoice(int index) {
             }
         }
     }
+
     CommandChoice cmd;
     cmd.set_choice(index);
     sendGameCommand(cmd);
@@ -878,7 +884,7 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
-            if (e.from.zone == asn::Zone::Hand &&
+            if (e.from.zone == asn::Zone::Hand && e.target.type == asn::TargetType::SpecificCards &&
                 e.target.targetSpecification->number.value > zone("hand")->model().count())
                 return false;
         } else if (item.type == asn::EffectType::ChangeState) {
@@ -913,7 +919,9 @@ bool Player::canPlayCounter(const Card &card) const {
     if (!card.isCounter())
         return false;
     if (card.type() == CardType::Event)
-        return true;
+        return mCanPlayEvents;
+    if (!mCanPlayBackups)
+        return false;
     for (int i = 0; i < card.abilityCount(); ++i) {
         const auto &a = card.ability(i);
         if (a.type != asn::AbilityType::Act)
