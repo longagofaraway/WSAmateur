@@ -67,6 +67,7 @@ public:
     Resumable playEventAbility(const asn::EventAbility &a);
 
     void playContAbility(const asn::ContAbility &a, bool &active);
+    void revertContAbility(const asn::ContAbility &a);
     void playContEffect(const asn::Effect &e);
     Resumable playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect = {});
     Resumable playEffects(const std::vector<asn::Effect> &e);
@@ -104,4 +105,5 @@ public:
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
     Resumable getStagePosition(int &position, const asn::MoveCard &e);
     Resumable moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex);
+    void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type);
 };

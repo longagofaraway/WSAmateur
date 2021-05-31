@@ -991,10 +991,9 @@ void AbilityPlayer::playCannotPlay() {
     mPlayer->sendGameEvent(ev);
 }
 
-namespace {
-void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type) {
-    bool forbidEvents = (type == asn::BackupOrEvent::Event || type == asn::BackupOrEvent::Both);
-    bool forbidBackups = (type == asn::BackupOrEvent::Backup || type == asn::BackupOrEvent::Both);
+void AbilityPlayer::setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type) {
+    bool forbidEvents = !revert() && (type == asn::BackupOrEvent::Event || type == asn::BackupOrEvent::Both);
+    bool forbidBackups = !revert() && (type == asn::BackupOrEvent::Backup || type == asn::BackupOrEvent::Both);
     if (forbidEvents == player->canPlayEvents() || forbidBackups == player->canPlayBackups()) {
         player->setCanPlayEvents(!forbidEvents);
         player->setCanPlayBackups(!forbidBackups);
@@ -1004,7 +1003,6 @@ void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type) {
         ev.set_can_play_backups(!forbidBackups);
         player->sendGameEvent(ev);
     }
-}
 }
 
 void AbilityPlayer::playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e) {

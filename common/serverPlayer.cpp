@@ -10,8 +10,6 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
-#include <abilities.h>
-
 #include "abilityUtils.h"
 #include "cardDatabase.h"
 #include "globalAbilities/globalAbilities.h"
@@ -254,17 +252,20 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
         return true;
     }
 
-    auto cardPtr = startZone->takeCard(startId);
-    if (!cardPtr)
+    ServerCard *card = startZone->card(startId);
+    if (!card)
         return false;
 
-    ServerCard *card = targetZone->addCard(std::move(cardPtr));
-    int newCardId = targetZone->count() - 1;
-
     if (startZoneName == "stage" || startZoneName == "climax" || startZoneName == "hand") {
+        // revert effects of cont abilities
+        playContAbilities(card, true);
         card->reset();
-        mGame->deactivateContAbilities(card);
     }
+
+    auto cardPtr = startZone->takeCard(startId);
+
+    targetZone->addCard(std::move(cardPtr));
+    int newCardId = targetZone->count() - 1;
 
     EventMoveCard eventPublic;
     eventPublic.set_startid(static_cast<google::protobuf::uint32>(startId));

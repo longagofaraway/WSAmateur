@@ -9,7 +9,8 @@
 #include "attackType.pb.h"
 #include "gameCommand.pb.h"
 
-#include "abilities.h"
+#include <abilities.h>
+
 #include "cardImprint.h"
 #include "coroutineTask.h"
 #include "commands.h"
@@ -165,7 +166,7 @@ public:
     Resumable playEventEffects(ServerCard *card);
     Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
     Resumable processRuleActions(bool &ruleActionFound);
-    void playContAbilities(ServerCard *card);
+    void playContAbilities(ServerCard *card, bool revert = false);
     void resolveAllContAbilities();
     void deactivateContAbilities(ServerCard *source);
 

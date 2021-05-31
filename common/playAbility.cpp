@@ -56,6 +56,15 @@ void AbilityPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
         playContEffect(effect);
 }
 
+void AbilityPlayer::revertContAbility(const asn::ContAbility &a) {
+    if (a.effects.size() == 0)
+        return;
+
+    setRevert(true);
+    for (const auto &effect: a.effects)
+        playContEffect(effect);
+}
+
 Resumable AbilityPlayer::playAbility(const asn::Ability &a) {
     switch(a.type) {
     case asn::AbilityType::Auto:
@@ -123,7 +132,7 @@ bool ServerPlayer::canBePayed(ServerCard *thisCard, const asn::CostItem &c) {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
-            if (e.from.zone == asn::Zone::Hand &&
+            if (e.from.zone == asn::Zone::Hand && e.target.type == asn::TargetType::SpecificCards &&
                 e.target.targetSpecification->number.value > zone("hand")->count())
                 return false;
         } else if (item.type == asn::EffectType::ChangeState) {
@@ -176,7 +185,7 @@ bool checkAbilityValidForZone(const asn::ContAbility &a, const std::string &name
 }
 }
 
-void ServerPlayer::playContAbilities(ServerCard *card) {
+void ServerPlayer::playContAbilities(ServerCard *card, bool revert) {
     auto &abs = card->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
         if (abs[i].ability.type != asn::AbilityType::Cont)
@@ -184,12 +193,20 @@ void ServerPlayer::playContAbilities(ServerCard *card) {
         const auto &cont = std::get<asn::ContAbility>(abs[i].ability.ability);
 
         if (!checkAbilityValidForZone(cont, card->zone()->name()))
-            return;
+            continue;
+
+        if (revert && !abs[i].active)
+            continue;
 
         AbilityPlayer a(this);
         a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
         a.setAbilityId(i);
-        a.playContAbility(cont, abs[i].active);
+        if (!revert) {
+            a.playContAbility(cont, abs[i].active);
+        } else {
+            a.revertContAbility(cont);
+            abs[i].active = false;
+        }
     }
 }
 

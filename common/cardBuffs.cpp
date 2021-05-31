@@ -2,6 +2,7 @@
 
 #include "gameEvent.pb.h"
 
+#include "abilityPlayer.h"
 #include "abilityUtils.h"
 
 void ServerPlayer::endOfTurnEffectValidation() {
@@ -24,6 +25,13 @@ void ServerPlayer::endOfTurnEffectValidation() {
             if (--it->duration != 0) {
                 ++it;
                 continue;
+            }
+
+            if (it->active && it->ability.type == asn::AbilityType::Cont) {
+                AbilityPlayer a(this);
+                a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
+                a.setAbilityId(i);
+                a.revertContAbility(std::get<asn::ContAbility>(it->ability.ability));
             }
 
             EventRemoveAbility event;
