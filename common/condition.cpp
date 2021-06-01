@@ -17,6 +17,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionAnd(std::get<asn::ConditionAnd>(c.cond));
     case asn::ConditionType::InBattleWithThis:
         return evaluateConditionInBattleWithThis();
+    case asn::ConditionType::SumOfLevels:
+        return evaluateConditionSumOfLevels(std::get<asn::ConditionSumOfLevels>(c.cond));
     default:
         assert(false);
         return false;
@@ -105,4 +107,12 @@ bool AbilityPlayer::evaluateConditionAnd(const asn::ConditionAnd &c) {
 
 bool AbilityPlayer::evaluateConditionInBattleWithThis() {
     return thisCard().card->inBattle();
+}
+
+bool AbilityPlayer::evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c) {
+    auto level = mPlayer->zone("level");
+    int sum = 0;
+    for (int i = 0; i < level->count(); ++i)
+        sum += level->card(i)->level();
+    return sum > c.moreThan;
 }

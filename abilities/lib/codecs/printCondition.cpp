@@ -122,6 +122,12 @@ std::string printConditionInBatteWithThis() {
     return "in battles involving this card, ";
 }
 
+std::string printConditionSumOfLevels(const ConditionSumOfLevels &c) {
+    std::string s = "if the total level of cards in your level is ";
+    s += std::to_string(c.moreThan) + " or higher, ";
+    return s;
+}
+
 std::string printCondition(const Condition &c) {
     std::string s;
 
@@ -137,6 +143,9 @@ std::string printCondition(const Condition &c) {
         break;
     case ConditionType::InBattleWithThis:
         s += printConditionInBatteWithThis();
+        break;
+    case ConditionType::SumOfLevels:
+        s += printConditionSumOfLevels(std::get<ConditionSumOfLevels>(c.cond));
         break;
     }
 

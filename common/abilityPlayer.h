@@ -101,6 +101,7 @@ public:
     bool evaluateConditionHaveCard(const asn::ConditionHaveCard &c);
     bool evaluateConditionAnd(const asn::ConditionAnd &c);
     bool evaluateConditionInBattleWithThis();
+    bool evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c);
 
     void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
