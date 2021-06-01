@@ -100,6 +100,7 @@ public:
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
     bool evaluateConditionHaveCard(const asn::ConditionHaveCard &c);
     bool evaluateConditionAnd(const asn::ConditionAnd &c);
+    bool evaluateConditionInBattleWithThis();
 
     void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);

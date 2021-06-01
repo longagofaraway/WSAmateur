@@ -15,6 +15,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionHaveCard(std::get<asn::ConditionHaveCard>(c.cond));
     case asn::ConditionType::And:
         return evaluateConditionAnd(std::get<asn::ConditionAnd>(c.cond));
+    case asn::ConditionType::InBattleWithThis:
+        return evaluateConditionInBattleWithThis();
     default:
         assert(false);
         return false;
@@ -99,4 +101,8 @@ bool AbilityPlayer::evaluateConditionAnd(const asn::ConditionAnd &c) {
     for (const auto &cond: c.cond)
         res = res && evaluateCondition(cond);
     return res;
+}
+
+bool AbilityPlayer::evaluateConditionInBattleWithThis() {
+    return thisCard().card->inBattle();
 }

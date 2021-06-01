@@ -37,6 +37,7 @@ void ServerCard::reset() {
 
     mTriggerCheckTwice = false;
     mCannotPlay = false;
+    mInBattle = false;
 }
 
 void ServerCard::setPos(int pos) {

@@ -91,9 +91,12 @@ public:
     bool levelGtPlayerLevel() const override;
 
     bool cannotPlay() const { return mCannotPlay; }
-    void setCannotPlay(bool cn) { mCannotPlay = cn; }
+    void setCannotPlay(bool val) { mCannotPlay = val; }
     bool triggerCheckTwice() const { return mTriggerCheckTwice; }
-    void setTriggerCheckTwice(bool t) { mTriggerCheckTwice = t; }
+    void setTriggerCheckTwice(bool val) { mTriggerCheckTwice = val; }
+    bool inBattle() const { return mInBattle; }
+    void setInBattle(bool val) { mInBattle = val; }
+
 
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional = false);

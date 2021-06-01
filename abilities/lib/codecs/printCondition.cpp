@@ -118,6 +118,10 @@ std::string printConditionAnd(const ConditionAnd &c) {
     return s + ", ";
 }
 
+std::string printConditionInBatteWithThis() {
+    return "in battles involving this card, ";
+}
+
 std::string printCondition(const Condition &c) {
     std::string s;
 
@@ -130,6 +134,9 @@ std::string printCondition(const Condition &c) {
         break;
     case ConditionType::And:
         s += printConditionAnd(std::get<ConditionAnd>(c.cond));
+        break;
+    case ConditionType::InBattleWithThis:
+        s += printConditionInBatteWithThis();
         break;
     }
 

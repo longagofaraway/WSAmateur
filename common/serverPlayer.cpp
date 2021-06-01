@@ -556,6 +556,20 @@ void ServerPlayer::climaxPhase() {
 }
 
 void ServerPlayer::endOfAttack() {
+    if (attackType() == AttackType::FrontAttack) {
+        // assuming attacking card cannot be removed from the stage during attack
+        auto attCard = attackingCard();
+        if (attCard) {
+            attCard->setInBattle(false);
+            auto battleOpp = oppositeCard(attCard);
+            if (battleOpp)
+                battleOpp->setInBattle(false);
+
+            // for 'in battles involving this card'
+            mGame->resolveAllContAbilities();
+        }
+    }
+
     setAttackingCard(nullptr);
     sendToBoth(EventEndOfAttack());
 }
@@ -620,6 +634,14 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
         addAttributeBuff(attCard, asn::AttributeType::Soul, 1);
     else if (type == AttackType::SideAttack)
         addAttributeBuff(attCard, asn::AttributeType::Soul, -battleOpp->level());
+
+    if (type == AttackType::FrontAttack) {
+        attCard->setInBattle(true);
+        battleOpp->setInBattle(true);
+
+        // for 'in battles involving this card'
+        mGame->resolveAllContAbilities();
+    }
 
     checkOnAttack(attCard);
     co_await mGame->checkTiming();
