@@ -150,6 +150,8 @@ std::string printPhase(Phase p) {
     switch (p) {
     case Phase::AttackPhase:
         return "attack phase";
+    case Phase::DrawPhase:
+        return "draw phase";
     }
     return "";
 }

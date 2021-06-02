@@ -155,6 +155,9 @@ Resumable ServerPlayer::startTurn() {
             setCardState(card, StateStanding);
     }
 
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::DrawPhase);
+    co_await mGame->checkTiming();
+
     drawCards(1);
     co_await mGame->checkTiming();
 
