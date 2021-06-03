@@ -64,6 +64,14 @@ std::string printPhaseTrigger(const PhaseTrigger &t) {
     return s;
 }
 
+std::string printOnTriggerReveal(const TriggerRevealTrigger &t) {
+    std::string s = "when your character's trigger check reveals ";
+
+    s += printCard(t.card) + ", ";
+
+    return s;
+}
+
 std::string printOtherTrigger(const OtherTrigger &t) {
     return gOtherTriggers[t.cardCode];
 }
@@ -92,6 +100,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));
+        break;
+    case TriggerType::OnTriggerReveal:
+        s += printOnTriggerReveal(std::get<TriggerRevealTrigger>(t.trigger));
         break;
     }
 

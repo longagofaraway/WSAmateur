@@ -157,6 +157,7 @@ public:
     void checkOnAttack(ServerCard *attCard);
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
     void checkOnBackup(ServerCard *card);
+    void checkOnTriggerReveal(ServerCard *card);
     void checkOtherTrigger(const std::string &code);
     void triggerBackupAbility(ServerCard *card);
 

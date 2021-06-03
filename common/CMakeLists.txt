@@ -16,6 +16,7 @@ set(commonSources
     serverPlayer.cpp
     serverProtocolHandler.cpp
     serverStage.cpp
+    trigger.cpp
     abilityPlayer.h
     abilityUtils.h
     attributeChange.h

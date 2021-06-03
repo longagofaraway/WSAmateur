@@ -558,25 +558,6 @@ void ServerPlayer::climaxPhase() {
     sendToBoth(EventClimaxPhase());
 }
 
-void ServerPlayer::endOfAttack() {
-    if (attackType() == AttackType::FrontAttack) {
-        // assuming attacking card cannot be removed from the stage during attack
-        auto attCard = attackingCard();
-        if (attCard) {
-            attCard->setInBattle(false);
-            auto battleOpp = oppositeCard(attCard);
-            if (battleOpp)
-                battleOpp->setInBattle(false);
-
-            // for 'in battles involving this card'
-            mGame->resolveAllContAbilities();
-        }
-    }
-
-    setAttackingCard(nullptr);
-    sendToBoth(EventEndOfAttack());
-}
-
 bool ServerPlayer::canAttack() {
     auto stage = zone("stage");
     for (int i = 0; i < 3; ++i) {
@@ -661,6 +642,8 @@ Resumable ServerPlayer::triggerStep(int pos) {
         mAttackingCard->setTriggerCheckTwice(false);
     }
 
+    co_await mGame->checkTiming();
+
     if (attackType() == FrontAttack)
         mGame->opponentOfPlayer(mId)->counterStep();
     else
@@ -673,6 +656,7 @@ Resumable ServerPlayer::performTriggerStep(int pos) {
     // end of game
     if (!card)
         co_await std::suspend_always();
+    checkOnTriggerReveal(card);
     for (auto trigger: card->triggers()) {
         if (trigger == TriggerIcon::Soul)
             addAttributeBuff(attackingCard(), asn::AttributeType::Soul, 1);
@@ -680,8 +664,6 @@ Resumable ServerPlayer::performTriggerStep(int pos) {
             co_await resolveTrigger(card, trigger);
     }
     moveCard("res", 0, "stock");
-
-    co_await mGame->checkTiming();
 }
 
 void ServerPlayer::counterStep() {
@@ -704,6 +686,25 @@ Resumable ServerPlayer::damageStep() {
     co_await takeDamage(attCard->soul());
 
     co_await mGame->checkTiming();
+}
+
+void ServerPlayer::endOfAttack() {
+    if (attackType() == AttackType::FrontAttack) {
+        // assuming attacking card cannot be removed from the stage during attack
+        auto attCard = attackingCard();
+        if (attCard) {
+            attCard->setInBattle(false);
+            auto battleOpp = oppositeCard(attCard);
+            if (battleOpp)
+                battleOpp->setInBattle(false);
+
+            // for 'in battles involving this card'
+            mGame->resolveAllContAbilities();
+        }
+    }
+
+    setAttackingCard(nullptr);
+    sendToBoth(EventEndOfAttack());
 }
 
 Resumable ServerPlayer::levelUp() {
