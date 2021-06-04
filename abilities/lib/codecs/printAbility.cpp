@@ -18,3 +18,14 @@ std::string printAbility(const Ability &a, CardType cardType) {
 
     return "";
 }
+
+std::string printActivationTimes(int activationTimes) {
+    std::string s = "This ability activates up to ";
+
+    s += std::to_string(activationTimes) + " time";
+    if (activationTimes > 1)
+        s += "s";
+    s += " per turn. ";
+
+    return s;
+}

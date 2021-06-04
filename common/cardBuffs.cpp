@@ -20,27 +20,31 @@ void ServerPlayer::endOfTurnEffectValidation() {
         auto &abs = card->abilities();
         auto it = abs.rbegin();
         while (it != abs.rend()) {
-            if (it->permanent)
-                break;
-            if (--it->duration != 0) {
+            it->activationTimes = 0;
+            // remove temp abilities
+            if (!it->permanent) {
+                if (--it->duration != 0) {
+                    ++it;
+                    continue;
+                }
+
+                if (it->active && it->ability.type == asn::AbilityType::Cont) {
+                    AbilityPlayer a(this);
+                    a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
+                    a.setAbilityId(i);
+                    a.revertContAbility(std::get<asn::ContAbility>(it->ability.ability));
+                }
+
+                EventRemoveAbility event;
+                event.set_cardid(card->pos());
+                event.set_zone(card->zone()->name());
+                event.set_abilityid(std::distance(abs.begin(), (it+1).base()));
+                sendToBoth(event);
+
+                it = std::reverse_iterator(abs.erase((++it).base()));
+            } else {
                 ++it;
-                continue;
             }
-
-            if (it->active && it->ability.type == asn::AbilityType::Cont) {
-                AbilityPlayer a(this);
-                a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
-                a.setAbilityId(i);
-                a.revertContAbility(std::get<asn::ContAbility>(it->ability.ability));
-            }
-
-            EventRemoveAbility event;
-            event.set_cardid(card->pos());
-            event.set_zone(card->zone()->name());
-            event.set_abilityid(std::distance(abs.begin(), (it+1).base()));
-            sendToBoth(event);
-
-            it = std::reverse_iterator(abs.erase((++it).base()));
         }
     }
 }

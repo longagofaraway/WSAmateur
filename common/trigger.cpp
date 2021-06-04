@@ -31,10 +31,23 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     sendToBoth(EventEndResolvingAbilties());
 }
 
+namespace {
+bool canActivate(const asn::AutoAbility &ability, AbilityState &abilityState) {
+    if (ability.activationTimes == 0)
+        return true;
+
+    if (abilityState.activationTimes >= ability.activationTimes)
+        return false;
+
+    ++abilityState.activationTimes;
+    return true;
+}
+}
+
 void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to) {
     auto checkTrigger = [=](ServerCard *card, int id) {
         for (int j = 0; static_cast<size_t>(j) < card->abilities().size(); ++j) {
-            const auto &a = card->abilities()[j];
+            auto &a = card->abilities()[j];
             if (a.ability.type != asn::AbilityType::Auto)
                 continue;
             const auto &aa = std::get<asn::AutoAbility>(a.ability.ability);
@@ -54,6 +67,9 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std
                 if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
                     continue;
             }
+
+            if (!canActivate(aa, a))
+                continue;
 
             TriggeredAbility ta;
             ta.card = CardImprint(card->zone()->name(), id, card);
@@ -96,6 +112,10 @@ void ServerPlayer::checkOnAttack(ServerCard *attCard) {
         const auto &trig = std::get<asn::OnAttackTrigger>(autoab.trigger.trigger);
         if (trig.target.type != asn::TargetType::ThisCard)
             continue;
+
+        if (!canActivate(autoab, abs[i]))
+            continue;
+
         TriggeredAbility a;
         a.card = CardImprint(attCard->zone()->name(), attCard->pos(), attCard);
         a.type = ProtoCard;
@@ -124,6 +144,9 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
                 (trig.player == asn::Player::Opponent && mActive))
                 continue;
 
+            if (!canActivate(autoab, abs[i]))
+                continue;
+
             TriggeredAbility a;
             a.card = CardImprint(card->zone()->name(), card->pos(), card);
             a.type = ProtoCard;
@@ -140,6 +163,9 @@ void ServerPlayer::checkOnBackup(ServerCard *card) {
             continue;
         const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
         if (autoab.trigger.type != asn::TriggerType::OnBackupOfThis)
+            continue;
+
+        if (!canActivate(autoab, abs[i]))
             continue;
 
         TriggeredAbility a;
@@ -166,6 +192,9 @@ void ServerPlayer::checkOnTriggerReveal(ServerCard *revealedCard) {
                 continue;
             const auto &trig = std::get<asn::TriggerRevealTrigger>(autoab.trigger.trigger);
             if (!checkCard(trig.card.cardSpecifiers, *revealedCard))
+                continue;
+
+            if (!canActivate(autoab, abs[i]))
                 continue;
 
             TriggeredAbility a;
@@ -195,6 +224,9 @@ void ServerPlayer::checkOtherTrigger(const std::string &code) {
 
             const auto &trig = std::get<asn::OtherTrigger>(autoab.trigger.trigger);
             if (code != trig.cardCode)
+                continue;
+
+            if (!canActivate(autoab, abs[i]))
                 continue;
 
             TriggeredAbility a;
@@ -236,6 +268,10 @@ void ServerPlayer::checkOnReversed(ServerCard *card) {
         const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
         if (autoab.trigger.type != asn::TriggerType::OnReversed)
             continue;
+
+        if (!canActivate(autoab, abs[i]))
+            continue;
+
         TriggeredAbility a;
         a.card = CardImprint(card->zone()->name(), card->pos(), card);
         a.type = ProtoCard;
@@ -255,6 +291,10 @@ void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard
         const auto &trig = std::get<asn::BattleOpponentReversedTrigger>(autoab.trigger.trigger);
         if (!checkCard(trig.card.cardSpecifiers, *battleOpp))
             continue;
+
+        if (!canActivate(autoab, abs[i]))
+            continue;
+
         TriggeredAbility a;
         a.card = CardImprint(attCard->zone()->name(), attCard->pos(), attCard);
         a.type = ProtoCard;

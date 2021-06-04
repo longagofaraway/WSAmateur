@@ -32,6 +32,7 @@ std::string printTarget(const asn::Target &t);
 // effects
 std::string printMoveCard(const asn::MoveCard &e);
 std::string printDrawCard(const asn::DrawCard &e);
+std::string printActivationTimes(int activationTimes);
 
 template<typename T>
 std::string printSpecificAbility(const T &a, asn::CardType cardType) {
@@ -51,10 +52,11 @@ std::string printSpecificAbility(const T &a, asn::CardType cardType) {
     size_t prefixLen = s.size();
 
     if constexpr (std::is_same_v<T, asn::AutoAbility>) {
-        if (a.cost) {
+        if (a.cost)
             s += printCost(*a.cost);
-            prefixLen = s.size();
-        }
+        if (a.activationTimes > 0)
+            s += printActivationTimes(a.activationTimes);
+        prefixLen = s.size();
 
         s += printTrigger(a.trigger);
     }
