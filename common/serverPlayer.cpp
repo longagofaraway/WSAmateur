@@ -268,7 +268,6 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     auto cardPtr = startZone->takeCard(startId);
 
     targetZone->addCard(std::move(cardPtr));
-    int newCardId = targetZone->count() - 1;
 
     EventMoveCard eventPublic;
     eventPublic.set_startid(static_cast<google::protobuf::uint32>(startId));
@@ -302,7 +301,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startId, std::st
     return true;
 }
 
-bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, ServerCardZone *targetZone, int targetId) {
+bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, ServerCardZone *stage, int targetId) {
     if (targetId >= 5)
         return false;
 
@@ -312,14 +311,21 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startId, Serve
 
     card->reset();
 
-    auto oldStageCard = targetZone->putOnStage(std::move(card), targetId);
-    auto cardOnStage = targetZone->card(targetId);
+    auto currentStageCard = stage->card(targetId);
+    if (currentStageCard) {
+        // revert effects of cont abilities
+        playContAbilities(currentStageCard, true);
+        currentStageCard->reset();
+    }
+
+    auto oldStageCard = stage->putOnStage(std::move(card), targetId);
+    auto cardOnStage = stage->card(targetId);
 
     EventMoveCard event;
     event.set_code(cardOnStage->code());
     event.set_startzone(startZone->name());
     event.set_startid(startId);
-    event.set_targetzone(targetZone->name());
+    event.set_targetzone(stage->name());
     event.set_targetid(targetId);
     sendToBoth(event);
 
@@ -412,6 +418,13 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
 
     // assuming cont abilities that take effect while in hand don't affect other cards
     cardPtr->reset();
+
+    auto currentStageCard = stage->card(cmd.stageid());
+    if (currentStageCard) {
+        // revert effects of cont abilities
+        playContAbilities(currentStageCard, true);
+        currentStageCard->reset();
+    }
 
     auto card = hand->takeCard(cmd.handid());
 
