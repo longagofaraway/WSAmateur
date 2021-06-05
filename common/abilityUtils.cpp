@@ -86,6 +86,8 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
     bool eligible = true;
     bool hasNameContains = false;
     bool nameContains = false;
+    bool hasExactName = false;
+    bool exactNameMatch = false;
     for (const auto &spec: specs) {
         switch (spec.type) {
         case asn::CardSpecifierType::CardType:
@@ -129,9 +131,10 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             break;
         }
         case asn::CardSpecifierType::ExactName: {
+            hasExactName = true;
             const auto &name = std::get<asn::ExactName>(spec.specifier).value;
-            if (name != card.name())
-                eligible = false;
+            if (name == card.name())
+                exactNameMatch = true;
             break;
         }
         case asn::CardSpecifierType::NameContains: {
@@ -153,8 +156,10 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             break;
         }
     }
-    if (hasNameContains && !nameContains)
+    if ((hasNameContains && !nameContains) ||
+        (hasExactName && !exactNameMatch))
         eligible = false;
+
     return eligible;
 }
 

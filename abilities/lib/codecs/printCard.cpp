@@ -14,13 +14,6 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
         return s;
     }
 
-    for (const auto &cardSpec: c.cardSpecifiers) {
-        if (cardSpec.type == CardSpecifierType::ExactName) {
-            s += "\"" + std::get<ExactName>(cardSpec.specifier).value + "\" ";
-            article = false;
-        }
-    }
-
     if (!plural && article)
         s += "a ";
 
@@ -36,6 +29,19 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
             default:
                 break;
             }
+        }
+    }
+
+    if (mode == TargetMode::AllOther)
+        s += "other ";
+
+    int count = 0;
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::ExactName) {
+            if (count)
+                s += "or ";
+            s += "\"" + std::get<ExactName>(cardSpec.specifier).value + "\" ";
+            count++;
         }
     }
 
@@ -60,9 +66,6 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
                 s += "or higher ";
         }
     }
-
-    if (mode == TargetMode::AllOther)
-        s += "other ";
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Trait) {

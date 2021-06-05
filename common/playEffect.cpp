@@ -623,7 +623,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
                 || spec.mode == asn::TargetMode::FrontRow)
                 positional = true;
 
-            if (spec.mode == asn::TargetMode::All || checkCard(spec.cards.cardSpecifiers, *card)) {
+            if (checkCard(spec.cards.cardSpecifiers, *card)) {
                 if (cont) {
                     if (revert())
                         mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
