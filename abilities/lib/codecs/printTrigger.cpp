@@ -72,6 +72,16 @@ std::string printOnTriggerReveal(const TriggerRevealTrigger &t) {
     return s;
 }
 
+std::string printOnPlay(const OnPlayTrigger &t) {
+    std::string s = "when you play ";
+
+    s += printTarget(t.target);
+    s.pop_back();
+    s += ", ";
+
+    return s;
+}
+
 std::string printOtherTrigger(const OtherTrigger &t) {
     return gOtherTriggers[t.cardCode];
 }
@@ -98,11 +108,14 @@ std::string printTrigger(const Trigger &t) {
     case TriggerType::OnReversed:
         s += printOnReversed();
         break;
-    case TriggerType::OtherTrigger:
-        s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));
-        break;
     case TriggerType::OnTriggerReveal:
         s += printOnTriggerReveal(std::get<TriggerRevealTrigger>(t.trigger));
+        break;
+    case TriggerType::OnPlay:
+        s += printOnPlay(std::get<OnPlayTrigger>(t.trigger));
+        break;
+    case TriggerType::OtherTrigger:
+        s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));
         break;
     }
 

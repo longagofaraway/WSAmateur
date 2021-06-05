@@ -448,6 +448,7 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
     mGame->resolveAllContAbilities();
+    checkOnPlayTrigger(cardInPlay);
     checkZoneChangeTrigger(cardInPlay, "hand", "stage");
     if (pOldStageCard)
         checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
@@ -473,6 +474,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
 
     mGame->resolveAllContAbilities();
 
+    checkOnPlayTrigger(cardPtr);
     checkZoneChangeTrigger(cardPtr, "hand", "climax");
     co_await mGame->checkTiming();
 
@@ -493,6 +495,8 @@ Resumable ServerPlayer::playEvent(int handIndex) {
     co_await playEventEffects(card);
 
     moveCard("res", card->pos(), "wr");
+
+    checkOnPlayTrigger(card);
 
     co_await mGame->checkTiming();
 }

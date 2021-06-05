@@ -62,7 +62,7 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
             if (t.target[0].type == asn::TargetType::ThisCard) {
                 if (card != movedCard)
                     continue;
-            } else if (t.target[0].type != asn::TargetType::SpecificCards) {
+            } else if (t.target[0].type == asn::TargetType::SpecificCards) {
                 const auto &spec = *t.target[0].targetSpecification;
 
                 if (!checkTargetMode(spec.mode, card, movedCard))
@@ -136,10 +136,10 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
             continue;
 
         auto &abs = card->abilities();
-        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
-            if (abs[i].ability.type != asn::AbilityType::Auto)
+        for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
+            if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
-            const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
             if (autoab.trigger.type != asn::TriggerType::OnPhaseEvent)
                 continue;
             const auto &trig = std::get<asn::PhaseTrigger>(autoab.trigger.trigger);
@@ -148,13 +148,13 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
                 (trig.player == asn::Player::Opponent && mActive))
                 continue;
 
-            if (!canActivate(autoab, abs[i]))
+            if (!canActivate(autoab, abs[j]))
                 continue;
 
             TriggeredAbility a;
             a.card = CardImprint(card->zone()->name(), card->pos(), card);
             a.type = ProtoCard;
-            a.abilityId = i;
+            a.abilityId = j;
             mQueue.push_back(a);
         }
     }
@@ -188,23 +188,23 @@ void ServerPlayer::checkOnTriggerReveal(ServerCard *revealedCard) {
             continue;
 
         auto &abs = card->abilities();
-        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
-            if (abs[i].ability.type != asn::AbilityType::Auto)
+        for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
+            if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
-            const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
             if (autoab.trigger.type != asn::TriggerType::OnTriggerReveal)
                 continue;
             const auto &trig = std::get<asn::TriggerRevealTrigger>(autoab.trigger.trigger);
             if (!checkCard(trig.card.cardSpecifiers, *revealedCard))
                 continue;
 
-            if (!canActivate(autoab, abs[i]))
+            if (!canActivate(autoab, abs[j]))
                 continue;
 
             TriggeredAbility a;
             a.card = CardImprint(card->zone()->name(), card->pos(), card);
             a.type = ProtoCard;
-            a.abilityId = i;
+            a.abilityId = j;
             mQueue.push_back(a);
         }
     }
@@ -218,11 +218,11 @@ void ServerPlayer::checkOtherTrigger(const std::string &code) {
             continue;
 
         auto &abs = card->abilities();
-        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
-            if (abs[i].ability.type != asn::AbilityType::Auto)
+        for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
+            if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
 
-            const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
             if (autoab.trigger.type != asn::TriggerType::OtherTrigger)
                 continue;
 
@@ -230,13 +230,13 @@ void ServerPlayer::checkOtherTrigger(const std::string &code) {
             if (code != trig.cardCode)
                 continue;
 
-            if (!canActivate(autoab, abs[i]))
+            if (!canActivate(autoab, abs[j]))
                 continue;
 
             TriggeredAbility a;
             a.card = CardImprint(card->zone()->name(), card->pos(), card);
             a.type = ProtoCard;
-            a.abilityId = i;
+            a.abilityId = j;
             mQueue.push_back(a);
         }
     }
@@ -304,5 +304,44 @@ void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard
         a.type = ProtoCard;
         a.abilityId = i;
         mQueue.push_back(a);
+    }
+}
+
+void ServerPlayer::checkOnPlayTrigger(ServerCard *playedCard) {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        auto &abs = card->abilities();
+        for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
+            if (abs[j].ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
+            if (autoab.trigger.type != asn::TriggerType::OnPlay)
+                continue;
+            const auto &trig = std::get<asn::OnPlayTrigger>(autoab.trigger.trigger);
+            if (trig.target.type == asn::TargetType::ThisCard) {
+                if (card != playedCard)
+                    continue;
+            } else if (trig.target.type == asn::TargetType::SpecificCards) {
+                const auto &spec = *trig.target.targetSpecification;
+                if (!checkTargetMode(spec.mode, card, playedCard))
+                    continue;
+
+                if (!checkCard(spec.cards.cardSpecifiers, *playedCard))
+                    continue;
+            }
+
+            if (!canActivate(autoab, abs[j]))
+                continue;
+
+            TriggeredAbility ta;
+            ta.card = CardImprint(card->zone()->name(), card->pos(), card);
+            ta.type = ProtoCard;
+            ta.abilityId = j;
+            mQueue.push_back(ta);
+        }
     }
 }
