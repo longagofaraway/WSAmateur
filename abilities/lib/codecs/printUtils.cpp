@@ -38,6 +38,22 @@ std::string printZone(Zone zone) {
     }
 }
 
+std::string printTriggerIcon(TriggerIcon icon) {
+    switch (icon) {
+    case TriggerIcon::Bag: return "bag";
+    case TriggerIcon::Book: return "book";
+    case TriggerIcon::Choice: return "choice";
+    case TriggerIcon::Door: return "door";
+    case TriggerIcon::Gate: return "gate";
+    case TriggerIcon::Shot: return "shot";
+    case TriggerIcon::Soul: return "soul";
+    case TriggerIcon::Standby: return "standby";
+    case TriggerIcon::Treasure: return "treasure";
+    case TriggerIcon::Wind: return "wind";
+    default: throw PrintingException();
+    }
+}
+
 std::string printTarget(const Target &t) {
     std::string s;
 

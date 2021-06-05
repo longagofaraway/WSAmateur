@@ -100,8 +100,7 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::TriggerIcon)
-            if (std::get<TriggerIcon>(cardSpec.specifier) == TriggerIcon::Soul)
-                s += "with a soul trigger ";
+            s += "with a " + printTriggerIcon(std::get<TriggerIcon>(cardSpec.specifier)) + " trigger ";
     }
 
     for (const auto &cardSpec: c.cardSpecifiers) {

@@ -323,8 +323,12 @@ std::string printMoveCard(const MoveCard &e) {
 
 std::string printDrawCard(const DrawCard &e) {
     std::string s = "draw ";
-    if (e.value.mod == NumModifier::ExactMatch && e.value.value == 1)
-        s += "a card ";
+    if (e.value.mod == NumModifier::ExactMatch) {
+        if (e.value.value == 1)
+            s += "a card ";
+        else
+            s += std::to_string(e.value.value) + " cards ";
+    }
     return s;
 }
 

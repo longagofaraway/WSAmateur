@@ -19,6 +19,7 @@ std::string printZone(asn::Zone zone);
 std::string printPlayer(asn::Player p, asn::Player executor = asn::Player::Player);
 std::string printState(asn::State s);
 std::string printPhase(asn::Phase p);
+std::string printTriggerIcon(asn::TriggerIcon icon);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
 std::string printKeywords(const std::vector<asn::Keyword> &keywords);
