@@ -44,8 +44,8 @@ bool canActivate(const asn::AutoAbility &ability, AbilityState &abilityState) {
 }
 }
 
-void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to) {
-    auto checkTrigger = [=](ServerCard *card, int id) {
+void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {
+    auto checkTrigger = [=](ServerCard *card) {
         for (int j = 0; static_cast<size_t>(j) < card->abilities().size(); ++j) {
             auto &a = card->abilities()[j];
             if (a.ability.type != asn::AbilityType::Auto)
@@ -64,6 +64,10 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std
                     continue;
             } else if (t.target[0].type != asn::TargetType::SpecificCards) {
                 const auto &spec = *t.target[0].targetSpecification;
+
+                if (!checkTargetMode(spec.mode, card, movedCard))
+                    continue;
+
                 if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
                     continue;
             }
@@ -72,7 +76,7 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std
                 continue;
 
             TriggeredAbility ta;
-            ta.card = CardImprint(card->zone()->name(), id, card);
+            ta.card = CardImprint(card->zone()->name(), card->pos(), card);
             ta.type = ProtoCard;
             ta.abilityId = j;
             mQueue.push_back(ta);
@@ -84,17 +88,17 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std
         auto card = stage->card(i);
         if (!card)
             continue;
-        checkTrigger(card, i);
+        checkTrigger(card);
     }
 
-    if (movedCard->zone()->name() != "stage")
-        checkTrigger(movedCard, cardId);
+    if (from == "stage" && to != "stage")
+        checkTrigger(movedCard);
 }
 
-void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to) {
+void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, std::string_view from, std::string_view to) {
     if (from == "stage" && to == "wr" && movedCard->zone()->name() == "wr") {
         TriggeredAbility ta;
-        ta.card = CardImprint(movedCard->zone()->name(), cardId, movedCard);
+        ta.card = CardImprint(movedCard->zone()->name(), movedCard->pos(), movedCard);
         ta.type = ProtoGlobal;
         ta.abilityId = static_cast<int>(GlobalAbility::Encore);
         mQueue.push_back(ta);

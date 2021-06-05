@@ -7,15 +7,6 @@
 #include "serverPlayer.h"
 #include "codecs/encode.h"
 
-namespace {
-bool isInFrontOf(int backPos, int frontPos) {
-    if ((backPos == 3 && (frontPos == 0 || frontPos == 1))
-        || (backPos == 4 && (frontPos == 1 || frontPos == 2)))
-        return true;
-    return false;
-}
-}
-
 Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect) {
     if (!evaluateCondition(e.cond)) {
         mConditionNotMet = true;
@@ -624,9 +615,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
             if (!card)
                 continue;
 
-            if (spec.mode == asn::TargetMode::AllOther && card == thisCard().card)
-                continue;
-            else if (spec.mode == asn::TargetMode::InFrontOfThis && !isInFrontOf(thisCard().card->pos(), card->pos()))
+            if (!checkTargetMode(spec.mode, thisCard().card, card))
                 continue;
 
             bool positional = false;

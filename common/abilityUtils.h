@@ -22,3 +22,4 @@ CardState stateToProtoState(asn::State state);
 
 bool checkNumber(const asn::Number &numObj, int n);
 bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card);
+bool checkTargetMode(asn::TargetMode mode, const ServerCard *thisCard, const ServerCard *card);

@@ -158,6 +158,36 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
     return eligible;
 }
 
+namespace {
+bool isInFrontOf(int backPos, int frontPos) {
+    if ((backPos == 3 && (frontPos == 0 || frontPos == 1))
+        || (backPos == 4 && (frontPos == 1 || frontPos == 2)))
+        return true;
+    return false;
+}
+bool isBackRow(int pos) {
+    return pos == 3 || pos == 4;
+}
+bool isFrontRow(int pos) {
+    return pos >= 0 && pos <= 2;
+}
+}
+
+bool checkTargetMode(asn::TargetMode mode, const ServerCard *thisCard, const ServerCard *card) {
+    switch (mode) {
+    case asn::TargetMode::AllOther:
+        return thisCard != card;
+    case asn::TargetMode::InFrontOfThis:
+        return isInFrontOf(thisCard->pos(), card->pos());
+    case asn::TargetMode::BackRow:
+        return isBackRow(card->pos());
+    case asn::TargetMode::FrontRow:
+        return isFrontRow(card->pos());
+    }
+
+    return true;
+}
+
 bool checkNumber(const asn::Number &numObj, int n) {
     if ((numObj.mod == asn::NumModifier::ExactMatch &&
          numObj.value == n) ||

@@ -152,8 +152,8 @@ public:
 
     void checkOnReversed(ServerCard *card);
     void checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpponent);
-    void checkZoneChangeTrigger(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
-    void checkGlobalEncore(ServerCard *movedCard, int cardId, std::string_view from, std::string_view to);
+    void checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to);
+    void checkGlobalEncore(ServerCard *movedCard, std::string_view from, std::string_view to);
     void checkOnAttack(ServerCard *attCard);
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
     void checkOnBackup(ServerCard *card);
