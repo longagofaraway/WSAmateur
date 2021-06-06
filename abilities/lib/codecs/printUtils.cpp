@@ -78,13 +78,22 @@ std::string printTarget(const Target &t) {
     return s;
 }
 
-std::string printNumber(const Number &n) {
+std::string printNumber(const Number &n, bool lowerHigher) {
     std::string s;
-    if (n.mod == NumModifier::UpTo)
-        s += "up to ";
-    else if (n.mod == NumModifier::AtLeast)
-        s += "at least ";
-    s += std::to_string(n.value) + " ";
+
+    if (lowerHigher) {
+        s += std::to_string(n.value);
+        if (n.mod == NumModifier::UpTo)
+            s += " or lower ";
+        else if (n.mod == NumModifier::AtLeast)
+            s += " or higher ";
+    } else {
+        if (n.mod == NumModifier::UpTo)
+            s += "up to ";
+        else if (n.mod == NumModifier::AtLeast)
+            s += "at least ";
+        s += std::to_string(n.value) + " ";
+    }
     return s;
 }
 

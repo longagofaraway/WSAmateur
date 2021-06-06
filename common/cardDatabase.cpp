@@ -67,7 +67,7 @@ CardDatabase::CardDatabase() {
     info5->setCost(0);
     info5->setSoul(0);
     info5->setPower(0);
-    info5->setName("社会への叛逆");
+    info5->setName("花火の音は聞こえない");
     info5->setType(CardType::Climax);
     info5->setColor('G');
     info5->setTriggers({ TriggerIcon::Bag });
@@ -408,7 +408,7 @@ CardDatabase::CardDatabase() {
     info30->setCost(0);
     info30->setSoul(1);
     info30->setPower(3000);
-    info30->setName("副会長 かぐや");
+    info30->setName("花火の音は聞こえない");
     info30->setType(CardType::Char);
     info30->setColor('G');
     info30->setTraits({ "Shuchiin" });

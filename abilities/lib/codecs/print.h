@@ -14,7 +14,7 @@ extern PrintState gPrintState;
 std::string printDigit(int8_t value);
 std::string printTrait(const std::string &trait);
 std::string printCard(const asn::Card &c, bool plural = false, bool article = true, asn::TargetMode mode = asn::TargetMode::Any);
-std::string printNumber(const asn::Number &n);
+std::string printNumber(const asn::Number &n, bool lowerHigher = false);
 std::string printZone(asn::Zone zone);
 std::string printPlayer(asn::Player p, asn::Player executor = asn::Player::Player);
 std::string printState(asn::State s);

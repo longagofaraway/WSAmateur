@@ -413,7 +413,7 @@ std::string printMoveWrToDeck(const MoveWrToDeck &e) {
 std::string printFlipOver(const FlipOver &e) {
     std::string s;
 
-    s += "Flip over " + std::to_string(e.number.value);
+    s += "flip over " + std::to_string(e.number.value);
     s += " cards from the top of your deck, and put them into your waiting room. ";
     s += "For each " + printCard(e.forEach, false, false) + " revealed, ";
     s += printEffects(e.effect);

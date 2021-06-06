@@ -11,10 +11,18 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
     std::string s = isPartOfAndOr ? "" : "if ";
 
     if (c.target.type == TargetType::BattleOpponent && c.neededCard.size() &&
-        c.neededCard[0].cardSpecifiers.size() &&
-        c.neededCard[0].cardSpecifiers[0].type == CardSpecifierType::LevelHigherThanOpp) {
-        s += " the level of this card's battle opponent is higher than your opponent's level, ";
+        c.neededCard[0].cardSpecifiers.size()) {
         gPrintState.battleOpponentMentioned = true;
+        const auto &spec = c.neededCard[0].cardSpecifiers[0];
+        if (spec.type == CardSpecifierType::LevelHigherThanOpp)
+            s += "the level of this card's battle opponent is higher than your opponent's level, ";
+        else if (spec.type == CardSpecifierType::Cost) {
+            s += "the cost of this card's battle opponent is ";
+            s += printNumber(std::get<CostSpecifier>(spec.specifier).value, true);
+            s.pop_back();
+            s += ", ";
+        }
+
         return s;
     }
 
