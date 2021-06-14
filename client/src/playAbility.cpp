@@ -366,7 +366,7 @@ void Player::processAbilityGain(const EventAbilityGain &event) {
     auto &card = pzone->cards()[event.cardid()];
     if (!card.cardPresent())
         return;
-    card.addAbility(ability);
+    card.addAbility(ability, event.abilityid());
 }
 
 void Player::processRemoveAbility(const EventRemoveAbility &event) {
@@ -374,7 +374,7 @@ void Player::processRemoveAbility(const EventRemoveAbility &event) {
     auto &card = pzone->cards()[event.cardid()];
     if (!card.cardPresent())
         return;
-    card.removeAbility(event.abilityid());
+    card.removeAbilityById(event.abilityid());
 }
 
 void Player::processLook(const EventLook &event) {
@@ -462,7 +462,6 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
             cards[protoa.cardid()].code() != protoa.cardcode())
             nocard = true;
 
-        asn::Ability ability;
         ActivatedAbility a;
         a.uniqueId = protoa.uniqueid();
         a.type = protoa.type();
@@ -476,15 +475,22 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
 
             a.code = cardInfo->code();
             if (protoa.type() == ProtoAbilityType::ProtoCard) {
-                const auto &abuf = cardInfo->abilities()[a.abilityId];
-                a.ability = decodeAbility(abuf);
-                a.text = QString::fromStdString(printAbility(ability));
+                // if a card with a temp ability left the stage after the ability was activated
+                if (static_cast<size_t>(a.abilityId) >= cardInfo->abilities().size()) {
+                    if (protoa.ability().empty())
+                        return;
+                    a.ability = decodeAbility(protoa.ability());
+                } else {
+                    const auto &abuf = cardInfo->abilities()[a.abilityId];
+                    a.ability = decodeAbility(abuf);
+                }
+                a.text = QString::fromStdString(printAbility(a.ability));
             }
         } else {
             a.code = protoa.cardcode();
             if (protoa.type() == ProtoAbilityType::ProtoCard) {
                 const auto &card = zone(a.zone)->cards()[a.cardId];
-                a.ability = card.ability(a.abilityId);
+                a.ability = card.abilityById(a.abilityId);
                 a.text = card.text(a.abilityId);
             }
         }

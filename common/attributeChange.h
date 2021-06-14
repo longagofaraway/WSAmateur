@@ -16,7 +16,9 @@ public:
 
 class ContAttributeChange {
 public:
+    // card, that gives this buff
     ServerCard *mSource;
+    // ability id of mSource that gives the buff
     int mAbilityId;
     asn::AttributeType mAttr;
     int mValue;

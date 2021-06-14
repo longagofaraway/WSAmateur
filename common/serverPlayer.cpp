@@ -927,10 +927,11 @@ void ServerPlayer::reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone dest
 }
 
 void ServerPlayer::addAbilityToCard(ServerCard *card, const asn::Ability &a, int duration) {
-    card->addAbility(a, duration);
+    int newId = card->addAbility(a, duration);
     EventAbilityGain ev;
     ev.set_zone(card->zone()->name());
     ev.set_cardid(card->pos());
+    ev.set_abilityid(newId);
 
     std::vector<uint8_t> abilityBuf = encodeAbility(a);
     ev.set_ability(abilityBuf.data(), abilityBuf.size());
@@ -1009,6 +1010,8 @@ int ServerPlayer::getMultiplierValue(const asn::Multiplier &m, const ServerCard 
 }
 
 asn::Ability TriggeredAbility::getAbility() const {
+    if (ability)
+        return *ability;
     if (type == ProtoCard && card.card)
         return card.card->abilities()[abilityId].ability;
     else if (type == ProtoGlobal)

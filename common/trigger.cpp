@@ -31,17 +31,21 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     sendToBoth(EventEndResolvingAbilties());
 }
 
-namespace {
-bool canActivate(const asn::AutoAbility &ability, AbilityState &abilityState) {
-    if (ability.activationTimes == 0)
-        return true;
+void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability, AbilityState &abilityState, ServerCard *card) {
+    if (ability.activationTimes > 0) {
+        if (abilityState.activationTimes >= ability.activationTimes)
+            return;
+        else
+            abilityState.activationTimes++;
+    }
 
-    if (abilityState.activationTimes >= ability.activationTimes)
-        return false;
-
-    ++abilityState.activationTimes;
-    return true;
-}
+    TriggeredAbility ta;
+    ta.card = CardImprint(card->zone()->name(), card->pos(), card);
+    ta.type = ProtoCard;
+    ta.abilityId = abilityState.id;
+    if (!abilityState.permanent)
+        ta.ability = abilityState.ability;
+    mQueue.emplace_back(std::move(ta));
 }
 
 void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {
@@ -72,14 +76,7 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
                     continue;
             }
 
-            if (!canActivate(aa, a))
-                continue;
-
-            TriggeredAbility ta;
-            ta.card = CardImprint(card->zone()->name(), card->pos(), card);
-            ta.type = ProtoCard;
-            ta.abilityId = j;
-            mQueue.push_back(ta);
+            queueActivatedAbility(aa, a, card);
         }
     };
 
@@ -117,14 +114,7 @@ void ServerPlayer::checkOnAttack(ServerCard *attCard) {
         if (trig.target.type != asn::TargetType::ThisCard)
             continue;
 
-        if (!canActivate(autoab, abs[i]))
-            continue;
-
-        TriggeredAbility a;
-        a.card = CardImprint(attCard->zone()->name(), attCard->pos(), attCard);
-        a.type = ProtoCard;
-        a.abilityId = i;
-        mQueue.push_back(a);
+        queueActivatedAbility(autoab, abs[i], attCard);
     }
 }
 
@@ -148,14 +138,7 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
                 (trig.player == asn::Player::Opponent && mActive))
                 continue;
 
-            if (!canActivate(autoab, abs[j]))
-                continue;
-
-            TriggeredAbility a;
-            a.card = CardImprint(card->zone()->name(), card->pos(), card);
-            a.type = ProtoCard;
-            a.abilityId = j;
-            mQueue.push_back(a);
+            queueActivatedAbility(autoab, abs[j], card);
         }
     }
 }
@@ -169,14 +152,7 @@ void ServerPlayer::checkOnBackup(ServerCard *card) {
         if (autoab.trigger.type != asn::TriggerType::OnBackupOfThis)
             continue;
 
-        if (!canActivate(autoab, abs[i]))
-            continue;
-
-        TriggeredAbility a;
-        a.card = CardImprint(card->zone()->name(), card->pos(), card);
-        a.type = ProtoCard;
-        a.abilityId = i;
-        mQueue.push_back(a);
+        queueActivatedAbility(autoab, abs[i], card);
     }
 }
 
@@ -198,14 +174,7 @@ void ServerPlayer::checkOnTriggerReveal(ServerCard *revealedCard) {
             if (!checkCard(trig.card.cardSpecifiers, *revealedCard))
                 continue;
 
-            if (!canActivate(autoab, abs[j]))
-                continue;
-
-            TriggeredAbility a;
-            a.card = CardImprint(card->zone()->name(), card->pos(), card);
-            a.type = ProtoCard;
-            a.abilityId = j;
-            mQueue.push_back(a);
+            queueActivatedAbility(autoab, abs[j], card);
         }
     }
 }
@@ -230,14 +199,7 @@ void ServerPlayer::checkOtherTrigger(const std::string &code) {
             if (code != trig.cardCode)
                 continue;
 
-            if (!canActivate(autoab, abs[j]))
-                continue;
-
-            TriggeredAbility a;
-            a.card = CardImprint(card->zone()->name(), card->pos(), card);
-            a.type = ProtoCard;
-            a.abilityId = j;
-            mQueue.push_back(a);
+            queueActivatedAbility(autoab, abs[j], card);
         }
     }
 }
@@ -257,7 +219,7 @@ void ServerPlayer::triggerBackupAbility(ServerCard *card) {
         TriggeredAbility a;
         a.card = CardImprint(card->zone()->name(), card->pos(), card);
         a.type = ProtoCard;
-        a.abilityId = i;
+        a.abilityId = abs[i].id;
         mQueue.push_back(a);
 
         return;
@@ -273,14 +235,7 @@ void ServerPlayer::checkOnReversed(ServerCard *card) {
         if (autoab.trigger.type != asn::TriggerType::OnReversed)
             continue;
 
-        if (!canActivate(autoab, abs[i]))
-            continue;
-
-        TriggeredAbility a;
-        a.card = CardImprint(card->zone()->name(), card->pos(), card);
-        a.type = ProtoCard;
-        a.abilityId = i;
-        mQueue.push_back(a);
+        queueActivatedAbility(autoab, abs[i], card);
     }
 }
 
@@ -296,14 +251,7 @@ void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard
         if (!checkCard(trig.card.cardSpecifiers, *battleOpp))
             continue;
 
-        if (!canActivate(autoab, abs[i]))
-            continue;
-
-        TriggeredAbility a;
-        a.card = CardImprint(attCard->zone()->name(), attCard->pos(), attCard);
-        a.type = ProtoCard;
-        a.abilityId = i;
-        mQueue.push_back(a);
+        queueActivatedAbility(autoab, abs[i], attCard);
     }
 }
 
@@ -334,14 +282,7 @@ void ServerPlayer::checkOnPlayTrigger(ServerCard *playedCard) {
                     continue;
             }
 
-            if (!canActivate(autoab, abs[j]))
-                continue;
-
-            TriggeredAbility ta;
-            ta.card = CardImprint(card->zone()->name(), card->pos(), card);
-            ta.type = ProtoCard;
-            ta.abilityId = j;
-            mQueue.push_back(ta);
+            queueActivatedAbility(autoab, abs[j], card);
         }
     }
 }

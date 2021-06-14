@@ -285,6 +285,10 @@ Resumable ServerPlayer::checkTiming() {
             ab->set_cardid(mQueue[i].card.id);
             ab->set_abilityid(mQueue[i].abilityId);
             ab->set_cardcode(mQueue[i].card.card->code());
+            if (mQueue[i].ability) {
+                auto enc = encodeAbility(*mQueue[i].ability);
+                ab->set_ability(enc.data(), enc.size());
+            }
             mQueue[i].uniqueId = abilityHash(*ab);
             ab->set_uniqueid(mQueue[i].uniqueId);
         }

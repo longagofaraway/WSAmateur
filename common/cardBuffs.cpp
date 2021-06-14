@@ -38,7 +38,7 @@ void ServerPlayer::endOfTurnEffectValidation() {
                 EventRemoveAbility event;
                 event.set_cardid(card->pos());
                 event.set_zone(card->zone()->name());
-                event.set_abilityid(std::distance(abs.begin(), (it+1).base()));
+                event.set_abilityid(it->id);
                 sendToBoth(event);
 
                 it = std::reverse_iterator(abs.erase((++it).base()));

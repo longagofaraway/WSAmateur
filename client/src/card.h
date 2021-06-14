@@ -70,14 +70,15 @@ public:
     QString qcode() const { return QString::fromStdString(mCode); }
     const std::string& code() const { return mCode; }
     const std::string& name() const override { return mInfo->name(); }
-    bool levelGtPlayerLevel() const;
+    bool levelGtPlayerLevel() const override;
     bool cannotPlay() const { return mCannotPlay; }
     void setCannotPlay(bool p) { mCannotPlay = p; }
 
     QString text(int abilityId) const { return mAbilityModel->text(abilityId); }
     AbilityModel* textModel() { return mAbilityModel.get(); }
     int abilityCount() const { return mAbilityModel->count(); }
-    const asn::Ability& ability(int abilityId) const { return mAbilityModel->ability(abilityId); }
-    void addAbility(const asn::Ability &a);
-    void removeAbility(int id);
+    const asn::Ability& ability(int index) const { return mAbilityModel->ability(index); }
+    const asn::Ability& abilityById(int abilityId) const { return mAbilityModel->abilityById(abilityId); }
+    void addAbility(const asn::Ability &a, int id);
+    void removeAbilityById(int id);
 };

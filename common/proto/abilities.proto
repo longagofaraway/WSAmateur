@@ -18,7 +18,8 @@ message ProtoAbility {
     string cardCode = 3;
     sint32 cardId = 4;
     sint32 abilityId = 5;
-    uint32 uniqueId = 6;
+    bytes ability = 6;
+    uint32 uniqueId = 7;
 }
 
 message EventAbilityActivated {
@@ -120,7 +121,8 @@ message EventAbilityChoice {
 message EventAbilityGain {
     sint32 cardId = 1;
     string zone = 2;
-    bytes ability = 3;
+    sint32 abilityId = 3;
+    bytes ability = 4;
 }
 
 message EventRemoveAbility {

@@ -1,6 +1,7 @@
 #include "serverCard.h"
 
 #include <algorithm>
+#include <random>
 
 #include "serverCardZone.h"
 #include "serverPlayer.h"
@@ -13,7 +14,7 @@ ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone)
     mLevel = info->level();
 
     for (const auto &abBuf: info->abilities())
-        mAbilities.emplace_back(decodeAbility(abBuf));
+        mAbilities.emplace_back(decodeAbility(abBuf), static_cast<int>(mAbilities.size()));
 }
 
 ServerCard::ServerCard(int pos, ServerCardZone *zone)
@@ -144,11 +145,13 @@ void ServerCard::validateBuffs() {
     std::erase_if(mBuffs, [](const AttributeChange &o){ return o.mDuration <= 0; });
 }
 
-void ServerCard::addAbility(const asn::Ability &a, int duration) {
-    AbilityState s(a);
+int ServerCard::addAbility(const asn::Ability &a, int duration) {
+    int id = generateAbilitiId();
+    AbilityState s(a, id);
     s.duration = duration;
     s.permanent = false;
-    mAbilities.push_back(s);
+    mAbilities.emplace_back(s);
+    return id;
 }
 
 void ServerCard::changeAttr(asn::AttributeType type, int delta) {
@@ -176,5 +179,14 @@ int ServerCard::attrByType(asn::AttributeType type) const {
     default:
         assert(false);
         return power();
+    }
+}
+
+int ServerCard::generateAbilitiId() const {
+    while (true) {
+        std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
+        int id = gen() % 0xFFFF;
+        if (std::none_of(mAbilities.begin(), mAbilities.end(), [id](const AbilityState &s){ return s.id == id; }))
+            return id;
     }
 }

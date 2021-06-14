@@ -35,6 +35,7 @@ struct TriggeredAbility {
     ProtoAbilityType type;
     int abilityId;
     uint32_t uniqueId = 0;
+    std::optional<asn::Ability> ability;
 
     asn::Ability getAbility() const;
 };
@@ -174,4 +175,7 @@ public:
 
     bool hasActivatedAbilities() const;
     Resumable checkTiming();
+
+private:
+    void queueActivatedAbility(const asn::AutoAbility &ability, AbilityState &abilityState, ServerCard *card);
 };

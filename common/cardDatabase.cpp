@@ -408,7 +408,7 @@ CardDatabase::CardDatabase() {
     info30->setCost(0);
     info30->setSoul(1);
     info30->setPower(3000);
-    info30->setName("花火の音は聞こえない");
+    info30->setName("不安と期待 かぐや");
     info30->setType(CardType::Char);
     info30->setColor('G');
     info30->setTraits({ "Shuchiin" });

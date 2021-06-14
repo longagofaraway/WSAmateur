@@ -32,11 +32,12 @@ enum StageRow {
 
 struct AbilityState {
     asn::Ability ability;
+    int id = 0; //for communicating with client
     bool permanent = true;
     bool active = false; // for cont
     int duration = 0;
     int activationTimes = 0;
-    AbilityState(const asn::Ability &ab) : ability(ab) {}
+    AbilityState(const asn::Ability &ab, int id_) : ability(ab), id(id_) {}
 };
 
 class ServerCard : public CardBase
@@ -106,9 +107,12 @@ public:
     void removePositionalContBuffsBySource(ServerCard *card);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
-    void addAbility(const asn::Ability &a, int duration);
+    int addAbility(const asn::Ability &a, int duration);
     void changeAttr(asn::AttributeType type, int delta);
 
     int attrByType(asn::AttributeType type) const;
     std::tuple<int, int, int> attributes() const { return { power(), soul(), level() }; }
+
+private:
+    int generateAbilitiId() const;
 };

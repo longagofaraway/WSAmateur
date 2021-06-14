@@ -9,6 +9,7 @@
 struct AbilityInfo {
     QString text;
     asn::Ability ability;
+    int id;
     bool permanent = true;
 };
 
@@ -26,9 +27,10 @@ public:
     AbilityModel() : QAbstractListModel(nullptr) {}
 
     QString text(int row) const;
-    const asn::Ability& ability(int row) const;
-    void addAbility(const asn::Ability &a, asn::CardType cardType = asn::CardType::Char, bool permanent = true);
-    void removeAbility(int row);
+    const asn::Ability &ability(int row) const;
+    const asn::Ability& abilityById(int id) const;
+    void addAbility(const asn::Ability &a, int id, asn::CardType cardType = asn::CardType::Char, bool permanent = true);
+    void removeAbilityById(int id);
     int rowCount(const QModelIndex & = QModelIndex()) const override { return static_cast<int>(mAbilities.size()); }
     int count() const { return rowCount(); }
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
