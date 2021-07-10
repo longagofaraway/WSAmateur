@@ -10,6 +10,7 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
+#include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "cardDatabase.h"
 #include "globalAbilities/globalAbilities.h"
@@ -261,8 +262,10 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
         return false;
 
     if (startZoneName == "stage" || startZoneName == "climax" || startZoneName == "hand") {
+        // check trigger while temporary abilities like 'encore' are still present
+        checkZoneChangeTrigger(card, startZoneName, targetZoneName);
         // revert effects of cont abilities
-        playContAbilities(card, true);
+        playContAbilities(card, true/*revert*/);
         card->reset();
     }
 
@@ -300,7 +303,6 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
 
     mGame->resolveAllContAbilities();
 
-    checkZoneChangeTrigger(card, startZoneName, targetZoneName);
     if (enableGlobEncore)
         checkGlobalEncore(card, startZoneName, targetZoneName);
 
@@ -317,8 +319,15 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
 
     card->reset();
 
+    // first, the card is placed on stage,
+    // then if another card is already present on stage in the same place, it is removed by Rule Action
+    // so old stage card can still trigger
+    checkZoneChangeTrigger(card.get(), startZone->name(), "stage");
+
     auto currentStageCard = stage->card(targetPos);
     if (currentStageCard) {
+        // check trigger while temporary abilities like 'encore' are still present
+        checkZoneChangeTrigger(currentStageCard, "stage", "wr");
         // revert effects of cont abilities
         playContAbilities(currentStageCard, true);
         currentStageCard->reset();
@@ -336,14 +345,10 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     event.set_targetpos(targetPos);
     sendToBoth(event);
 
-    ServerCard *pOldStageCard = nullptr;
     if (oldStageCard)
-        pOldStageCard = zone("wr")->addCard(std::move(oldStageCard));
+        zone("wr")->addCard(std::move(oldStageCard));
 
     mGame->resolveAllContAbilities();
-    checkZoneChangeTrigger(cardOnStage, startZone->name(), "stage");
-    if (pOldStageCard)
-        checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
 
     return true;
 }
@@ -425,9 +430,11 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
 
     // assuming cont abilities that take effect while in hand don't affect other cards
     cardPtr->reset();
+    checkZoneChangeTrigger(cardPtr, "hand", "stage");
 
     auto currentStageCard = stage->card(cmd.stagepos());
     if (currentStageCard) {
+        checkZoneChangeTrigger(currentStageCard, "stage", "wr");
         // revert effects of cont abilities
         playContAbilities(currentStageCard, true);
         currentStageCard->reset();
@@ -447,18 +454,14 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
-    ServerCard *pOldStageCard = nullptr;
     if (oldStageCard)
-        pOldStageCard = zone("wr")->addCard(std::move(oldStageCard));
+        zone("wr")->addCard(std::move(oldStageCard));
 
     auto stock = zone("stock");
     for (int i = 0; i < cardInPlay->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
     mGame->resolveAllContAbilities();
     checkOnPlayTrigger(cardInPlay);
-    checkZoneChangeTrigger(cardInPlay, "hand", "stage");
-    if (pOldStageCard)
-        checkZoneChangeTrigger(pOldStageCard, "stage", "wr");
     co_await mGame->checkTiming();
 }
 
@@ -525,12 +528,12 @@ void ServerPlayer::switchPositions(int from, int to) {
     std::tuple<int, int, int> oldAttrs2;
     if (card1) {
         oldAttrs1 = card1->attributes();
-        card1->removePositionalContBuffs();
+        removePositionalContBuffsFromCard(card1);
         mGame->removePositionalContBuffsBySource(card1);
     }
     if (card2) {
         oldAttrs2 = card2->attributes();
-        card2->removePositionalContBuffs();
+        removePositionalContBuffsFromCard(card2);
         mGame->removePositionalContBuffsBySource(card2);
     }
 
@@ -933,7 +936,7 @@ void ServerPlayer::reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone dest
     }
 }
 
-void ServerPlayer::addAbilityToCard(ServerCard *card, const asn::Ability &a, int duration) {
+int ServerPlayer::addAbilityToCard(ServerCard *card, const asn::Ability &a, int duration) {
     int newId = card->addAbility(a, duration);
     EventAbilityGain ev;
     ev.set_zone(card->zone()->name());
@@ -946,6 +949,32 @@ void ServerPlayer::addAbilityToCard(ServerCard *card, const asn::Ability &a, int
 
     if (a.type == asn::AbilityType::Cont)
         playContAbilities(card);
+
+    return newId;
+}
+
+void ServerPlayer::removeAbilityFromCard(ServerCard *card, int abilityId) {
+    for (const auto &it: card->abilities()) {
+        if (it.id != abilityId)
+            continue;
+
+        if (it.active && it.ability.type == asn::AbilityType::Cont) {
+            AbilityPlayer a(this);
+            a.setThisCard(CardImprint(card->zone()->name(), card));
+            a.setAbilityId(it.id);
+            a.revertContAbility(std::get<asn::ContAbility>(it.ability.ability));
+        }
+
+        card->removeAbility(abilityId);
+
+        EventRemoveAbility event;
+        event.set_cardpos(card->pos());
+        event.set_zone(card->zone()->name());
+        event.set_abilityid(it.id);
+        sendToBoth(event);
+
+        break;
+    }
 }
 
 void ServerPlayer::setCardState(ServerCard *card, CardState state) {
@@ -992,28 +1021,6 @@ Resumable ServerPlayer::takeDamage(int damage) {
 
     if (zone("clock")->count() >= 7)
         co_await levelUp();
-}
-
-int ServerPlayer::getMultiplierValue(const asn::Multiplier &m, const ServerCard *thisCard) {
-    assert(m.type == asn::MultiplierType::ForEach);
-    assert(m.forEach->type == asn::TargetType::SpecificCards);
-    auto pzone = zone(asnZoneToString(m.zone));
-    int cardCount = 0;
-    for (int i = 0; i < pzone->count(); ++i) {
-        auto card = pzone->card(i);
-        if (!card)
-            continue;
-
-        const auto &tspec = m.forEach->targetSpecification;
-
-        if (!checkTargetMode(tspec->mode, thisCard, card))
-            continue;
-
-        if (checkCard(tspec->cards.cardSpecifiers, *card))
-            cardCount++;
-    }
-
-    return cardCount;
 }
 
 asn::Ability TriggeredAbility::getAbility() const {

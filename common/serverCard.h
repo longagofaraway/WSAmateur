@@ -49,6 +49,7 @@ class ServerCard : public CardBase
     std::vector<AttributeChange> mBuffs;
     std::vector<ContAttributeChange> mContBuffs;
     std::vector<AbilityState> mAbilities;
+    std::vector<AbilityAsContBuff> mAbilitiesAsContBuffs;
 
     StageRow mRow;
     int mPosition;
@@ -102,13 +103,18 @@ public:
 
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional = false);
+    AbilityAsContBuff& addAbilityAsContBuff(ServerCard *card, int abilityId, bool positional, bool &abilityCreated);
+    int removeAbilityAsContBuff(ServerCard *card, int abilityId, bool &abilityRemoved);
+    int removeAbilityAsPositionalContBuff(bool &abilityRemoved);
+    int removeAbilityAsPositionalContBuffBySource(ServerCard *card, bool &abilityRemoved);
     void removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr);
-    void removePositionalContBuffs();
+    void removePositionalContAttrBuffs();
     void removeContBuffsBySource(ServerCard *card);
-    void removePositionalContBuffsBySource(ServerCard *card);
+    void removePositionalContAttrBuffsBySource(ServerCard *card);
     void validateBuffs();
     std::vector<AbilityState>& abilities() { return mAbilities; }
     int addAbility(const asn::Ability &a, int duration);
+    void removeAbility(int id);
     void changeAttr(asn::AttributeType type, int delta);
 
     int attrByType(asn::AttributeType type) const;

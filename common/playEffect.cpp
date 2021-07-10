@@ -109,6 +109,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::CannotUseBackupOrEvent:
         playCannotUseBackupOrEvent(std::get<asn::CannotUseBackupOrEvent>(e.effect));
         break;
+    case asn::EffectType::AbilityGain:
+        playTemporaryAbilityGain(std::get<asn::AbilityGain>(e.effect));
+        break;
     default:
         break;
     }
@@ -444,6 +447,9 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             } else if (stage->card(3) && stage->card(4)) {
                 co_return;
             }
+        } else if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn) {
+            positionSet = true;
+            toIndex = thisCard().card->prevStagePos();
         }
         if (!positionSet) {
             if (e.target.type == asn::TargetType::LastMovedCards) {
@@ -500,8 +506,6 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             }
         }
     } else if (e.target.type == asn::TargetType::ThisCard) {
-        if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
-            toIndex = thisCard().card->prevStagePos();
         cardsToMove[thisCard().card->pos()] = thisCard().card;
     } else if (e.target.type == asn::TargetType::LastMovedCards) {
         for (const auto &card: lastMovedCards()) {
@@ -594,62 +598,28 @@ void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
 void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
     int value = e.value;
     if (e.gainType == asn::ValueType::Multiplier)
-        value = mPlayer->getMultiplierValue(*e.modifier, thisCard().card) * e.value;
+        value = getMultiplierValue(*e.modifier) * e.value;
 
-    if (e.target.type == asn::TargetType::ChosenCards) {
-        for (const auto &card: chosenCards())
-            card.card->player()->addAttributeBuff(card.card, e.type, value, e.duration);
+    bool positional = false;
+    if (e.target.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *e.target.targetSpecification;
+        if (spec.mode == asn::TargetMode::InFrontOfThis || spec.mode == asn::TargetMode::BackRow
+            || spec.mode == asn::TargetMode::FrontRow)
+            positional = true;
     } else if (e.target.type == asn::TargetType::ThisCard) {
-        if (thisCard().card == nullptr ||
-            (thisCard().card->zone()->name() != "stage" && thisCard().card->zone()->name() != "climax"))
+        if (thisCard().card == nullptr || thisCard().card->zone()->name() != "stage")
             return;
+    }
 
+    auto targets = getTargets(e.target);
+    for (auto card: targets) {
         if (cont) {
             if (revert())
-                mPlayer->removeContAttributeBuff(thisCard().card, thisCard().card, abilityId(), e.type);
+                mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
             else
-                mPlayer->addContAttributeBuff(thisCard().card, thisCard().card, abilityId(), e.type, value);
+                mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value);
         } else {
-            mPlayer->addAttributeBuff(thisCard().card, e.type, value, e.duration);
-        }
-    } else if (e.target.type == asn::TargetType::SpecificCards) {
-        const auto &spec = *e.target.targetSpecification;
-        auto stage = mPlayer->zone("stage");
-        for (int i = 0; i < stage->count(); ++i) {
-            auto card = stage->card(i);
-            if (!card)
-                continue;
-
-            if (!checkTargetMode(spec.mode, thisCard().card, card))
-                continue;
-
-            bool positional = false;
-            if (spec.mode == asn::TargetMode::InFrontOfThis || spec.mode == asn::TargetMode::BackRow
-                || spec.mode == asn::TargetMode::FrontRow)
-                positional = true;
-
-            if (checkCard(spec.cards.cardSpecifiers, *card)) {
-                if (cont) {
-                    if (revert())
-                        mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
-                    else
-                        mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, positional);
-                } else {
-                    mPlayer->addAttributeBuff(card, e.type, value, e.duration);
-                }
-            }
-        }
-    } else if (e.target.type == asn::TargetType::OppositeThis) {
-        auto card = mPlayer->oppositeCard(thisCard().card);
-        if (card) {
-            if (cont) {
-                if (revert())
-                    mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
-                else
-                    mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, true);
-            } else {
-                mPlayer->addAttributeBuff(card, e.type, value, e.duration);
-            }
+            mPlayer->addAttributeBuff(card, e.type, value, e.duration);
         }
     }
 }
@@ -742,6 +712,7 @@ void AbilityPlayer::playShuffle(const asn::Shuffle &e) {
 }
 
 Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
+    auto targets = getTargets(e.target);
     if (static_cast<size_t>(e.number) < e.abilities.size()) {
         std::vector<uint8_t> buf;
         encodeAbilityGain(e, buf);
@@ -767,21 +738,28 @@ Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
         }
         mPlayer->clearExpectedComands();
 
-        if (e.target.type == asn::TargetType::ThisCard) {
-            auto card = thisCard().card;
-            if (!card || card->zone()->name() != thisCard().zone)
-                co_return;
-            mPlayer->addAbilityToCard(card, e.abilities[chosenAbilityId], e.duration);
-        }
+        for (auto card: targets)
+            card->player()->addAbilityToCard(card, e.abilities[chosenAbilityId], e.duration);
+
         co_return;
     }
 
+    for (const auto &a: e.abilities)
+        for (auto card: targets)
+            card->player()->addAbilityToCard(card, a, e.duration);
+}
+
+void AbilityPlayer::playTemporaryAbilityGain(const asn::AbilityGain &e) {
+    assert(e.abilities.size() == 1);
+    assert(e.target.type == asn::TargetType::ThisCard);
     if (e.target.type == asn::TargetType::ThisCard) {
         auto card = thisCard().card;
         if (!card || card->zone()->name() != thisCard().zone)
-            co_return;
-        for (const auto &a: e.abilities)
-            mPlayer->addAbilityToCard(card, a, e.duration);
+            return;
+        if (!revert())
+            mPlayer->addAbilityAsContBuff(card, card, abilityId(), e.abilities[0], false);
+        else
+            mPlayer->removeAbilityAsContBuff(card, card, abilityId());
     }
 }
 
@@ -1010,7 +988,7 @@ void AbilityPlayer::playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent
 Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
     int damage;
     if (e.damageType == asn::ValueType::Multiplier)
-        damage = mPlayer->getMultiplierValue(*e.modifier, thisCard().card) * e.damage;
+        damage = getMultiplierValue(*e.modifier) * e.damage;
     else
         damage = e.damage;
 

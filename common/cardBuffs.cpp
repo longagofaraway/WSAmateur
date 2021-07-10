@@ -22,24 +22,13 @@ void ServerPlayer::endOfTurnEffectValidation() {
         while (it != abs.rend()) {
             it->activationTimes = 0;
             // remove temp abilities
-            if (!it->permanent) {
+            if (!it->permanent && it->duration > 0) {
                 if (--it->duration != 0) {
                     ++it;
                     continue;
                 }
 
-                if (it->active && it->ability.type == asn::AbilityType::Cont) {
-                    AbilityPlayer a(this);
-                    a.setThisCard(CardImprint(card->zone()->name(), card));
-                    a.setAbilityId(i);
-                    a.revertContAbility(std::get<asn::ContAbility>(it->ability.ability));
-                }
-
-                EventRemoveAbility event;
-                event.set_cardpos(card->pos());
-                event.set_zone(card->zone()->name());
-                event.set_abilityid(it->id);
-                sendToBoth(event);
+                removeAbilityFromCard(card, it->id);
 
                 it = std::reverse_iterator(abs.erase((++it).base()));
             } else {
@@ -98,7 +87,46 @@ void ServerPlayer::removePositionalContBuffsBySource(ServerCard *source) {
             continue;
 
         auto oldAttrs = card->attributes();
-        card->removePositionalContBuffsBySource(source);
+        card->removePositionalContAttrBuffsBySource(source);
+        while (true) {
+            bool abilityRemoved = false;
+            int abilityId = card->removeAbilityAsPositionalContBuffBySource(source, abilityRemoved);
+            if (!abilityRemoved)
+                break;
+            card->player()->removeAbilityFromCard(card, abilityId);
+        }
         sendChangedAttrs(card, oldAttrs);
     }
+}
+
+void ServerPlayer::removePositionalContBuffsFromCard(ServerCard *card) {
+    card->removePositionalContAttrBuffs();
+    while (true) {
+        bool abilityRemoved = false;
+        int abilityId = card->removeAbilityAsPositionalContBuff(abilityRemoved);
+        if (!abilityRemoved)
+            break;
+        card->player()->removeAbilityFromCard(card, abilityId);
+    }
+}
+
+void ServerPlayer::addAbilityAsContBuff(ServerCard *card,
+                                        ServerCard *source,
+                                        int sourceAbilityId,
+                                        const asn::Ability &ability,
+                                        bool positional) {
+    bool abilityCreated = false;
+    auto &buff = card->addAbilityAsContBuff(source, sourceAbilityId, positional, abilityCreated);
+    if (!abilityCreated)
+        return;
+
+    int newId = card->player()->addAbilityToCard(card, ability, 0);
+    buff.abilityId = newId;
+}
+
+void ServerPlayer::removeAbilityAsContBuff(ServerCard *card, ServerCard *source, int sourceAbilityId) {
+    bool abilityRemoved = false;
+    int abilityId = card->removeAbilityAsContBuff(source, sourceAbilityId, abilityRemoved);
+    if (abilityRemoved)
+        card->player()->removeAbilityFromCard(card, abilityId);
 }

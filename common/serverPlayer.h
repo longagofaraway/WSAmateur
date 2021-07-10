@@ -138,16 +138,28 @@ public:
     void sendEndGame(bool victory);
     Resumable processPlayActCmd(const CommandPlayAct &cmd);
     void reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone);
-    void addAbilityToCard(ServerCard *card, const asn::Ability &a, int duration);
+    int addAbilityToCard(ServerCard *card, const asn::Ability &a, int duration);
+    void removeAbilityFromCard(ServerCard *card, int abilityId);
     Resumable takeDamage(int damage);
-    int getMultiplierValue(const asn::Multiplier &m, const ServerCard *card);
 
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);
     void addAttributeBuff(ServerCard *card, asn::AttributeType attr, int delta, int duration = 1);
-    void addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta, bool positional = false);
+    void addContAttributeBuff(ServerCard *card,
+                              ServerCard *source,
+                              int abilityId,
+                              asn::AttributeType attr,
+                              int delta,
+                              bool positional = false);
     void removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr);
     void removePositionalContBuffsBySource(ServerCard *card);
+    void removePositionalContBuffsFromCard(ServerCard *card);
+    void addAbilityAsContBuff(ServerCard *card,
+                              ServerCard *source,
+                              int sourceAbilityId,
+                              const asn::Ability &ability,
+                              bool positional = false);
+    void removeAbilityAsContBuff(ServerCard *card, ServerCard *source, int sourceAbilityId);
     void setCardState(ServerCard *card, CardState state);
     void endOfTurnEffectValidation();
 
@@ -177,5 +189,8 @@ public:
     Resumable checkTiming();
 
 private:
-    void queueActivatedAbility(const asn::AutoAbility &ability, AbilityState &abilityState, ServerCard *card);
+    void queueActivatedAbility(const asn::AutoAbility &ability,
+                               AbilityState &abilityState,
+                               ServerCard *card,
+                               std::string_view cardZone = "");
 };

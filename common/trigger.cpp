@@ -31,7 +31,10 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     sendToBoth(EventEndResolvingAbilties());
 }
 
-void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability, AbilityState &abilityState, ServerCard *card) {
+void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability,
+                                         AbilityState &abilityState,
+                                         ServerCard *card,
+                                         std::string_view cardZone) {
     if (ability.activationTimes > 0) {
         if (abilityState.activationTimes >= ability.activationTimes)
             return;
@@ -40,7 +43,7 @@ void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability, Abilit
     }
 
     TriggeredAbility ta;
-    ta.card = CardImprint(card->zone()->name(), card);
+    ta.card = CardImprint(cardZone.empty() ? card->zone()->name() : std::string(cardZone), card);
     ta.type = ProtoCard;
     ta.abilityId = abilityState.id;
     if (!abilityState.permanent)
@@ -63,9 +66,11 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
             if (t.to != asn::Zone::NotSpecified && asnZoneToString(t.to) != to)
                 continue;
             assert(t.target.size() == 1);
+            std::string_view cardZone = card->zone()->name();
             if (t.target[0].type == asn::TargetType::ThisCard) {
                 if (card != movedCard)
                     continue;
+                cardZone = to;
             } else if (t.target[0].type == asn::TargetType::SpecificCards) {
                 const auto &spec = *t.target[0].targetSpecification;
 
@@ -74,9 +79,11 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
 
                 if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
                     continue;
+            } else {
+                assert(false);
             }
 
-            queueActivatedAbility(aa, a, card);
+            queueActivatedAbility(aa, a, card, cardZone);
         }
     };
 
@@ -88,7 +95,7 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
         checkTrigger(card);
     }
 
-    if (from == "stage" && to != "stage")
+    if (to == "stage" && movedCard->zone()->name() != to)
         checkTrigger(movedCard);
 }
 

@@ -10,6 +10,7 @@
 
 class ServerPlayer;
 class CommandSwitchPositions;
+class CommandChooseCard;
 
 class AbilityPlayer {
     ServerPlayer *mPlayer;
@@ -82,6 +83,7 @@ public:
     Resumable playSearchCard(const asn::SearchCard &e);
     void playShuffle(const asn::Shuffle &e);
     Resumable playAbilityGain(const asn::AbilityGain &e);
+    void playTemporaryAbilityGain(const asn::AbilityGain &e);
     Resumable playPerformEffect(const asn::PerformEffect &e);
     void playMoveWrToDeck(const asn::MoveWrToDeck &e);
     void playChangeState(const asn::ChangeState &e);
@@ -108,4 +110,6 @@ public:
     Resumable getStagePosition(int &position, const asn::MoveCard &e);
     Resumable moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex);
     void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type);
+    int getMultiplierValue(const asn::Multiplier &m);
+    std::vector<ServerCard*> getTargets(const asn::Target &t);
 };

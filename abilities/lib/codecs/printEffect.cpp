@@ -1,5 +1,6 @@
 #include "print.h"
 
+#include <array>
 #include <cassert>
 #include <string>
 #include <unordered_map>
@@ -15,6 +16,25 @@ opponent's revealed card's level, choose 1 " + printTrait("Shuchiin") + " charac
 return it to hand. If opponent's revealed card's level is higher, opponent chooses 1 of their characters, \
 and that character gets +5000 power until end of turn" }
 };
+
+bool canChain(EffectType type) {
+    std::array<EffectType, 2> arr = { EffectType::AttributeGain, EffectType::AbilityGain };
+    return std::find(arr.begin(), arr.end(), type) != arr.end();
+}
+
+bool compareChainTargets(const Effect& effect1, const Effect& effect2) {
+    const Target *t1,*t2;
+    if (effect1.type == EffectType::AttributeGain)
+        t1 = &std::get<AttributeGain>(effect1.effect).target;
+    else
+        t1 = &std::get<AbilityGain>(effect1.effect).target;
+
+    if (effect2.type == EffectType::AttributeGain)
+        t2 = &std::get<AttributeGain>(effect2.effect).target;
+    else
+        t2 = &std::get<AbilityGain>(effect2.effect).target;
+    return *t1 == *t2;
+}
 }
 
 std::string printEffects(const std::vector<Effect> &effects) {
@@ -42,11 +62,9 @@ std::string printEffects(const std::vector<Effect> &effects) {
             effectText[0] = std::toupper(effectText[0]);
         s += effectText;
 
-        if (effects[i].type == EffectType::AttributeGain && effects.size() > i + 1 &&
-            effects[i + 1].type == EffectType::AttributeGain) {
-            const auto &attGain1 = std::get<AttributeGain>(effects[i].effect);
-            const auto &attGain2 = std::get<AttributeGain>(effects[i + 1].effect);
-            if (attGain1.target == attGain2.target)
+        if (canChain(effects[i].type) && effects.size() > i + 1 &&
+            canChain(effects[i + 1].type)) {
+            if (compareChainTargets(effects[i], effects[i + 1]))
                 gPrintState.attributeGainChaining = true;
         }
     }
@@ -378,9 +396,15 @@ std::string printShuffle(const Shuffle &e) {
 }
 
 std::string printAbilityGain(const AbilityGain &e) {
-    std::string s = printTarget(e.target);
+    std::string s;
 
-    s += "gets ";
+    if (!gPrintState.attributeGainChaining) {
+        s += printTarget(e.target) + "gets ";
+    } else {
+        s += "and ";
+        gPrintState.attributeGainChaining = false;
+    }
+
     if (static_cast<size_t>(e.number) == e.abilities.size()) {
         s += "the following ";
         if (e.number == 1)

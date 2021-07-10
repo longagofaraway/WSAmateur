@@ -24,7 +24,6 @@ Effect {
     PerformReplay,
     Replay,
     DrawCard,
-    HardcodedEffect,
     OtherEffect,
     Nothing
   }
@@ -65,8 +64,7 @@ enum EffectType {
   replay = 32,
   sideAttackWithoutPenalty = 33,
   standby = 34,
-  hardcodedEffects = 35,
-  shuffle = 36,
+  shuffle = 35,
   
   otherEffect = 255
 }
@@ -263,11 +261,6 @@ DrawCard {
   executor Player,
   number Number
 }
-
-HardcodedEffect {
-  cardName String
-} 
-Possible values: "KGL/S79-020"
 
 Shuffle {
   zone Zone,

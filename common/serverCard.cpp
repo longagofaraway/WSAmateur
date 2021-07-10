@@ -21,6 +21,7 @@ ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone, int
 void ServerCard::reset() {
     mBuffs.clear();
     mContBuffs.clear();
+    mAbilitiesAsContBuffs.clear();
     std::erase_if(mAbilities, [](const AbilityState& ab) { return !ab.permanent; });
     std::for_each(mAbilities.begin(), mAbilities.end(), [](AbilityState& ab) {
         ab.activationTimes = 0;
@@ -70,26 +71,84 @@ bool ServerCard::addContAttrBuff(ServerCard *card, int abilityId, asn::Attribute
         changeAttr(attr, delta);
         return true;
     }
-    if (it->mValue == delta)
+    if (it->value == delta)
         return false;
-    changeAttr(attr, delta - it->mValue);
-    it->mValue = delta;
+    changeAttr(attr, delta - it->value);
+    it->value = delta;
     return true;
+}
+
+AbilityAsContBuff& ServerCard::addAbilityAsContBuff(ServerCard *card, int abilityId, bool positional, bool &abilityCreated) {
+    AbilityAsContBuff buff(card, abilityId, positional);
+    auto it = std::find(mAbilitiesAsContBuffs.begin(), mAbilitiesAsContBuffs.end(), buff);
+    if (it != mAbilitiesAsContBuffs.end()) {
+        abilityCreated = false;
+        return *it;
+    }
+
+    abilityCreated = true;
+    return mAbilitiesAsContBuffs.emplace_back(std::move(buff));
 }
 
 void ServerCard::removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr) {
     ContAttributeChange buff(card, abilityId, attr, 0);
     auto it = std::find(mContBuffs.begin(), mContBuffs.end(), buff);
     if (it != mContBuffs.end()) {
-        changeAttr(attr, -it->mValue);
+        changeAttr(attr, -it->value);
         mContBuffs.erase(it);
     }
 }
 
-void ServerCard::removePositionalContBuffs() {
+int ServerCard::removeAbilityAsContBuff(ServerCard *card, int abilityId, bool &abilityRemoved) {
+    AbilityAsContBuff buff(card, abilityId, false);
+    auto it = std::find(mAbilitiesAsContBuffs.begin(), mAbilitiesAsContBuffs.end(), buff);
+    if (it == mAbilitiesAsContBuffs.end()) {
+        abilityRemoved = false;
+        return 0;
+    }
+
+    int idToRemove = it->abilityId;
+    abilityRemoved = true;
+    mAbilitiesAsContBuffs.erase(it);
+    return idToRemove;
+}
+
+int ServerCard::removeAbilityAsPositionalContBuff(bool &abilityRemoved) {
+    for (auto it = mAbilitiesAsContBuffs.begin(); it != mAbilitiesAsContBuffs.end();) {
+        if (it->positional) {
+            abilityRemoved = true;
+            int id = it->abilityId;
+            mAbilitiesAsContBuffs.erase(it);
+            return id;
+        } else {
+            ++it;
+        }
+    }
+
+    abilityRemoved = false;
+    return 0;
+}
+
+int ServerCard::removeAbilityAsPositionalContBuffBySource(ServerCard *card, bool &abilityRemoved) {
+    for (auto it = mAbilitiesAsContBuffs.begin(); it != mAbilitiesAsContBuffs.end();) {
+        if (it->positional && it->source == card) {
+            abilityRemoved = true;
+            int id = it->abilityId;
+            mAbilitiesAsContBuffs.erase(it);
+            return id;
+        } else {
+            ++it;
+        }
+    }
+
+    abilityRemoved = false;
+    return 0;
+}
+
+void ServerCard::removePositionalContAttrBuffs() {
     for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
-        if (it->mPositional) {
-            changeAttr(it->mAttr, -it->mValue);
+        if (it->positional) {
+            changeAttr(it->attr, -it->value);
             it = mContBuffs.erase(it);
         } else {
             ++it;
@@ -99,8 +158,8 @@ void ServerCard::removePositionalContBuffs() {
 
 void ServerCard::removeContBuffsBySource(ServerCard *card) {
     for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
-        if (it->mSource == card) {
-            changeAttr(it->mAttr, -it->mValue);
+        if (it->source == card) {
+            changeAttr(it->attr, -it->value);
             it = mContBuffs.erase(it);
         } else {
             ++it;
@@ -108,10 +167,10 @@ void ServerCard::removeContBuffsBySource(ServerCard *card) {
     }
 }
 
-void ServerCard::removePositionalContBuffsBySource(ServerCard *card) {
+void ServerCard::removePositionalContAttrBuffsBySource(ServerCard *card) {
     for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
-        if (it->mPositional && it->mSource == card) {
-            changeAttr(it->mAttr, -it->mValue);
+        if (it->positional && it->source == card) {
+            changeAttr(it->attr, -it->value);
             it = mContBuffs.erase(it);
         } else {
             ++it;
@@ -121,16 +180,16 @@ void ServerCard::removePositionalContBuffsBySource(ServerCard *card) {
 
 void ServerCard::validateBuffs() {
     for (auto &buff: mBuffs) {
-        if (--buff.mDuration == 0) {
-            switch (buff.mAttr) {
+        if (--buff.duration == 0) {
+            switch (buff.attr) {
             case asn::AttributeType::Soul:
-                mSoul -= buff.mValue;
+                mSoul -= buff.value;
                 break;
             case asn::AttributeType::Power:
-                mPower -= buff.mValue;
+                mPower -= buff.value;
                 break;
             case asn::AttributeType::Level:
-                mLevel -= buff.mValue;
+                mLevel -= buff.value;
                 break;
             default:
                 assert(false);
@@ -138,7 +197,7 @@ void ServerCard::validateBuffs() {
             }
         }
     }
-    std::erase_if(mBuffs, [](const AttributeChange &o){ return o.mDuration <= 0; });
+    std::erase_if(mBuffs, [](const AttributeChange &o){ return o.duration <= 0; });
 }
 
 int ServerCard::addAbility(const asn::Ability &a, int duration) {
@@ -148,6 +207,10 @@ int ServerCard::addAbility(const asn::Ability &a, int duration) {
     s.permanent = false;
     mAbilities.emplace_back(s);
     return id;
+}
+
+void ServerCard::removeAbility(int id) {
+    std::erase_if(mAbilities, [id](auto &ability) { return ability.id == id; });
 }
 
 void ServerCard::changeAttr(asn::AttributeType type, int delta) {
