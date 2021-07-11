@@ -91,8 +91,8 @@ ServerPlayer* AbilityPlayer::owner(ServerCard *card) const {
     return player ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
 }
 
-void AbilityPlayer::removeMentionedCard(int cardPos) {
-    std::erase_if(mMentionedCards, [cardPos](CardImprint &im) { return cardPos == im.id; });
+void AbilityPlayer::removeMentionedCard(int cardId) {
+    std::erase_if(mMentionedCards, [cardId](CardImprint &im) { return cardId == im.card->id(); });
 }
 
 bool ServerPlayer::canBePayed(ServerCard *thisCard, const asn::CostItem &c) {
@@ -105,11 +105,13 @@ bool ServerPlayer::canBePayed(ServerCard *thisCard, const asn::CostItem &c) {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
+            assert(e.target.type == asn::TargetType::SpecificCards);
             if (e.from.zone == asn::Zone::Hand && e.target.type == asn::TargetType::SpecificCards &&
                 e.target.targetSpecification->number.value > zone("hand")->count())
                 return false;
         } else if (item.type == asn::EffectType::ChangeState) {
             const auto &e = std::get<asn::ChangeState>(item.effect);
+            assert(e.target.type == asn::TargetType::ThisCard);
             if (e.state == protoStateToState(thisCard->state()))
                 return false;
         }
@@ -172,7 +174,7 @@ void ServerPlayer::playContAbilities(ServerCard *card, bool revert) {
             continue;
 
         AbilityPlayer a(this);
-        a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
+        a.setThisCard(CardImprint(card->zone()->name(), card));
         a.setAbilityId(i);
         if (!revert) {
             a.playContAbility(cont, abs[i].active);
@@ -214,7 +216,7 @@ Resumable ServerPlayer::playEventEffects(ServerCard *card) {
         auto eventAbility = event.add_abilities();
         eventAbility->set_zone(card->zone()->name());
         eventAbility->set_type(ProtoCard);
-        eventAbility->set_cardid(card->pos());
+        eventAbility->set_cardid(card->id());
         eventAbility->set_abilityid(i);
         eventAbility->set_cardcode(card->code());
         auto uniqueId = abilityHash(*eventAbility);
@@ -226,7 +228,7 @@ Resumable ServerPlayer::playEventEffects(ServerCard *card) {
         sendToBoth(evStart);
 
         AbilityPlayer a(this);
-        a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
+        a.setThisCard(CardImprint(card->zone()->name(), card));
         co_await a.playAbility(abs[i].ability);
 
         EventAbilityResolved evEnd;
@@ -282,7 +284,7 @@ Resumable ServerPlayer::checkTiming() {
             auto ab = event.add_abilities();
             ab->set_zone(mQueue[i].card.zone);
             ab->set_type(mQueue[i].type);
-            ab->set_cardid(mQueue[i].card.id);
+            ab->set_cardid(mQueue[i].card.card->id());
             ab->set_abilityid(mQueue[i].abilityId);
             ab->set_cardcode(mQueue[i].card.card->code());
             if (mQueue[i].ability) {

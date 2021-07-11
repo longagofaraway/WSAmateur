@@ -15,6 +15,7 @@
 class CardZone;
 
 class Card : public CardBase {
+    int mId = 0;
     std::string mCode;
     bool mGlow = false;
     bool mSelected = false;
@@ -41,12 +42,13 @@ public:
     Card(Card&&) = default;
     Card& operator=(Card &&other) = default;
 
-    Card(const std::string &code, CardZone *zone);
+    Card(int id, const std::string &code, CardZone *zone);
 
-    void init(const std::string &code);
+    void init(int id, const std::string &code);
     void clear();
     bool cardPresent() const { return !mCode.empty(); }
 
+    int id() const { return mId; }
     bool glow() const { return mGlow; }
     bool selected() const { return mSelected; }
     void setGlow(bool glow) { mGlow = glow; }

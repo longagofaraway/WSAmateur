@@ -42,6 +42,7 @@ struct AbilityState {
 
 class ServerCard : public CardBase
 {
+    int mUniqueId;
     std::shared_ptr<CardInfo> mCardInfo;
     ServerCardZone *mZone;
     std::string mCode;
@@ -63,11 +64,11 @@ class ServerCard : public CardBase
     bool mInBattle = false;
 
 public:
-    ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone);
-    ServerCard(int pos, ServerCardZone *zone);
+    ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone, int uniqueId);
 
     void reset();
 
+    int id() const { return mUniqueId; }
     void setPos(int pos);
     int pos() const;
     void setPrevStagePos(int pos) { mPreviousStagePosition = pos; }

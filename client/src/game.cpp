@@ -299,7 +299,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         event->event().UnpackTo(&ev);
         for (int i = 0; i < ev.codes_size(); ++i) {
             mOpponent->zone("deck")->model().removeCard(mOpponent->zone("deck")->model().count());
-            hand.addCard(ev.codes(i), mOpponent->zone("hand"));
+            hand.addCard(0, ev.codes(i), mOpponent->zone("hand"));
         }
         CommandMulligan cmd;
         //cmd.add_ids(0);
@@ -315,7 +315,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
     } else if (event->event().Is<EventPlayCard>()) {
         EventPlayCard ev;
         event->event().UnpackTo(&ev);
-        hand.removeCard(ev.handid());
+        hand.removeCard(ev.handpos());
         sendGameCommand(CommandAttackPhase(), mOpponent->id());
         //if (mOpponent->playCards(hand))
         //    sendGameCommand(CommandAttackPhase(), mOpponent->id());
@@ -329,7 +329,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventLevelUp>()) {
         CommandLevelUp cmd;
-        cmd.set_clockid(0);
+        cmd.set_clockpos(0);
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventEncoreStep>()) {
         CommandEndTurn cmd;
@@ -338,11 +338,11 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         EventMoveCard ev;
         event->event().UnpackTo(&ev);
         if (ev.startzone() == "deck" && ev.targetzone() == "hand") {
-            hand.addCard(ev.code(), mOpponent->zone("hand"));
+            hand.addCard(ev.cardid(), ev.code(), mOpponent->zone("hand"));
         }
     } else if (event->event().Is<EventDiscardDownTo7>()) {
         CommandMoveCard cmd;
-        cmd.set_startid(0);
+        cmd.set_startpos(0);
         cmd.set_startzone("hand");
         cmd.set_targetzone("wr");
         sendGameCommand(cmd, mOpponent->id());
@@ -354,8 +354,8 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         CommandChooseCard cmd;
         cmd.set_zone("stage");
         cmd.set_owner(ProtoOwner::ProtoOpponent);
-        cmd.add_ids(1);
-        cmd.add_ids(2);
+        cmd.add_positions(1);
+        cmd.add_positions(2);
         sendGameCommand(cmd, mOpponent->id());
     }
 }

@@ -8,21 +8,23 @@ message EventInitialHand {
 
 message EventMoveCard {
     string code = 1;
-    string startZone = 2;
-    sint32 startId = 3;
-    string targetZone = 4;
-    sint32 targetId = 5;
+    sint32 cardId = 2;
+    string startZone = 3;
+    sint32 startPos = 4;
+    string targetZone = 5;
+    sint32 targetPos = 6;
 }
 
 message EventPlayCard {
-    sint32 handId = 1;
-    sint32 stageId = 2;
-    string code = 3;
+    sint32 cardId = 1;
+    sint32 handPos = 2;
+    sint32 stagePos = 3;
+    string code = 4;
 }
 
 message EventSwitchStagePositions {
-    sint32 stageIdFrom = 1;
-    sint32 stageIdTo = 2;
+    sint32 stagePosFrom = 1;
+    sint32 stagePosTo = 2;
 }
 
 message EventClockToWr {}

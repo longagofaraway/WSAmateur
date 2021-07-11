@@ -115,9 +115,9 @@ Card {
         mView.visible = open;
     }
 
-    function addCard(code) {
+    function addCard(id, code) {
         waitingRoom.mSource = code;
-        gGame.getPlayer(opponent).addCard(code, "wr");
+        gGame.getPlayer(opponent).addCard(id, code, "wr");
     }
     function removeCard(index) {
         waitingRoom.mModel.removeCard(index);

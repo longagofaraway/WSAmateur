@@ -45,6 +45,6 @@ ListView {
            return root.height / 2 - (stock.count ? (stock.count - 1) : 0) * mMargin - root.cardHeight;
        return stock.y + (stock.count ? (stock.count - 1) : 0) * mMargin;
    }
-   function addCard(code, targetId) { gGame.getPlayer(opponent).addCard(code, "stock"); }
+   function addCard(id, code, targetId) { gGame.getPlayer(opponent).addCard(id, code, "stock"); }
    function removeCard(index) { stock.mModel.removeCard(index); }
 }

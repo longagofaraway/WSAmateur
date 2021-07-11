@@ -56,12 +56,12 @@ Item {
     function getYForNewCard(pos) { return mPositions[pos].y; }
     function getXForCard(pos) { return mStagePlaces[pos].getX(); }
     function getYForCard(pos) { return mStagePlaces[pos].getY(); }
-    function addCard(code, pos, startZone, startPos) {
+    function addCard(id, code, pos, startZone, startPos) {
         if (startZone === "stage")
             throw "use special function";
         if (mStagePlaces[pos].mStageCard !== null)
             mStagePlaces[pos].sendToWr();
-        mStagePlaces[pos].setCard(code);
+        mStagePlaces[pos].setCard(id, code);
     }
     function swapCards(from, to) { mStagePlaces[from].startSwappingCards(to); }
 

@@ -23,8 +23,8 @@ void Hand::addCard() {
     mCardsModel.addCard(this);
 }
 
-void Hand::addCard(const std::string &code) {
-    mCardsModel.addCard(code, this);
+void Hand::addCard(int id, const std::string &code) {
+    mCardsModel.addCard(id, code, this);
 }
 
 void Hand::startMulligan() {

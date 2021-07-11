@@ -17,3 +17,11 @@ int CardZone::numOfHighlightedCards() {
 
     return num;
 }
+
+const Card* CardZone::findCardById(int id) const
+{
+    for (const auto &card: mCardsModel.cards())
+        if (card.id() == id)
+            return &card;
+    return nullptr;
+}

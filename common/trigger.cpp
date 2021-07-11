@@ -9,7 +9,7 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     auto ab = event.add_abilities();
     ab->set_zone("res");
     ab->set_type(ProtoAbilityType::ProtoClimaxTrigger);
-    ab->set_cardid(0);
+    ab->set_cardid(card->id());
     ab->set_abilityid(static_cast<::google::protobuf::int32>(trigger));
     ab->set_cardcode(card->code());
     auto uniqueId = abilityHash(*ab);
@@ -40,7 +40,7 @@ void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability, Abilit
     }
 
     TriggeredAbility ta;
-    ta.card = CardImprint(card->zone()->name(), card->pos(), card);
+    ta.card = CardImprint(card->zone()->name(), card);
     ta.type = ProtoCard;
     ta.abilityId = abilityState.id;
     if (!abilityState.permanent)
@@ -95,7 +95,7 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
 void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, std::string_view from, std::string_view to) {
     if (from == "stage" && to == "wr" && movedCard->zone()->name() == "wr") {
         TriggeredAbility ta;
-        ta.card = CardImprint(movedCard->zone()->name(), movedCard->pos(), movedCard);
+        ta.card = CardImprint(movedCard->zone()->name(), movedCard);
         ta.type = ProtoGlobal;
         ta.abilityId = static_cast<int>(GlobalAbility::Encore);
         mQueue.push_back(ta);
@@ -217,7 +217,7 @@ void ServerPlayer::triggerBackupAbility(ServerCard *card) {
             continue;
 
         TriggeredAbility a;
-        a.card = CardImprint(card->zone()->name(), card->pos(), card);
+        a.card = CardImprint(card->zone()->name(), card);
         a.type = ProtoCard;
         a.abilityId = abs[i].id;
         mQueue.push_back(a);

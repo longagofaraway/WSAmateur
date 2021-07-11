@@ -46,7 +46,7 @@ private:
     std::unique_ptr<ChoiceDialogBase> mChoiceDialog;
 
     int mLevel = 0;
-    int mAttackingId = 0;
+    int mAttackingPos = 0;
 
     bool mCanPlayEvents = true;
     bool mCanPlayBackups = true;
@@ -87,7 +87,7 @@ public:
     Q_INVOKABLE void sendChoice(int index);
     Q_INVOKABLE void playActAbility(int index);
     Q_INVOKABLE void sendPlayCounter(int handId);
-    Q_INVOKABLE void addCard(QString code, QString zoneName);
+    Q_INVOKABLE void addCard(int id, QString code, QString zoneName);
     Q_INVOKABLE void lookOrRevealTopDeck();
     Q_INVOKABLE void cardInserted(QString targetZone);
 
@@ -102,8 +102,8 @@ public:
     void attackWithAll();
 
 private:
-    void createMovingCard(const QString &code, const std::string &startZone, int startId,
-                          const std::string &targetZone, int targetId = 0, bool isUiAction = false,
+    void createMovingCard(int id, const QString &code, const std::string &startZone, int startPos,
+                          const std::string &targetZone, int targetPos = 0, bool isUiAction = false,
                           bool dontFinishAction = false, bool noDelete = false);
 
     void setInitialHand(const EventInitialHand &event);

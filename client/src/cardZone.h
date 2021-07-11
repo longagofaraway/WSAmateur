@@ -30,4 +30,5 @@ public:
     virtual std::vector<Card>& cards() { return mCardsModel.cards(); }
     virtual CardModel& model() { return mCardsModel; }
     virtual void removeCard(int index) { mCardsModel.removeCard(index); }
+    const Card* findCardById(int id) const;
 };

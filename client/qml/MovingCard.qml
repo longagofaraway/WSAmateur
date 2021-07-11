@@ -2,6 +2,7 @@ import QtQuick 2.0
 
 Card {
     id: movingCard
+    property int uniqueId
     property string code
     property bool opponent
     property bool isUiAction
@@ -81,7 +82,7 @@ Card {
 
     function insertCard() {
         var zone = gGame.getZone(targetZone, opponent);
-        zone.addCard(code, targetId, startZone, startId);
+        zone.addCard(uniqueId, code, targetId, startZone, startId);
         movingCard.visible = false;
     }
 

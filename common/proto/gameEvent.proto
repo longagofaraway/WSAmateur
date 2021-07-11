@@ -14,19 +14,19 @@ message EventLevelUp {}
 message EventRefresh {}
 message EventDiscardDownTo7 {}
 message EventDeclareAttack {
-    sint32 stageId = 1;
+    sint32 stagePos = 1;
     AttackType attackType = 2;
 }
 
 message EventSetCardAttr {
-    sint32 cardId = 1;
+    sint32 cardPos = 1;
     string zone = 2;
     ProtoCardAttribute attr = 3;
     sint32 value = 4;
 }
 
 message EventSetCardState {
-    sint32 stageid = 1;
+    sint32 stagePos = 1;
     CardState state = 2;
 }
 

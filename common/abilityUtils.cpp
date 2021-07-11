@@ -1,6 +1,7 @@
 #include "abilityUtils.h"
 
 #include <cassert>
+#include <random>
 
 #include <QByteArray>
 
@@ -60,12 +61,16 @@ QString asnZoneToReadableString(asn::Zone zone) {
 }
 
 uint32_t abilityHash(const ProtoAbility &a) {
-    std::string buf = a.zone();
-    buf += a.cardcode();
-    buf += std::to_string(a.cardid());
-    buf += std::to_string(a.type());
+    std::string buf = std::to_string(a.cardid());
     buf += std::to_string(a.abilityid());
-    return qChecksum(buf.data(), static_cast<uint>(buf.size()));
+    buf += std::to_string(a.type());
+
+    std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
+    buf += std::to_string(gen() % 0xFFFF);
+    auto checksum = qChecksum(buf.data(), static_cast<uint>(buf.size()));
+    if (!checksum)
+        checksum++;
+    return checksum;
 }
 
 ProtoCardAttribute attrTypeToProto(asn::AttributeType t) {

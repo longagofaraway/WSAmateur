@@ -275,18 +275,18 @@ void Player::attackDeclarationStep() {
 }
 
 void Player::declareAttack(const EventDeclareAttack &event) {
-    if (event.stageid() >= 3)
+    if (event.stagepos() >= 3)
         return;
     mGame->setPhase(asn::Phase::AttackPhase);
-    mAttackingId = event.stageid();
-    mStage->attackDeclared(event.stageid());
+    mAttackingPos = event.stagepos();
+    mStage->attackDeclared(event.stagepos());
     if (!isOpponent())
         mGame->attackDeclarationStepFinished();
 }
 
 void Player::sendAttackDeclaration(int pos, bool sideAttack) {
     CommandDeclareAttack cmd;
-    cmd.set_stageid(pos);
+    cmd.set_stagepos(pos);
     cmd.set_attacktype(sideAttack ? AttackType::SideAttack : FrontAttack);
     sendGameCommand(cmd);
 }
@@ -314,7 +314,7 @@ void Player::clockPhaseFinished() {
     for (uint32_t i = 0; i < cards.size(); ++i) {
         if (cards[i].selected()) {
             cmd.set_count(1);
-            cmd.set_cardid(i);
+            cmd.set_cardpos(i);
             break;
         }
     }
@@ -373,8 +373,9 @@ void Player::setInitialHand(const EventInitialHand &event) {
         }
     } else {
         for (int i = 0; i < event.codes_size(); ++i) {
-            deck->model().removeCard(deck->model().count() - 1);
-            mHand->addCard(event.codes(i));
+            int id = deck->model().count() - 1;
+            deck->model().removeCard(id);
+            mHand->addCard(id, event.codes(i));
         }
     }
 
@@ -385,8 +386,8 @@ void Player::setInitialHand(const EventInitialHand &event) {
     mHand->startMulligan();
 }
 
-void Player::createMovingCard(const QString &code, const std::string &startZone, int startId,
-                              const std::string &targetZone, int targetId, bool isUiAction,
+void Player::createMovingCard(int id, const QString &code, const std::string &startZone, int startPos,
+                              const std::string &targetZone, int targetPos, bool isUiAction,
                               bool dontFinishAction, bool noDelete) {
     if (isUiAction)
         mGame->startUiAction();
@@ -398,6 +399,7 @@ void Player::createMovingCard(const QString &code, const std::string &startZone,
     QQmlComponent component(mGame->engine(), "qrc:/qml/MovingCard.qml");
     QQuickItem *obj = qobject_cast<QQuickItem*>(component.create(mGame->context()));
     obj->setParentItem(mGame->parentItem());
+    obj->setProperty("uniqueId", id);
     obj->setProperty("code", code);
     obj->setProperty("opponent", mOpponent);
     obj->setProperty("isUiAction", isUiAction);
@@ -405,9 +407,9 @@ void Player::createMovingCard(const QString &code, const std::string &startZone,
     obj->setProperty("noDelete", noDelete);
     obj->setProperty("mSource", source);
     obj->setProperty("startZone", QString::fromStdString(startZone));
-    obj->setProperty("startId", startId);
+    obj->setProperty("startId", startPos);
     obj->setProperty("targetZone", QString::fromStdString(targetZone));
-    obj->setProperty("targetId", targetId);
+    obj->setProperty("targetId", targetPos);
     obj->connect(obj, SIGNAL(moveFinished()), mGame, SLOT(cardMoveFinished()));
     QMetaObject::invokeMethod(obj, "startAnimation");
 }
@@ -422,12 +424,12 @@ void Player::moveCard(const EventMoveCard &event) {
         return;
 
     auto &cards = startZone->cards();
-    if (size_t(event.startid() + 1) > cards.size())
+    if (size_t(event.startpos() + 1) > cards.size())
         return;
 
     QString code = QString::fromStdString(event.code());
     if (code.isEmpty())
-        code = cards[event.startid()].qcode();
+        code = cards[event.startpos()].qcode();
 
     bool dontFinishAction = false;
     if (event.targetzone() == "res") {
@@ -435,19 +437,19 @@ void Player::moveCard(const EventMoveCard &event) {
         dontFinishAction = true;
     }
 
-    int startId = event.startid();
+    int startId = event.startpos();
     auto startZoneStr = event.startzone();
     auto deckView = zone("view");
     if (event.startzone() == "deck" && deckView->model().count()) {
         auto deck = zone("deck");
-        if (deck->model().count() - 1 - event.startid() < deckView->model().count()) {
-            startId = deck->model().count() - 1 - event.startid();
+        if (deck->model().count() - 1 - event.startpos() < deckView->model().count()) {
+            startId = deck->model().count() - 1 - event.startpos();
             startZoneStr = "view";
-            deck->model().removeCard(event.startid());
+            deck->model().removeCard(event.startpos());
         }
     }
 
-    createMovingCard(code, startZoneStr, startId, event.targetzone(), event.targetid(), false, dontFinishAction);
+    createMovingCard(event.cardid(), code, startZoneStr, startId, event.targetzone(), event.targetpos(), false, dontFinishAction);
 }
 
 void Player::playCard(const EventPlayCard &event) {
@@ -457,13 +459,13 @@ void Player::playCard(const EventPlayCard &event) {
         return;
 
     auto &cards = mHand->cards();
-    if (size_t(event.handid()) >= cards.size()
-        || size_t(event.stageid()) >= mStage->cards().size())
+    if (size_t(event.handpos()) >= cards.size()
+        || size_t(event.stagepos()) >= mStage->cards().size())
         return;
 
     QString code = QString::fromStdString(event.code());
     if (code.isEmpty())
-        code = cards[event.stageid()].qcode();
+        code = cards[event.stagepos()].qcode();
 
     auto cardInfo = CardDatabase::get().getCard(event.code());
     if (!cardInfo)
@@ -476,15 +478,15 @@ void Player::playCard(const EventPlayCard &event) {
         targetZone = "stage";
 
 
-    createMovingCard(code, "hand", event.handid(), targetZone, event.stageid());
+    createMovingCard(event.cardid(), code, "hand", event.handpos(), targetZone, event.stagepos());
 }
 
 void Player::switchStagePositions(const EventSwitchStagePositions &event) {
-    if (size_t(event.stageidfrom()) >= mStage->cards().size()
-        || size_t(event.stageidto()) >= mStage->cards().size())
+    if (size_t(event.stageposfrom()) >= mStage->cards().size()
+        || size_t(event.stageposto()) >= mStage->cards().size())
         return;
 
-    mStage->swapCards(event.stageidfrom(), event.stageidto());
+    mStage->swapCards(event.stageposfrom(), event.stageposto());
 }
 
 bool Player::canPlay(const Card &card) const {
@@ -523,7 +525,7 @@ void Player::playClimax() {
         return;
     int handIndex = climaxZone->visualItem()->property("mHandIndex").toInt();
     CommandPlayCard cmd;
-    cmd.set_handid(handIndex);
+    cmd.set_handpos(handIndex);
     sendGameCommand(cmd);
 }
 
@@ -532,23 +534,23 @@ void Player::setCardAttr(const EventSetCardAttr &event) {
     if (!pzone)
         return;
 
-    if (event.cardid() >= pzone->model().count())
+    if (event.cardpos() >= pzone->model().count())
         return;
 
     if (event.zone() == "stage") {
-        mStage->setAttr(event.cardid(), event.attr(), event.value());
+        mStage->setAttr(event.cardpos(), event.attr(), event.value());
     } else {
-        pzone->model().setAttr(event.cardid(), event.attr(), event.value());
+        pzone->model().setAttr(event.cardpos(), event.attr(), event.value());
         if (event.zone() == "hand" && mHand->isPlayTiming())
             highlightPlayableCards();
     }
 }
 
 void Player::setCardState(const EventSetCardState &event) {
-    if (event.stageid() >= 5)
+    if (event.stagepos() >= 5)
         return;
 
-    mStage->model().setState(event.stageid(), event.state());
+    mStage->model().setState(event.stagepos(), event.state());
 }
 
 void Player::counterStep() {
@@ -583,7 +585,8 @@ void Player::moveClockToWr() {
         bool dontFinishAction = true;
         if (i == 5)
             dontFinishAction = false;
-        createMovingCard(clock->cards()[0].qcode(), "clock", 0, "wr", 0, false, dontFinishAction);
+        auto &card = clock->cards()[0];
+        createMovingCard(card.id(), card.qcode(), "clock", 0, "wr", 0, false, dontFinishAction);
     }
 }
 
@@ -625,7 +628,7 @@ void Player::cardSelectedForLevelUp(int index) {
     mGame->hideText();
 
     CommandLevelUp cmd;
-    cmd.set_clockid(index);
+    cmd.set_clockpos(index);
     sendGameCommand(cmd);
 }
 
@@ -634,7 +637,7 @@ void Player::sendEncore(int pos) {
     mStage->deactivateEncoreStep();
 
     CommandEncoreCharacter cmd;
-    cmd.set_stageid(pos);
+    cmd.set_stagepos(pos);
     sendGameCommand(cmd);
 }
 
@@ -643,7 +646,7 @@ void Player::sendDiscardCard(int id) {
     mHand->deactivateDiscarding();
 
     CommandMoveCard cmd;
-    cmd.set_startid(id);
+    cmd.set_startpos(id);
     cmd.set_startzone("hand");
     cmd.set_targetzone("wr");
     sendGameCommand(cmd);
@@ -651,27 +654,28 @@ void Player::sendDiscardCard(int id) {
 
 void Player::sendPlayActAbility(int cardPos, int abilityId) {
     CommandPlayAct cmd;
-    cmd.set_cardid(cardPos);
+    cmd.set_cardpos(cardPos);
     cmd.set_abilityid(abilityId);
     sendGameCommand(cmd);
 }
 
 void Player::cardPlayed(int handId, int stageId) {
     CommandPlayCard cmd;
-    cmd.set_handid(handId);
-    cmd.set_stageid(stageId);
+    cmd.set_handpos(handId);
+    cmd.set_stagepos(stageId);
     sendGameCommand(cmd);
 }
 
 void Player::sendSwitchPositions(int from, int to) {
     CommandSwitchStagePositions cmd;
-    cmd.set_stageidfrom(from);
-    cmd.set_stageidto(to);
+    cmd.set_stageposfrom(from);
+    cmd.set_stageposto(to);
     sendGameCommand(cmd);
 }
 
 void Player::sendFromStageToWr(int pos) {
-    createMovingCard(mStage->cards()[pos].qcode(), "stage", pos, "wr", 0, true, false, true);
+    auto &card = mStage->cards()[pos];
+    createMovingCard(card.id(), card.qcode(), "stage", pos, "wr", 0, true, false, true);
 }
 
 void Player::resetChoiceDialog() {
@@ -683,13 +687,13 @@ void Player::sendPlayCounter(int handId) {
     counterStepFinished();
 
     CommandPlayCounter cmd;
-    cmd.set_handid(handId);
+    cmd.set_handpos(handId);
     sendGameCommand(cmd);
 }
 
-void Player::addCard(QString code, QString zoneName) {
+void Player::addCard(int id, QString code, QString zoneName) {
     auto pzone = zone(zoneName.toStdString());
-    pzone->model().addCard(code.toStdString(), pzone);
+    pzone->model().addCard(id, code.toStdString(), pzone);
 }
 
 void Player::testAction()
@@ -716,8 +720,8 @@ bool Player::playCards(CardModel &hand) {
         for (int j = 0; (size_t)j < handCards.size(); ++j) {
             if (canPlay(handCards[j]) && handCards[j].type() != CardType::Climax) {
                 CommandPlayCard cmd;
-                cmd.set_handid(j);
-                cmd.set_stageid(i);
+                cmd.set_handpos(j);
+                cmd.set_stagepos(i);
                 sendGameCommand(cmd);
                 return false;
             }
@@ -733,7 +737,7 @@ void Player::attackWithAll() {
         if (cards[i].cardPresent() && cards[i].state() == StateStanding) {
             CommandDeclareAttack cmd;
             cmd.set_attacktype(AttackType::FrontAttack);
-            cmd.set_stageid(i);
+            cmd.set_stagepos(i);
             sendGameCommand(cmd);
             return;
         }

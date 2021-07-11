@@ -6,8 +6,9 @@
 #include "serverCardZone.h"
 #include "serverPlayer.h"
 
-ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone)
+ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone, int uniqueId)
     : mCardInfo(info), mZone(zone) {
+    mUniqueId = uniqueId;
     mCode = info->code();
     mPower = info->power();
     mSoul = info->soul();
@@ -15,11 +16,6 @@ ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone)
 
     for (const auto &abBuf: info->abilities())
         mAbilities.emplace_back(decodeAbility(abBuf), static_cast<int>(mAbilities.size()));
-}
-
-ServerCard::ServerCard(int pos, ServerCardZone *zone)
-    : mZone(zone) {
-    setPos(pos);
 }
 
 void ServerCard::reset() {

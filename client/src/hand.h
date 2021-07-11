@@ -21,7 +21,7 @@ public:
     Hand(Player *player, Game *game);
 
     QQuickItem* visualItem() const override { return mQmlHand; }
-    void addCard(const std::string &code);
+    void addCard(int id, const std::string &code);
     void addCard();
     void startMulligan();
     void endMulligan();

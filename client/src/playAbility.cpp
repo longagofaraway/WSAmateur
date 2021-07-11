@@ -49,7 +49,7 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
             continue;
 
         if (mode == asn::TargetMode::AllOther &&
-            a.zone == zone->name() && a.cardId == i)
+            a.zone == zone->name() && a.cardId == cards[i].id())
             continue;
 
         if (checkCard(specs, cards[i])) {
@@ -113,9 +113,9 @@ void Player::sendChooseCard(const asn::ChooseCard &e) {
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
             if (from->name() == "view")
-                cmd.add_ids(from->model().count() - 1 - i);
+                cmd.add_positions(from->model().count() - 1 - i);
             else
-                cmd.add_ids(i);
+                cmd.add_positions(i);
         }
     }
     sendGameCommand(cmd);
@@ -134,7 +134,7 @@ void Player::sendChooseCard(const asn::SearchCard &e) {
     const auto &cards = from->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
-            cmd.add_ids(i);
+            cmd.add_positions(i);
         }
     }
     sendGameCommand(cmd);
@@ -363,7 +363,7 @@ void Player::processEffectChoice(const EventEffectChoice &event) {
 void Player::processAbilityGain(const EventAbilityGain &event) {
     auto ability = decodeAbility(event.ability());
     auto pzone = zone(event.zone());
-    auto &card = pzone->cards()[event.cardid()];
+    auto &card = pzone->cards()[event.cardpos()];
     if (!card.cardPresent())
         return;
     card.addAbility(ability, event.abilityid());
@@ -371,7 +371,7 @@ void Player::processAbilityGain(const EventAbilityGain &event) {
 
 void Player::processRemoveAbility(const EventRemoveAbility &event) {
     auto pzone = zone(event.zone());
-    auto &card = pzone->cards()[event.cardid()];
+    auto &card = pzone->cards()[event.cardpos()];
     if (!card.cardPresent())
         return;
     card.removeAbilityById(event.abilityid());
@@ -404,7 +404,7 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(600);
-    createMovingCard(code, "deck", 0, "view", 0, false, true, true);
+    createMovingCard(event.cardid(), code, "deck", 0, "view", 0, false, true, true);
 }
 
 void Player::lookTopDeck(const EventLookTopDeck &event) {
@@ -413,7 +413,7 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(400);
-    createMovingCard(code, "deck", 0, "view", 0, false, true, true);
+    createMovingCard(event.cardid(), code, "deck", 0, "view", 0, false, true, true);
 
     if (!mAbilityList->count())
         return;
@@ -453,13 +453,9 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         if (!zoneptr)
             return;
 
-        const auto &cards = zoneptr->cards();
-        if (protoa.cardid() < 0)
-            return;
-
         bool nocard = false;
-        if (static_cast<size_t>(protoa.cardid()) >= cards.size() ||
-            cards[protoa.cardid()].code() != protoa.cardcode())
+        auto card = zoneptr->findCardById(protoa.cardid());
+        if (!card)
             nocard = true;
 
         ActivatedAbility a;
@@ -489,9 +485,8 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         } else {
             a.code = protoa.cardcode();
             if (protoa.type() == ProtoAbilityType::ProtoCard) {
-                const auto &card = zone(a.zone)->cards()[a.cardId];
-                a.ability = card.abilityById(a.abilityId);
-                a.text = card.text(a.abilityId);
+                a.ability = card->abilityById(a.abilityId);
+                a.text = card->text(a.abilityId);
             }
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger) {
@@ -685,9 +680,9 @@ void Player::restoreUiState() {
     case asn::Phase::AttackPhase:
     case asn::Phase::CounterStep: {
         Player *activePlayer = mActivePlayer ? this : mGame->opponent();
-        const auto &card = activePlayer->mStage->cards()[activePlayer->mAttackingId];
+        const auto &card = activePlayer->mStage->cards()[activePlayer->mAttackingPos];
         if (card.cardPresent() && card.state() == StateRested)
-            activePlayer->mStage->model().setSelected(activePlayer->mAttackingId, true);
+            activePlayer->mStage->model().setSelected(activePlayer->mAttackingPos, true);
         break;
     }
     default:
@@ -713,10 +708,10 @@ void Player::payCostChoice() {
 }
 
 void Player::setCannotPlay(const EventSetCannotPlay &event) {
-    if (event.handid() >= mHand->model().count())
+    if (event.handpos() >= mHand->model().count())
         return;
 
-    mHand->cards()[event.handid()].setCannotPlay(event.cannotplay());
+    mHand->cards()[event.handpos()].setCannotPlay(event.cannotplay());
     if (mHand->isPlayTiming())
         highlightPlayableCards();
 }
@@ -729,13 +724,9 @@ void Player::setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event) 
 const Card &Player::correspondingCard(const ActivatedAbility &abilityDescriptor) {
     static Card dummyCard(zone("deck"));
     auto pzone = zone(abilityDescriptor.zone);
-    if (pzone->model().count() <= abilityDescriptor.cardId)
-        return dummyCard;
-    const auto &card = pzone->cards()[abilityDescriptor.cardId];
-    if (card.code() != abilityDescriptor.code)
-        return dummyCard;
-    // we miss the situation when the card is replaced with card with the same code
-    return card;
+    if (auto card = pzone->findCardById(abilityDescriptor.cardId))
+        return *card;
+    return dummyCard;
 }
 
 void Player::cancelAbility(int index) {
@@ -822,9 +813,9 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
             if (qzone == "view")
-                cmd.add_ids(zone("deck")->model().count() - 1 - i);
+                cmd.add_positions(zone("deck")->model().count() - 1 - i);
             else
-                cmd.add_ids(i);
+                cmd.add_positions(i);
         }
     }
     sendGameCommand(cmd);
@@ -841,8 +832,8 @@ void Player::sendChoice(int index) {
                 return;
             if (ef.target.type == asn::TargetType::ThisCard) {
                 auto pzone = zone(a.zone);
-                auto &card = pzone->cards()[a.cardId];
-                if (!card.cardPresent())
+                auto card = pzone->findCardById(a.cardId);
+                if (!card)
                     return;
             }
         }
@@ -890,11 +881,15 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
+            assert(e.target.type == asn::TargetType::SpecificCards);
             if (e.from.zone == asn::Zone::Hand && e.target.type == asn::TargetType::SpecificCards &&
                 e.target.targetSpecification->number.value > zone("hand")->model().count())
                 return false;
         } else if (item.type == asn::EffectType::ChangeState) {
             const auto &e = std::get<asn::ChangeState>(item.effect);
+            assert(e.target.type == asn::TargetType::ThisCard);
+            if (!thisCard.cardPresent())
+                return false;
             if (e.state == protoStateToState(thisCard.state()))
                 return false;
         }

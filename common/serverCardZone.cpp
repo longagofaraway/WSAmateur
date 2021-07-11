@@ -7,8 +7,8 @@
 ServerCardZone::ServerCardZone(ServerPlayer *player, const std::string_view name, ZoneType type)
     : mPlayer(player), mName(name), mType(type) {}
 
-void ServerCardZone::addCard(std::shared_ptr<CardInfo> info) {
-    auto addedCard = mCards.emplace_back(std::make_unique<ServerCard>(info, this)).get();
+void ServerCardZone::addCard(std::shared_ptr<CardInfo> info, int uniqueId) {
+    auto addedCard = mCards.emplace_back(std::make_unique<ServerCard>(info, this, uniqueId)).get();
     addedCard->setPos(static_cast<int>(mCards.size()) - 1);
     addedCard->setZone(this);
 }

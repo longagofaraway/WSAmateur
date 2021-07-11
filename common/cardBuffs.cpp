@@ -30,13 +30,13 @@ void ServerPlayer::endOfTurnEffectValidation() {
 
                 if (it->active && it->ability.type == asn::AbilityType::Cont) {
                     AbilityPlayer a(this);
-                    a.setThisCard(CardImprint(card->zone()->name(), card->pos(), card));
+                    a.setThisCard(CardImprint(card->zone()->name(), card));
                     a.setAbilityId(i);
                     a.revertContAbility(std::get<asn::ContAbility>(it->ability.ability));
                 }
 
                 EventRemoveAbility event;
-                event.set_cardid(card->pos());
+                event.set_cardpos(card->pos());
                 event.set_zone(card->zone()->name());
                 event.set_abilityid(it->id);
                 sendToBoth(event);
@@ -51,7 +51,7 @@ void ServerPlayer::endOfTurnEffectValidation() {
 
 void ServerPlayer::sendAttrChange(ServerCard *card, asn::AttributeType attr) {
     EventSetCardAttr event;
-    event.set_cardid(card->pos());
+    event.set_cardpos(card->pos());
     event.set_zone(card->zone()->name());
     event.set_attr(attrTypeToProto(attr));
     event.set_value(card->attrByType(attr));

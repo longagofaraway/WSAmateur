@@ -263,9 +263,9 @@ ListView {
         mStageRect.color = "#00FFFFFF";
     }
 
-    function setCard(code) {
+    function setCard(cardId, code) {
         createStageCard(code);
-        stage.mModel.setCard(mIndex, code);
+        stage.mModel.setCard(mIndex, cardId, code);
     }
     function removeCard(pos) {
         destroyCardInfo();

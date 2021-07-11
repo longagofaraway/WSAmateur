@@ -161,15 +161,15 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
             if (e.targets[0].type == asn::TargetType::SpecificCards) {
                 auto &spec = e.targets[0].targetSpecification;
                 if ((spec->number.mod == asn::NumModifier::ExactMatch &&
-                    spec->number.value != chooseCmd.ids_size()) ||
+                    spec->number.value != chooseCmd.positions_size()) ||
                     (spec->number.mod == asn::NumModifier::AtLeast &&
-                     spec->number.value > chooseCmd.ids_size()) ||
+                     spec->number.value > chooseCmd.positions_size()) ||
                     (spec->number.mod == asn::NumModifier::UpTo &&
-                     spec->number.value < chooseCmd.ids_size()))
+                     spec->number.value < chooseCmd.positions_size()))
                 continue;
             }
             //TODO: add checks
-            for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
+            for (int i = chooseCmd.positions_size() - 1; i >= 0; --i) {
                 auto playerType = protoPlayerToPlayer(chooseCmd.owner());
                 if (e.executor == asn::Player::Opponent) {
                     // revert sides
@@ -182,12 +182,15 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
                 if (!pzone)
                     break;
 
-                auto card = pzone->card(chooseCmd.ids(i));
+                auto card = pzone->card(chooseCmd.positions(i));
                 if (!card)
                     break;
-                addChosenCard(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, card->player() != mPlayer));
+                addChosenCard(CardImprint(chooseCmd.zone(), card, card->player() != mPlayer));
+                // here we assume that chosen cards from revealed/being looked at are moved after being chosen
+                // it's probably better to do this at the moment the chosen card is being moved
+                // by checking its unique id in selection
                 if (e.placeType == asn::PlaceType::Selection)
-                    removeMentionedCard(chooseCmd.ids(i));
+                    removeMentionedCard(card->id());
             }
             break;
         }
@@ -198,16 +201,16 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
 std::map<int, ServerCard*> AbilityPlayer::processCommandChooseCard(const CommandChooseCard &cmd) {
     //TODO: add checks
     std::map<int, ServerCard*> res;
-    for (int i = cmd.ids_size() - 1; i >= 0; --i) {
+    for (int i = cmd.positions_size() - 1; i >= 0; --i) {
         auto pzone = owner(protoPlayerToPlayer(cmd.owner()))->zone(cmd.zone());
         if (!pzone)
             break;
 
-        auto card = pzone->card(cmd.ids(i));
+        auto card = pzone->card(cmd.positions(i));
         if (!card)
             break;
 
-        res[cmd.ids(i)] = card;
+        res[cmd.positions(i)] = card;
     }
     return res;
 }
@@ -252,7 +255,7 @@ Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, in
             break;
 
         player->moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
-        addLastMovedCard(CardImprint(card->zone()->name(), card->pos(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
+        addLastMovedCard(CardImprint(card->zone()->name(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
         // TODO: refresh and levelup are triggered at the same time, give choice
         if (e.from.zone == asn::Zone::Deck && player->zone("deck")->count() == 0)
@@ -447,7 +450,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 ServerPlayer *executor = mPlayer;
                 for (const auto &card: lastMovedCards()) {
                     executor = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
-                    cardsToMove[card.id] = card.card;
+                    cardsToMove[card.card->pos()] = card.card;
                 }
 
                 clearLastMovedCards();
@@ -467,12 +470,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards()) {
             player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
-            cardsToMove[card.id] = card.card;
+            cardsToMove[card.card->pos()] = card.card;
         }
     } else if (e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) {
         for (const auto &card: mentionedCards()) {
             player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
-            cardsToMove[card.id] = card.card;
+            cardsToMove[card.card->pos()] = card.card;
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
         // can't process top cards of deck in the main cycle below,
@@ -499,11 +502,11 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     } else if (e.target.type == asn::TargetType::ThisCard) {
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
             toIndex = thisCard().card->prevStagePos();
-        cardsToMove[thisCard().id] = thisCard().card;
+        cardsToMove[thisCard().card->pos()] = thisCard().card;
     } else if (e.target.type == asn::TargetType::LastMovedCards) {
         for (const auto &card: lastMovedCards()) {
             player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
-            cardsToMove[card.id] = card.card;
+            cardsToMove[card.card->pos()] = card.card;
         }
     } else if (e.target.type == asn::TargetType::BattleOpponent) {
         auto card = mPlayer->oppositeCard(thisCard().card);
@@ -514,7 +517,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     clearLastMovedCards();
     for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
         player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
-        addLastMovedCard(CardImprint(it->second->zone()->name(), it->second->pos(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
+        addLastMovedCard(CardImprint(it->second->zone()->name(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
             player->setCardState(it->second, CardState::StateRested);
@@ -569,9 +572,11 @@ void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
                     break;
 
                 EventRevealTopDeck event;
-                event.set_code(deck->card(deck->count() - i - 1)->code());
+                auto card = deck->card(deck->count() - i - 1);
+                event.set_cardid(card->id());
+                event.set_code(card->code());
                 mPlayer->sendToBoth(event);
-                addMentionedCard(CardImprint("deck", deck->count() - i - 1, deck->card(deck->count() - i - 1)));
+                addMentionedCard(CardImprint("deck", card));
             }
         } else {
             assert(false);
@@ -707,22 +712,22 @@ Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
 
             assert(e.targets.size() == 1);
             if ((e.targets[0].number.mod == asn::NumModifier::ExactMatch &&
-                e.targets[0].number.value != chooseCmd.ids_size()) ||
+                e.targets[0].number.value != chooseCmd.positions_size()) ||
                 (e.targets[0].number.mod == asn::NumModifier::AtLeast &&
-                e.targets[0].number.value > chooseCmd.ids_size()) ||
+                e.targets[0].number.value > chooseCmd.positions_size()) ||
                 (e.targets[0].number.mod == asn::NumModifier::UpTo &&
-                e.targets[0].number.value < chooseCmd.ids_size()))
+                e.targets[0].number.value < chooseCmd.positions_size()))
                 continue;
             //TODO: add checks
-            for (int i = chooseCmd.ids_size() - 1; i >= 0; --i) {
+            for (int i = chooseCmd.positions_size() - 1; i >= 0; --i) {
                 auto pzone = owner(protoPlayerToPlayer(chooseCmd.owner()))->zone(chooseCmd.zone());
                 if (!pzone)
                     break;
 
-                auto card = pzone->card(chooseCmd.ids(i));
+                auto card = pzone->card(chooseCmd.positions(i));
                 if (!card)
                     break;
-                addChosenCard(CardImprint(chooseCmd.zone(), chooseCmd.ids(i), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
+                addChosenCard(CardImprint(chooseCmd.zone(), card, chooseCmd.owner() == ProtoOwner::ProtoOpponent));
             }
             break;
         }
@@ -957,11 +962,12 @@ void AbilityPlayer::sendLookCard(ServerCard *card) {
     EventLookTopDeck privateEvent;
     EventLookTopDeck publicEvent;
 
+    privateEvent.set_cardid(card->id());
     privateEvent.set_code(card->code());
     mPlayer->sendGameEvent(privateEvent);
     mPlayer->game()->sendPublicEvent(publicEvent, mPlayer->id());
 
-    addMentionedCard(CardImprint(card->zone()->name(), card->pos(), card, card->zone()->player() != mPlayer));
+    addMentionedCard(CardImprint(card->zone()->name(), card, card->zone()->player() != mPlayer));
 }
 
 void AbilityPlayer::playEarlyPlay() {
@@ -975,7 +981,7 @@ void AbilityPlayer::playCannotPlay() {
     thisCard().card->setCannotPlay(!revert());
 
     EventSetCannotPlay ev;
-    ev.set_handid(thisCard().card->pos());
+    ev.set_handpos(thisCard().card->pos());
     ev.set_cannotplay(thisCard().card->cannotPlay());
     mPlayer->sendGameEvent(ev);
 }
@@ -1024,10 +1030,12 @@ Resumable AbilityPlayer::playS79_20() {
     auto oDeck = opponent->zone("deck");
 
     EventRevealTopDeck eventPlayer;
+    eventPlayer.set_cardid(pDeck->card(pDeck->count() - 1)->id());
     eventPlayer.set_code(pDeck->card(pDeck->count() - 1)->code());
     mPlayer->sendToBoth(eventPlayer);
 
     EventRevealTopDeck eventOpponent;
+    eventOpponent.set_cardid(oDeck->card(oDeck->count() - 1)->id());
     eventOpponent.set_code(oDeck->card(oDeck->count() - 1)->code());
     opponent->sendToBoth(eventOpponent);
 

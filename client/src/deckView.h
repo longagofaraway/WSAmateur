@@ -20,7 +20,7 @@ public:
     void setCards(const T &arr) {
         mCardsModel.clear();
         for (const auto &str: arr)
-            mCardsModel.addCard(str, this);
+            mCardsModel.addCard(0, str, this);
         mQmlObject->setProperty("visible", true);
     }
 

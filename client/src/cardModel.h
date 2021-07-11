@@ -19,6 +19,7 @@ private:
 public:
     enum CardRoles {
         CodeRole = Qt::UserRole + 1,
+        CardIdRole,
         GlowRole,
         SelectedRole,
         TypeRole,
@@ -36,10 +37,11 @@ public:
     CardModel(QObject *parent = 0);
 
     std::vector<Card>& cards() { return mCards; }
+    const std::vector<Card>& cards() const { return mCards; }
     void addCards(int count, CardZone *zone);
-    void addCard(const std::string &code, CardZone *zone);
+    void addCard(int id, const std::string &code, CardZone *zone);
     void addCard(CardZone *zone);
-    Q_INVOKABLE void setCard(int row, QString code);
+    Q_INVOKABLE void setCard(int row, int cardId, QString code);
     Q_INVOKABLE void swapCards(int from, int to);
     Q_INVOKABLE void removeCard(int row);
     Q_INVOKABLE void clearCard(int row);

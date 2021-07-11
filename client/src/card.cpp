@@ -7,15 +7,16 @@
 #include "cardZone.h"
 #include "player.h"
 
-Card::Card(const std::string &code, CardZone *zone) : mCode(code), mZone(zone) {
+Card::Card(int id, const std::string &code, CardZone *zone) : mCode(code), mZone(zone) {
     if (mCode.empty())
         return;
 
-    init(mCode);
+    init(id, mCode);
 }
 
-void Card::init(const std::string &code) {
+void Card::init(int id, const std::string &code) {
     mInfo = CardDatabase::get().getCard(code);
+    mId = id;
     mCode = code;
     mLevel = mInfo->level();
     mCost = mInfo->cost();

@@ -309,7 +309,7 @@ ListView {
                             gGame.getPlayer(opponent).cardPlayed(model.index, root.stageDropTarget.mIndex);
                             if (root.stageDropTarget.mStageCard !== null)
                                 root.stageDropTarget.sendToWr();
-                            root.stageDropTarget.setCard(model.code);
+                            root.stageDropTarget.setCard(model.cardId, model.code);
                             dragActive = false;
                             handView.mModel.removeCard(model.index);
                             root.stageDropTarget = undefined;
@@ -494,9 +494,9 @@ ListView {
         gGame.sendClimaxPhaseCommand();
     }
 
-    function addCard(code) {
-        if (hidden) gGame.getPlayer(opponent).addCard("", "hand");
-        else gGame.getPlayer(opponent).addCard(code, "hand");
+    function addCard(id, code) {
+        if (hidden) gGame.getPlayer(opponent).addCard(0, "", "hand");
+        else gGame.getPlayer(opponent).addCard(id, code, "hand");
     }
     function removeCard(index) { handView.mModel.removeCard(index); }
 

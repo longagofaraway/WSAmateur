@@ -55,7 +55,7 @@ public:
     void addMentionedCard(CardImprint &&c) { mMentionedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& mentionedCards() { return mMentionedCards; }
     void clearMentionedCards() { mMentionedCards.clear(); }
-    void removeMentionedCard(int cardPos);
+    void removeMentionedCard(int cardId);
 
     void addLastMovedCard(CardImprint &&c) { mLastMovedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& lastMovedCards() { return mLastMovedCards; }

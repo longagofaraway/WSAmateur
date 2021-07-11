@@ -25,9 +25,9 @@ void CardModel::addCard(CardZone *zone) {
     emit countChanged();
 }
 
-void CardModel::addCard(const std::string &code, CardZone *zone) {
+void CardModel::addCard(int id, const std::string &code, CardZone *zone) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mCards.emplace_back(code, zone);
+    mCards.emplace_back(id, code, zone);
     endInsertRows();
     emit countChanged();
 }
@@ -37,12 +37,12 @@ void CardModel::addCards(int count, CardZone *zone) {
         addCard(zone);
 }
 
-void CardModel::setCard(int row, QString code) {
+void CardModel::setCard(int row, int cardId, QString code) {
     if (row < 0 || row >= rowCount())
         return;
 
     auto modelIndex = index(row);
-    mCards[row].init(code.toStdString());
+    mCards[row].init(cardId, code.toStdString());
     emit dataChanged(modelIndex, modelIndex, mRoles);
 }
 
@@ -173,6 +173,8 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
     switch(role) {
     case CodeRole:
         return card.qcode();
+    case CardIdRole:
+        return card.id();
     case GlowRole:
         return card.glow();
     case SelectedRole:
@@ -197,6 +199,7 @@ QHash<int, QByteArray> CardModel::roleNames() const {
     if (!roles) {
         roles = new QHash<int, QByteArray>;
         (*roles)[CodeRole] = "code";
+        (*roles)[CardIdRole] = "cardId";
         (*roles)[GlowRole] = "glow";
         (*roles)[SelectedRole] = "selected";
         (*roles)[TypeRole] = "type";
