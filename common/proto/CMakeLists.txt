@@ -1,5 +1,7 @@
 set(protoSources
-    abilities.proto
+    ability.proto
+    abilityCommands.proto
+    abilityEvents.proto
     attackType.proto
     cardAttribute.proto
     commandContainer.proto

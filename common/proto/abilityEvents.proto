@@ -1,60 +1,27 @@
 syntax = "proto3";
 
-enum ProtoAbilityType {
-    ProtoClimaxTrigger = 0;
-    ProtoGlobal = 1;
-    ProtoCard = 2;
-    ProtoRuleAction = 3;
-}
-
-enum ProtoOwner {
-    ProtoPlayer = 0;
-    ProtoOpponent = 1;
-}
-
-message ProtoAbility {
-    ProtoAbilityType type = 1;
-    string zone = 2;
-    string cardCode = 3;
-    sint32 cardId = 4;
-    sint32 abilityId = 5;
-    bytes ability = 6;
-    uint32 uniqueId = 7;
-}
+import "ability.proto";
 
 message EventAbilityActivated {
     repeated ProtoAbility abilities = 1;
 }
 
-message CommandPlayAbility {
-    uint32 uniqueId = 1;
-}
-
 message EventPlayAbility {
-    uint32 uniqueId = 1;
+    uint32 unique_id = 1;
 }
-
-message CommandPlayEffect {}
-message CommandCancelEffect {}
 
 message EventStartResolvingAbility {
-    uint32 uniqueId = 1;
+    uint32 unique_id = 1;
 }
 
 message EventAbilityResolved {
-    uint32 uniqueId = 1;
+    uint32 unique_id = 1;
 }
 message EventEndResolvingAbilties {}
 
 message EventChooseCard {
     bytes effect = 1;
     bool mandatory = 2;
-}
-
-message CommandChooseCard {
-    repeated sint32 positions = 1;
-    string zone = 2;
-    ProtoOwner owner = 3;
 }
 
 message EventMoveChoice {
@@ -82,29 +49,19 @@ message EventDrawChoice {
     bool mandatory = 2;
 }
 
-message CommandChoice {
-    sint32 choice = 1;
-}
-
 message EventLook {
     bytes effect = 1;
-    sint32 nextEffectType = 2;
-    bytes nextEffect = 3;
-}
-
-message CommandLookTopDeck {}
-message CommandConfirmMove {}
-message CommandMoveInOrder {
-    repeated string codes = 1;
+    sint32 next_effect_type = 2;
+    bytes next_effect = 3;
 }
 
 message EventLookTopDeck {
-    sint32 cardId = 1;
+    sint32 card_id = 1;
     string code = 2;
 }
 
 message EventRevealTopDeck {
-    sint32 cardId = 1;
+    sint32 card_id = 1;
     string code = 2;
 }
 
@@ -121,26 +78,21 @@ message EventAbilityChoice {
 }
 
 message EventAbilityGain {
-    sint32 cardPos = 1;
+    sint32 card_pos = 1;
     string zone = 2;
-    sint32 abilityId = 3;
+    sint32 ability_id = 3;
     bytes ability = 4;
 }
 
 message EventRemoveAbility {
-    sint32 cardPos = 1;
+    sint32 card_pos = 1;
     string zone = 2;
-    sint32 abilityId = 3;
-}
-
-message CommandPlayAct {
-    sint32 cardPos = 1;
-    sint32 abilityId = 2;
+    sint32 ability_id = 3;
 }
 
 message EventSetCannotPlay {
-    sint32 handPos = 1;
-    bool cannotPlay = 2;
+    sint32 hand_pos = 1;
+    bool cannot_play = 2;
 }
 
 message EventSetPlayEventOrBackup {

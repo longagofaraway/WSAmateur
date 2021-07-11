@@ -1,5 +1,7 @@
 #include "serverPlayer.h"
 
+#include "abilityEvents.pb.h"
+
 #include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "globalAbilities/globalAbilities.h"
@@ -9,15 +11,15 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     auto ab = event.add_abilities();
     ab->set_zone("res");
     ab->set_type(ProtoAbilityType::ProtoClimaxTrigger);
-    ab->set_cardid(card->id());
-    ab->set_abilityid(static_cast<::google::protobuf::int32>(trigger));
-    ab->set_cardcode(card->code());
+    ab->set_card_id(card->id());
+    ab->set_ability_id(static_cast<::google::protobuf::int32>(trigger));
+    ab->set_card_code(card->code());
     auto uniqueId = abilityHash(*ab);
-    ab->set_uniqueid(uniqueId);
+    ab->set_unique_id(uniqueId);
     sendToBoth(event);
 
     EventStartResolvingAbility evStart;
-    evStart.set_uniqueid(uniqueId);
+    evStart.set_unique_id(uniqueId);
     sendToBoth(evStart);
 
     AbilityPlayer a(this);
@@ -25,7 +27,7 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     co_await a.playAbility(triggerAbility(trigger));
 
     EventAbilityResolved ev2;
-    ev2.set_uniqueid(uniqueId);
+    ev2.set_unique_id(uniqueId);
     sendToBoth(ev2);
 
     sendToBoth(EventEndResolvingAbilties());

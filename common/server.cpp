@@ -34,7 +34,7 @@ void Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *cli
 
 void Server::processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHandler *client) {
     QReadLocker locker(&mGamesLock);
-    auto g = game(cmd.gameid());
+    auto g = game(cmd.game_id());
     if (!g)
         return;
     g->addPlayer(client);

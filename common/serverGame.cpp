@@ -48,8 +48,8 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     client->addGameAndPlayer(mId, newId);
 
     EventGameJoined event;
-    event.set_playerid(static_cast<google::protobuf::uint32>(newId));
-    event.set_gameid(static_cast<google::protobuf::uint32>(mId));
+    event.set_player_id(static_cast<google::protobuf::uint32>(newId));
+    event.set_game_id(static_cast<google::protobuf::uint32>(mId));
     client->sendLobbyEvent(event);
 }
 

@@ -1,5 +1,8 @@
 #include "player.h"
 
+#include "abilityCommands.pb.h"
+#include "abilityEvents.pb.h"
+
 #include "abilities.h"
 #include "abilityUtils.h"
 #include "cardDatabase.h"
@@ -363,18 +366,18 @@ void Player::processEffectChoice(const EventEffectChoice &event) {
 void Player::processAbilityGain(const EventAbilityGain &event) {
     auto ability = decodeAbility(event.ability());
     auto pzone = zone(event.zone());
-    auto &card = pzone->cards()[event.cardpos()];
+    auto &card = pzone->cards()[event.card_pos()];
     if (!card.cardPresent())
         return;
-    card.addAbility(ability, event.abilityid());
+    card.addAbility(ability, event.ability_id());
 }
 
 void Player::processRemoveAbility(const EventRemoveAbility &event) {
     auto pzone = zone(event.zone());
-    auto &card = pzone->cards()[event.cardpos()];
+    auto &card = pzone->cards()[event.card_pos()];
     if (!card.cardPresent())
         return;
-    card.removeAbilityById(event.abilityid());
+    card.removeAbilityById(event.ability_id());
 }
 
 void Player::processLook(const EventLook &event) {
@@ -387,13 +390,13 @@ void Player::processLook(const EventLook &event) {
 
     auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
     activatedAbility.effect = effect;
-    if (static_cast<asn::EffectType>(event.nexteffecttype()) == asn::EffectType::MoveCard) {
-        auto effect = decodingWrapper(event.nexteffect(), decodeMoveCard);
+    if (static_cast<asn::EffectType>(event.next_effect_type()) == asn::EffectType::MoveCard) {
+        auto effect = decodingWrapper(event.next_effect(), decodeMoveCard);
         auto &moveEffect = std::get<asn::MoveCard>(activatedAbility.nextEffect);
         if (moveEffect.order == asn::Order::Any)
             zone("view")->visualItem()->setProperty("mDragEnabled", true);
-    } else if (static_cast<asn::EffectType>(event.nexteffecttype()) == asn::EffectType::ChooseCard)
-        mAbilityList->ability(mAbilityList->activeId()).nextEffect = decodingWrapper(event.nexteffect(), decodeChooseCard);
+    } else if (static_cast<asn::EffectType>(event.next_effect_type()) == asn::EffectType::ChooseCard)
+        mAbilityList->ability(mAbilityList->activeId()).nextEffect = decodingWrapper(event.next_effect(), decodeChooseCard);
 
     zone("deck")->visualItem()->setProperty("mGlow", true);
     mAbilityList->activateCancel(mAbilityList->activeId(), true);
@@ -404,7 +407,7 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(600);
-    createMovingCard(event.cardid(), code, "deck", 0, "view", 0, false, true, true);
+    createMovingCard(event.card_id(), code, "deck", 0, "view", 0, false, true, true);
 }
 
 void Player::lookTopDeck(const EventLookTopDeck &event) {
@@ -413,7 +416,7 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(400);
-    createMovingCard(event.cardid(), code, "deck", 0, "view", 0, false, true, true);
+    createMovingCard(event.card_id(), code, "deck", 0, "view", 0, false, true, true);
 
     if (!mAbilityList->count())
         return;
@@ -454,18 +457,18 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
             return;
 
         bool nocard = false;
-        auto card = zoneptr->findCardById(protoa.cardid());
+        auto card = zoneptr->findCardById(protoa.card_id());
         if (!card)
             nocard = true;
 
         ActivatedAbility a;
-        a.uniqueId = protoa.uniqueid();
+        a.uniqueId = protoa.unique_id();
         a.type = protoa.type();
         a.zone = protoa.zone();
-        a.cardId = protoa.cardid();
-        a.abilityId = protoa.abilityid();
+        a.cardId = protoa.card_id();
+        a.abilityId = protoa.ability_id();
         if (nocard) {
-            auto cardInfo = CardDatabase::get().getCard(protoa.cardcode());
+            auto cardInfo = CardDatabase::get().getCard(protoa.card_code());
             if (!cardInfo)
                 return;
 
@@ -483,17 +486,17 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
                 a.text = QString::fromStdString(printAbility(a.ability));
             }
         } else {
-            a.code = protoa.cardcode();
+            a.code = protoa.card_code();
             if (protoa.type() == ProtoAbilityType::ProtoCard) {
                 a.ability = card->abilityById(a.abilityId);
                 a.text = card->text(a.abilityId);
             }
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger) {
-            a.ability = triggerAbility(static_cast<TriggerIcon>(protoa.abilityid()));
+            a.ability = triggerAbility(static_cast<TriggerIcon>(protoa.ability_id()));
             a.text = QString::fromStdString(printAbility(a.ability));
         } else if (protoa.type() == ProtoAbilityType::ProtoGlobal) {
-            a.ability = globalAbility(static_cast<GlobalAbility>(protoa.abilityid()));
+            a.ability = globalAbility(static_cast<GlobalAbility>(protoa.ability_id()));
             a.text = QString::fromStdString(printAbility(a.ability));
         }
         a.active = false;
@@ -522,7 +525,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
 
 void Player::startResolvingAbility(const EventStartResolvingAbility &event) {
     for (int i = 0; i < mAbilityList->count(); ++i) {
-        if (mAbilityList->ability(i).uniqueId == event.uniqueid()) {
+        if (mAbilityList->ability(i).uniqueId == event.unique_id()) {
             mAbilityList->setActive(i, true);
             break;
         }
@@ -577,7 +580,7 @@ void Player::playAbility(int index) {
             mAbilityList->activatePlay(i, false);
         }
         CommandPlayAbility cmd;
-        cmd.set_uniqueid(ab.uniqueId);
+        cmd.set_unique_id(ab.uniqueId);
         sendGameCommand(cmd);
     }
 }
@@ -691,7 +694,7 @@ void Player::restoreUiState() {
 }
 
 void Player::makeAbilityActive(const EventPlayAbility &event) {
-    mAbilityList->setActiveByUniqueId(event.uniqueid(), true);
+    mAbilityList->setActiveByUniqueId(event.unique_id(), true);
 }
 
 void Player::conditionNotMet() {
@@ -708,10 +711,10 @@ void Player::payCostChoice() {
 }
 
 void Player::setCannotPlay(const EventSetCannotPlay &event) {
-    if (event.handpos() >= mHand->model().count())
+    if (event.hand_pos() >= mHand->model().count())
         return;
 
-    mHand->cards()[event.handpos()].setCannotPlay(event.cannotplay());
+    mHand->cards()[event.hand_pos()].setCannotPlay(event.cannot_play());
     if (mHand->isPlayTiming())
         highlightPlayableCards();
 }

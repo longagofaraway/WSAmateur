@@ -16,16 +16,16 @@ message CommandReadyToStart {
 }
 
 message CommandDeclareAttack {
-    sint32 stagePos = 1;
-    AttackType attackType = 2;
+    sint32 stage_pos = 1;
+    AttackType attack_type = 2;
 }
 
 message CommandLevelUp {
-    sint32 clockPos = 1;
+    sint32 clock_pos = 1;
 }
 
 message CommandEncoreCharacter {
-    sint32 stagePos = 1;
+    sint32 stage_pos = 1;
 }
 
 message CommandEndTurn {}

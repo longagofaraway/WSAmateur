@@ -2,7 +2,9 @@
 
 #include <algorithm>
 
-#include "abilities.pb.h"
+#include "ability.pb.h"
+#include "abilityCommands.pb.h"
+#include "abilityEvents.pb.h"
 #include "gameCommand.pb.h"
 #include "gameEvent.pb.h"
 #include "moveCommands.pb.h"
@@ -200,7 +202,7 @@ void ServerPlayer::dealStartingHand() {
 
     EventInitialHand eventPrivate;
     eventPrivate.set_count(5);
-    eventPrivate.set_firstturn(mActive);
+    eventPrivate.set_first_turn(mActive);
     EventInitialHand eventPublic(eventPrivate);
     for (int i = 0; i < 5; ++i) {
         auto card = deck->takeTopCard();
@@ -274,20 +276,20 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     targetZone->addCard(std::move(cardPtr));
 
     EventMoveCard eventPublic;
-    eventPublic.set_startpos(static_cast<google::protobuf::uint32>(startPos));
-    eventPublic.set_startzone(startZone->name());
-    eventPublic.set_targetzone(targetZone->name());
+    eventPublic.set_start_pos(static_cast<google::protobuf::uint32>(startPos));
+    eventPublic.set_start_zone(startZone->name());
+    eventPublic.set_target_zone(targetZone->name());
 
     if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PublicZone) {
         eventPublic.set_code(card->code());
-        eventPublic.set_cardid(card->id());
+        eventPublic.set_card_id(card->id());
     }
 
     EventMoveCard eventPrivate(eventPublic);
 
     if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PrivateZone) {
         eventPrivate.set_code(card->code());
-        eventPrivate.set_cardid(card->id());
+        eventPrivate.set_card_id(card->id());
         if (reveal)
             eventPublic.set_code(card->code());
     }
@@ -295,7 +297,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     // revealing card from hand, opponent didn't see this card yet
     if (startZone->type() == ZoneType::PrivateZone && targetZone->type() == ZoneType::PublicZone) {
         eventPublic.set_code(card->code());
-        eventPublic.set_cardid(card->id());
+        eventPublic.set_card_id(card->id());
     }
 
     sendGameEvent(eventPrivate);
@@ -337,12 +339,12 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     auto cardOnStage = stage->card(targetPos);
 
     EventMoveCard event;
-    event.set_cardid(cardOnStage->id());
+    event.set_card_id(cardOnStage->id());
     event.set_code(cardOnStage->code());
-    event.set_startzone(startZone->name());
-    event.set_startpos(startPos);
-    event.set_targetzone(stage->name());
-    event.set_targetpos(targetPos);
+    event.set_start_zone(startZone->name());
+    event.set_start_pos(startPos);
+    event.set_target_zone(stage->name());
+    event.set_target_pos(targetPos);
     sendToBoth(event);
 
     if (oldStageCard)
@@ -363,7 +365,7 @@ void ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
 
 Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
     if (cmd.count()) {
-        moveCard("hand", cmd.cardpos(), "clock");
+        moveCard("hand", cmd.card_pos(), "clock");
         if (zone("clock")->count() >= 7)
             co_await levelUp();
         drawCards(2);
@@ -383,16 +385,16 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
 
 Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
     auto *hand = zone("hand");
-    auto cardPtr = hand->card(cmd.handpos());
+    auto cardPtr = hand->card(cmd.hand_pos());
     if (!cardPtr)
         co_return;
 
     if (cardPtr->type() == CardType::Char)
         co_await playCharacter(cmd);
     else if (cardPtr->type() == CardType::Climax)
-        co_await playClimax(cmd.handpos());
+        co_await playClimax(cmd.hand_pos());
     else if (cardPtr->type() == CardType::Event)
-        co_await playEvent(cmd.handpos());
+        co_await playEvent(cmd.hand_pos());
 }
 
 Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
@@ -400,7 +402,7 @@ Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
         co_return;
 
     auto hand = zone("hand");
-    auto card = hand->card(cmd.handpos());
+    auto card = hand->card(cmd.hand_pos());
     if (!card)
         co_return;
 
@@ -418,10 +420,10 @@ Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
 Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     ServerCardZone *hand = zone("hand");
     ServerCardZone *stage = zone("stage");
-    if (cmd.stagepos() >= stage->count())
+    if (cmd.stage_pos() >= stage->count())
         co_return;
 
-    auto cardPtr = hand->card(cmd.handpos());
+    auto cardPtr = hand->card(cmd.hand_pos());
     if (!cardPtr)
         co_return;
 
@@ -432,7 +434,7 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     cardPtr->reset();
     checkZoneChangeTrigger(cardPtr, "hand", "stage");
 
-    auto currentStageCard = stage->card(cmd.stagepos());
+    auto currentStageCard = stage->card(cmd.stage_pos());
     if (currentStageCard) {
         checkZoneChangeTrigger(currentStageCard, "stage", "wr");
         // revert effects of cont abilities
@@ -440,14 +442,14 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
         currentStageCard->reset();
     }
 
-    auto card = hand->takeCard(cmd.handpos());
+    auto card = hand->takeCard(cmd.hand_pos());
 
-    auto oldStageCard = stage->putOnStage(std::move(card), cmd.stagepos());
-    auto cardInPlay = stage->card(cmd.stagepos());
+    auto oldStageCard = stage->putOnStage(std::move(card), cmd.stage_pos());
+    auto cardInPlay = stage->card(cmd.stage_pos());
 
     EventPlayCard eventPublic;
-    eventPublic.set_handpos(cmd.handpos());
-    eventPublic.set_stagepos(cmd.stagepos());
+    eventPublic.set_hand_pos(cmd.hand_pos());
+    eventPublic.set_stage_pos(cmd.stage_pos());
     EventPlayCard eventPrivate(eventPublic);
     eventPublic.set_code(cardInPlay->code());
 
@@ -475,7 +477,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
     auto cardPtr = climaxZone->addCard(std::move(card));
 
     EventPlayCard eventPublic;
-    eventPublic.set_handpos(static_cast<google::protobuf::uint32>(handIndex));
+    eventPublic.set_hand_pos(static_cast<google::protobuf::uint32>(handIndex));
     EventPlayCard eventPrivate(eventPublic);
     eventPublic.set_code(cardPtr->code());
 
@@ -513,11 +515,11 @@ Resumable ServerPlayer::playEvent(int handIndex) {
 
 void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
     ServerCardZone *stage = zone("stage");
-    if (cmd.stageposfrom() >= stage->count()
-        || cmd.stageposto() >= stage->count())
+    if (cmd.stage_pos_from() >= stage->count()
+        || cmd.stage_pos_to() >= stage->count())
         return;
 
-    switchPositions(cmd.stageposfrom(), cmd.stageposto());
+    switchPositions(cmd.stage_pos_from(), cmd.stage_pos_to());
 }
 
 void ServerPlayer::switchPositions(int from, int to) {
@@ -539,8 +541,8 @@ void ServerPlayer::switchPositions(int from, int to) {
 
     stage->switchPositions(from, to);
     EventSwitchStagePositions event;
-    event.set_stageposfrom(from);
-    event.set_stageposto(to);
+    event.set_stage_pos_from(from);
+    event.set_stage_pos_to(to);
     sendToBoth(event);
 
     mGame->resolveAllContAbilities();
@@ -613,9 +615,9 @@ void ServerPlayer::attackDeclarationStep() {
 bool isCenterStagePosition(int pos) { return pos >= 3 ? false : true; }
 Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     auto stage = zone("stage");
-    if (!isCenterStagePosition(cmd.stagepos()))
+    if (!isCenterStagePosition(cmd.stage_pos()))
         co_return;
-    auto attCard = stage->card(cmd.stagepos());
+    auto attCard = stage->card(cmd.stage_pos());
     if (!attCard || attCard->state() != StateStanding)
         co_return;
 
@@ -624,15 +626,15 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     attCard->setState(StateRested);
     setAttackingCard(attCard);
 
-    AttackType type = cmd.attacktype();
+    AttackType type = cmd.attack_type();
     auto battleOpp = oppositeCard(attCard);
     if (!battleOpp)
         type = AttackType::DirectAttack;
 
     setAttackType(type);
     EventDeclareAttack event;
-    event.set_stagepos(cmd.stagepos());
-    event.set_attacktype(type);
+    event.set_stage_pos(cmd.stage_pos());
+    event.set_attack_type(type);
     sendToBoth(event);
 
     if (type == AttackType::DirectAttack)
@@ -651,7 +653,7 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     checkOnAttack(attCard);
     co_await mGame->checkTiming();
 
-    co_await triggerStep(cmd.stagepos());
+    co_await triggerStep(cmd.stage_pos());
 }
 
 Resumable ServerPlayer::triggerStep(int pos) {
@@ -744,14 +746,14 @@ Resumable ServerPlayer::levelUp() {
 
     CommandLevelUp lvlCmd;
     cmd.command().UnpackTo(&lvlCmd);
-    if (lvlCmd.clockpos() > 6)
+    if (lvlCmd.clock_pos() > 6)
         co_return;
 
     auto clock = zone("clock");
     if (clock->count() < 7)
         co_return;
 
-    if (!moveCard("clock", lvlCmd.clockpos(), "level"))
+    if (!moveCard("clock", lvlCmd.clock_pos(), "level"))
         co_return;
 
     clearExpectedComands();
@@ -814,15 +816,15 @@ Resumable ServerPlayer::encoreStep() {
 }
 
 Resumable ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
-    if (cmd.stagepos() < 0 || cmd.stagepos() >= 5)
+    if (cmd.stage_pos() < 0 || cmd.stage_pos() >= 5)
         co_return;
 
     auto stage = zone("stage");
-    if (!stage->card(cmd.stagepos())
-        || stage->card(cmd.stagepos())->state() != StateReversed)
+    if (!stage->card(cmd.stage_pos())
+        || stage->card(cmd.stage_pos())->state() != StateReversed)
         co_return;
 
-    moveCard("stage", cmd.stagepos(), "wr");
+    moveCard("stage", cmd.stage_pos(), "wr");
 
     co_await mGame->checkTiming();
 }
@@ -839,9 +841,9 @@ Resumable ServerPlayer::endPhase() {
             if (cmd.command().Is<CommandMoveCard>()) {
                 CommandMoveCard moveCmd;
                 cmd.command().UnpackTo(&moveCmd);
-                if (moveCmd.startzone() != "hand" || moveCmd.targetzone() != "wr")
+                if (moveCmd.start_zone() != "hand" || moveCmd.target_zone() != "wr")
                     continue;
-                moveCard("hand", moveCmd.startpos(), "wr");
+                moveCard("hand", moveCmd.start_pos(), "wr");
             }
         }
         clearExpectedComands();
@@ -902,20 +904,20 @@ void ServerPlayer::sendEndGame(bool victory) {
 
 Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct &cmd) {
     auto stage = zone("stage");
-    if (cmd.cardpos() >= stage->count())
+    if (cmd.card_pos() >= stage->count())
         co_return;
 
-    auto card = stage->card(cmd.cardpos());
+    auto card = stage->card(cmd.card_pos());
     if (!card)
         co_return;
 
-    if (static_cast<size_t>(cmd.abilityid()) >= card->abilities().size())
+    if (static_cast<size_t>(cmd.ability_id()) >= card->abilities().size())
         co_return;
 
     TriggeredAbility ta;
     ta.card = CardImprint(card->zone()->name(), card);
     ta.type = ProtoCard;
-    ta.abilityId = cmd.abilityid();
+    ta.abilityId = cmd.ability_id();
     mQueue.push_back(ta);
 
     co_await mGame->checkTiming();
@@ -940,8 +942,8 @@ int ServerPlayer::addAbilityToCard(ServerCard *card, const asn::Ability &a, int 
     int newId = card->addAbility(a, duration);
     EventAbilityGain ev;
     ev.set_zone(card->zone()->name());
-    ev.set_cardpos(card->pos());
-    ev.set_abilityid(newId);
+    ev.set_card_pos(card->pos());
+    ev.set_ability_id(newId);
 
     std::vector<uint8_t> abilityBuf = encodeAbility(a);
     ev.set_ability(abilityBuf.data(), abilityBuf.size());
@@ -968,9 +970,9 @@ void ServerPlayer::removeAbilityFromCard(ServerCard *card, int abilityId) {
         card->removeAbility(abilityId);
 
         EventRemoveAbility event;
-        event.set_cardpos(card->pos());
+        event.set_card_pos(card->pos());
         event.set_zone(card->zone()->name());
-        event.set_abilityid(it.id);
+        event.set_ability_id(it.id);
         sendToBoth(event);
 
         break;
@@ -983,7 +985,7 @@ void ServerPlayer::setCardState(ServerCard *card, CardState state) {
     card->setState(state);
 
     EventSetCardState event;
-    event.set_stagepos(card->pos());
+    event.set_stage_pos(card->pos());
     event.set_state(state);
     sendToBoth(event);
 }

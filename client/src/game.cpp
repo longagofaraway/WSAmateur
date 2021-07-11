@@ -3,6 +3,8 @@
 #include "localClientConnection.h"
 #include "localServer.h"
 
+#include "abilityCommands.pb.h"
+#include "abilityEvents.pb.h"
 #include "gameCommand.pb.h"
 #include "gameEvent.pb.h"
 #include "lobbyCommand.pb.h"
@@ -101,18 +103,18 @@ void Game::addClient() {
 }
 
 void Game::localGameCreated(const std::shared_ptr<EventGameJoined> event) {
-    mPlayer = std::make_unique<Player>(event->playerid(), this, false);
+    mPlayer = std::make_unique<Player>(event->player_id(), this, false);
 
     connect(mClients.back().get(), SIGNAL(gameJoinedEventReceived(const std::shared_ptr<EventGameJoined>)),
             this, SLOT(opponentJoined(const std::shared_ptr<EventGameJoined>)));
 
     CommandJoinGame command;
-    command.set_gameid(event->gameid());
+    command.set_game_id(event->game_id());
     mClients.back()->sendLobbyCommand(command);
 }
 
 void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
-    mOpponent = std::make_unique<Player>(event->playerid(), this, true);
+    mOpponent = std::make_unique<Player>(event->player_id(), this, true);
 
     mPlayer->setDeck(gDeck);
     mOpponent->setDeck(gOppDeck);
@@ -140,7 +142,7 @@ void Game::processGameEventFromQueue() {
 
     auto event = mEventQueue.front();
     mEventQueue.pop_front();
-    if (mPlayer->id() == event->playerid())
+    if (mPlayer->id() == event->player_id())
         mPlayer->processGameEvent(event);
     else
         mOpponent->processGameEvent(event);
@@ -284,7 +286,7 @@ void Game::testAction() {
 
 #include "cardModel.h"
 void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
-    if (mOpponent->id() != event->playerid()) {
+    if (mOpponent->id() != event->player_id()) {
         if (event->event().Is<EventMoveDestinationIndexChoice>()) {
             CommandChoice cmd;
             cmd.set_choice(2);
@@ -315,7 +317,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
     } else if (event->event().Is<EventPlayCard>()) {
         EventPlayCard ev;
         event->event().UnpackTo(&ev);
-        hand.removeCard(ev.handpos());
+        hand.removeCard(ev.hand_pos());
         sendGameCommand(CommandAttackPhase(), mOpponent->id());
         //if (mOpponent->playCards(hand))
         //    sendGameCommand(CommandAttackPhase(), mOpponent->id());
@@ -329,7 +331,7 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventLevelUp>()) {
         CommandLevelUp cmd;
-        cmd.set_clockpos(0);
+        cmd.set_clock_pos(0);
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventEncoreStep>()) {
         CommandEndTurn cmd;
@@ -337,14 +339,14 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
     } else if (event->event().Is<EventMoveCard>()) {
         EventMoveCard ev;
         event->event().UnpackTo(&ev);
-        if (ev.startzone() == "deck" && ev.targetzone() == "hand") {
-            hand.addCard(ev.cardid(), ev.code(), mOpponent->zone("hand"));
+        if (ev.start_zone() == "deck" && ev.target_zone() == "hand") {
+            hand.addCard(ev.card_id(), ev.code(), mOpponent->zone("hand"));
         }
     } else if (event->event().Is<EventDiscardDownTo7>()) {
         CommandMoveCard cmd;
-        cmd.set_startpos(0);
-        cmd.set_startzone("hand");
-        cmd.set_targetzone("wr");
+        cmd.set_start_pos(0);
+        cmd.set_start_zone("hand");
+        cmd.set_target_zone("wr");
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventEffectChoice>()) {
         CommandChoice cmd;

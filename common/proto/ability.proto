@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+enum ProtoAbilityType {
+    ProtoClimaxTrigger = 0;
+    ProtoGlobal = 1;
+    ProtoCard = 2;
+    ProtoRuleAction = 3;
+}
+
+enum ProtoOwner {
+    ProtoPlayer = 0;
+    ProtoOpponent = 1;
+}
+
+message ProtoAbility {
+    ProtoAbilityType type = 1;
+    string zone = 2;
+    string card_code = 3;
+    sint32 card_id = 4;
+    sint32 ability_id = 5;
+    bytes ability = 6;
+    uint32 unique_id = 7;
+}

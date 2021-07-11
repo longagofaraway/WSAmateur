@@ -4,7 +4,7 @@
 
 #include <QString>
 
-#include "abilities.pb.h"
+#include "ability.pb.h"
 #include "cardAttribute.pb.h"
 
 #include "abilities.h"

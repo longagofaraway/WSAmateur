@@ -6,7 +6,7 @@
 
 #include <QAbstractListModel>
 
-#include "abilities.pb.h"
+#include "ability.pb.h"
 
 #include "abilities.h"
 

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "ability.proto";
+
+message CommandPlayAbility {
+    uint32 unique_id = 1;
+}
+
+message CommandPlayEffect {}
+message CommandCancelEffect {}
+
+message CommandChooseCard {
+    repeated sint32 positions = 1;
+    string zone = 2;
+    ProtoOwner owner = 3;
+}
+
+message CommandChoice {
+    sint32 choice = 1;
+}
+
+message CommandLookTopDeck {}
+message CommandConfirmMove {}
+message CommandMoveInOrder {
+    repeated string codes = 1;
+}
+
+message CommandPlayAct {
+    sint32 card_pos = 1;
+    sint32 ability_id = 2;
+}

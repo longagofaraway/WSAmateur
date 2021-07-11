@@ -79,7 +79,7 @@ void ServerProtocolHandler::sendLobbyEvent(const ::google::protobuf::Message &ev
 
 void ServerProtocolHandler::sendGameEvent(const ::google::protobuf::Message &event, int playerId) {
     GameEvent gameEvent;
-    gameEvent.set_playerid(static_cast<::google::protobuf::uint32>(playerId));
+    gameEvent.set_player_id(static_cast<::google::protobuf::uint32>(playerId));
     gameEvent.mutable_event()->PackFrom(event);
     sendProtocolItem(gameEvent);
 }

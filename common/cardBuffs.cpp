@@ -40,7 +40,7 @@ void ServerPlayer::endOfTurnEffectValidation() {
 
 void ServerPlayer::sendAttrChange(ServerCard *card, asn::AttributeType attr) {
     EventSetCardAttr event;
-    event.set_cardpos(card->pos());
+    event.set_card_pos(card->pos());
     event.set_zone(card->zone()->name());
     event.set_attr(attrTypeToProto(attr));
     event.set_value(card->attrByType(attr));

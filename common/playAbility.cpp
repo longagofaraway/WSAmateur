@@ -1,6 +1,7 @@
 #include <array>
 
-#include "abilities.pb.h"
+#include "abilityEvents.pb.h"
+#include "abilityCommands.pb.h"
 
 #include "abilityPlayer.h"
 #include "abilityUtils.h"
@@ -130,15 +131,15 @@ Resumable ServerPlayer::playEventEffects(ServerCard *card) {
         auto eventAbility = event.add_abilities();
         eventAbility->set_zone(card->zone()->name());
         eventAbility->set_type(ProtoCard);
-        eventAbility->set_cardid(card->id());
-        eventAbility->set_abilityid(i);
-        eventAbility->set_cardcode(card->code());
+        eventAbility->set_card_id(card->id());
+        eventAbility->set_ability_id(i);
+        eventAbility->set_card_code(card->code());
         auto uniqueId = abilityHash(*eventAbility);
-        eventAbility->set_uniqueid(uniqueId);
+        eventAbility->set_unique_id(uniqueId);
         sendToBoth(event);
 
         EventStartResolvingAbility evStart;
-        evStart.set_uniqueid(uniqueId);
+        evStart.set_unique_id(uniqueId);
         sendToBoth(evStart);
 
         AbilityPlayer a(this);
@@ -146,7 +147,7 @@ Resumable ServerPlayer::playEventEffects(ServerCard *card) {
         co_await a.playAbility(abs[i].ability);
 
         EventAbilityResolved evEnd;
-        evEnd.set_uniqueid(uniqueId);
+        evEnd.set_unique_id(uniqueId);
         sendToBoth(evEnd);
     }
 
@@ -198,15 +199,15 @@ Resumable ServerPlayer::checkTiming() {
             auto ab = event.add_abilities();
             ab->set_zone(mQueue[i].card.zone);
             ab->set_type(mQueue[i].type);
-            ab->set_cardid(mQueue[i].card.card->id());
-            ab->set_abilityid(mQueue[i].abilityId);
-            ab->set_cardcode(mQueue[i].card.card->code());
+            ab->set_card_id(mQueue[i].card.card->id());
+            ab->set_ability_id(mQueue[i].abilityId);
+            ab->set_card_code(mQueue[i].card.card->code());
             if (mQueue[i].ability) {
                 auto enc = encodeAbility(*mQueue[i].ability);
                 ab->set_ability(enc.data(), enc.size());
             }
             mQueue[i].uniqueId = abilityHash(*ab);
-            ab->set_uniqueid(mQueue[i].uniqueId);
+            ab->set_unique_id(mQueue[i].uniqueId);
         }
         if (event.abilities_size())
             sendToBoth(event);
@@ -228,7 +229,7 @@ Resumable ServerPlayer::checkTiming() {
                 if (cmd.command().Is<CommandPlayAbility>()) {
                     CommandPlayAbility choiceCmd;
                     cmd.command().UnpackTo(&choiceCmd);
-                    uniqueId = choiceCmd.uniqueid();
+                    uniqueId = choiceCmd.unique_id();
                     break;
                 }
             }
@@ -236,7 +237,7 @@ Resumable ServerPlayer::checkTiming() {
             // Only abilities that cannot be played or cannot be paid for are left
             while(mQueue.size()) {
                 EventAbilityResolved ev2;
-                ev2.set_uniqueid(mQueue[0].uniqueId);
+                ev2.set_unique_id(mQueue[0].uniqueId);
                 sendToBoth(ev2);
                 mQueue.erase(mQueue.begin());
             }
@@ -246,7 +247,7 @@ Resumable ServerPlayer::checkTiming() {
         for (size_t j = 0; j < mQueue.size(); ++j) {
             if (mQueue[j].uniqueId == uniqueId) {
                 EventStartResolvingAbility evStart;
-                evStart.set_uniqueid(uniqueId);
+                evStart.set_unique_id(uniqueId);
                 sendToBoth(evStart);
 
                 AbilityPlayer a(this);
@@ -255,7 +256,7 @@ Resumable ServerPlayer::checkTiming() {
                 co_await a.playAbility(mQueue[j].getAbility());
 
                 EventAbilityResolved evEnd;
-                evEnd.set_uniqueid(uniqueId);
+                evEnd.set_unique_id(uniqueId);
                 sendToBoth(evEnd);
                 mQueue.erase(mQueue.begin() + j);
 

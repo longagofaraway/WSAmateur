@@ -6,7 +6,6 @@
 #include <QByteArray>
 
 #include "../client/src/card.h"
-#include "abilities.pb.h"
 
 std::string_view asnZoneToString(asn::Zone zone) {
     switch (zone) {
@@ -61,8 +60,8 @@ QString asnZoneToReadableString(asn::Zone zone) {
 }
 
 uint32_t abilityHash(const ProtoAbility &a) {
-    std::string buf = std::to_string(a.cardid());
-    buf += std::to_string(a.abilityid());
+    std::string buf = std::to_string(a.card_id());
+    buf += std::to_string(a.ability_id());
     buf += std::to_string(a.type());
 
     std::mt19937 gen(static_cast<unsigned>(time(nullptr)));

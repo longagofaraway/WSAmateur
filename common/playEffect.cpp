@@ -1,4 +1,5 @@
-#include "abilities.pb.h"
+#include "abilityEvents.pb.h"
+#include "abilityCommands.pb.h"
 #include "moveCommands.pb.h"
 
 #include "abilityPlayer.h"
@@ -577,7 +578,7 @@ void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
 
                 EventRevealTopDeck event;
                 auto card = deck->card(deck->count() - i - 1);
-                event.set_cardid(card->id());
+                event.set_card_id(card->id());
                 event.set_code(card->code());
                 mPlayer->sendToBoth(event);
                 addMentionedCard(CardImprint("deck", card));
@@ -875,13 +876,13 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
         EventLook ev;
         ev.set_effect(buf.data(), buf.size());
         if (nextEffect) {
-            ev.set_nexteffecttype(static_cast<int>(nextEffect->type));
+            ev.set_next_effect_type(static_cast<int>(nextEffect->type));
             std::vector<uint8_t> nextBuf;
             if (nextEffect->type == asn::EffectType::MoveCard)
                 encodeMoveCard(std::get<asn::MoveCard>(nextEffect->effect), nextBuf);
             else if (nextEffect->type == asn::EffectType::ChooseCard)
                 encodeChooseCard(std::get<asn::ChooseCard>(nextEffect->effect), nextBuf);
-            ev.set_nexteffect(nextBuf.data(), nextBuf.size());
+            ev.set_next_effect(nextBuf.data(), nextBuf.size());
         }
         mPlayer->sendToBoth(ev);
 
@@ -940,7 +941,7 @@ void AbilityPlayer::sendLookCard(ServerCard *card) {
     EventLookTopDeck privateEvent;
     EventLookTopDeck publicEvent;
 
-    privateEvent.set_cardid(card->id());
+    privateEvent.set_card_id(card->id());
     privateEvent.set_code(card->code());
     mPlayer->sendGameEvent(privateEvent);
     mPlayer->game()->sendPublicEvent(publicEvent, mPlayer->id());
@@ -959,8 +960,8 @@ void AbilityPlayer::playCannotPlay() {
     thisCard().card->setCannotPlay(!revert());
 
     EventSetCannotPlay ev;
-    ev.set_handpos(thisCard().card->pos());
-    ev.set_cannotplay(thisCard().card->cannotPlay());
+    ev.set_hand_pos(thisCard().card->pos());
+    ev.set_cannot_play(thisCard().card->cannotPlay());
     mPlayer->sendGameEvent(ev);
 }
 
@@ -1008,12 +1009,12 @@ Resumable AbilityPlayer::playS79_20() {
     auto oDeck = opponent->zone("deck");
 
     EventRevealTopDeck eventPlayer;
-    eventPlayer.set_cardid(pDeck->card(pDeck->count() - 1)->id());
+    eventPlayer.set_card_id(pDeck->card(pDeck->count() - 1)->id());
     eventPlayer.set_code(pDeck->card(pDeck->count() - 1)->code());
     mPlayer->sendToBoth(eventPlayer);
 
     EventRevealTopDeck eventOpponent;
-    eventOpponent.set_cardid(oDeck->card(oDeck->count() - 1)->id());
+    eventOpponent.set_card_id(oDeck->card(oDeck->count() - 1)->id());
     eventOpponent.set_code(oDeck->card(oDeck->count() - 1)->code());
     opponent->sendToBoth(eventOpponent);
 

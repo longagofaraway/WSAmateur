@@ -6,26 +6,26 @@ message CommandMulligan {
 
 message CommandClockPhase {
     sint32 count = 1;
-    sint32 cardPos = 2;
+    sint32 card_pos = 2;
 }
 
 message CommandPlayCard {
-    sint32 handPos = 1;
-    sint32 stagePos = 2;
+    sint32 hand_pos = 1;
+    sint32 stage_pos = 2;
 }
 
 message CommandPlayCounter {
-    sint32 handPos = 1;
+    sint32 hand_pos = 1;
 }
 
 message CommandSwitchStagePositions {
-    sint32 stagePosFrom = 1;
-    sint32 stagePosTo = 2;
+    sint32 stage_pos_from = 1;
+    sint32 stage_pos_to = 2;
 }
 
 message CommandMoveCard {
-    sint32 startPos = 1;
-    string startZone = 2;
-    sint32 targetPos = 3;
-    string targetZone = 4;
+    sint32 start_pos = 1;
+    string start_zone = 2;
+    sint32 target_pos = 3;
+    string target_zone = 4;
 }

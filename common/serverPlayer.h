@@ -5,7 +5,7 @@
 
 #include <google/protobuf/message.h>
 
-#include "abilities.pb.h"
+#include "ability.pb.h"
 #include "attackType.pb.h"
 #include "gameCommand.pb.h"
 
@@ -29,6 +29,8 @@ class CommandSwitchPositions;
 class CommandDeclareAttack;
 class CommandLevelUp;
 class CommandEncoreCharacter;
+class CommandPlayAct;
+class CommandMoveInOrder;
 
 struct TriggeredAbility {
     CardImprint card;

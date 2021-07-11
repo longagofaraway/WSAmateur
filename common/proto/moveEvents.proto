@@ -3,28 +3,28 @@ syntax = "proto3";
 message EventInitialHand {
     sint32 count = 1;
     repeated string codes = 2;
-    bool firstTurn = 3;
+    bool first_turn = 3;
 }
 
 message EventMoveCard {
     string code = 1;
-    sint32 cardId = 2;
-    string startZone = 3;
-    sint32 startPos = 4;
-    string targetZone = 5;
-    sint32 targetPos = 6;
+    sint32 card_id = 2;
+    string start_zone = 3;
+    sint32 start_pos = 4;
+    string target_zone = 5;
+    sint32 target_pos = 6;
 }
 
 message EventPlayCard {
-    sint32 cardId = 1;
-    sint32 handPos = 2;
-    sint32 stagePos = 3;
+    sint32 card_id = 1;
+    sint32 hand_pos = 2;
+    sint32 stage_pos = 3;
     string code = 4;
 }
 
 message EventSwitchStagePositions {
-    sint32 stagePosFrom = 1;
-    sint32 stagePosTo = 2;
+    sint32 stage_pos_from = 1;
+    sint32 stage_pos_to = 2;
 }
 
 message EventClockToWr {}
