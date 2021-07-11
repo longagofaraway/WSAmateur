@@ -1,9 +1,12 @@
 set(clientSources
+    src/abilityEventProcessing.cpp
+    src/abilityModel.cpp
     src/activatedAbilities.cpp
     src/activatedAbilityModel.cpp
     src/card.cpp
     src/cardModel.cpp
     src/cardZone.cpp
+    src/checkTiming.cpp
     src/choiceDialog.cpp
     src/client.cpp
     src/clientConnection.cpp
@@ -19,7 +22,8 @@ set(clientSources
     src/playAbility.cpp
     src/player.cpp
     src/stage.cpp
-    src/abilityModel.cpp
+    src/utils.cpp
+    src/abilityModel.h
     src/activatedAbilities.h
     src/activatedAbilityModel.h
     src/card.h
@@ -38,7 +42,7 @@ set(clientSources
     src/localServerConnection.h
     src/player.h
     src/stage.h
-    src/abilityModel.h)
+    src/utils.h)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
