@@ -18,5 +18,5 @@ if(NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
 endif()
 
 add_subdirectory(client)
-add_subdirectory(common)
+add_subdirectory(core)
 add_subdirectory(abilities)

@@ -1,6 +1,6 @@
 add_subdirectory(proto)
 
-set(commonSources
+set(coreSources
     abilityPlayer.cpp
     abilityUtils.cpp
     cardBuffs.cpp
@@ -41,20 +41,20 @@ set(commonSources
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_library(wsamateurCommon STATIC ${commonSources})
+add_library(wsamateurCore STATIC ${coreSources})
 
-target_include_directories(wsamateurCommon
+target_include_directories(wsamateurCore
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
     PRIVATE
         ${QtCore_INCLUDE_DIRS}
 )
 
-target_compile_features(wsamateurCommon PRIVATE cxx_std_20)
+target_compile_features(wsamateurCore PRIVATE cxx_std_20)
 if (UNIX)
-	target_compile_options(wsamateurCommon PUBLIC -fcoroutines)
+	target_compile_options(wsamateurCore PUBLIC -fcoroutines)
 endif (UNIX)
 
-target_link_libraries(wsamateurCommon PUBLIC wsamateurProto wsamateurAbilities
+target_link_libraries(wsamateurCore PUBLIC wsamateurProto wsamateurAbilities
     PRIVATE Qt5::Core)
 
