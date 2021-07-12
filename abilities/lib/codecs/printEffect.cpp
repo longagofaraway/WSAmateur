@@ -119,7 +119,11 @@ std::string printAttributeGain(const AttributeGain &e) {
 
     if (e.value > 0)
         res += "+";
-    res += std::to_string(e.value);
+
+    if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::TimesLevel)
+        res += "X";
+    else
+        res += std::to_string(e.value);
     switch (e.type) {
     case AttributeType::Power:
         res += " power ";
@@ -132,17 +136,20 @@ std::string printAttributeGain(const AttributeGain &e) {
         break;
     }
 
-    if (e.gainType == ValueType::Multiplier) {
-        if (e.modifier->type == MultiplierType::ForEach) {
-            res += "for each of ";
-            res += printTarget(*e.modifier->forEach);
-        }
+    if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::ForEach) {
+        res += "for each of ";
+        res += printTarget(*e.modifier->forEach);
     }
 
     if (e.duration == 1)
         res += "until end of turn ";
     else if (e.duration == 2)
         res += "until end of your opponent's turn ";
+
+    if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::TimesLevel) {
+        res.pop_back();
+        res += ". X is equal to " + std::to_string(e.value) + " multiplied by that character's level ";
+    }
 
     return res;
 }

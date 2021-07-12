@@ -597,10 +597,6 @@ void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
 }
 
 void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
-    int value = e.value;
-    if (e.gainType == asn::ValueType::Multiplier)
-        value = getMultiplierValue(*e.modifier) * e.value;
-
     bool positional = false;
     if (e.target.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.target.targetSpecification;
@@ -613,12 +609,18 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
     }
 
     auto targets = getTargets(e.target);
+
+    int value = e.value;
+    if (e.gainType == asn::ValueType::Multiplier && e.modifier->type == asn::MultiplierType::ForEach)
+        value = getForEachMultiplierValue(*e.modifier) * e.value;
     for (auto card: targets) {
+        if (e.gainType == asn::ValueType::Multiplier && e.modifier->type == asn::MultiplierType::TimesLevel)
+            value = card->level() * e.value;
         if (cont) {
             if (revert())
                 mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
             else
-                mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value);
+                mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, positional);
         } else {
             mPlayer->addAttributeBuff(card, e.type, value, e.duration);
         }
@@ -989,7 +991,7 @@ void AbilityPlayer::playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent
 Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
     int damage;
     if (e.damageType == asn::ValueType::Multiplier)
-        damage = getMultiplierValue(*e.modifier) * e.damage;
+        damage = getForEachMultiplierValue(*e.modifier) * e.damage;
     else
         damage = e.damage;
 

@@ -90,8 +90,7 @@ void AbilityPlayer::removeMentionedCard(int cardId) {
     std::erase_if(mMentionedCards, [cardId](CardImprint &im) { return cardId == im.card->id(); });
 }
 
-int AbilityPlayer::getMultiplierValue(const asn::Multiplier &m) {
-    assert(m.type == asn::MultiplierType::ForEach);
+int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
     assert(m.forEach->type == asn::TargetType::SpecificCards);
     auto pzone = mPlayer->zone(asnZoneToString(m.zone));
     int cardCount = 0;
