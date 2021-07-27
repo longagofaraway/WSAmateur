@@ -73,6 +73,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::DealDamage:
         co_await playDealDamage(std::get<asn::DealDamage>(e.effect));
         break;
+    case asn::EffectType::SwapCards:
+        co_await playSwapCards(std::get<asn::SwapCards>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -130,8 +133,9 @@ Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
         co_await playEffects(e.ifYouDont);
 }
 
-Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e) {
-    clearChosenCards();
+Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrevious) {
+    if (clearPrevious)
+        clearChosenCards();
     std::vector<uint8_t> buf;
     encodeChooseCard(e, buf);
 
@@ -1053,6 +1057,29 @@ Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
         damage = e.damage;
 
     co_await mPlayer->getOpponent()->takeDamage(damage);
+}
+
+Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {
+    co_await playChooseCard(e.first);
+    co_await playChooseCard(e.second, false);
+
+    if (chosenCards().size() != 2)
+        co_return;
+
+    auto card1 = chosenCards()[0].card;
+    auto card2 = chosenCards()[1].card;
+
+    if (card1->id() == card2->id())
+        co_return;
+
+    assert(card1->zone()->name() != "stage" && card2->zone()->name() != "stage");
+
+    auto card1Zone = card1->zone()->name();
+    auto card1Pos = card1->pos();
+    auto card2Pos = card2->pos();
+    auto player = card1->player();
+    player->moveCard(card1Zone, card1->pos(), card2->zone()->name(), card2->pos());
+    player->moveCard(card2->zone()->name(), card2Pos, card1Zone, card1Pos);
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

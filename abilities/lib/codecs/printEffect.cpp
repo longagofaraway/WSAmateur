@@ -592,6 +592,19 @@ std::string printCannotUseBackupOrEvent(const CannotUseBackupOrEvent &e) {
     return s;
 }
 
+std::string printSwapCards(const SwapCards &e) {
+    std::string s;
+
+    s += printChooseCard(e.first) + "and ";
+    auto text2 = printChooseCard(e.second);
+    text2.erase(0, 7);
+    s += text2;
+
+    s += "and swap them ";
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -666,6 +679,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CannotUseBackupOrEvent:
         s += printCannotUseBackupOrEvent(std::get<CannotUseBackupOrEvent>(e.effect));
+        break;
+    case EffectType::SwapCards:
+        s += printSwapCards(std::get<SwapCards>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

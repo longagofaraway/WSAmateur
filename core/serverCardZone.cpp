@@ -14,14 +14,11 @@ void ServerCardZone::addCard(std::shared_ptr<CardInfo> info, int uniqueId) {
 }
 
 ServerCard* ServerCardZone::addCard(std::unique_ptr<ServerCard> card, int targetPos) {
-    ServerCard *addedCard;
-    if (targetPos == -1) {
-        addedCard = mCards.emplace_back(std::move(card)).get();
-    } else {
-        addedCard = mCards.emplace(mCards.begin() + targetPos, std::move(card))->get();
-        resetPositions(targetPos);
-    }
-    addedCard->setPos(static_cast<int>(mCards.size()) - 1);
+    if (targetPos == -1)
+        targetPos = static_cast<int>(mCards.size());
+
+    ServerCard *addedCard = mCards.emplace(mCards.begin() + targetPos, std::move(card))->get();
+    resetPositions(targetPos);
     addedCard->setZone(this);
     return addedCard;
 }

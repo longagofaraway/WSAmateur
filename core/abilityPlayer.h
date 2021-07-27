@@ -76,7 +76,7 @@ public:
     Resumable playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect = {});
     Resumable playEffects(const std::vector<asn::Effect> &e);
     Resumable playNonMandatory(const asn::NonMandatory &e);
-    Resumable playChooseCard(const asn::ChooseCard &e);
+    Resumable playChooseCard(const asn::ChooseCard &e, bool clearPrevious = true);
     Resumable playMoveCard(const asn::MoveCard &e);
     Resumable playDrawCard(const asn::DrawCard &e);
     void playRevealCard(const asn::RevealCard &e);
@@ -98,6 +98,7 @@ public:
     void playCannotPlay();
     void playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e);
     Resumable playDealDamage(const asn::DealDamage &e);
+    Resumable playSwapCards(const asn::SwapCards &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

@@ -46,6 +46,12 @@ ListView {
             onExited: {
                 cardImgDelegate.state = "";
             }
+            onClicked: {
+                if (!model.glow)
+                    return;
+                model.selected = !model.selected;
+                gGame.getPlayer().chooseCard(model.index, "level", levelZone.opponent);
+            }
 
             Card {
                 id: cardImgDelegate
@@ -77,6 +83,11 @@ ListView {
                     from: "hovered"
                     to: ""
                     ScriptAction { script: destroyTextFrame(cardImgDelegate); }
+                }
+
+                CardGlow {
+                    glow: model.glow
+                    selected: model.selected
                 }
             }
         }
