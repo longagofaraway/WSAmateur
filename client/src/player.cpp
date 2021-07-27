@@ -413,9 +413,9 @@ void Player::createMovingCard(int id, const QString &code, const std::string &st
     obj->setProperty("noDelete", noDelete);
     obj->setProperty("mSource", source);
     obj->setProperty("startZone", QString::fromStdString(startZone));
-    obj->setProperty("startId", startPos);
+    obj->setProperty("startPos", startPos);
     obj->setProperty("targetZone", QString::fromStdString(targetZone));
-    obj->setProperty("targetId", targetPos);
+    obj->setProperty("targetPos", targetPos);
     obj->connect(obj, SIGNAL(moveFinished()), mGame, SLOT(cardMoveFinished()));
     QMetaObject::invokeMethod(obj, "startAnimation");
 }
@@ -443,19 +443,19 @@ void Player::moveCard(const EventMoveCard &event) {
         dontFinishAction = true;
     }
 
-    int startId = event.start_pos();
+    int startPos = event.start_pos();
     auto startZoneStr = event.start_zone();
     auto deckView = zone("view");
     if (event.start_zone() == "deck" && deckView->model().count()) {
         auto deck = zone("deck");
         if (deck->model().count() - 1 - event.start_pos() < deckView->model().count()) {
-            startId = deck->model().count() - 1 - event.start_pos();
+            startPos = deck->model().count() - 1 - event.start_pos();
             startZoneStr = "view";
             deck->model().removeCard(event.start_pos());
         }
     }
 
-    createMovingCard(event.card_id(), code, startZoneStr, startId, event.target_zone(), event.target_pos(), false, dontFinishAction);
+    createMovingCard(event.card_id(), code, startZoneStr, startPos, event.target_zone(), event.target_pos(), false, dontFinishAction);
 }
 
 void Player::playCard(const EventPlayCard &event) {
@@ -697,22 +697,25 @@ void Player::sendPlayCounter(int handId) {
     sendGameCommand(cmd);
 }
 
-void Player::addCard(int id, QString code, QString zoneName) {
+void Player::addCard(int id, QString code, QString zoneName, int targetPos) {
     auto pzone = zone(zoneName.toStdString());
-    pzone->model().addCard(id, code.toStdString(), pzone);
+    pzone->model().addCard(id, code.toStdString(), pzone, targetPos);
 }
 
 void Player::testAction()
 {
-    //QTimer::singleShot(1000, this, [this]() { createMovingCard("IMC/W43-046", "view", 0, "wr", 0); });
-    QVariant arr;
-    //QMetaObject::invokeMethod(zone("view")->visualItem(), "getCardOrder");
-    QMetaObject::invokeMethod(zone("view")->visualItem(), "getCardOrder", Q_RETURN_ARG(QVariant, arr));
-    auto sl = arr.toStringList();
+    static int i = 0;
+    if (i % 3 == 0)
+        createMovingCard(1, "IMC/W43-046", "wr", 1, "clock", -1, false, false, true);
+    else if (i % 3 == 1)
+        createMovingCard(1, "KGL/S79-001", "wr", 1, "clock", 0, false, false, true);
+    else if (i % 3 == 2)
+        createMovingCard(1, "KGL/S79-002", "wr", 1, "clock", 0, false, false, true);
+    i++;
 
-    qDebug() << sl.size();
-    for (int i = 0; i < sl.size(); ++i)
-        qDebug() << sl[i];
+    //QTimer::singleShot(1000, this, [this]() { createMovingCard(1, "IMC/W43-046", "deck", 0, "level", 0); });
+    //QMetaObject::invokeMethod(zone("view")->visualItem(), "getCardOrder");
+
     //createMovingCard("IMC/W43-046", "hand", 1, "wr", 0, true, false, true);
     //QMetaObject::invokeMethod(zone("stage")->visualItem(), "getCardPos", Q_ARG(QVariant, 1));
 }

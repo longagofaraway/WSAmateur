@@ -37,6 +37,7 @@ ListView {
             height: root.cardHeight
             hoverEnabled: true
             scale: mScale
+            z: model.index
 
             onEntered: {
                 cardImgDelegate.state = "hovered";
@@ -140,7 +141,7 @@ ListView {
         }
     }
 
-    function addCard(id, code) { gGame.getPlayer(opponent).addCard(id, code, "clock"); }
+    function addCard(id, code, targetPos) { gGame.getPlayer(opponent).addCard(id, code, "clock", targetPos); }
     function removeCard(index) { clockView.mModel.removeCard(index); }
     function getXForNewCard() { return clockView.x + clockView.count * mMargin; }
     function getYForNewCard() { return clockView.y; }

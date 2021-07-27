@@ -39,7 +39,7 @@ public:
     std::vector<Card>& cards() { return mCards; }
     const std::vector<Card>& cards() const { return mCards; }
     void addCards(int count, CardZone *zone);
-    void addCard(int id, const std::string &code, CardZone *zone);
+    void addCard(int id, const std::string &code, CardZone *zone, int targetPos = -1);
     void addCard(CardZone *zone);
     Q_INVOKABLE void setCard(int row, int cardId, QString code);
     Q_INVOKABLE void swapCards(int from, int to);

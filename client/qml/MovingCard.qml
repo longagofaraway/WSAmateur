@@ -10,9 +10,9 @@ Card {
     property bool dontFinishAction: false
     property bool noDelete: false
     property string startZone
-    property int startId: 0
+    property int startPos: 0
     property string targetZone
-    property int targetId: 0
+    property int targetPos: 0
     signal moveFinished()
 
     property real toX
@@ -33,13 +33,13 @@ Card {
 
     function removeCard() {
         let szone = gGame.getZone(startZone, opponent);
-        szone.removeCard(startId);
+        szone.removeCard(startPos);
     }
 
     function setupMoveFromZone() {
         let szone = gGame.getZone(startZone, opponent);
-        movingCard.x = szone.getXForCard(startId);
-        movingCard.y = szone.getYForCard(startId);
+        movingCard.x = szone.getXForCard(startPos);
+        movingCard.y = szone.getYForCard(startPos);
         movingCard.rotation = szone.rotation;
         if (startZone === "stock")
             movingCard.rotation += -90;
@@ -51,8 +51,14 @@ Card {
 
     function setupMoveToZone() {
         let tzone = gGame.getZone(targetZone, opponent);
-        toX = tzone.getXForNewCard(targetId);
-        toY = tzone.getYForNewCard(targetId);
+        if (targetPos == -1) {
+            toX = tzone.getXForNewCard(targetPos);
+            toY = tzone.getYForNewCard(targetPos);
+        } else {
+            toX = tzone.getXForCard(targetPos);
+            toY = tzone.getYForCard(targetPos);
+        }
+
         if (targetZone === "clock" || targetZone === "level") {
             toScale = tzone.scaleForMovingCard();
         }
@@ -82,7 +88,7 @@ Card {
 
     function insertCard() {
         var zone = gGame.getZone(targetZone, opponent);
-        zone.addCard(uniqueId, code, targetId, startZone, startId);
+        zone.addCard(uniqueId, code, targetPos, startZone, startPos);
         movingCard.visible = false;
     }
 

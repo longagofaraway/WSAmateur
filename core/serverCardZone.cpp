@@ -13,8 +13,14 @@ void ServerCardZone::addCard(std::shared_ptr<CardInfo> info, int uniqueId) {
     addedCard->setZone(this);
 }
 
-ServerCard* ServerCardZone::addCard(std::unique_ptr<ServerCard> card) {
-    auto addedCard = mCards.emplace_back(std::move(card)).get();
+ServerCard* ServerCardZone::addCard(std::unique_ptr<ServerCard> card, int targetPos) {
+    ServerCard *addedCard;
+    if (targetPos == -1) {
+        addedCard = mCards.emplace_back(std::move(card)).get();
+    } else {
+        addedCard = mCards.emplace(mCards.begin() + targetPos, std::move(card))->get();
+        resetPositions(targetPos);
+    }
     addedCard->setPos(static_cast<int>(mCards.size()) - 1);
     addedCard->setZone(this);
     return addedCard;
@@ -38,8 +44,8 @@ void ServerCardZone::shuffle() {
     resetPositions();
 }
 
-void ServerCardZone::resetPositions() {
-    for (size_t i = 0; i < mCards.size(); ++i)
+void ServerCardZone::resetPositions(int from) {
+    for (size_t i = from; i < mCards.size(); ++i)
         mCards[i]->setPos(static_cast<int>(i));
 }
 
@@ -49,7 +55,7 @@ std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
 
     auto card = std::move(mCards[index]);
     mCards.erase(mCards.begin() + index);
-    resetPositions();
+    resetPositions(index);
     return card;
 }
 

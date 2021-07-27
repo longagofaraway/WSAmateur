@@ -273,12 +273,13 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
 
     auto cardPtr = startZone->takeCard(startPos);
 
-    targetZone->addCard(std::move(cardPtr));
+    targetZone->addCard(std::move(cardPtr), targetPos);
 
     EventMoveCard eventPublic;
-    eventPublic.set_start_pos(static_cast<google::protobuf::uint32>(startPos));
     eventPublic.set_start_zone(startZone->name());
     eventPublic.set_target_zone(targetZone->name());
+    eventPublic.set_start_pos(startPos);
+    eventPublic.set_target_pos(targetPos);
 
     if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PublicZone) {
         eventPublic.set_code(card->code());
@@ -803,7 +804,7 @@ Resumable ServerPlayer::encoreStep() {
                 for (int i = 0; i < 5; ++i) {
                     auto card = stage->card(i);
                     if (card && card->state() == StateReversed) {
-                        moveCard("stage", i, "wr", 0, false, false);
+                        moveCard("stage", i, "wr", -1, false, false);
                         co_await mGame->checkTiming();
                     }
                 }

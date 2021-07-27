@@ -417,7 +417,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         mPlayer->clearExpectedComands();
     }
 
-    int toIndex = 0;
+    int toIndex = -1;
     //choosing target stage position
     if (e.to[toZoneIndex].zone == asn::Zone::Stage) {
         bool positionSet = false;

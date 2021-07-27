@@ -25,6 +25,10 @@ ListView {
 
     model: mModel
 
+    displaced: Transition {
+        NumberAnimation { properties: "x,y"; duration: 200 }
+    }
+
     delegate: Component {
         MouseArea {
             id: cardDelegate
@@ -34,6 +38,7 @@ ListView {
             hoverEnabled: true
             scale: mScale
             rotation: 90
+            z: model.index
 
             onEntered: {
                 cardImgDelegate.state = "hovered";
@@ -118,7 +123,7 @@ ListView {
         return (levelZone.count - 1) * mMargin + root.cardHeight;
     }
 
-    function addCard(id, code) { gGame.getPlayer(opponent).addCard(id, code, "level"); }
+    function addCard(id, code, targetPos) { gGame.getPlayer(opponent).addCard(id, code, "level", targetPos); }
     function removeCard(index) { levelZone.mModel.removeCard(index); }
     function getXForNewCard() { return levelZone.x; }
     function getYForNewCard() {
@@ -127,6 +132,10 @@ ListView {
         return root.height * 0.87 - levelZone.count * mMargin - root.cardHeight;
     }
     function getXForCard() { return levelZone.x; }
-    function getYForCard() { return levelZone.y + (levelZone.count ? (levelZone.count - 1) : 0) * mMargin; }
+    function getYForCard(index) {
+        if (opponent)
+            return levelZone.y + index * mMargin;
+        return root.height * 0.87 - index * mMargin - root.cardHeight;
+    }
     function scaleForMovingCard() { return levelZone.mScale; }
 }

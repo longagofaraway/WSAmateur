@@ -484,9 +484,9 @@ ListView {
         card.opponent = false;
         card.isQmlAction = true;
         card.startZone = "hand";
-        card.startId = index;
+        card.startPos = index;
         card.targetZone = "climax";
-        card.targetId = index;
+        card.targetPos = index;
         card.code = code;
         card.mSource = code;
         card.rotation = imgDelegate.rotation;

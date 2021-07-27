@@ -25,9 +25,15 @@ void CardModel::addCard(CardZone *zone) {
     emit countChanged();
 }
 
-void CardModel::addCard(int id, const std::string &code, CardZone *zone) {
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mCards.emplace_back(id, code, zone);
+void CardModel::addCard(int id, const std::string &code, CardZone *zone, int targetPos) {
+    int row = targetPos;
+    if (targetPos == -1)
+        row = rowCount();
+    beginInsertRows(QModelIndex(), row, row);
+    if (targetPos == -1)
+        mCards.emplace_back(id, code, zone);
+    else
+        mCards.emplace(mCards.begin() + row, id, code, zone);
     endInsertRows();
     emit countChanged();
 }

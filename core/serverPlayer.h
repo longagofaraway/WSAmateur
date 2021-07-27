@@ -106,7 +106,7 @@ public:
     Resumable mulligan(const CommandMulligan &cmd);
     void drawCards(int number);
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardPositions, std::string_view targetZoneName);
-    bool moveCard(std::string_view startZoneName, int startPos, std::string_view targetZoneName, int targetPos = 0,
+    bool moveCard(std::string_view startZoneName, int startPos, std::string_view targetZoneName, int targetPos = -1,
                   bool reveal = false, bool enableGlobEncore = true);
     bool moveCardToStage(ServerCardZone *startZone, int startPos, ServerCardZone *targetZone, int targetPos);
     void moveTopDeck(std::string_view targetZoneName);

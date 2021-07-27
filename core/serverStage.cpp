@@ -7,7 +7,7 @@ ServerStage::ServerStage(ServerPlayer *player)
         mCards.emplace_back(nullptr);
 }
 
-ServerCard *ServerStage::addCard(std::unique_ptr<ServerCard>) {
+ServerCard *ServerStage::addCard(std::unique_ptr<ServerCard>, int targetPos) {
     assert(false);
     return nullptr;
 }
