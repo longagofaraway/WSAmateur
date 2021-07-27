@@ -177,7 +177,6 @@ public:
     void checkOtherTrigger(const std::string &code);
     void triggerBackupAbility(ServerCard *card);
 
-    bool canBePayed(ServerCard *thisCard, const asn::CostItem &c);
     bool canBePlayed(ServerCard *thisCard, const asn::Ability &a);
 
     Resumable playEventEffects(ServerCard *card);

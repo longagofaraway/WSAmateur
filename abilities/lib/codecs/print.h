@@ -28,12 +28,13 @@ std::string printCost(const asn::Cost &c);
 std::string printEffect(const asn::Effect &e);
 std::string printEffects(const std::vector<asn::Effect> &effects);
 std::string printTrigger(const asn::Trigger &t);
-std::string printTarget(const asn::Target &t);
+std::string printTarget(const asn::Target &t, bool plural = false);
 
 // effects
 std::string printMoveCard(const asn::MoveCard &e);
 std::string printDrawCard(const asn::DrawCard &e);
 std::string printActivationTimes(int activationTimes);
+std::string printChangeState(const asn::ChangeState &e);
 
 template<typename T>
 std::string printSpecificAbility(const T &a, asn::CardType cardType) {

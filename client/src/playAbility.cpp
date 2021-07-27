@@ -205,6 +205,9 @@ void Player::doneChoosing() {
             auto &ef = std::get<asn::ChooseCard>(a.nextEffect);
             dehighlightCards(ef.placeType, ef.place ? OptionalPlace(*ef.place) : std::nullopt);
         }
+    } else if (std::holds_alternative<asn::ChangeState>(effect)) {
+        asn::Place place{ asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Both };
+        dehighlightCards(asn::PlaceType::SpecificPlace, place);
     }
     mGame->hideText();
 }
@@ -262,7 +265,7 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
     else
         a = &getOpponent()->activeAbility();
     auto &effect = a->effect;
-    const asn::Number *number;
+    asn::Number number;
     if (std::holds_alternative<asn::ChooseCard>(effect) || std::holds_alternative<asn::Look>(effect)) {
         const auto &ef = std::holds_alternative<asn::ChooseCard>(effect) ?
                     std::get<asn::ChooseCard>(effect) :
@@ -271,21 +274,23 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
         if (ef.targets[0].type != asn::TargetType::SpecificCards)
             return;
 
-        number = &ef.targets[0].targetSpecification->number;
+        number = ef.targets[0].targetSpecification->number;
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         auto &ef = std::get<asn::SearchCard>(effect);
         assert(ef.targets.size() == 1);
-        number = &ef.targets[0].number;
+        number = ef.targets[0].number;
     } else if (std::holds_alternative<asn::MoveCard>(effect)) {
         auto &ef = std::get<asn::MoveCard>(effect);
         if (ef.target.type != asn::TargetType::SpecificCards)
             return;
 
-        number = &ef.target.targetSpecification->number;
+        number = ef.target.targetSpecification->number;
+    } else if (std::holds_alternative<asn::ChangeState>(effect)) {
+        number = { asn::NumModifier::ExactMatch, 1 };
     }
 
-    if (number->value != selected && selected < highlighted) {
-        if (number->mod == asn::NumModifier::UpTo && hasActivatedAbilities()) {
+    if (number.value != selected && selected < highlighted) {
+        if (number.mod == asn::NumModifier::UpTo && hasActivatedAbilities()) {
             mAbilityList->activatePlay(mAbilityList->activeId(), selected != 0, "Choose");
         }
         return;
@@ -380,11 +385,25 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
                 return false;
         } else if (item.type == asn::EffectType::ChangeState) {
             const auto &e = std::get<asn::ChangeState>(item.effect);
-            assert(e.target.type == asn::TargetType::ThisCard);
-            if (!thisCard.cardPresent())
-                return false;
-            if (e.state == protoStateToState(thisCard.state()))
-                return false;
+            if (e.target.type == asn::TargetType::ThisCard) {
+                if (!thisCard.cardPresent())
+                    return false;
+                if (e.state == protoStateToState(thisCard.state()))
+                    return false;
+            } else if (e.target.type == asn::TargetType::SpecificCards) {
+                int num = 0;
+                auto targets = getTargets(thisCard, e.target);
+                for (auto target: targets) {
+                    if (e.state != protoStateToState(target->state()))
+                        num++;
+                }
+                const auto &spec = *e.target.targetSpecification;
+                assert(spec.number.mod == asn::NumModifier::ExactMatch);
+                if (num < spec.number.value)
+                    return false;
+            } else {
+                assert(false);
+            }
         }
         return true;
     }
@@ -398,7 +417,6 @@ bool Player::canPlay(const Card &thisCard, const asn::Ability &a) const {
         for (const auto &costItem: aa.cost->items)
             if (!canPay(thisCard, costItem))
                 return false;
-        return true;
     } else if (a.type == asn::AbilityType::Act) {
         const auto &aa = std::get<asn::ActAbility>(a.ability);
         for (const auto &costItem: aa.cost.items)
@@ -467,4 +485,30 @@ void Player::cardInserted(QString targetZone) {
             }
         }
     }
+}
+
+std::vector<const Card*> Player::getTargets(const Card &thisCard, const asn::Target &t) const {
+    std::vector<const Card*> targets;
+    if (t.type == asn::TargetType::ThisCard) {
+        if (!thisCard.cardPresent())
+            return targets;
+        targets.push_back(&thisCard);
+    } else if (t.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *t.targetSpecification;
+        const auto &cards = mStage->cards();
+        for (int i = 0; i < cards.size(); ++i) {
+            auto &card = cards[i];
+            if (!card.cardPresent())
+                continue;
+
+            if (spec.mode == asn::TargetMode::AllOther && thisCard.id() != card.id())
+                continue;
+
+            if (checkCard(spec.cards.cardSpecifiers, card))
+                targets.push_back(&card);
+        }
+    } else {
+        assert(false);
+    }
+    return targets;
 }

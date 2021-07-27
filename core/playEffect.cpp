@@ -50,7 +50,7 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         playMoveWrToDeck(std::get<asn::MoveWrToDeck>(e.effect));
         break;
     case asn::EffectType::ChangeState:
-        playChangeState(std::get<asn::ChangeState>(e.effect));
+        co_await playChangeState(std::get<asn::ChangeState>(e.effect));
         break;
     case asn::EffectType::FlipOver:
         co_await playFlipOver(std::get<asn::FlipOver>(e.effect));
@@ -814,15 +814,72 @@ void AbilityPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {
     }
 }
 
-void AbilityPlayer::playChangeState(const asn::ChangeState &e) {
+Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
     if (e.target.type == asn::TargetType::ThisCard) {
         if (thisCard().zone != thisCard().card->zone()->name())
-            return;
+            co_return;
         mPlayer->setCardState(thisCard().card, stateToProtoState(e.state));
     } else if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards()) {
             auto player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
             player->setCardState(card.card, stateToProtoState(e.state));
+        }
+    } else if (e.target.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *e.target.targetSpecification;
+
+        auto targets = getTargets(e.target);
+        std::erase_if(targets, [&e](auto card) { return protoStateToState(card->state()) == e.state; });
+        assert(spec.number.mod == asn::NumModifier::ExactMatch);
+        if (spec.number.value > targets.size())
+            co_return;
+
+        if (!mandatory() || spec.number.value < targets.size()) {
+            std::vector<uint8_t> buf;
+            encodeChangeState(e, buf);
+
+            EventSetCardStateTargetChoice ev;
+            ev.set_effect(buf.data(), buf.size());
+            ev.set_mandatory(mandatory());
+
+            mPlayer->clearExpectedComands();
+            mPlayer->addExpectedCommand(CommandChooseCard::descriptor()->name());
+            mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
+
+            bool canceled = false;
+            for (int i = 0; i < spec.number.value; ++i) {
+                mPlayer->sendToBoth(ev);
+                while (true) {
+                    GameCommand cmd = co_await waitForCommand();
+                    if (cmd.command().Is<CommandCancelEffect>() && !mandatory()) {
+                        setCanceled(true);
+                        canceled = true;
+                        break;
+                    } else if (cmd.command().Is<CommandChooseCard>()) {
+                        CommandChooseCard chooseCmd;
+                        cmd.command().UnpackTo(&chooseCmd);
+                        auto chosenCards = processCommandChooseCard(chooseCmd);
+                        if (chosenCards.size() != 1)
+                            continue;
+
+                        auto card = chosenCards.begin()->second;
+                        if (protoStateToState(card->state()) == e.state)
+                            continue;
+
+                        auto player = card->player();
+                        player->setCardState(card, stateToProtoState(e.state));
+                        break;
+                    }
+                }
+
+                if (canceled)
+                    break;
+            }
+
+            mPlayer->clearExpectedComands();
+        } else {
+            for (auto target: targets) {
+                target->player()->setCardState(target, stateToProtoState(e.state));
+            }
         }
     } else {
         assert(false);

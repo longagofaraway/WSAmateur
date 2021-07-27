@@ -4,8 +4,10 @@
 #include "abilityCommands.pb.h"
 
 #include "abilityUtils.h"
+#include "cardZone.h"
 #include "game.h"
 #include "hand.h"
+#include "stage.h"
 #include "codecs/decode.h"
 #include "codecs/print.h"
 #include "utils.h"
@@ -300,4 +302,24 @@ void Player::setCannotPlay(const EventSetCannotPlay &event) {
 void Player::setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event) {
     mCanPlayEvents = event.can_play_events();
     mCanPlayBackups = event.can_play_backups();
+}
+
+void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event) {
+    auto effect = decodingWrapper(event.effect(), decodeChangeState);
+    assert(effect.target.type == asn::TargetType::SpecificCards);
+
+    auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
+    activatedAbility.effect = effect;
+
+    auto checkState = [&effect](const Card &card) { return card.state() != stateToProtoState(effect.state); };
+
+    const auto &spec = *effect.target.targetSpecification;
+    highlightEligibleCards(mStage, spec.cards.cardSpecifiers, spec.mode, activatedAbility, checkState);
+
+    auto effectText = printChangeState(effect);
+    effectText[0] = std::toupper(effectText[0]);
+    mGame->showText(QString::fromStdString(effectText));
+
+    if (!event.mandatory())
+        mAbilityList->activateCancel(mAbilityList->activeId(), true);
 }

@@ -54,7 +54,7 @@ std::string printTriggerIcon(TriggerIcon icon) {
     }
 }
 
-std::string printTarget(const Target &t) {
+std::string printTarget(const Target &t, bool plural) {
     std::string s;
 
     if (t.type == TargetType::ThisCard)
@@ -66,7 +66,6 @@ std::string printTarget(const Target &t) {
             s += "them ";
     } else if (t.type == TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
-        bool plural = false;
         bool article = true;
         if (spec.mode == TargetMode::AllOther) {
             plural = true;

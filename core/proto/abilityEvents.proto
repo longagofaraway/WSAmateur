@@ -103,3 +103,8 @@ message EventSetPlayEventOrBackup {
 message EventEffectChoice {
     bytes effect = 1;
 }
+
+message EventSetCardStateTargetChoice {
+    bytes effect = 1;
+    bool mandatory = 2;
+}

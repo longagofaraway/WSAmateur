@@ -147,3 +147,61 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t) {
     }
     return targets;
 }
+
+bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
+    if (c.type == asn::CostType::Stock) {
+        const auto &item = std::get<asn::StockCost>(c.costItem);
+        if (item.value > mPlayer->zone("stock")->count())
+            return false;
+    } else {
+        const auto &item = std::get<asn::Effect>(c.costItem);
+        if (item.type == asn::EffectType::MoveCard) {
+            const auto &e = std::get<asn::MoveCard>(item.effect);
+            assert(e.target.type == asn::TargetType::SpecificCards);
+            if (e.from.zone == asn::Zone::Hand && e.target.type == asn::TargetType::SpecificCards &&
+                e.target.targetSpecification->number.value > mPlayer->zone("hand")->count())
+                return false;
+        } else if (item.type == asn::EffectType::ChangeState) {
+            const auto &e = std::get<asn::ChangeState>(item.effect);
+            if (e.target.type == asn::TargetType::ThisCard) {
+                if (e.state == protoStateToState(thisCard().card->state()))
+                    return false;
+            } else if (e.target.type == asn::TargetType::SpecificCards) {
+                int num = 0;
+                auto targets = getTargets(e.target);
+                for (auto target: targets) {
+                    if (e.state != protoStateToState(target->state()))
+                        num++;
+                }
+                const auto &spec = *e.target.targetSpecification;
+                assert(spec.number.mod == asn::NumModifier::ExactMatch);
+                if (num < spec.number.value)
+                    return false;
+            } else {
+                assert(false);
+            }
+        } else {
+            assert(false);
+        }
+    }
+    return true;
+}
+
+bool AbilityPlayer::canBePlayed(const asn::Ability &a) {
+    if (a.type == asn::AbilityType::Auto) {
+        const auto &aa = std::get<asn::AutoAbility>(a.ability);
+        if (!aa.cost)
+            return true;
+        for (const auto &costItem: aa.cost->items)
+            if (!canBePayed(costItem))
+                return false;
+        return true;
+    } else if (a.type == asn::AbilityType::Act) {
+        const auto &aa = std::get<asn::ActAbility>(a.ability);
+        for (const auto &costItem: aa.cost.items)
+            if (!canBePayed(costItem))
+                return false;
+    }
+
+    return true;
+}

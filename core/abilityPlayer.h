@@ -62,6 +62,9 @@ public:
     std::vector<CardImprint>& lastMovedCards() { return mLastMovedCards; }
     void clearLastMovedCards() { mLastMovedCards.clear(); }
 
+    bool canBePayed(const asn::CostItem &c);
+    bool canBePlayed(const asn::Ability &a);
+
     Resumable playAbility(const asn::Ability &a);
     Resumable playAutoAbility(const asn::AutoAbility &a);
     Resumable playActAbility(const asn::ActAbility &a);
@@ -86,7 +89,7 @@ public:
     void playTemporaryAbilityGain(const asn::AbilityGain &e);
     Resumable playPerformEffect(const asn::PerformEffect &e);
     void playMoveWrToDeck(const asn::MoveWrToDeck &e);
-    void playChangeState(const asn::ChangeState &e);
+    Resumable playChangeState(const asn::ChangeState &e);
     Resumable playFlipOver(const asn::FlipOver &e);
     void playBackup(const asn::Backup &e);
     void playTriggerCheckTwice();

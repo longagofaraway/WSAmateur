@@ -238,6 +238,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventSetPlayEventOrBackup ev;
         event->event().UnpackTo(&ev);
         setCannotPlayEventOrBackup(ev);
+    } else if (event->event().Is<EventSetCardStateTargetChoice>()) {
+        EventSetCardStateTargetChoice ev;
+        event->event().UnpackTo(&ev);
+        processSetCardStateTargetChoice(ev);
     }
 }
 

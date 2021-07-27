@@ -10,47 +10,10 @@
 #include "codecs/encode.h"
 #include "globalAbilities/globalAbilities.h"
 
-bool ServerPlayer::canBePayed(ServerCard *thisCard, const asn::CostItem &c) {
-    if (c.type == asn::CostType::Stock) {
-        const auto &item = std::get<asn::StockCost>(c.costItem);
-        if (item.value > zone("stock")->count())
-            return false;
-        return true;
-    } else {
-        const auto &item = std::get<asn::Effect>(c.costItem);
-        if (item.type == asn::EffectType::MoveCard) {
-            const auto &e = std::get<asn::MoveCard>(item.effect);
-            assert(e.target.type == asn::TargetType::SpecificCards);
-            if (e.from.zone == asn::Zone::Hand && e.target.type == asn::TargetType::SpecificCards &&
-                e.target.targetSpecification->number.value > zone("hand")->count())
-                return false;
-        } else if (item.type == asn::EffectType::ChangeState) {
-            const auto &e = std::get<asn::ChangeState>(item.effect);
-            assert(e.target.type == asn::TargetType::ThisCard);
-            if (e.state == protoStateToState(thisCard->state()))
-                return false;
-        }
-        return true;
-    }
-}
-
 bool ServerPlayer::canBePlayed(ServerCard *thisCard, const asn::Ability &a) {
-    if (a.type == asn::AbilityType::Auto) {
-        const auto &aa = std::get<asn::AutoAbility>(a.ability);
-        if (!aa.cost)
-            return true;
-        for (const auto &costItem: aa.cost->items)
-            if (!canBePayed(thisCard, costItem))
-                return false;
-        return true;
-    } else if (a.type == asn::AbilityType::Act) {
-        const auto &aa = std::get<asn::ActAbility>(a.ability);
-        for (const auto &costItem: aa.cost.items)
-            if (!canBePayed(thisCard, costItem))
-                return false;
-    }
-
-    return true;
+    AbilityPlayer aplayer(this);
+    aplayer.setThisCard(CardImprint(thisCard->zone()->name(), thisCard));
+    return aplayer.canBePlayed(a);
 }
 
 void ServerPlayer::resolveAllContAbilities() {

@@ -37,6 +37,7 @@ class EventRevealTopDeck;
 class EventLookTopDeck;
 class EventSetCannotPlay;
 class EventSetPlayEventOrBackup;
+class EventSetCardStateTargetChoice;
 
 class Game;
 class GameEvent;
@@ -181,8 +182,10 @@ private:
     void payCostChoice();
     void setCannotPlay(const EventSetCannotPlay &event);
     void setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event);
+    void processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
+    std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t) const;
 
 public slots:
     void sendSwitchPositions(int from, int to);

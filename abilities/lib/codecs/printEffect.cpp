@@ -455,8 +455,16 @@ std::string printFlipOver(const FlipOver &e) {
 std::string printChangeState(const ChangeState &e) {
     std::string s;
 
+    bool plural = false;
     s += printState(e.state) + " ";
-    s += printTarget(e.target);
+    if (e.target.type == TargetType::SpecificCards) {
+        const auto &spec = *e.target.targetSpecification;
+        if (spec.number.value > 1) {
+            plural = true;
+            s += std::to_string(spec.number.value) + " of ";
+        }
+    }
+    s += printTarget(e.target, plural);
 
     return s;
 }
