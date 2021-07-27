@@ -42,17 +42,17 @@ void Card::clear() {
 
     mGlow = false;
     mSelected = false;
-    mState = StateStanding;
+    mState = asn::State::Standing;
     mAbilityModel.reset();
 }
 
 QString Card::qstate() const {
     switch(mState) {
-    case StateStanding:
+    case asn::State::Standing:
         return QString("Standing");
-    case StateRested:
+    case asn::State::Rested:
         return QString("Rested");
-    case StateReversed:
+    case asn::State::Reversed:
         return QString("Reversed");
     default:
         break;

@@ -27,7 +27,7 @@ void ServerCard::reset() {
         ab.activationTimes = 0;
         ab.active = false;
     });
-    mState = StateStanding;
+    mState = asn::State::Standing;
 
     mPower = mCardInfo->power();
     mSoul = mCardInfo->soul();

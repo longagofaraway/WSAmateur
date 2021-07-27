@@ -162,7 +162,7 @@ public:
                               const asn::Ability &ability,
                               bool positional = false);
     void removeAbilityAsContBuff(ServerCard *card, ServerCard *source, int sourceAbilityId);
-    void setCardState(ServerCard *card, CardState state);
+    void setCardState(ServerCard *card, asn::State state);
     void endOfTurnEffectValidation();
 
     void checkOnReversed(ServerCard *card);

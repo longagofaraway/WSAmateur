@@ -155,8 +155,8 @@ Resumable ServerPlayer::startTurn() {
     auto stage = zone("stage");
     for (int i = 0; i < 5; ++i) {
         auto card = stage->card(i);
-        if (card && card->state() != StateStanding)
-            setCardState(card, StateStanding);
+        if (card && card->state() != asn::State::Standing)
+            setCardState(card, asn::State::Standing);
     }
 
     mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::DrawPhase);
@@ -585,7 +585,7 @@ void ServerPlayer::climaxPhase() {
 bool ServerPlayer::canAttack() {
     auto stage = zone("stage");
     for (int i = 0; i < 3; ++i) {
-        if (stage->card(i) && stage->card(i)->state() == StateStanding) {
+        if (stage->card(i) && stage->card(i)->state() == asn::State::Standing) {
             return true;
         }
     }
@@ -619,12 +619,12 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     if (!isCenterStagePosition(cmd.stage_pos()))
         co_return;
     auto attCard = stage->card(cmd.stage_pos());
-    if (!attCard || attCard->state() != StateStanding)
+    if (!attCard || attCard->state() != asn::State::Standing)
         co_return;
 
     clearExpectedComands();
 
-    attCard->setState(StateRested);
+    attCard->setState(asn::State::Rested);
     setAttackingCard(attCard);
 
     AttackType type = cmd.attack_type();
@@ -780,7 +780,7 @@ Resumable ServerPlayer::encoreStep() {
     auto needEncore = [stage]() {
         for (int i = 0; i < 5; ++i) {
             auto card = stage->card(i);
-            if (card && card->state() == StateReversed)
+            if (card && card->state() == asn::State::Reversed)
                 return true;
         }
         return false;
@@ -803,7 +803,7 @@ Resumable ServerPlayer::encoreStep() {
             } else if (cmd.command().Is<CommandEndTurn>()) {
                 for (int i = 0; i < 5; ++i) {
                     auto card = stage->card(i);
-                    if (card && card->state() == StateReversed) {
+                    if (card && card->state() == asn::State::Reversed) {
                         moveCard("stage", i, "wr", -1, false, false);
                         co_await mGame->checkTiming();
                     }
@@ -822,7 +822,7 @@ Resumable ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
 
     auto stage = zone("stage");
     if (!stage->card(cmd.stage_pos())
-        || stage->card(cmd.stage_pos())->state() != StateReversed)
+        || stage->card(cmd.stage_pos())->state() != asn::State::Reversed)
         co_return;
 
     moveCard("stage", cmd.stage_pos(), "wr");
@@ -980,14 +980,14 @@ void ServerPlayer::removeAbilityFromCard(ServerCard *card, int abilityId) {
     }
 }
 
-void ServerPlayer::setCardState(ServerCard *card, CardState state) {
+void ServerPlayer::setCardState(ServerCard *card, asn::State state) {
     if (card->state() == state)
         return;
     card->setState(state);
 
     EventSetCardState event;
     event.set_stage_pos(card->pos());
-    event.set_state(state);
+    event.set_state(stateToProtoState(state));
     sendToBoth(event);
 }
 

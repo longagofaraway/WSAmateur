@@ -58,7 +58,7 @@ class ServerCard : public CardBase
     int mPower;
     int mSoul;
     int mLevel;
-    CardState mState = StateStanding;
+    asn::State mState = asn::State::Standing;
 
     bool mTriggerCheckTwice = false;
     bool mCannotPlay = false;
@@ -87,8 +87,8 @@ public:
     CardType type() const override { return mCardInfo->type(); }
     char color() const { return mCardInfo->color(); }
     bool isCounter() const { return mCardInfo->isCounter(); }
-    CardState state() const { return mState; }
-    void setState(CardState st) { mState = st; }
+    asn::State state() const { return mState; }
+    void setState(asn::State st) { mState = st; }
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
     bool levelGtPlayerLevel() const override;

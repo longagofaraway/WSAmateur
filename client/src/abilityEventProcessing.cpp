@@ -311,7 +311,7 @@ void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice
     auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
     activatedAbility.effect = effect;
 
-    auto checkState = [&effect](const Card &card) { return card.state() != stateToProtoState(effect.state); };
+    auto checkState = [&effect](const Card &card) { return card.state() != effect.state; };
 
     const auto &spec = *effect.target.targetSpecification;
     highlightEligibleCards(mStage, spec.cards.cardSpecifiers, spec.mode, activatedAbility, checkState);

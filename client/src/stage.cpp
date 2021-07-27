@@ -68,7 +68,7 @@ void Stage::unhighlightAttacker() {
 void Stage::highlightAttackers(bool highlight) {
     auto &cards = mCardsModel.cards();
     for (int i = 0; i < 3; ++i) {
-        if (cards[i].cardPresent() && cards[i].state() == StateStanding)
+        if (cards[i].cardPresent() && cards[i].state() == asn::State::Standing)
             mCardsModel.setGlow(i, highlight);
     }
 }
@@ -77,7 +77,7 @@ void Stage::attackDeclared(int pos) {
     mGame->pause(500);
 
     mCardsModel.setSelected(pos, true);
-    mCardsModel.setState(pos, StateRested);
+    mCardsModel.setState(pos, asn::State::Rested);
 
     if (mPlayer->isOpponent())
         return;
@@ -102,7 +102,7 @@ void Stage::encoreStep() {
     unhighlightAttacker();
     auto &cards = mCardsModel.cards();
     for (int i = 0; i < 5; ++i) {
-        if (cards[i].cardPresent() && cards[i].state() == StateReversed) {
+        if (cards[i].cardPresent() && cards[i].state() == asn::State::Reversed) {
             mCardsModel.setGlow(i, true);
         }
     }

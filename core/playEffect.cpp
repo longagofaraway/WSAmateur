@@ -529,7 +529,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         addLastMovedCard(CardImprint(it->second->zone()->name(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
-            player->setCardState(it->second, CardState::StateRested);
+            player->setCardState(it->second, asn::State::Rested);
 
         // TODO: refresh and levelup are triggered at the same time, give choice
         if (e.from.zone == asn::Zone::Deck && player->zone("deck")->count() == 0)
@@ -822,17 +822,17 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
     if (e.target.type == asn::TargetType::ThisCard) {
         if (thisCard().zone != thisCard().card->zone()->name())
             co_return;
-        mPlayer->setCardState(thisCard().card, stateToProtoState(e.state));
+        mPlayer->setCardState(thisCard().card, e.state);
     } else if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards()) {
             auto player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
-            player->setCardState(card.card, stateToProtoState(e.state));
+            player->setCardState(card.card, e.state);
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.target.targetSpecification;
 
         auto targets = getTargets(e.target);
-        std::erase_if(targets, [&e](auto card) { return protoStateToState(card->state()) == e.state; });
+        std::erase_if(targets, [&e](auto card) { return card->state() == e.state; });
         assert(spec.number.mod == asn::NumModifier::ExactMatch);
         if (spec.number.value > targets.size())
             co_return;
@@ -866,11 +866,11 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
                             continue;
 
                         auto card = chosenCards.begin()->second;
-                        if (protoStateToState(card->state()) == e.state)
+                        if (card->state() == e.state)
                             continue;
 
                         auto player = card->player();
-                        player->setCardState(card, stateToProtoState(e.state));
+                        player->setCardState(card, e.state);
                         break;
                     }
                 }
@@ -882,7 +882,7 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
             mPlayer->clearExpectedComands();
         } else {
             for (auto target: targets) {
-                target->player()->setCardState(target, stateToProtoState(e.state));
+                target->player()->setCardState(target, e.state);
             }
         }
     } else {

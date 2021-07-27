@@ -16,6 +16,7 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
+#include "abilityUtils.h"
 #include "cardDatabase.h"
 #include "commonCardZone.h"
 #include "deckView.h"
@@ -556,7 +557,7 @@ void Player::setCardState(const EventSetCardState &event) {
     if (event.stage_pos() >= 5)
         return;
 
-    mStage->model().setState(event.stage_pos(), event.state());
+    mStage->model().setState(event.stage_pos(), protoStateToState(event.state()));
 }
 
 void Player::counterStep() {
@@ -743,7 +744,7 @@ bool Player::playCards(CardModel &hand) {
 void Player::attackWithAll() {
     auto &cards = mStage->cards();
     for (int i = 0; i < 3; ++i) {
-        if (cards[i].cardPresent() && cards[i].state() == StateStanding) {
+        if (cards[i].cardPresent() && cards[i].state() == asn::State::Standing) {
             CommandDeclareAttack cmd;
             cmd.set_attack_type(AttackType::FrontAttack);
             cmd.set_stage_pos(i);

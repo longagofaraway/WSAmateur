@@ -52,7 +52,7 @@ void Player::restoreUiState() {
     case asn::Phase::CounterStep: {
         Player *activePlayer = mActivePlayer ? this : mGame->opponent();
         const auto &card = activePlayer->mStage->cards()[activePlayer->mAttackingPos];
-        if (card.cardPresent() && card.state() == StateRested)
+        if (card.cardPresent() && card.state() == asn::State::Rested)
             activePlayer->mStage->model().setSelected(activePlayer->mAttackingPos, true);
         break;
     }

@@ -388,13 +388,13 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
             if (e.target.type == asn::TargetType::ThisCard) {
                 if (!thisCard.cardPresent())
                     return false;
-                if (e.state == protoStateToState(thisCard.state()))
+                if (e.state == thisCard.state())
                     return false;
             } else if (e.target.type == asn::TargetType::SpecificCards) {
                 int num = 0;
                 auto targets = getTargets(thisCard, e.target);
                 for (auto target: targets) {
-                    if (e.state != protoStateToState(target->state()))
+                    if (e.state != target->state())
                         num++;
                 }
                 const auto &spec = *e.target.targetSpecification;

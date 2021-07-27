@@ -26,7 +26,7 @@ class Card : public CardBase {
     int mPower;
     int mSoul;
     CardType mType;
-    CardState mState = StateStanding;
+    asn::State mState = asn::State::Standing;
 
     std::unique_ptr<AbilityModel> mAbilityModel;
 
@@ -65,8 +65,8 @@ public:
     const std::vector<TriggerIcon>& triggers() const override { return mInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mInfo->traits(); }
     CardType type() const override { return mType; }
-    CardState state() const { return mState; }
-    void setState(CardState state) { mState = state; }
+    asn::State state() const { return mState; }
+    void setState(asn::State state) { mState = state; }
     QString qstate() const;
     QString qtype() const;
     QString qcode() const { return QString::fromStdString(mCode); }

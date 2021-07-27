@@ -4,7 +4,7 @@
 
 
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
-    mRoles = QVector<int>() << CodeRole << GlowRole << SelectedRole << TypeRole
+    mRoles = QVector<int>() << CodeRole << CardIdRole << GlowRole << SelectedRole << TypeRole
                             << StateRole << PowerRole << SoulRole << LevelRole;
 }
 
@@ -115,7 +115,7 @@ void CardModel::setSelected(int row, bool selected) {
     setData(index, selected, SelectedRole);
 }
 
-void CardModel::setState(int row, CardState state) {
+void CardModel::setState(int row, asn::State state) {
     auto index = createIndex(row, 0);
     setData(index, static_cast<int>(state), StateRole);
 }
@@ -148,7 +148,7 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         card.setSelected(value.toBool());
         break;
     case StateRole:
-        card.setState(static_cast<CardState>(value.toInt()));
+        card.setState(static_cast<asn::State>(value.toInt()));
         break;
     case SoulRole:
         card.setSoul(value.toInt());

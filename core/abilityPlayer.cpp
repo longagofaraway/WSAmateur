@@ -164,13 +164,13 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
         } else if (item.type == asn::EffectType::ChangeState) {
             const auto &e = std::get<asn::ChangeState>(item.effect);
             if (e.target.type == asn::TargetType::ThisCard) {
-                if (e.state == protoStateToState(thisCard().card->state()))
+                if (e.state == thisCard().card->state())
                     return false;
             } else if (e.target.type == asn::TargetType::SpecificCards) {
                 int num = 0;
                 auto targets = getTargets(e.target);
                 for (auto target: targets) {
-                    if (e.state != protoStateToState(target->state()))
+                    if (e.state != target->state())
                         num++;
                 }
                 const auto &spec = *e.target.targetSpecification;
