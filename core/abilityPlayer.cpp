@@ -91,15 +91,16 @@ void AbilityPlayer::removeMentionedCard(int cardId) {
 }
 
 int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
-    assert(m.forEach->type == asn::TargetType::SpecificCards);
-    auto pzone = mPlayer->zone(asnZoneToString(m.zone));
+    auto &specifier = *m.specifier;
+    assert(specifier.target->type == asn::TargetType::SpecificCards);
+    auto pzone = mPlayer->zone(asnZoneToString(specifier.zone));
     int cardCount = 0;
     for (int i = 0; i < pzone->count(); ++i) {
         auto card = pzone->card(i);
         if (!card)
             continue;
 
-        const auto &tspec = m.forEach->targetSpecification;
+        const auto &tspec = specifier.target->targetSpecification;
 
         if (!checkTargetMode(tspec->mode, thisCard().card, card))
             continue;

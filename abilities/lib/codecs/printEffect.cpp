@@ -138,7 +138,7 @@ std::string printAttributeGain(const AttributeGain &e) {
 
     if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::ForEach) {
         res += "for each of ";
-        res += printTarget(*e.modifier->forEach);
+        res += printForEachMultiplier(*e.modifier->specifier);
     }
 
     if (e.duration == 1)
@@ -556,7 +556,7 @@ std::string printDealDamage(const DealDamage &e) {
     if (e.damageType == ValueType::Multiplier) {
         s += ". X is equal to ";
         if (e.modifier->type == MultiplierType::ForEach)
-            s += "the number of " + printTarget(*e.modifier->forEach) + "in your " + printZone(e.modifier->zone);
+            s += "the number of " + printForEachMultiplier(*e.modifier->specifier);
     } else
         s += " ";
 

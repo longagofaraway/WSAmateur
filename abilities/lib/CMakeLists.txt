@@ -7,6 +7,7 @@ set(commonSources
     abilities/cost.h
     abilities/effect.h
     abilities/number.h
+    abilities/multiplier.h
     abilities/target.h
     abilities/trigger.h
     codecs/decode.h

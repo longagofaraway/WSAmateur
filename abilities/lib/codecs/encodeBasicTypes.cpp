@@ -16,11 +16,15 @@ void encodeTarget(const Target &t, Buf &buf) {
         encodeTargetSpecificCards(*t.targetSpecification, buf);
 }
 
+void encodeForEachMultiplier(const ForEachMultiplier &m, Buf &buf) {
+    encodeTarget(*m.target, buf);
+    buf.push_back(static_cast<uint8_t>(m.zone));
+}
+
 void encodeMultiplier(const Multiplier &m, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(m.type));
-    if (m.forEach)
-        encodeTarget(*m.forEach, buf);
-    buf.push_back(static_cast<uint8_t>(m.zone));
+    if (m.type == MultiplierType::ForEach && m.specifier)
+        encodeForEachMultiplier(*m.specifier, buf);
 }
 
 void encodePlace(const Place &c, Buf &buf) {

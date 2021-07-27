@@ -19,19 +19,29 @@ std::vector<uint8_t> gBuf;
 
 Target parseTarget(const QJsonObject &json);
 
+ForEachMultiplier parseForEachMultiplier(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in ForEachMultiplier");
+    if (!json.contains("zone") || !json["zone"].isDouble())
+        throw std::runtime_error("no zone in ForEachMultiplier");
+
+    ForEachMultiplier m;
+    m.target = std::make_shared<Target>(parseTarget(json["target"].toObject()));
+    m.zone = static_cast<Zone>(json["zone"].toInt());
+
+    return m;
+}
+
 Multiplier parseMultiplier(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no type in Multiplier");
-    if (!json.contains("zone") || !json["zone"].isDouble())
-        throw std::runtime_error("no zone in Multiplier");
-    if (json.contains("forEachOf") && !json["forEachOf"].isObject())
-        throw std::runtime_error("no zone in Multiplier");
+    if (json.contains("specifier") && !json["specifier"].isObject())
+        throw std::runtime_error("no specifier in Multiplier");
 
     Multiplier m;
     m.type = static_cast<MultiplierType>(json["type"].toInt());
-    m.zone = static_cast<Zone>(json["zone"].toInt());
     if (m.type == MultiplierType::ForEach)
-        m.forEach = std::make_shared<Target>(parseTarget(json["forEachOf"].toObject()));
+        m.specifier = parseForEachMultiplier(json["specifier"].toObject());
 
     return m;
 }
@@ -418,7 +428,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("H:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-035_2.txt");
+    QFile loadFile("H:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-025_3.txt");
     loadFile.open(QIODevice::ReadOnly);
     QString text = QString(loadFile.readAll());
     loadFile.close();

@@ -31,13 +31,21 @@ std::string decodeString(Iterator &it, Iterator end) {
     return s;
 }
 
+ForEachMultiplier decodeForEachMultiplier(Iterator &it, Iterator end) {
+    ForEachMultiplier m;
+
+    m.target = std::make_shared<Target>(decodeTarget(it, end));
+    m.zone = decodeEnum<Zone>(it, end);
+
+    return m;
+}
+
 Multiplier decodeMultiplier(Iterator &it, Iterator end) {
     Multiplier m;
 
     m.type = decodeEnum<MultiplierType>(it, end);
     if (m.type == MultiplierType::ForEach)
-        m.forEach = std::make_shared<Target>(decodeTarget(it, end));
-    m.zone = decodeEnum<Zone>(it, end);
+        m.specifier = decodeForEachMultiplier(it, end);
 
     return m;
 }

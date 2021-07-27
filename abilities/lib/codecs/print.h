@@ -20,6 +20,7 @@ std::string printPlayer(asn::Player p, asn::Player executor = asn::Player::Playe
 std::string printState(asn::State s);
 std::string printPhase(asn::Phase p);
 std::string printTriggerIcon(asn::TriggerIcon icon);
+std::string printForEachMultiplier(const asn::ForEachMultiplier &m);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
 std::string printKeywords(const std::vector<asn::Keyword> &keywords);

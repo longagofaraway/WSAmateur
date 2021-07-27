@@ -64,17 +64,21 @@ NumModifier {
 
 Multiplier {
   type MultiplierType,
-  forEachOf Choice {
-    Target,
+  specifier Choice {
+    ForEachMultiplier,
     Nothing
-  },
-  zone Zone
+  }
 }
 
 enum MultiplierType {
   forEach = 1,
   timesLevel = 2,
   markersPutInWrThisWay = 3
+}
+
+ForEachMultiplier {
+  target Target,
+  zone Zone
 }
 
 Place {

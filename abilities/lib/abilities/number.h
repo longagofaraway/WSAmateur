@@ -3,22 +3,9 @@
 #include <memory>
 #include <optional>
 
+#include "multiplier.h"
+
 namespace asn {
-
-struct Target;
-
-enum class MultiplierType : uint8_t {
-    ForEach = 1,
-    TimesLevel,
-    MarkersPutInWrThisWay
-};
-
-struct Multiplier {
-    MultiplierType type;
-    // shared_ptr to break circular dependecy
-    std::shared_ptr<Target> forEach;
-    Zone zone;
-};
 
 enum class NumModifier : uint8_t {
     NotSpecified = 0,
