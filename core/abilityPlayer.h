@@ -42,7 +42,7 @@ public:
     void setRevert(bool revert) { mRevert = revert; }
     bool revealChosen() const { return mRevealChosen; }
     void setRevealChosen(bool revealChosen) { mRevealChosen = revealChosen; }
-    bool abilityId() const { return mAbilityId; }
+    int abilityId() const { return mAbilityId; }
     void setAbilityId(int abilityId) { mAbilityId = abilityId; }
     const asn::Cost& cost() const { return *mCost; }
     bool hasCost() const { return mCost.has_value(); }
@@ -108,6 +108,7 @@ public:
     bool evaluateConditionAnd(const asn::ConditionAnd &c);
     bool evaluateConditionInBattleWithThis();
     bool evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c);
+    bool evaluateConditionDuringTurn(const asn::ConditionDuringTurn &c);
 
     void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);

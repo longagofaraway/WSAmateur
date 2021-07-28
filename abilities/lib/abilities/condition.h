@@ -43,7 +43,7 @@ struct ConditionCardsLocation {
 }; 
 
 struct ConditionDuringTurn {
-    Owner player;
+    Player player;
 };
 
 struct ConditionCheckOpenedCards {

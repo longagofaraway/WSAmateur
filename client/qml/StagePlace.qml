@@ -118,6 +118,7 @@ ListView {
                 Binding { target: mStageCard; property: "selected"; value: model.selected }
                 Binding { target: mStageCard; property: "power"; value: model.power }
                 Binding { target: mStageCard; property: "soul"; value: model.soul }
+                Binding { target: mStageCard; property: "level"; value: model.level }
                 Binding { target: mStageCard; property: "cardState"; value: model.state }
                 Binding { target: mStageCard; property: "cardType"; value: model.type }
                 onReleased: {
@@ -238,6 +239,12 @@ ListView {
         if (mStageCard === null)
             return;
         mStageCard.soulChangeAnim();
+    }
+
+    function levelChangeAnim() {
+        if (mStageCard === null)
+            return;
+        mStageCard.levelChangeAnim();
     }
 
     function createStageCardWithAnim(code, _x, _y) {

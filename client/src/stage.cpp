@@ -32,6 +32,9 @@ void Stage::setAttr(int row, ProtoCardAttribute attr, int value) {
     case ProtoAttrSoul:
         QMetaObject::invokeMethod(mQmlObject, "soulChangeAnim", Q_ARG(QVariant, row));
         break;
+    case ProtoAttrLevel:
+        QMetaObject::invokeMethod(mQmlObject, "levelChangeAnim", Q_ARG(QVariant, row));
+        break;
     default:
         assert(false);
         break;

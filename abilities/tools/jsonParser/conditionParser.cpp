@@ -101,7 +101,7 @@ ConditionDuringTurn parseConditionDuringTurn(const QJsonObject &json) {
         throw std::runtime_error("no player in ConditionDuringTurn");
 
     ConditionDuringTurn c;
-    c.player = static_cast<Owner>(json["player"].toInt());
+    c.player = static_cast<Player>(json["player"].toInt());
 
     return c;
 }

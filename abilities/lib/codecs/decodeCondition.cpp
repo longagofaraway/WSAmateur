@@ -60,7 +60,7 @@ Condition decodeCondition(Iterator &it, Iterator end) {
         c.cond = decodeConditionCardsLocation(it, end);
         break;
     case ConditionType::DuringTurn:
-        c.cond = ConditionDuringTurn { decodeEnum<Owner>(it, end) };
+        c.cond = ConditionDuringTurn { decodeEnum<Player>(it, end) };
         break;
     case ConditionType::CheckOpenedCards:
         c.cond = decodeNumberCard<ConditionCheckOpenedCards>(it, end);

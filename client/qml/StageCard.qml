@@ -11,6 +11,7 @@ Card {
     property int index
     property int power: 9000
     property int soul: 1
+    property int level: 0
     property string cardState: "Standing"
     property string cardType
 
@@ -76,6 +77,23 @@ Card {
             height: width / 49 * 58
         }
     }
+    Rectangle {
+        id: levelRect
+
+        width: levelText.contentWidth + 10
+        height: levelText.contentHeight + 6
+        anchors.top: stageCard.top
+        anchors.left: stageCard.left
+        color: "#E0FFF4F4"
+        radius: 8
+        Text {
+            id: levelText
+            anchors.centerIn: parent
+            text: level.toString()
+            font.pointSize: 12
+            font.family: "Aprikas Black Demo"
+        }
+    }
 
     Behavior on rotation { NumberAnimation { duration: 150 } }
 
@@ -136,6 +154,14 @@ Card {
         text.anchors.verticalCenter = soulRect.verticalCenter;
         text.anchors.right = soulRect.right;
         text.anchors.rightMargin = 3;
+        text.startAnim();
+    }
+
+    function levelChangeAnim() {
+        let comp = Qt.createComponent("AttributeChangeAnimation.qml");
+        let text = comp.createObject(levelRect);
+        text.text = level.toString();
+        text.anchors.centerIn = levelRect;
         text.startAnim();
     }
 

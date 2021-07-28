@@ -758,15 +758,27 @@ Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
 
 void AbilityPlayer::playTemporaryAbilityGain(const asn::AbilityGain &e) {
     assert(e.abilities.size() == 1);
-    assert(e.target.type == asn::TargetType::ThisCard);
-    if (e.target.type == asn::TargetType::ThisCard) {
-        auto card = thisCard().card;
-        if (!card || card->zone()->name() != thisCard().zone)
+
+    bool positional = false;
+    if (e.target.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *e.target.targetSpecification;
+        if (spec.mode == asn::TargetMode::InFrontOfThis || spec.mode == asn::TargetMode::BackRow
+            || spec.mode == asn::TargetMode::FrontRow)
+            positional = true;
+    } else if (e.target.type == asn::TargetType::ThisCard) {
+        if (thisCard().card == nullptr || thisCard().card->zone()->name() != "stage")
             return;
+    } else {
+        assert(false);
+    }
+
+    auto targets = getTargets(e.target);
+
+    for (auto card: targets) {
         if (!revert())
-            mPlayer->addAbilityAsContBuff(card, card, abilityId(), e.abilities[0], false);
+            mPlayer->addAbilityAsContBuff(card, thisCard().card, abilityId(), e.abilities[0], positional);
         else
-            mPlayer->removeAbilityAsContBuff(card, card, abilityId());
+            mPlayer->removeAbilityAsContBuff(card, thisCard().card, abilityId());
     }
 }
 

@@ -50,6 +50,7 @@ Item {
 
     function powerChangeAnim(pos) { mStagePlaces[pos].powerChangeAnim(); }
     function soulChangeAnim(pos) { mStagePlaces[pos].soulChangeAnim(); }
+    function levelChangeAnim(pos) { mStagePlaces[pos].levelChangeAnim(); }
     function attackPhase() { state = "attack"; }
 
     function getXForNewCard(pos) { return mPositions[pos].x; }

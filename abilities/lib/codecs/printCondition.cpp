@@ -136,6 +136,10 @@ std::string printConditionSumOfLevels(const ConditionSumOfLevels &c) {
     return s;
 }
 
+std::string printConditionDuringTurn(const ConditionDuringTurn &c) {
+    return "during " + printPlayer(c.player) + "turn, ";
+}
+
 std::string printCondition(const Condition &c) {
     std::string s;
 
@@ -154,6 +158,9 @@ std::string printCondition(const Condition &c) {
         break;
     case ConditionType::SumOfLevels:
         s += printConditionSumOfLevels(std::get<ConditionSumOfLevels>(c.cond));
+        break;
+    case ConditionType::DuringTurn:
+        s += printConditionDuringTurn(std::get<ConditionDuringTurn>(c.cond));
         break;
     }
 

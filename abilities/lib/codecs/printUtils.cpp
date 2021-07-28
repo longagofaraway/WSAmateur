@@ -190,7 +190,7 @@ bool haveExactName(const std::vector<CardSpecifier> &s) {
 std::string printForEachMultiplier(const ForEachMultiplier &m) {
     std::string s;
 
-    s += printTarget(*m.target);
+    s += printTarget(*m.target, true);
 
     if (m.zone != Zone::Stage)
         s += "in your " + printZone(m.zone) + " ";

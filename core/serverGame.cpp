@@ -178,6 +178,9 @@ Resumable ServerGame::encoreStep() {
     co_await opponent->endPhase();
     turnPlayer->setActive(false);
     opponent->setActive(true);
+
+    resolveAllContAbilities();
+
     co_await opponent->startTurn();
 }
 
