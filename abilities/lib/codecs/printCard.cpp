@@ -14,8 +14,12 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
         return s;
     }
 
-    if (!plural && article)
-        s += "a ";
+    if (!plural && article) {
+        auto hasOwnerSpecifier = [](const CardSpecifier &c){ return c.type == CardSpecifierType::Owner; };
+        auto it = std::find_if(c.cardSpecifiers.begin(), c.cardSpecifiers.end(), hasOwnerSpecifier);
+        if (it == c.cardSpecifiers.end())
+            s += "a ";
+    }
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Owner) {

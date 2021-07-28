@@ -15,7 +15,11 @@ std::unordered_map<std::string, std::string> gOtherTriggers {
 std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
     std::string s = "When ";
 
-    s += printTarget(t.target[0]);
+    for (size_t i = 0; i < t.target.size(); ++i) {
+        if (i)
+            s += "or ";
+        s += printTarget(t.target[i]);
+    }
     s += "is placed ";
     if (t.to == Zone::Stage)
         s += "on ";

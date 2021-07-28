@@ -944,7 +944,7 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
     if (!deck->count())
         co_return;
 
-    if (e.number.mod == asn::NumModifier::UpTo) {
+    if (e.number.mod == asn::NumModifier::UpTo || !mandatory()) {
         std::vector<uint8_t> buf;
         encodeLook(e, buf);
 
@@ -964,6 +964,8 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
         mPlayer->clearExpectedComands();
         mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
         mPlayer->addExpectedCommand(CommandLookTopDeck::descriptor()->name());
+        if (!mandatory())
+            mPlayer->addExpectedCommand(CommandPlayEffect::descriptor()->name());
         if (nextEffect) {
             if (nextEffect->type == asn::EffectType::ChooseCard)
                 mPlayer->addExpectedCommand(CommandChooseCard::descriptor()->name());
@@ -992,12 +994,16 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
 
                 sendLookCard(card);
 
-                if (static_cast<size_t>(deck->count()) <= mMentionedCards.size() || mMentionedCards.size() == static_cast<size_t>(e.number.value))
+                if (mandatory() &&
+                    (static_cast<size_t>(deck->count()) <= mMentionedCards.size() || mMentionedCards.size() == static_cast<size_t>(e.number.value)))
                     break;
             } else if (cmd.command().Is<CommandChooseCard>() ||
                        cmd.command().Is<CommandMoveInOrder>() ||
                        cmd.command().Is<CommandConfirmMove>()) {
                 mLastCommand = cmd;
+                break;
+            } else if (cmd.command().Is<CommandPlayEffect>()) {
+                // in case of non mandatory look effect player confirms, that he is ready to move on
                 break;
             }
         }

@@ -67,7 +67,7 @@ std::string printTarget(const Target &t, bool plural) {
     } else if (t.type == TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
         bool article = true;
-        if (spec.mode == TargetMode::AllOther) {
+        if (spec.mode == TargetMode::AllOther && spec.number.value != 1) {
             plural = true;
             article = false;
         }

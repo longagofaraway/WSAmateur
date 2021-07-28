@@ -231,8 +231,6 @@ void Player::processLook(const EventLook &event) {
         return;
 
     auto effect = decodingWrapper(event.effect(), decodeLook);
-    if (effect.number.mod != asn::NumModifier::UpTo)
-        return;
 
     auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
     activatedAbility.effect = effect;
@@ -271,12 +269,11 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
     auto &effect = activeAbility.effect;
     if (std::holds_alternative<asn::Look>(effect)) {
         const auto &look = std::get<asn::Look>(effect);
-        if (look.number.mod == asn::NumModifier::UpTo) {
-            if (view->model().count() + 1 < look.number.value)
-                zone("deck")->visualItem()->setProperty("mGlow", true);
-            else
-                zone("deck")->visualItem()->setProperty("mGlow", false);
-        }
+        if (view->model().count() + 1 < look.number.value)
+            zone("deck")->visualItem()->setProperty("mGlow", true);
+        else
+            zone("deck")->visualItem()->setProperty("mGlow", false);
+
         if (std::holds_alternative<asn::MoveCard>(activeAbility.nextEffect)) {
             mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
         } else if (std::holds_alternative<asn::ChooseCard>(activeAbility.nextEffect)) {
@@ -286,6 +283,9 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
                 if (spec.number.mod == asn::NumModifier::UpTo)
                     mAbilityList->activateCancel(mAbilityList->activeId(), true);
             }
+        } else if (std::holds_alternative<std::monostate>(activeAbility.nextEffect)) {
+            mAbilityList->activatePlay(mAbilityList->activeId(), true, "OK");
+            mAbilityList->activateCancel(mAbilityList->activeId(), false);
         }
     }
 }
@@ -305,6 +305,9 @@ void Player::setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event) 
 }
 
 void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event) {
+    if (mOpponent)
+        return;
+
     auto effect = decodingWrapper(event.effect(), decodeChangeState);
     assert(effect.target.type == asn::TargetType::SpecificCards);
 

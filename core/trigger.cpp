@@ -67,23 +67,29 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
                 continue;
             if (t.to != asn::Zone::NotSpecified && asnZoneToString(t.to) != to)
                 continue;
-            assert(t.target.size() == 1);
             std::string_view cardZone = card->zone()->name();
-            if (t.target[0].type == asn::TargetType::ThisCard) {
-                if (card != movedCard)
-                    continue;
-                cardZone = to;
-            } else if (t.target[0].type == asn::TargetType::SpecificCards) {
-                const auto &spec = *t.target[0].targetSpecification;
+            bool found = false;
+            for (const auto &target: t.target) {
+                if (target.type == asn::TargetType::ThisCard) {
+                    if (card != movedCard)
+                        continue;
+                    cardZone = to;
+                } else if (t.target[0].type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *t.target[0].targetSpecification;
 
-                if (!checkTargetMode(spec.mode, card, movedCard))
-                    continue;
+                    if (!checkTargetMode(spec.mode, card, movedCard))
+                        continue;
 
-                if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
-                    continue;
-            } else {
-                assert(false);
+                    if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
+                        continue;
+                } else {
+                    assert(false);
+                }
+                found = true;
+                break;
             }
+            if (!found)
+                continue;
 
             queueActivatedAbility(aa, a, card, cardZone);
         }

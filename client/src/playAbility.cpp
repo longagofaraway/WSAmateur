@@ -157,6 +157,8 @@ void Player::playAbility(int index) {
                 const auto &chooseEffect = std::get<asn::ChooseCard>(ab.effect);
                 sendChooseCard(chooseEffect);
                 doneChoosing();
+            } else if (std::holds_alternative<std::monostate>(ab.nextEffect)) {
+                sendGameCommand(CommandPlayEffect());
             }
         } else if (std::holds_alternative<asn::ChooseCard>(ab.effect)) {
             const auto &chooseEffect = std::get<asn::ChooseCard>(ab.effect);
