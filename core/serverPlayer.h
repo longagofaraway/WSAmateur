@@ -119,7 +119,7 @@ public:
     void switchPositions(const CommandSwitchStagePositions &cmd);
     void switchPositions(int from, int to);
     bool canPlay(ServerCard *card);
-    void climaxPhase();
+    Resumable climaxPhase();
     bool canAttack();
     void endOfAttack();
     Resumable startAttackPhase();

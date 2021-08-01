@@ -323,8 +323,9 @@ void ServerCard::changeBoolAttribute(BoolAttributeType type, bool value) {
     case BoolAttributeType::CannotSideAttack:
         mCannotSideAttack = value;
         break;
+    default:
+        assert(false);
     }
-    assert(false);
 }
 
 int ServerCard::attrByType(asn::AttributeType type) const {

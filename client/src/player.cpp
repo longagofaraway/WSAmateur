@@ -336,7 +336,7 @@ void Player::clockPhaseFinished() {
 void Player::mainPhaseFinished() {
     mHand->endPlayTiming();
     mStage->endMainPhase();
-    CommandAttackPhase cmd;
+    CommandClimaxPhase cmd;
     sendGameCommand(cmd);
 }
 
@@ -532,8 +532,10 @@ void Player::playClimax() {
         return;
 
     auto climaxZone = zone("climax");
-    if (climaxZone->cards().empty())
+    if (climaxZone->cards().empty()) {
+        sendGameCommand(CommandAttackPhase());
         return;
+    }
     int handIndex = climaxZone->visualItem()->property("mHandIndex").toInt();
     CommandPlayCard cmd;
     cmd.set_hand_pos(handIndex);

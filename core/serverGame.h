@@ -13,14 +13,6 @@
 
 class ServerProtocolHandler;
 
-enum class ServerPhase {
-    Mulligan,
-    Climax,
-    AttackDeclarationStep,
-    DamageStep,
-    BattleStep
-};
-
 class ServerGame
 {
     int mId;
@@ -28,7 +20,7 @@ class ServerGame
     int mNextPlayerId;
     std::string mDescription;
     std::unordered_map<int, std::unique_ptr<ServerPlayer>> mPlayers;
-    ServerPhase mCurrentPhase = ServerPhase::Mulligan;
+    asn::Phase mCurrentPhase = asn::Phase::Mulligan;
 
     std::optional<Resumable> mTask;
 
@@ -57,8 +49,8 @@ public:
 
     void startGame();
     Resumable endMulligan();
-    ServerPhase phase() const { return mCurrentPhase; }
-    void setPhase(ServerPhase phase) { mCurrentPhase = phase; }
+    asn::Phase phase() const { return mCurrentPhase; }
+    void setPhase(asn::Phase phase) { mCurrentPhase = phase; }
     Resumable continueFromDamageStep();
     Resumable battleStep();
     Resumable encoreStep();

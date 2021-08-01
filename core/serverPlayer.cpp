@@ -65,7 +65,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         cmd.command().UnpackTo(&switchCmd);
         switchPositions(switchCmd);
     } else if (cmd.command().Is<CommandClimaxPhase>()) {
-        climaxPhase();
+        mGame->startAsyncTask(climaxPhase());
     } else if (cmd.command().Is<CommandAttackPhase>()) {
         mGame->startAsyncTask(startAttackPhase());
     } else if (cmd.command().Is<CommandDeclareAttack>()) {
@@ -159,12 +159,14 @@ Resumable ServerPlayer::startTurn() {
             setCardState(card, asn::State::Standing);
     }
 
+    mGame->setPhase(asn::Phase::DrawPhase);
     mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::DrawPhase);
     co_await mGame->checkTiming();
 
     drawCards(1);
     co_await mGame->checkTiming();
 
+    mGame->setPhase(asn::Phase::ClockPhase);
     sendToBoth(EventClockPhase());
 
     addExpectedCommand(CommandClockPhase::descriptor()->name());
@@ -374,13 +376,13 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
 
     co_await mGame->checkTiming();
 
+    mGame->setPhase(asn::Phase::MainPhase);
     sendToBoth(EventMainPhase());
 
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::descriptor()->name());
     addExpectedCommand(CommandPlayAct::descriptor()->name());
     addExpectedCommand(CommandClimaxPhase::descriptor()->name());
-    addExpectedCommand(CommandAttackPhase::descriptor()->name());
     addExpectedCommand(CommandSwitchStagePositions::descriptor()->name());
 }
 
@@ -419,6 +421,9 @@ Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
 }
 
 Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
+    if (mGame->phase() != asn::Phase::MainPhase)
+        co_return;
+
     ServerCardZone *hand = zone("hand");
     ServerCardZone *stage = zone("stage");
     if (cmd.stage_pos() >= stage->count())
@@ -469,6 +474,9 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
 }
 
 Resumable ServerPlayer::playClimax(int handIndex) {
+    if (mGame->phase() != asn::Phase::ClimaxPhase)
+        co_return;
+
     auto hand = zone("hand");
     auto climaxZone = zone("climax");
 
@@ -556,7 +564,7 @@ void ServerPlayer::switchPositions(int from, int to) {
 bool ServerPlayer::canPlay(ServerCard *card) {
     if (card->cannotPlay())
         return false;
-    if (mGame->phase() == ServerPhase::Climax && card->type() != CardType::Climax)
+    if (mGame->phase() == asn::Phase::ClimaxPhase && card->type() != CardType::Climax)
         return false;
     if (card->level() > mLevel)
         return false;
@@ -570,18 +578,18 @@ bool ServerPlayer::canPlay(ServerCard *card) {
     return true;
 }
 
-void ServerPlayer::climaxPhase() {
-    // check timing at start of climax phase
-    mGame->setPhase(ServerPhase::Climax);
+Resumable ServerPlayer::climaxPhase() {
+    mGame->setPhase(asn::Phase::ClimaxPhase);
     EventPhaseEvent event;
     event.set_phase(static_cast<int>(asn::Phase::ClimaxPhase));
     sendToBoth(event);
 
-    //checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::ClimaxPhase);
-    //co_await mGame->checkTiming();
+    checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::ClimaxPhase);
+    co_await mGame->checkTiming();
 
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::descriptor()->name());
+    addExpectedCommand(CommandAttackPhase::descriptor()->name());
     sendToBoth(EventClimaxPhase());
 }
 
@@ -610,7 +618,7 @@ Resumable ServerPlayer::startOfAttackPhase() {
 }
 
 void ServerPlayer::attackDeclarationStep() {
-    mGame->setPhase(ServerPhase::AttackDeclarationStep);
+    mGame->setPhase(asn::Phase::AttackDeclarationStep);
     addExpectedCommand(CommandDeclareAttack::descriptor()->name());
     addExpectedCommand(CommandEncoreStep::descriptor()->name());
     sendToBoth(EventAttackDeclarationStep());
@@ -705,7 +713,7 @@ void ServerPlayer::counterStep() {
 }
 
 Resumable ServerPlayer::damageStep() {
-    mGame->setPhase(ServerPhase::DamageStep);
+    mGame->setPhase(asn::Phase::DamageStep);
 
     clearExpectedComands();
     auto attCard = getOpponent()->attackingCard();

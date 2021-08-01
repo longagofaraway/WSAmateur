@@ -63,8 +63,7 @@ ServerPlayer* ServerGame::opponentOfPlayer(int id) const {
 }
 
 void ServerGame::setStartingPlayer() {
-    std::random_device dev;
-    std::mt19937 gen(dev());
+    std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
     std::uniform_int_distribution<> distrib(1, 2);
     int startingPlayerId = 1;//distrib(gen);
     for (auto &playerEntry: mPlayers) {
@@ -134,7 +133,7 @@ Resumable ServerGame::battleStep() {
         || attPlayer->attackType() == AttackType::DirectAttack)
         co_return;
 
-    mCurrentPhase = ServerPhase::BattleStep;
+    setPhase(asn::Phase::BattleStep);
     //at the beginning of battle step, check timing
 
     auto attCard = attPlayer->attackingCard();

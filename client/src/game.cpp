@@ -22,9 +22,9 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="1" code="IMC/W43-127"/>
+        <card number="20" code="IMC/W43-127"/>
         <card number="20" code="KGL/S79-035"/>
-        <card number="15" code="KGL/S79-040"/>
+        <card number="1" code="KGL/S79-040"/>
         <card number="1" code="IMC/W43-046"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-111"/>
@@ -38,7 +38,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="0" code="IMC/W43-127"/>
-        <card number="40" code="KGL/S79-015"/>
+        <card number="40" code="KGL/S79-035"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-091"/>
     </main>
@@ -313,6 +313,8 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
         sendGameCommand(cmd, mOpponent->id());
     } else if (event->event().Is<EventMainPhase>()) {
         mOpponent->playCards(hand);
+        sendGameCommand(CommandClimaxPhase(), mOpponent->id());
+    } else if (event->event().Is<EventClimaxPhase>()) {
         sendGameCommand(CommandAttackPhase(), mOpponent->id());
     } else if (event->event().Is<EventPlayCard>()) {
         EventPlayCard ev;

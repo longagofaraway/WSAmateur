@@ -286,9 +286,11 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
         co_return;
 
-    if ((e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom) &&
-        mPlayer->zone(asnZoneToString(e.from.zone))->count() == 0)
-        co_return;
+    if ((e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom)) {
+        auto player = owner(e.from.owner);
+        if (player->zone(asnZoneToString(e.from.zone))->count() == 0)
+            co_return;
+    }
 
     if (e.target.type == asn::TargetType::BattleOpponent) {
         if (thisCard().card->zone()->name() != "stage")
