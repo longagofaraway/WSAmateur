@@ -141,10 +141,7 @@ std::string printAttributeGain(const AttributeGain &e) {
         res += printForEachMultiplier(*e.modifier->specifier);
     }
 
-    if (e.duration == 1)
-        res += "until end of turn ";
-    else if (e.duration == 2)
-        res += "until end of your opponent's turn ";
+    res += printDuration(e.duration);
 
     if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::TimesLevel) {
         res.pop_back();
@@ -213,9 +210,21 @@ std::string printRevealCard(const RevealCard &e) {
 }
 
 std::string printNonMandatory(const NonMandatory &e) {
-    std::string s = "you may ";
+    gPrintState.mandatory = false;
+    assert(e.effect.size());
+    std::string player;
+    Player executor = Player::Player;
+    if (e.effect[0].type == EffectType::MoveCard)
+        executor = std::get<MoveCard>(e.effect[0].effect).executor;
+
+    std::string s;
+    if (executor == Player::Player)
+        s = "you may ";
+    else
+        s = "your opponent may ";
 
     s += printEffects(e.effect);
+    gPrintState.mandatory = true;
 
     if (e.ifYouDo.size() || e.ifYouDont.size()) {
         s[s.size() - 1] = '.';
@@ -223,7 +232,10 @@ std::string printNonMandatory(const NonMandatory &e) {
     }
 
     if (e.ifYouDo.size()) {
-        s += "If you do, ";
+        if (executor == Player::Player)
+            s += "If you do, ";
+        else
+            s += "If your opponent does, ";
         s += printEffects(e.ifYouDo);
 
         if (e.ifYouDont.size()) {
@@ -232,7 +244,10 @@ std::string printNonMandatory(const NonMandatory &e) {
         }
     }
     if (e.ifYouDont.size()) {
-        s += "If you don't, ";
+        if (executor == Player::Player)
+            s += "If you don't, ";
+        else
+            s += "If your opponent doesn't, ";
         s += printEffects(e.ifYouDont);
     }
 
@@ -242,7 +257,7 @@ std::string printNonMandatory(const NonMandatory &e) {
 std::string printMoveCard(const MoveCard &e) {
     std::string s;
 
-    if (e.executor == Player::Opponent)
+    if (e.executor == Player::Opponent && gPrintState.mandatory)
         s += "your opponent ";
 
     if (e.to[0].pos == Position::SlotThisWasIn)
@@ -254,7 +269,7 @@ std::string printMoveCard(const MoveCard &e) {
     else
         s += "put";
 
-    if (e.executor == Player::Opponent)
+    if (e.executor == Player::Opponent && gPrintState.mandatory)
         s += "s";
     s += " ";
 
@@ -422,10 +437,9 @@ std::string printAbilityGain(const AbilityGain &e) {
         s += std::to_string(e.number) + " of the following " + std::to_string(e.abilities.size()) + " abilities of your choice ";
     }
 
-    if (e.duration == 1)
-        s += "until end of turn. ";
-    else if (e.duration == 2)
-        s += "until end of your opponent's turn. ";
+    s += printDuration(e.duration);
+    s.pop_back();
+    s += ". ";
 
     for (const auto &a: e.abilities)
         s += "\"" + printAbility(a) + "\" ";
@@ -605,6 +619,16 @@ std::string printSwapCards(const SwapCards &e) {
     return s;
 }
 
+std::string printCannotAttack(const CannotAttack &e) {
+    std::string s;
+
+    s = printTarget(e.target);
+    s += "cannot " + printAttackType(e.type) + " ";
+    s += printDuration(e.duration);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -682,6 +706,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::SwapCards:
         s += printSwapCards(std::get<SwapCards>(e.effect));
+        break;
+    case EffectType::CannotAttack:
+        s += printCannotAttack(std::get<CannotAttack>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

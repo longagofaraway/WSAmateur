@@ -147,13 +147,17 @@ public:
     void sendAttrChange(ServerCard *card, asn::AttributeType attr);
     void sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> oldAttrs);
     void addAttributeBuff(ServerCard *card, asn::AttributeType attr, int delta, int duration = 1);
+    void addBoolAttrChange(ServerCard *card, BoolAttributeType type, int duration);
     void addContAttributeBuff(ServerCard *card,
                               ServerCard *source,
                               int abilityId,
                               asn::AttributeType attr,
                               int delta,
                               bool positional = false);
+    void addContBoolAttrChange(ServerCard *card, ServerCard *source, int abilityId,
+                               BoolAttributeType type, bool positional = false);
     void removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr);
+    void removeContBoolAttrChange(ServerCard *card, ServerCard *source, int abilityId, BoolAttributeType type);
     void removePositionalContBuffsBySource(ServerCard *card);
     void removePositionalContBuffsFromCard(ServerCard *card);
     void addAbilityAsContBuff(ServerCard *card,
@@ -163,6 +167,8 @@ public:
                               bool positional = false);
     void removeAbilityAsContBuff(ServerCard *card, ServerCard *source, int sourceAbilityId);
     void setCardState(ServerCard *card, asn::State state);
+    void setCardBoolAttr(ServerCard *card, BoolAttributeType type, bool value);
+    void sendBoolAttrChange(int cardPos, BoolAttributeType type, bool value);
     void endOfTurnEffectValidation();
 
     void checkOnReversed(ServerCard *card);

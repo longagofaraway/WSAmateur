@@ -35,6 +35,8 @@ void ServerCard::reset() {
 
     mTriggerCheckTwice = false;
     mCannotPlay = false;
+    mCannotFrontAttack = false;
+    mCannotSideAttack = false;
     mInBattle = false;
 }
 
@@ -63,6 +65,11 @@ void ServerCard::addAttrBuff(asn::AttributeType attr, int delta, int duration) {
     changeAttr(attr, delta);
 }
 
+void ServerCard::addBoolAttrChange(BoolAttributeType type, int duration) {
+    mBoolAttrChanges.emplace_back(type, duration);
+    changeBoolAttribute(type, true);
+}
+
 bool ServerCard::addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional) {
     ContAttributeChange buff(card, abilityId, attr, delta, positional);
     auto it = std::find(mContBuffs.begin(), mContBuffs.end(), buff);
@@ -75,6 +82,17 @@ bool ServerCard::addContAttrBuff(ServerCard *card, int abilityId, asn::Attribute
         return false;
     changeAttr(attr, delta - it->value);
     it->value = delta;
+    return true;
+}
+
+bool ServerCard::addContBoolAttrChange(ServerCard *card, int abilityId, BoolAttributeType type, bool positional) {
+    BoolAttributeChange change(card, abilityId, type, positional);
+    auto it = std::find(mBoolAttrChanges.begin(), mBoolAttrChanges.end(), change);
+    if (it != mBoolAttrChanges.end())
+        return false;
+
+    mBoolAttrChanges.emplace_back(std::move(change));
+    changeBoolAttribute(type, true);
     return true;
 }
 
@@ -96,6 +114,16 @@ void ServerCard::removeContAttrBuff(ServerCard *card, int abilityId, asn::Attrib
     if (it != mContBuffs.end()) {
         changeAttr(attr, -it->value);
         mContBuffs.erase(it);
+    }
+}
+
+void ServerCard::removeContBoolAttrChange(ServerCard *card, int abilityId, BoolAttributeType type) {
+    BoolAttributeChange change(card, abilityId, type);
+    auto it = std::find(mBoolAttrChanges.begin(), mBoolAttrChanges.end(), change);
+    if (it != mBoolAttrChanges.end()) {
+        mBoolAttrChanges.erase(it);
+        if (!hasBoolAttrChange(type))
+            changeBoolAttribute(type, false);
     }
 }
 
@@ -156,6 +184,24 @@ void ServerCard::removePositionalContAttrBuffs() {
     }
 }
 
+std::vector<BoolAttributeType> ServerCard::removePositionalContBoolAttrChanges() {
+    std::vector<BoolAttributeType> changedParams;
+    for (auto it = mBoolAttrChanges.begin(); it != mBoolAttrChanges.end();) {
+        if (it->positional) {
+            auto type = it->type;
+            it = mBoolAttrChanges.erase(it);
+            if (!hasBoolAttrChange(type)) {
+                changeBoolAttribute(type, false);
+                changedParams.push_back(type);
+            }
+        } else {
+            ++it;
+        }
+    }
+
+    return changedParams;
+}
+
 void ServerCard::removeContBuffsBySource(ServerCard *card) {
     for (auto it = mContBuffs.begin(); it != mContBuffs.end();) {
         if (it->source == card) {
@@ -178,7 +224,25 @@ void ServerCard::removePositionalContAttrBuffsBySource(ServerCard *card) {
     }
 }
 
-void ServerCard::validateBuffs() {
+std::vector<BoolAttributeType> ServerCard::removePositionalContBoolAttrChangeBySource(ServerCard *card) {
+    std::vector<BoolAttributeType> changedParams;
+    for (auto it = mBoolAttrChanges.begin(); it != mBoolAttrChanges.end();) {
+        if (it->positional && it->source == card) {
+            auto type = it->type;
+            it = mBoolAttrChanges.erase(it);
+            if (!hasBoolAttrChange(type)) {
+                changeBoolAttribute(type, false);
+                changedParams.push_back(type);
+            }
+        } else {
+            ++it;
+        }
+    }
+
+    return changedParams;
+}
+
+void ServerCard::validateAttrBuffs() {
     for (auto &buff: mBuffs) {
         if (--buff.duration == 0) {
             switch (buff.attr) {
@@ -198,6 +262,28 @@ void ServerCard::validateBuffs() {
         }
     }
     std::erase_if(mBuffs, [](const AttributeChange &o){ return o.duration <= 0; });
+}
+
+std::vector<BoolAttributeType> ServerCard::validateBoolAttrChanges() {
+    std::vector<BoolAttributeType> changedParams;
+    auto it = mBoolAttrChanges.begin();
+    while (it != mBoolAttrChanges.end()) {
+        if (!it->duration || --it->duration)
+            continue;
+        auto type = it->type;
+        it = mBoolAttrChanges.erase(it);
+        if (!hasBoolAttrChange(type)) {
+            changeBoolAttribute(type, false);
+            changedParams.push_back(type);
+        }
+    }
+    return changedParams;
+}
+
+bool ServerCard::hasBoolAttrChange(BoolAttributeType type) const {
+    auto sameType = std::find_if(mBoolAttrChanges.begin(), mBoolAttrChanges.end(),
+                                 [type](const BoolAttributeChange &el) { return el.type == type; });
+    return sameType != mBoolAttrChanges.end();
 }
 
 int ServerCard::addAbility(const asn::Ability &a, int duration) {
@@ -224,7 +310,21 @@ void ServerCard::changeAttr(asn::AttributeType type, int delta) {
     case asn::AttributeType::Level:
         mLevel += delta;
         break;
+    default:
+        assert(false);
     }
+}
+
+void ServerCard::changeBoolAttribute(BoolAttributeType type, bool value) {
+    switch (type) {
+    case BoolAttributeType::CannotFrontAttack:
+        mCannotFrontAttack = value;
+        break;
+    case BoolAttributeType::CannotSideAttack:
+        mCannotSideAttack = value;
+        break;
+    }
+    assert(false);
 }
 
 int ServerCard::attrByType(asn::AttributeType type) const {
@@ -238,6 +338,18 @@ int ServerCard::attrByType(asn::AttributeType type) const {
     default:
         assert(false);
         return power();
+    }
+}
+
+bool ServerCard::boolAttrByType(BoolAttributeType type) const {
+    switch (type) {
+    case BoolAttributeType::CannotFrontAttack:
+        return cannotFrontAttack();
+    case BoolAttributeType::CannotSideAttack:
+        return cannotSideAttack();
+    default:
+        assert(false);
+        return false;
     }
 }
 

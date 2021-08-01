@@ -38,6 +38,7 @@ void AbilityPlayer::playContAbility(const asn::ContAbility &a, bool &active) {
     if (a.effects.size() == 0)
         return;
 
+    setCont(true);
     bool res = evaluateCondition(a.effects[0].cond);
     if (!res && !active)
         return;
@@ -55,12 +56,14 @@ void AbilityPlayer::revertContAbility(const asn::ContAbility &a) {
     if (a.effects.size() == 0)
         return;
 
+    setCont(true);
     setRevert(true);
     for (const auto &effect: a.effects)
         playContEffect(effect);
 }
 
 Resumable AbilityPlayer::playAbility(const asn::Ability &a) {
+    setCont(false);
     switch(a.type) {
     case asn::AbilityType::Auto:
         co_await playAutoAbility(std::get<asn::AutoAbility>(a.ability));

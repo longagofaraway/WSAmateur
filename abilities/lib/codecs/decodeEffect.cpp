@@ -129,6 +129,14 @@ SwapCards decodeSwapCards(Iterator &it, Iterator end) {
     return e;
 }
 
+CannotAttack decodeCannotAttack(Iterator &it, Iterator end) {
+    CannotAttack e;
+    e.target = decodeTarget(it, end);
+    e.type = decodeEnum<AttackType>(it, end);
+    e.duration = decodeUInt8(it, end);
+    return e;
+}
+
 AddMarker decodeAddMarker(Iterator &it, Iterator end) {
     AddMarker e;
     e.target = decodeTarget(it, end);
@@ -224,6 +232,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::SwapCards:
         e.effect = decodeSwapCards(it, end);
+        break;
+    case EffectType::CannotAttack:
+        e.effect = decodeCannotAttack(it, end);
         break;
     case EffectType::AddMarker:
         e.effect = decodeAddMarker(it, end);

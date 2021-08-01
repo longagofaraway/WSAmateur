@@ -1,6 +1,8 @@
 #include "print.h"
 
+#include <cassert>
 #include <exception>
+
 
 using namespace asn;
 
@@ -174,8 +176,12 @@ std::string printPhase(Phase p) {
     switch (p) {
     case Phase::AttackPhase:
         return "attack phase";
+    case Phase::ClimaxPhase:
+        return "climax phase";
     case Phase::DrawPhase:
         return "draw phase";
+    case Phase::EncoreStep:
+        return "encore step";
     }
     return "";
 }
@@ -196,5 +202,26 @@ std::string printForEachMultiplier(const ForEachMultiplier &m) {
         s += "in your " + printZone(m.zone) + " ";
 
     return s;
+}
+
+std::string printAttackType(AttackType t) {
+    switch (t) {
+    case AttackType::FronalAttack:
+        return "frontal attack";
+    case AttackType::SideAttack:
+        return "side attack";
+    case AttackType::Any:
+        return "attack";
+    }
+    assert(false);
+    return "";
+}
+
+std::string printDuration(int duration) {
+    if (duration == 1)
+        return "until end of turn ";
+    if (duration == 2)
+        return "until end of your opponent's turn ";
+    return "";
 }
 

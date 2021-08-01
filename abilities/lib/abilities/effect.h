@@ -154,6 +154,18 @@ struct SwapCards {
     ChooseCard second;
 };
 
+enum class AttackType : uint8_t {
+    Any = 0,
+    FronalAttack,
+    SideAttack
+};
+
+struct CannotAttack {
+    Target target;
+    AttackType type;
+    int duration;
+};
+
 struct AddMarker {
     Target target;
     Target destination;
@@ -210,15 +222,14 @@ enum class EffectType : uint8_t {
     CannotUseBackupOrEvent,
     DrawCard,
     SwapCards,
-    CannotFrontAttack,
-    CannotSideAttack,
-    OpponentCharAutoCannotDealDamage,
+    CannotAttack,
+    CharAutoCannotDealDamage,
+    PlayerAutoCannotDealDamage,
     CannotBecomeReversed,
     StockSwap,
     AddMarker,
     Bond,
     CannotMove,
-    PutRestedInSameSlot,
     PerformReplay,
     Replay,
     SideAttackWithoutPenalty,
@@ -250,6 +261,7 @@ struct Effect {
         DealDamage,
         CannotUseBackupOrEvent,
         SwapCards,
+        CannotAttack,
         AddMarker,
         Bond,
         PerformReplay,

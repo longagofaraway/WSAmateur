@@ -8,6 +8,7 @@
 #include "cardAttribute.pb.h"
 
 #include "abilities.h"
+#include "attributeChange.h"
 #include "serverCard.h"
 
 class ProtoAbility;
@@ -19,7 +20,10 @@ ProtoCardAttribute attrTypeToProto(asn::AttributeType t);
 asn::Player protoPlayerToPlayer(ProtoOwner player);
 asn::State protoStateToState(CardState state);
 CardState stateToProtoState(asn::State state);
+asn::Player reversePlayer(asn::Player p);
+ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type);
 
 bool checkNumber(const asn::Number &numObj, int n);
 bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card);
 bool checkTargetMode(asn::TargetMode mode, const ServerCard *thisCard, const ServerCard *card);
+bool isPositional(const asn::Target &t);

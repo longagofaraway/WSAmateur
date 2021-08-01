@@ -19,6 +19,7 @@ class AbilityPlayer {
     bool mRevealChosen = false;
     bool mRevert = false; // revert effect of cont ability
     bool mConditionNotMet = false;
+    bool mIsCont = false; // ability that is being played is CONT
     int mAbilityId;
     std::vector<CardImprint> mChosenCards;
     std::vector<CardImprint> mMentionedCards;
@@ -49,6 +50,9 @@ public:
     void setCost(const asn::Cost &cost) { mCost = cost; }
     CardImprint& thisCard() { return mThisCard; }
     void setThisCard(const CardImprint &c) { mThisCard = c; }
+    bool cont() const { return mIsCont; }
+    void setCont(bool cont) { mIsCont = cont; }
+
     void addChosenCard(CardImprint &&c) { mChosenCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& chosenCards() { return mChosenCards; }
     void clearChosenCards() { mChosenCards.clear(); }
@@ -80,7 +84,7 @@ public:
     Resumable playMoveCard(const asn::MoveCard &e);
     Resumable playDrawCard(const asn::DrawCard &e);
     void playRevealCard(const asn::RevealCard &e);
-    void playAttributeGain(const asn::AttributeGain &e, bool cont = false);
+    void playAttributeGain(const asn::AttributeGain &e);
     Resumable playPayCost(const asn::PayCost &e);
     Resumable payCost();
     Resumable playSearchCard(const asn::SearchCard &e);
@@ -99,6 +103,7 @@ public:
     void playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e);
     Resumable playDealDamage(const asn::DealDamage &e);
     Resumable playSwapCards(const asn::SwapCards &e);
+    void playCannotAttack(const asn::CannotAttack &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

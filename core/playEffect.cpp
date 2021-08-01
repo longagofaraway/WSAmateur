@@ -76,6 +76,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::SwapCards:
         co_await playSwapCards(std::get<asn::SwapCards>(e.effect));
         break;
+    case asn::EffectType::CannotAttack:
+        playCannotAttack(std::get<asn::CannotAttack>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -102,7 +105,7 @@ Resumable AbilityPlayer::playEffects(const std::vector<asn::Effect> &e) {
 void AbilityPlayer::playContEffect(const asn::Effect &e) {
     switch (e.type) {
     case asn::EffectType::AttributeGain:
-        playAttributeGain(std::get<asn::AttributeGain>(e.effect), true);
+        playAttributeGain(std::get<asn::AttributeGain>(e.effect));
         break;
     case asn::EffectType::EarlyPlay:
         playEarlyPlay();
@@ -115,6 +118,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
         break;
     case asn::EffectType::AbilityGain:
         playTemporaryAbilityGain(std::get<asn::AbilityGain>(e.effect));
+        break;
+    case asn::EffectType::CannotAttack:
+        playCannotAttack(std::get<asn::CannotAttack>(e.effect));
         break;
     default:
         break;
@@ -329,19 +335,29 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         }
         mPlayer->clearExpectedComands();
     } else if (!mandatory()) {
-        assert(e.executor == asn::Player::Player);
+        auto executor = owner(e.executor);
         std::vector<uint8_t> buf;
-        encodeMoveCard(e, buf);
+        if (e.executor == asn::Player::Opponent) {
+            auto effectCopy = e;
+            // for translation purposes
+            effectCopy.executor = asn::Player::Player;
+            effectCopy.from.owner = reversePlayer(effectCopy.from.owner);
+            for (auto &to: effectCopy.to)
+                to.owner = reversePlayer(to.owner);
+            encodeMoveCard(effectCopy, buf);
+        } else {
+            encodeMoveCard(e, buf);
+        }
 
         EventMoveChoice ev;
         ev.set_effect(buf.data(), buf.size());
         ev.set_mandatory(mandatory());
-        mPlayer->sendToBoth(ev);
+        executor->sendToBoth(ev);
 
-        mPlayer->clearExpectedComands();
-        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
+        executor->clearExpectedComands();
+        executor->addExpectedCommand(CommandChoice::descriptor()->name());
         // TODO: check for legitimacy of cancel
-        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
+        executor->addExpectedCommand(CommandCancelEffect::descriptor()->name());
 
         while (true) {
             auto cmd = co_await waitForCommand();
@@ -361,7 +377,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 break;
             }
         }
-        mPlayer->clearExpectedComands();
+        executor->clearExpectedComands();
     }
     if (moveCanceled)
         co_return;
@@ -600,14 +616,9 @@ void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
     }
 }
 
-void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
-    bool positional = false;
-    if (e.target.type == asn::TargetType::SpecificCards) {
-        const auto &spec = *e.target.targetSpecification;
-        if (spec.mode == asn::TargetMode::InFrontOfThis || spec.mode == asn::TargetMode::BackRow
-            || spec.mode == asn::TargetMode::FrontRow)
-            positional = true;
-    } else if (e.target.type == asn::TargetType::ThisCard) {
+void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e) {
+    bool positional = isPositional(e.target);
+    if (e.target.type == asn::TargetType::ThisCard) {
         if (thisCard().card == nullptr || thisCard().card->zone()->name() != "stage")
             return;
     }
@@ -620,7 +631,7 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e, bool cont) {
     for (auto card: targets) {
         if (e.gainType == asn::ValueType::Multiplier && e.modifier->type == asn::MultiplierType::TimesLevel)
             value = card->level() * e.value;
-        if (cont) {
+        if (cont()) {
             if (revert())
                 mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
             else
@@ -1098,6 +1109,31 @@ Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {
     auto player = card1->player();
     player->moveCard(card1Zone, card1->pos(), card2->zone()->name(), card2->pos());
     player->moveCard(card2->zone()->name(), card2Pos, card1Zone, card1Pos);
+}
+
+void AbilityPlayer::playCannotAttack(const asn::CannotAttack &e) {
+    bool positional = isPositional(e.target);
+    if (e.target.type == asn::TargetType::ThisCard) {
+        if (thisCard().card == nullptr || thisCard().card->zone()->name() != "stage")
+            return;
+    }
+
+    auto targets = getTargets(e.target);
+    for (auto target: targets) {
+        auto attr = e.type == asn::AttackType::FronalAttack ? BoolAttributeType::CannotFrontAttack
+                                                            : BoolAttributeType::CannotSideAttack;
+
+        auto player = target->player();
+        if (cont()) {
+            if (revert())
+                player->removeContBoolAttrChange(target, thisCard().card, abilityId(), attr);
+            else
+                player->addContBoolAttrChange(target, thisCard().card, abilityId(), attr, positional);
+        } else {
+            player->addBoolAttrChange(target, attr, e.duration);
+        }
+        target->player()->setCardBoolAttr(target, attr, !revert());
+    }
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

@@ -365,6 +365,21 @@ MoveWrToDeck parseMoveWrToDeck(const QJsonObject &json) {
     return e;
 }
 
+CannotAttack parseCannotAttack(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in CannotAttack");
+    if (!json.contains("type") || !json["type"].isDouble())
+        throw std::runtime_error("no type in CannotAttack");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in CannotAttack");
+
+    CannotAttack e;
+    e.target = parseTarget(json["target"].toObject());
+    e.type = static_cast<AttackType>(json["type"].toInt());
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 OtherEffect parseOtherEffect(const QJsonObject &json) {
     if (!json.contains("cardCode") || !json["cardCode"].isString())
         throw std::runtime_error("no cardCode in OtherEffect");
@@ -376,6 +391,7 @@ OtherEffect parseOtherEffect(const QJsonObject &json) {
     e.effectId = json["effectId"].toInt();
     return e;
 }
+
 
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
@@ -459,16 +475,17 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::Shuffle:
         e.effect = parseShuffle(json["effect"].toObject());
         break;
+    case EffectType::CannotAttack:
+        e.effect = parseCannotAttack(json["effect"].toObject());
+        break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:
     case EffectType::CannotPlay:
-    case EffectType::CannotFrontAttack:
-    case EffectType::CannotSideAttack:
-    case EffectType::OpponentCharAutoCannotDealDamage:
+    case EffectType::CharAutoCannotDealDamage:
+    case EffectType::PlayerAutoCannotDealDamage:
     case EffectType::CannotBecomeReversed:
     case EffectType::StockSwap:
     case EffectType::CannotMove:
-    case EffectType::PutRestedInSameSlot:
     case EffectType::SideAttackWithoutPenalty:
     case EffectType::Standby:
         break;

@@ -108,3 +108,9 @@ message EventSetCardStateTargetChoice {
     bytes effect = 1;
     bool mandatory = 2;
 }
+
+message EventSetCardBoolAttr {
+    sint32 card_pos = 1;
+    ProtoCardBoolAttribute attr = 2;
+    bool value = 3;
+}

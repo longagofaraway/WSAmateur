@@ -577,6 +577,9 @@ void ServerPlayer::climaxPhase() {
     event.set_phase(static_cast<int>(asn::Phase::ClimaxPhase));
     sendToBoth(event);
 
+    //checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::ClimaxPhase);
+    //co_await mGame->checkTiming();
+
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::descriptor()->name());
     sendToBoth(EventClimaxPhase());
@@ -622,15 +625,20 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     if (!attCard || attCard->state() != asn::State::Standing)
         co_return;
 
-    clearExpectedComands();
-
-    attCard->setState(asn::State::Rested);
-    setAttackingCard(attCard);
-
     AttackType type = cmd.attack_type();
     auto battleOpp = oppositeCard(attCard);
     if (!battleOpp)
         type = AttackType::DirectAttack;
+
+    if (type == AttackType::FrontAttack && attCard->cannotFrontAttack())
+        co_return;
+    if (type == AttackType::SideAttack && attCard->cannotSideAttack())
+        co_return;
+
+    clearExpectedComands();
+
+    attCard->setState(asn::State::Rested);
+    setAttackingCard(attCard);
 
     setAttackType(type);
     EventDeclareAttack event;
@@ -1024,6 +1032,19 @@ Resumable ServerPlayer::takeDamage(int damage) {
 
     if (zone("clock")->count() >= 7)
         co_await levelUp();
+}
+
+void ServerPlayer::setCardBoolAttr(ServerCard *card, BoolAttributeType type, bool value) {
+    card->changeBoolAttribute(type, value);
+    sendBoolAttrChange(card->pos(), type, value);
+}
+
+void ServerPlayer::sendBoolAttrChange(int cardPos, BoolAttributeType type, bool value) {
+    EventSetCardBoolAttr event;
+    event.set_card_pos(cardPos);
+    event.set_attr(getProtoBoolAttrType(type));
+    event.set_value(value);
+    sendToBoth(event);
 }
 
 asn::Ability TriggeredAbility::getAbility() const {

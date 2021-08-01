@@ -244,3 +244,36 @@ CardState stateToProtoState(asn::State state) {
     assert(false);
     return StateStanding;
 }
+
+ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type) {
+    switch (type) {
+    case BoolAttributeType::CannotFrontAttack:
+        return ProtoCannotFrontAttack;
+    case BoolAttributeType::CannotSideAttack:
+        return ProtoCannotSideAttack;
+    }
+    assert(false);
+    return ProtoCannotFrontAttack;
+}
+
+asn::Player reversePlayer(asn::Player p) {
+    switch(p) {
+    case asn::Player::Player:
+        return asn::Player::Opponent;
+    case asn::Player::Opponent:
+        return asn::Player::Player;
+    }
+    return p;
+}
+
+bool isPositional(const asn::Target &t) {
+    if (t.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *t.targetSpecification;
+        if (spec.mode == asn::TargetMode::InFrontOfThis || spec.mode == asn::TargetMode::BackRow
+            || spec.mode == asn::TargetMode::FrontRow)
+            return true;
+    } else if (t.type == asn::TargetType::OppositeThis) {
+        return true;
+    }
+    return false;
+}

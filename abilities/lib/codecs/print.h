@@ -7,6 +7,7 @@ struct PrintState {
     asn::Number chosenCardsNumber;
     bool battleOpponentMentioned = false;
     bool attributeGainChaining = false;
+    bool mandatory = true;
 };
 extern PrintState gPrintState;
 
@@ -21,6 +22,8 @@ std::string printState(asn::State s);
 std::string printPhase(asn::Phase p);
 std::string printTriggerIcon(asn::TriggerIcon icon);
 std::string printForEachMultiplier(const asn::ForEachMultiplier &m);
+std::string printAttackType(asn::AttackType t);
+std::string printDuration(int duration);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
 std::string printKeywords(const std::vector<asn::Keyword> &keywords);

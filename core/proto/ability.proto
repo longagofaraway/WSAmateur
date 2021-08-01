@@ -21,3 +21,8 @@ message ProtoAbility {
     bytes ability = 6;
     uint32 unique_id = 7;
 }
+
+enum ProtoCardBoolAttribute {
+    ProtoCannotFrontAttack = 0;
+    ProtoCannotSideAttack = 1;
+}

@@ -243,6 +243,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventSetCardStateTargetChoice ev;
         event->event().UnpackTo(&ev);
         processSetCardStateTargetChoice(ev);
+    } else if (event->event().Is<EventSetCardBoolAttr>()) {
+        EventSetCardBoolAttr ev;
+        event->event().UnpackTo(&ev);
+        processSetCardBoolAttr(ev);
     }
 }
 

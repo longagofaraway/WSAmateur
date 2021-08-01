@@ -1,5 +1,6 @@
 #include "serverPlayer.h"
 
+#include "abilityEvents.pb.h"
 #include "gameEvent.pb.h"
 
 #include "abilityPlayer.h"
@@ -15,7 +16,7 @@ void ServerPlayer::endOfTurnEffectValidation() {
         card->setTriggerCheckTwice(false);
 
         auto oldAttrs = card->attributes();
-        card->validateBuffs();
+        card->validateAttrBuffs();
         sendChangedAttrs(card, oldAttrs);
         auto &abs = card->abilities();
         auto it = abs.rbegin();
@@ -35,6 +36,10 @@ void ServerPlayer::endOfTurnEffectValidation() {
                 ++it;
             }
         }
+
+        auto changedAttrs = card->validateBoolAttrChanges();
+        for (auto changedAttr: changedAttrs)
+            sendBoolAttrChange(card->pos(), changedAttr, false);
     }
 }
 
@@ -67,6 +72,15 @@ void ServerPlayer::addAttributeBuff(ServerCard *card, asn::AttributeType attr, i
     card->player()->sendAttrChange(card, attr);
 }
 
+void ServerPlayer::addBoolAttrChange(ServerCard *card, BoolAttributeType type, int duration) {
+    bool attr = card->boolAttrByType(type);
+    card->addBoolAttrChange(type, duration);
+    bool newAttr = card->boolAttrByType(type);
+    if (newAttr == attr)
+        return;
+    sendBoolAttrChange(card->pos(), type, newAttr);
+}
+
 void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta, bool positional) {
     if (!card->addContAttrBuff(source, abilityId, attr, delta, positional))
         return;
@@ -74,9 +88,30 @@ void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, in
     card->player()->sendAttrChange(card, attr);
 }
 
+void ServerPlayer::addContBoolAttrChange(ServerCard *card, ServerCard *source, int abilityId, BoolAttributeType type, bool positional) {
+    bool attr = card->boolAttrByType(type);
+    if (!card->addContBoolAttrChange(source, abilityId, type, positional))
+        return;
+    bool newAttr = card->boolAttrByType(type);
+    if (newAttr == attr)
+        return;
+
+    card->player()->sendBoolAttrChange(card->pos(), type, newAttr);
+}
+
 void ServerPlayer::removeContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr) {
     card->removeContAttrBuff(source, abilityId, attr);
     card->player()->sendAttrChange(card, attr);
+}
+
+void ServerPlayer::removeContBoolAttrChange(ServerCard *card, ServerCard *source, int abilityId, BoolAttributeType type) {
+    bool attr = card->boolAttrByType(type);
+    card->removeContBoolAttrChange(source, abilityId, type);
+    bool newAttr = card->boolAttrByType(type);
+    if (newAttr == attr)
+        return;
+
+    card->player()->sendBoolAttrChange(card->pos(), type, newAttr);
 }
 
 void ServerPlayer::removePositionalContBuffsBySource(ServerCard *source) {
@@ -96,11 +131,20 @@ void ServerPlayer::removePositionalContBuffsBySource(ServerCard *source) {
             card->player()->removeAbilityFromCard(card, abilityId);
         }
         sendChangedAttrs(card, oldAttrs);
+
+        auto changedBoolAttrs = card->removePositionalContBoolAttrChangeBySource(source);
+        for (auto changedAttr: changedBoolAttrs)
+            sendBoolAttrChange(card->pos(), changedAttr, false);
     }
 }
 
 void ServerPlayer::removePositionalContBuffsFromCard(ServerCard *card) {
     card->removePositionalContAttrBuffs();
+
+    auto changedBoolAttrs = card->removePositionalContBoolAttrChanges();
+    for (auto changedAttr: changedBoolAttrs)
+        sendBoolAttrChange(card->pos(), changedAttr, false);
+
     while (true) {
         bool abilityRemoved = false;
         int abilityId = card->removeAbilityAsPositionalContBuff(abilityRemoved);

@@ -101,6 +101,12 @@ void encodeSwapCards(const SwapCards &e, Buf &buf) {
     encodeChooseCard(e.second, buf);
 }
 
+void encodeCannotAttack(const CannotAttack &e, Buf &buf) {
+    encodeTarget(e.target, buf);
+    buf.push_back(static_cast<uint8_t>(e.type));
+    buf.push_back(static_cast<uint8_t>(e.duration));
+}
+
 void encodeAddMarker(const AddMarker &e, Buf &buf) {
     encodeTarget(e.target, buf);
     encodeTarget(e.destination, buf);
@@ -188,6 +194,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::SwapCards:
         encodeSwapCards(std::get<SwapCards>(e.effect), buf);
+        break;
+    case EffectType::CannotAttack:
+        encodeCannotAttack(std::get<CannotAttack>(e.effect), buf);
         break;
     case EffectType::AddMarker:
         encodeAddMarker(std::get<AddMarker>(e.effect), buf);

@@ -326,3 +326,18 @@ void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice
     if (!event.mandatory())
         mAbilityList->activateCancel(mAbilityList->activeId(), true);
 }
+
+void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
+    if (mStage->model().count() >= event.card_pos())
+        return;
+    switch (event.attr()) {
+    case ProtoCannotFrontAttack:
+        mStage->cards()[event.card_pos()].setCannotFrontAttack(event.value());
+        break;
+    case ProtoCannotSideAttack:
+        mStage->cards()[event.card_pos()].setCannotSideAttack(event.value());
+        break;
+    default:
+        assert(false);
+    }
+}

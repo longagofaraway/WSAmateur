@@ -51,20 +51,19 @@ enum EffectType {
   cannotUseBackupOrEvent = 19,
   drawCard = 20,
   swapCards = 21,
-  cannotFrontAttack = 22,
-  cannotSideAttack = 23,
-  opponentCharAutoCannotDealDamage = 24,
+  cannotAttack = 22,
+  charAutoCannotDealDamage = 23,
+  playerAutoCannotDealDamage = 24,
   cannotBecomeReversed = 25,
   stockSwap = 26,
   addMarker = 27,
   bond = 28,
   cannotMove = 29,
-  putRestedInSameSlot = 30,
-  performReplay = 31,
-  replay = 32,
-  sideAttackWithoutPenalty = 33,
-  standby = 34,
-  shuffle = 35,
+  performReplay = 30,
+  replay = 31,
+  sideAttackWithoutPenalty = 32,
+  standby = 33,
+  shuffle = 34,
   
   otherEffect = 255
 }
@@ -237,6 +236,18 @@ enum BackupOrEvent {
 SwapCards {
   chooseFirst ChooseCard,
   chooseSecond ChooseCard
+}
+
+CannotAttack {
+  target Target,
+  type AttackType,
+  duration UInt8
+}
+
+enum AttackType {
+  any = 0,
+  front = 1,
+  side = 2
 }
 
 AddMarker {
