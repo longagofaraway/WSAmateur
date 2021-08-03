@@ -194,6 +194,11 @@ struct Shuffle {
     Player owner;
 };
 
+struct CannotBecomeReversed {
+    Target target;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -224,7 +229,7 @@ enum class EffectType : uint8_t {
     SwapCards,
     CannotAttack,
     CharAutoCannotDealDamage,
-    PlayerAutoCannotDealDamage,
+    OpponentAutoCannotDealDamage,
     CannotBecomeReversed,
     StockSwap,
     AddMarker,
@@ -268,6 +273,7 @@ struct Effect {
         Replay,
         DrawCard,
         Shuffle,
+        CannotBecomeReversed,
         OtherEffect
     > effect;
 };

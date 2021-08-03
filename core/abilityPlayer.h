@@ -104,6 +104,7 @@ public:
     Resumable playDealDamage(const asn::DealDamage &e);
     Resumable playSwapCards(const asn::SwapCards &e);
     void playCannotAttack(const asn::CannotAttack &e);
+    void playCannotBecomeReversed(const asn::CannotBecomeReversed &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

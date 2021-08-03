@@ -79,6 +79,11 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::CannotAttack:
         playCannotAttack(std::get<asn::CannotAttack>(e.effect));
         break;
+    case asn::EffectType::CannotBecomeReversed:
+        playCannotBecomeReversed(std::get<asn::CannotBecomeReversed>(e.effect));
+        break;
+    case asn::EffectType::OpponentAutoCannotDealDamage:
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -121,6 +126,11 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
         break;
     case asn::EffectType::CannotAttack:
         playCannotAttack(std::get<asn::CannotAttack>(e.effect));
+        break;
+    case asn::EffectType::CannotBecomeReversed:
+        playCannotBecomeReversed(std::get<asn::CannotBecomeReversed>(e.effect));
+        break;
+    case asn::EffectType::OpponentAutoCannotDealDamage:
         break;
     default:
         break;
@@ -1134,7 +1144,28 @@ void AbilityPlayer::playCannotAttack(const asn::CannotAttack &e) {
         } else {
             player->addBoolAttrChange(target, attr, e.duration);
         }
-        target->player()->setCardBoolAttr(target, attr, !revert());
+    }
+}
+
+void AbilityPlayer::playCannotBecomeReversed(const asn::CannotBecomeReversed &e) {
+    bool positional = isPositional(e.target);
+    if (e.target.type == asn::TargetType::ThisCard) {
+        if (thisCard().card == nullptr || thisCard().card->zone()->name() != "stage")
+            return;
+    }
+
+    auto attr = BoolAttributeType::CannotBecomeReversed;
+    auto targets = getTargets(e.target);
+    for (auto target: targets) {
+        auto player = target->player();
+        if (cont()) {
+            if (revert())
+                player->removeContBoolAttrChange(target, thisCard().card, abilityId(), attr);
+            else
+                player->addContBoolAttrChange(target, thisCard().card, abilityId(), attr, positional);
+        } else {
+            player->addBoolAttrChange(target, attr, e.duration);
+        }
     }
 }
 

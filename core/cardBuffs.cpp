@@ -29,7 +29,18 @@ void ServerPlayer::endOfTurnEffectValidation() {
                     continue;
                 }
 
-                removeAbilityFromCard(card, it->id);
+                if (it->active && it->ability.type == asn::AbilityType::Cont) {
+                    AbilityPlayer a(this);
+                    a.setThisCard(CardImprint(card->zone()->name(), card));
+                    a.setAbilityId(it->id);
+                    a.revertContAbility(std::get<asn::ContAbility>(it->ability.ability));
+                }
+
+                EventRemoveAbility event;
+                event.set_card_pos(card->pos());
+                event.set_zone(card->zone()->name());
+                event.set_ability_id(it->id);
+                sendToBoth(event);
 
                 it = std::reverse_iterator(abs.erase((++it).base()));
             } else {
@@ -65,7 +76,6 @@ void ServerPlayer::sendChangedAttrs(ServerCard *card, std::tuple<int, int, int> 
         sendAttrChange(card, asn::AttributeType::Level);
 }
 
-
 void ServerPlayer::addAttributeBuff(ServerCard *card, asn::AttributeType attr, int delta, int duration) {
     card->addAttrBuff(attr, delta, duration);
 
@@ -78,7 +88,7 @@ void ServerPlayer::addBoolAttrChange(ServerCard *card, BoolAttributeType type, i
     bool newAttr = card->boolAttrByType(type);
     if (newAttr == attr)
         return;
-    sendBoolAttrChange(card->pos(), type, newAttr);
+    card->player()->sendBoolAttrChange(card->pos(), type, newAttr);
 }
 
 void ServerPlayer::addContAttributeBuff(ServerCard *card, ServerCard *source, int abilityId, asn::AttributeType attr, int delta, bool positional) {

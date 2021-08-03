@@ -24,6 +24,7 @@ Effect {
     PerformReplay,
     Replay,
     DrawCard,
+    CannotBecomeReversed,
     OtherEffect,
     Nothing
   }
@@ -53,7 +54,7 @@ enum EffectType {
   swapCards = 21,
   cannotAttack = 22,
   charAutoCannotDealDamage = 23,
-  playerAutoCannotDealDamage = 24,
+  opponentAutoCannotDealDamage = 24,
   cannotBecomeReversed = 25,
   stockSwap = 26,
   addMarker = 27,
@@ -276,6 +277,11 @@ DrawCard {
 Shuffle {
   zone Zone,
   owner Player
+}
+
+CannotBecomeReversed {
+  target Target,
+  duration UInt8
 }
 
 OtherEffect {

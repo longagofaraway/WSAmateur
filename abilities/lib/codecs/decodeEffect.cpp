@@ -172,6 +172,13 @@ Shuffle decodeShuffle(Iterator &it, Iterator end) {
     return e;
 }
 
+CannotBecomeReversed decodeCannotBecomeReversed(Iterator &it, Iterator end) {
+    CannotBecomeReversed e;
+    e.target = decodeTarget(it, end);
+    e.duration = decodeUInt8(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -256,6 +263,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::Shuffle:
         e.effect = decodeShuffle(it, end);
+        break;
+    case EffectType::CannotBecomeReversed:
+        e.effect = decodeCannotBecomeReversed(it, end);
         break;
     case EffectType::OtherEffect:
         e.effect = decodeOtherEffect(it, end);

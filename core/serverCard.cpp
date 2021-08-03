@@ -323,6 +323,9 @@ void ServerCard::changeBoolAttribute(BoolAttributeType type, bool value) {
     case BoolAttributeType::CannotSideAttack:
         mCannotSideAttack = value;
         break;
+    case BoolAttributeType::CannotBecomeReversed:
+        mCannotBecomeReversed = value;
+        break;
     default:
         assert(false);
     }
@@ -348,6 +351,8 @@ bool ServerCard::boolAttrByType(BoolAttributeType type) const {
         return cannotFrontAttack();
     case BoolAttributeType::CannotSideAttack:
         return cannotSideAttack();
+    case BoolAttributeType::CannotBecomeReversed:
+        return cannotBecomeReversed();
     default:
         assert(false);
         return false;

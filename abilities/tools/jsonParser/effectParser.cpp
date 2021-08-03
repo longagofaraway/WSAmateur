@@ -380,6 +380,18 @@ CannotAttack parseCannotAttack(const QJsonObject &json) {
     return e;
 }
 
+CannotBecomeReversed parseCannotBecomeReversed(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in CannotAttack");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in CannotAttack");
+
+    CannotBecomeReversed e;
+    e.target = parseTarget(json["target"].toObject());
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 OtherEffect parseOtherEffect(const QJsonObject &json) {
     if (!json.contains("cardCode") || !json["cardCode"].isString())
         throw std::runtime_error("no cardCode in OtherEffect");
@@ -478,12 +490,14 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::CannotAttack:
         e.effect = parseCannotAttack(json["effect"].toObject());
         break;
+    case EffectType::CannotBecomeReversed:
+        e.effect = parseCannotBecomeReversed(json["effect"].toObject());
+        break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:
     case EffectType::CannotPlay:
     case EffectType::CharAutoCannotDealDamage:
-    case EffectType::PlayerAutoCannotDealDamage:
-    case EffectType::CannotBecomeReversed:
+    case EffectType::OpponentAutoCannotDealDamage:
     case EffectType::StockSwap:
     case EffectType::CannotMove:
     case EffectType::SideAttackWithoutPenalty:

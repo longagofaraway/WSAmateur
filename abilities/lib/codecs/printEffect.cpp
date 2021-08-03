@@ -629,6 +629,16 @@ std::string printCannotAttack(const CannotAttack &e) {
     return s;
 }
 
+std::string printCannotBecomeReversed(const CannotBecomeReversed &e) {
+    std::string s;
+
+    s = printTarget(e.target);
+    s += "cannot become " + printState(State::Reversed);
+    s += printDuration(e.duration);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -709,6 +719,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CannotAttack:
         s += printCannotAttack(std::get<CannotAttack>(e.effect));
+        break;
+    case EffectType::CannotBecomeReversed:
+        s += printCannotBecomeReversed(std::get<CannotBecomeReversed>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

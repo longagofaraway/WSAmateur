@@ -337,6 +337,9 @@ void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
     case ProtoCannotSideAttack:
         mStage->cards()[event.card_pos()].setCannotSideAttack(event.value());
         break;
+    case ProtoCannotBecomeReversed:
+        mStage->cards()[event.card_pos()].setCannotBecomeReversed(event.value());
+        break;
     default:
         assert(false);
     }

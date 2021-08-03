@@ -68,6 +68,7 @@ class ServerCard : public CardBase
     bool mCannotPlay = false;
     bool mCannotFrontAttack = false;
     bool mCannotSideAttack = false;
+    bool mCannotBecomeReversed = false;
 
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone, int uniqueId);
@@ -108,7 +109,8 @@ public:
     void setCannotFrontAttack(bool val) { mCannotFrontAttack = val; }
     bool cannotSideAttack() const { return mCannotSideAttack; }
     void setCannotSideAttack(bool val) { mCannotSideAttack = val; }
-
+    bool cannotBecomeReversed() const { return mCannotBecomeReversed; }
+    void setCannotBecomeReversed(bool val) { mCannotBecomeReversed = val; }
 
     void addAttrBuff(asn::AttributeType attr, int delta, int duration);
     void addBoolAttrChange(BoolAttributeType type, int duration);

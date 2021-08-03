@@ -25,4 +25,5 @@ message ProtoAbility {
 enum ProtoCardBoolAttribute {
     ProtoCannotFrontAttack = 0;
     ProtoCannotSideAttack = 1;
+    ProtoCannotBecomeReversed = 2;
 }
