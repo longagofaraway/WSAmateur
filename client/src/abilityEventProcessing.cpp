@@ -299,9 +299,17 @@ void Player::setCannotPlay(const EventSetCannotPlay &event) {
         highlightPlayableCards();
 }
 
-void Player::setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event) {
-    mCanPlayEvents = event.can_play_events();
-    mCanPlayBackups = event.can_play_backups();
+void Player::setPlayerAttr(const EventSetPlayerAttr &event) {
+    switch (event.attr()) {
+    case ProtoCannotPlayBackups:
+        mCannotPlayBackups = event.value();
+        break;
+    case ProtoCannotPlayEvents:
+        mCannotPlayEvents = event.value();
+        break;
+    default:
+        break;
+    }
 }
 
 void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event) {

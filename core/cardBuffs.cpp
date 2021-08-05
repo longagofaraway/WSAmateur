@@ -7,6 +7,8 @@
 #include "abilityUtils.h"
 
 void ServerPlayer::endOfTurnEffectValidation() {
+    mBuffManager.validateAttrChanges();
+
     auto stage = zone("stage");
     for (int i = 0; i < 5; ++i) {
         auto card = stage->card(i);

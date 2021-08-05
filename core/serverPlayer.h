@@ -59,8 +59,8 @@ class ServerPlayer
     AttackType mAttackType;
     int mLevel = 0;
 
-    bool mCanPlayEvents = true;
-    bool mCanPlayBackups = true;
+    bool mCannotPlayEvents = false;
+    bool mCannotPlayBackups = false;
     bool mCharAutoCannotDealDamage = false;
     PlayerBuffManager mBuffManager;
 
@@ -88,11 +88,11 @@ public:
     void changeAttribute(PlayerAttrType type, bool value);
     bool attribute(PlayerAttrType type) const;
 
-    bool canPlayEvents() const { return mCanPlayEvents; }
-    bool canPlayBackups() const { return mCanPlayBackups; }
+    bool cannotPlayEvents() const { return mCannotPlayEvents; }
+    bool cannotPlayBackups() const { return mCannotPlayBackups; }
     bool charAutoCannotDealDamage() const { return mCharAutoCannotDealDamage; }
-    void setCanPlayEvents(bool value) { mCanPlayEvents = value; }
-    void setCanPlayBackups(bool value) { mCanPlayBackups = value; }
+    void setCannotPlayEvents(bool value) { mCannotPlayEvents = value; }
+    void setCannotPlayBackups(bool value) { mCannotPlayBackups = value; }
     void setCharAutoCannotDealDamage(bool value) { mCharAutoCannotDealDamage = value; }
 
     void clearExpectedComands();

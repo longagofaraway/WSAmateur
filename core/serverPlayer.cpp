@@ -401,7 +401,7 @@ Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
 }
 
 Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
-    if (!mCanPlayBackups)
+    if (mCannotPlayBackups)
         co_return;
 
     auto hand = zone("hand");
@@ -503,7 +503,7 @@ Resumable ServerPlayer::playClimax(int handIndex) {
 }
 
 Resumable ServerPlayer::playEvent(int handIndex) {
-    if (!mCanPlayEvents)
+    if (mCannotPlayEvents)
         co_return;
 
     auto hand = zone("hand");
@@ -1025,6 +1025,12 @@ void ServerPlayer::changeAttribute(PlayerAttrType type, bool value) {
     case PlayerAttrType::CharAutoCannotDealDamage:
         mCharAutoCannotDealDamage = value;
         break;
+    case PlayerAttrType::CannotPlayBackups:
+        mCannotPlayBackups = value;
+        break;
+    case PlayerAttrType::CannotPlayEvents:
+        mCannotPlayEvents = value;
+        break;
     default:
         assert(false);
     }
@@ -1035,7 +1041,11 @@ void ServerPlayer::changeAttribute(PlayerAttrType type, bool value) {
 bool ServerPlayer::attribute(PlayerAttrType type) const {
     switch (type) {
     case PlayerAttrType::CharAutoCannotDealDamage:
-        return charAutoCannotDealDamage();
+        return mCharAutoCannotDealDamage;
+    case PlayerAttrType::CannotPlayBackups:
+        return mCannotPlayBackups;
+    case PlayerAttrType::CannotPlayEvents:
+        return mCannotPlayEvents;
     }
     assert(false);
     return false;

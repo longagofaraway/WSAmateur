@@ -433,8 +433,8 @@ bool Player::canPlayCounter(const Card &card) const {
     if (!card.isCounter())
         return false;
     if (card.type() == CardType::Event)
-        return mCanPlayEvents;
-    if (!mCanPlayBackups)
+        return !mCannotPlayEvents;
+    if (mCannotPlayBackups)
         return false;
     for (int i = 0; i < card.abilityCount(); ++i) {
         const auto &a = card.ability(i);

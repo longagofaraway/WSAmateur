@@ -29,6 +29,19 @@ void PlayerBuffManager::removeContAttrChange(ServerCard *card, int abilityId, Pl
     }
 }
 
+void PlayerBuffManager::validateAttrChanges() {
+    auto it = mBuffs.begin();
+    while (it != mBuffs.end()) {
+        if (!it->duration || --it->duration)
+            continue;
+        auto type = it->type;
+        it = mBuffs.erase(it);
+        if (!hasAttrChange(type)) {
+            mPlayer->changeAttribute(type, false);
+        }
+    }
+}
+
 bool PlayerBuffManager::hasAttrChange(PlayerAttrType type) const {
     auto sameType = std::find_if(mBuffs.begin(), mBuffs.end(),
                                  [type](const PlayerAttrChange &el) { return el.type == type; });

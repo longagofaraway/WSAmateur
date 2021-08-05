@@ -36,9 +36,9 @@ class EventLook;
 class EventRevealTopDeck;
 class EventLookTopDeck;
 class EventSetCannotPlay;
-class EventSetPlayEventOrBackup;
 class EventSetCardStateTargetChoice;
 class EventSetCardBoolAttr;
+class EventSetPlayerAttr;
 
 class Game;
 class GameEvent;
@@ -64,8 +64,8 @@ private:
     int mLevel = 0;
     int mAttackingPos = 0;
 
-    bool mCanPlayEvents = true;
-    bool mCanPlayBackups = true;
+    bool mCannotPlayEvents = false;
+    bool mCannotPlayBackups = false;
 
 public:
     Player(int id, Game *game, bool opponent);
@@ -182,7 +182,7 @@ private:
     void conditionNotMet();
     void payCostChoice();
     void setCannotPlay(const EventSetCannotPlay &event);
-    void setCannotPlayEventOrBackup(const EventSetPlayEventOrBackup &event);
+    void setPlayerAttr(const EventSetPlayerAttr &event);
     void processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event);
     void processSetCardBoolAttr(const EventSetCardBoolAttr &event);
 

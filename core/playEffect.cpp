@@ -1069,23 +1069,28 @@ void AbilityPlayer::playCannotPlay() {
 }
 
 void AbilityPlayer::setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type) {
+    assert(cont());
+    if (!cont())
+        return;
     bool forbidEvents = !revert() && (type == asn::BackupOrEvent::Event || type == asn::BackupOrEvent::Both);
     bool forbidBackups = !revert() && (type == asn::BackupOrEvent::Backup || type == asn::BackupOrEvent::Both);
-    if (forbidEvents == player->canPlayEvents() || forbidBackups == player->canPlayBackups()) {
-        player->setCanPlayEvents(!forbidEvents);
-        player->setCanPlayBackups(!forbidBackups);
-
-        EventSetPlayEventOrBackup ev;
-        ev.set_can_play_events(!forbidEvents);
-        ev.set_can_play_backups(!forbidBackups);
-        player->sendGameEvent(ev);
+    if (revert()) {
+        if (forbidEvents)
+            player->buffManager()->removeContAttrChange(thisCard().card, abilityId(), PlayerAttrType::CannotPlayEvents);
+        if (forbidBackups)
+            player->buffManager()->removeContAttrChange(thisCard().card, abilityId(), PlayerAttrType::CannotPlayBackups);
+    } else {
+        if (forbidEvents)
+            player->buffManager()->addContAttrChange(thisCard().card, abilityId(), PlayerAttrType::CannotPlayEvents);
+        if (forbidBackups)
+            player->buffManager()->addContAttrChange(thisCard().card, abilityId(), PlayerAttrType::CannotPlayBackups);
     }
 }
 
 void AbilityPlayer::playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e) {
     if (e.player == asn::Player::Player || e.player == asn::Player::Both)
         setCannotPlayBackupOrEvent(mPlayer, e.what);
-    else if (e.player == asn::Player::Opponent || e.player == asn::Player::Both)
+    if (e.player == asn::Player::Opponent || e.player == asn::Player::Both)
         setCannotPlayBackupOrEvent(mPlayer->getOpponent(), e.what);
 }
 

@@ -42,6 +42,7 @@ public:
     void addAttrChange(PlayerAttrType type, int duration);
     void addContAttrChange(ServerCard *card, int abilityId, PlayerAttrType type);
     void removeContAttrChange(ServerCard *card, int abilityId, PlayerAttrType type);
+    void validateAttrChanges();
 
     bool hasAttrChange(PlayerAttrType type) const;
 
