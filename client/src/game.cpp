@@ -38,7 +38,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="0" code="IMC/W43-127"/>
-        <card number="40" code="KGL/S79-035"/>
+        <card number="40" code="KGL/S79-666"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-091"/>
     </main>

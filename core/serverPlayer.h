@@ -15,6 +15,7 @@
 #include "coroutineTask.h"
 #include "commands.h"
 #include "deckList.h"
+#include "playerBuffManager.h"
 #include "serverCardZone.h"
 
 class ServerGame;
@@ -60,6 +61,8 @@ class ServerPlayer
 
     bool mCanPlayEvents = true;
     bool mCanPlayBackups = true;
+    bool mCharAutoCannotDealDamage = false;
+    PlayerBuffManager mBuffManager;
 
     std::vector<TriggeredAbility> mQueue;
 
@@ -80,11 +83,17 @@ public:
     void setAttackType(AttackType type) { mAttackType = type; }
     ServerPlayer* getOpponent();
     int level() const { return mLevel; }
+    PlayerBuffManager* buffManager() { return &mBuffManager; }
+
+    void changeAttribute(PlayerAttrType type, bool value);
+    bool attribute(PlayerAttrType type) const;
 
     bool canPlayEvents() const { return mCanPlayEvents; }
     bool canPlayBackups() const { return mCanPlayBackups; }
+    bool charAutoCannotDealDamage() const { return mCharAutoCannotDealDamage; }
     void setCanPlayEvents(bool value) { mCanPlayEvents = value; }
     void setCanPlayBackups(bool value) { mCanPlayBackups = value; }
+    void setCharAutoCannotDealDamage(bool value) { mCharAutoCannotDealDamage = value; }
 
     void clearExpectedComands();
     void addExpectedCommand(const std::string &command, int maxCount = 0);
@@ -169,6 +178,7 @@ public:
     void setCardState(ServerCard *card, asn::State state);
     void setCardBoolAttr(ServerCard *card, BoolAttributeType type, bool value);
     void sendBoolAttrChange(int cardPos, BoolAttributeType type, bool value);
+    void sendPlayerAttrChange(PlayerAttrType type, bool value);
     void endOfTurnEffectValidation();
 
     void checkOnReversed(ServerCard *card);

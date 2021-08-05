@@ -258,6 +258,19 @@ ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type) {
     return ProtoCannotFrontAttack;
 }
 
+ProtoPlayerAttribute getProtoPlayerAttrType(PlayerAttrType type) {
+    switch (type) {
+    case PlayerAttrType::CannotPlayBackups:
+        return ProtoCannotPlayBackups;
+    case PlayerAttrType::CannotPlayEvents:
+        return ProtoCannotPlayEvents;
+    case PlayerAttrType::CharAutoCannotDealDamage:
+        return ProtoCharAutoCannotDealDamage;
+    }
+    assert(false);
+    return ProtoCharAutoCannotDealDamage;
+}
+
 asn::Player reversePlayer(asn::Player p) {
     switch(p) {
     case asn::Player::Player:

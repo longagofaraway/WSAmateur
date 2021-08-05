@@ -199,6 +199,10 @@ struct CannotBecomeReversed {
     int duration;
 };
 
+struct OpponentAutoCannotDealDamage {
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -274,6 +278,7 @@ struct Effect {
         DrawCard,
         Shuffle,
         CannotBecomeReversed,
+        OpponentAutoCannotDealDamage,
         OtherEffect
     > effect;
 };

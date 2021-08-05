@@ -24,7 +24,7 @@
 #include <QDebug>
 
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
-    : mGame(game), mClient(client), mId(id) { }
+    : mGame(game), mClient(client), mId(id), mBuffManager(this) { }
 
 void ServerPlayer::processGameCommand(GameCommand &cmd) {
     if (!expectsCommand(cmd))
@@ -1019,6 +1019,28 @@ ServerPlayer* ServerPlayer::getOpponent() {
     return mGame->opponentOfPlayer(mId);
 }
 
+void ServerPlayer::changeAttribute(PlayerAttrType type, bool value) {
+    bool oldValue = attribute(type);
+    switch (type) {
+    case PlayerAttrType::CharAutoCannotDealDamage:
+        mCharAutoCannotDealDamage = value;
+        break;
+    default:
+        assert(false);
+    }
+    if (oldValue != value)
+        sendPlayerAttrChange(type, value);
+}
+
+bool ServerPlayer::attribute(PlayerAttrType type) const {
+    switch (type) {
+    case PlayerAttrType::CharAutoCannotDealDamage:
+        return charAutoCannotDealDamage();
+    }
+    assert(false);
+    return false;
+}
+
 Resumable ServerPlayer::takeDamage(int damage) {
     auto resZone = zone("res");
     bool canceled = false;
@@ -1051,6 +1073,13 @@ void ServerPlayer::sendBoolAttrChange(int cardPos, BoolAttributeType type, bool 
     EventSetCardBoolAttr event;
     event.set_card_pos(cardPos);
     event.set_attr(getProtoBoolAttrType(type));
+    event.set_value(value);
+    sendToBoth(event);
+}
+
+void ServerPlayer::sendPlayerAttrChange(PlayerAttrType type, bool value) {
+    EventSetPlayerAttr event;
+    event.set_attr(getProtoPlayerAttrType(type));
     event.set_value(value);
     sendToBoth(event);
 }

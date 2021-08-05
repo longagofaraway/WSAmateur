@@ -114,3 +114,8 @@ message EventSetCardBoolAttr {
     ProtoCardBoolAttribute attr = 2;
     bool value = 3;
 }
+
+message EventSetPlayerAttr {
+    ProtoPlayerAttribute attr = 1;
+    bool value = 2;
+}

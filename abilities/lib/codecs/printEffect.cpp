@@ -639,6 +639,11 @@ std::string printCannotBecomeReversed(const CannotBecomeReversed &e) {
     return s;
 }
 
+std::string printOpponentAutoCannotDealDamage(const OpponentAutoCannotDealDamage &e) {
+    assert(e.duration == 0);
+    return "you cannot take damage from your opponent character's 【AUTO】 effects ";
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -722,6 +727,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CannotBecomeReversed:
         s += printCannotBecomeReversed(std::get<CannotBecomeReversed>(e.effect));
+        break;
+    case EffectType::OpponentAutoCannotDealDamage:
+        s += printOpponentAutoCannotDealDamage(std::get<OpponentAutoCannotDealDamage>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

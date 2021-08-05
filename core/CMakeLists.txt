@@ -10,6 +10,7 @@ set(coreSources
     deckList.cpp
     playAbility.cpp
     playEffect.cpp
+    playerBuffManager.cpp
     server.cpp
     serverCard.cpp
     serverCardZone.cpp
@@ -28,6 +29,7 @@ set(coreSources
     connection.h
     coroutineTask.h
     deckList.h
+    playerBuffManager.h
     server.h
     serverCard.h
     serverCardZone.h

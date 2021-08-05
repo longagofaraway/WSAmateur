@@ -10,6 +10,7 @@
 #include "abilities.h"
 #include "attributeChange.h"
 #include "serverCard.h"
+#include "playerBuffManager.h"
 
 class ProtoAbility;
 
@@ -22,6 +23,7 @@ asn::State protoStateToState(CardState state);
 CardState stateToProtoState(asn::State state);
 asn::Player reversePlayer(asn::Player p);
 ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type);
+ProtoPlayerAttribute getProtoPlayerAttrType(PlayerAttrType type);
 
 bool checkNumber(const asn::Number &numObj, int n);
 bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card);

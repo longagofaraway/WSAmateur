@@ -25,6 +25,7 @@ Effect {
     Replay,
     DrawCard,
     CannotBecomeReversed,
+    OpponentAutoCannotDealDamage,
     OtherEffect,
     Nothing
   }
@@ -281,6 +282,10 @@ Shuffle {
 
 CannotBecomeReversed {
   target Target,
+  duration UInt8
+}
+
+OpponentAutoCannotDealDamage {
   duration UInt8
 }
 

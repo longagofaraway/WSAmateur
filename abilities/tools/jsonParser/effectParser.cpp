@@ -245,7 +245,7 @@ DealDamage parseDealDamage(const QJsonObject &json) {
         throw std::runtime_error("no damageType in DealDamage");
     if (!json.contains("damage") || !json["damage"].isDouble())
         throw std::runtime_error("no damage in DealDamage");
-    if (!json.contains("modifier") || !json["modifier"].isObject())
+    if (json.contains("modifier") && !json["modifier"].isObject())
         throw std::runtime_error("no modifier in DealDamage");
 
     DealDamage e;
@@ -404,6 +404,15 @@ OtherEffect parseOtherEffect(const QJsonObject &json) {
     return e;
 }
 
+OpponentAutoCannotDealDamage parseOpponentAutoCannotDealDamage(const QJsonObject &json) {
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in CannotAttack");
+
+    OpponentAutoCannotDealDamage e;
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
@@ -493,11 +502,13 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::CannotBecomeReversed:
         e.effect = parseCannotBecomeReversed(json["effect"].toObject());
         break;
+    case EffectType::OpponentAutoCannotDealDamage:
+        e.effect = parseOpponentAutoCannotDealDamage(json["effect"].toObject());
+        break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:
     case EffectType::CannotPlay:
     case EffectType::CharAutoCannotDealDamage:
-    case EffectType::OpponentAutoCannotDealDamage:
     case EffectType::StockSwap:
     case EffectType::CannotMove:
     case EffectType::SideAttackWithoutPenalty:

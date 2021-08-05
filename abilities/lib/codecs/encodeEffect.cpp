@@ -142,6 +142,10 @@ void encodeCannotBecomeReversed(const CannotBecomeReversed &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.duration));
 }
 
+void encodeOpponentAutoCannotDealDamage(const OpponentAutoCannotDealDamage &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.duration));
+}
+
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
     encodeString(e.cardCode, buf);
     buf.push_back(zzenc_8(e.effectId));
@@ -226,6 +230,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::CannotBecomeReversed:
         encodeCannotBecomeReversed(std::get<CannotBecomeReversed>(e.effect), buf);
+        break;
+    case EffectType::OpponentAutoCannotDealDamage:
+        encodeOpponentAutoCannotDealDamage(std::get<OpponentAutoCannotDealDamage>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

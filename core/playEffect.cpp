@@ -82,8 +82,6 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::CannotBecomeReversed:
         playCannotBecomeReversed(std::get<asn::CannotBecomeReversed>(e.effect));
         break;
-    case asn::EffectType::OpponentAutoCannotDealDamage:
-        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -131,6 +129,7 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
         playCannotBecomeReversed(std::get<asn::CannotBecomeReversed>(e.effect));
         break;
     case asn::EffectType::OpponentAutoCannotDealDamage:
+        playOpponentAutoCannotDealDamage(std::get<asn::OpponentAutoCannotDealDamage>(e.effect));
         break;
     default:
         break;
@@ -1091,6 +1090,9 @@ void AbilityPlayer::playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent
 }
 
 Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
+    if (mPlayer->charAutoCannotDealDamage())
+        co_return;
+
     int damage;
     if (e.damageType == asn::ValueType::Multiplier)
         damage = getForEachMultiplierValue(*e.modifier) * e.damage;
@@ -1166,6 +1168,19 @@ void AbilityPlayer::playCannotBecomeReversed(const asn::CannotBecomeReversed &e)
         } else {
             player->addBoolAttrChange(target, attr, e.duration);
         }
+    }
+}
+
+void AbilityPlayer::playOpponentAutoCannotDealDamage(const asn::OpponentAutoCannotDealDamage &e) {
+    auto attr = PlayerAttrType::CharAutoCannotDealDamage;
+    auto buffManager = mPlayer->getOpponent()->buffManager();
+    if (cont()) {
+        if (revert())
+            buffManager->removeContAttrChange(thisCard().card, abilityId(), attr);
+        else
+            buffManager->addContAttrChange(thisCard().card, abilityId(), attr);
+    } else {
+        buffManager->addAttrChange(attr, e.duration);
     }
 }
 

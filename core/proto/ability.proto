@@ -27,3 +27,9 @@ enum ProtoCardBoolAttribute {
     ProtoCannotSideAttack = 1;
     ProtoCannotBecomeReversed = 2;
 }
+
+enum ProtoPlayerAttribute {
+    ProtoCannotPlayBackups = 0;
+    ProtoCannotPlayEvents = 1;
+    ProtoCharAutoCannotDealDamage = 2;
+}
