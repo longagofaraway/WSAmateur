@@ -401,15 +401,18 @@ Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
 }
 
 Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
-    if (mCannotPlayBackups)
-        co_return;
-
     auto hand = zone("hand");
     auto card = hand->card(cmd.hand_pos());
     if (!card)
         co_return;
 
-    if (card->type() != CardType::Char)
+    if (card->type() == CardType::Event) {
+        co_await playEvent(cmd.hand_pos());
+        co_await mGame->continueFromDamageStep();
+        co_return;
+    }
+
+    if (mCannotPlayBackups)
         co_return;
 
     clearExpectedComands();

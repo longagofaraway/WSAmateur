@@ -317,15 +317,15 @@ ListView {
                         }
                         dragActive = false;
                         if (model.selected) {
-                            if (cardImgDelegate.cardType === "Climax")
+                            if (cardImgDelegate.cardType === "Climax") {
                                 startPlayingClimax(cardImgDelegate, model.code, model.index);
-                            else if (cardImgDelegate.cardType === "Event") {
-                                handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
-                                gGame.player.cardPlayed(model.index, 0);
-                                return;
                             } else if (gGame.isCounterStep()) {
                                 handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
                                 gGame.player.sendPlayCounter(model.index);
+                                return;
+                            } else if (cardImgDelegate.cardType === "Event") {
+                                handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
+                                gGame.player.cardPlayed(model.index, 0);
                                 return;
                             }
                         }
