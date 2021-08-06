@@ -33,21 +33,26 @@ inline bool operator==(const ContAttributeChange &lhs, const ContAttributeChange
         lhs.attr == rhs.attr;
 }
 
-class AbilityAsContBuff {
+class AbilityBuff {
 public:
     // card, that gives this buff
-    ServerCard *source;
+    ServerCard *source = nullptr;
     // ability of source that gives the buff
-    int sourceAbilityId;
+    int sourceAbilityId = 0;
     // ability given by source
-    int abilityId;
-    bool positional;
+    int abilityId = 0;
+    bool positional = false;
+    int duration = 0;
 
-    AbilityAsContBuff(ServerCard *card, int abilityId, bool positional)
-        : source(card), sourceAbilityId(abilityId), positional(positional) {}
+    // constructor for effects with duration
+    AbilityBuff(int abilityId, int duration)
+        : abilityId(abilityId), duration(duration) {}
+    // constructor for cont effect
+    AbilityBuff(ServerCard *card, int sourceAbilityId, bool positional)
+        : source(card), sourceAbilityId(sourceAbilityId), positional(positional) {}
 };
 
-inline bool operator==(const AbilityAsContBuff &lhs, const AbilityAsContBuff &rhs) {
+inline bool operator==(const AbilityBuff &lhs, const AbilityBuff &rhs) {
     return lhs.source == rhs.source && lhs.sourceAbilityId == rhs.sourceAbilityId;
 }
 

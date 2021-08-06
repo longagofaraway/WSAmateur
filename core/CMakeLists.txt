@@ -4,6 +4,7 @@ set(coreSources
     abilityPlayer.cpp
     abilityUtils.cpp
     cardBuffs.cpp
+    cardBuffManager.cpp
     cardDatabase.cpp
     cardInfo.cpp
     condition.cpp
@@ -22,6 +23,7 @@ set(coreSources
     abilityPlayer.h
     abilityUtils.h
     attributeChange.h
+    cardBuffManager.h
     cardDatabase.h
     cardInfo.h
     cardImprint.h

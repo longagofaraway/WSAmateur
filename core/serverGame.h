@@ -61,8 +61,6 @@ public:
 
     void resolveAllContAbilities();
     void removePositionalContBuffsBySource(ServerCard *source);
-    void deactivateContAbilities(ServerCard *source);
-
 
 private:
     void setTask(Resumable&& task) { mTask.emplace(std::move(task)); }

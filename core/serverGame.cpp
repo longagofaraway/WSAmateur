@@ -233,13 +233,3 @@ void ServerGame::removePositionalContBuffsBySource(ServerCard *source) {
     aplayer->removePositionalContBuffsBySource(source);
     opponent->removePositionalContBuffsBySource(source);
 }
-
-void ServerGame::deactivateContAbilities(ServerCard *source) {
-    ServerPlayer *aplayer = activePlayer();
-    ServerPlayer *opponent = activePlayer(false);
-    if (!aplayer || !opponent)
-        return;
-
-    aplayer->deactivateContAbilities(source);
-    opponent->deactivateContAbilities(source);
-}

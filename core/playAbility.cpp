@@ -63,22 +63,6 @@ void ServerPlayer::playContAbilities(ServerCard *card, bool revert) {
     }
 }
 
-void ServerPlayer::deactivateContAbilities(ServerCard *source) {
-    std::array<std::string_view, 2> zones{ "stage", "hand" };
-    for (auto zoneName: zones) {
-        auto pzone = zone(zoneName);
-        for (int i = 0; i < pzone->count(); ++i) {
-            auto card = pzone->card(i);
-            if (!card)
-                continue;
-
-            auto oldAttrs = card->attributes();
-            card->removeContBuffsBySource(source);
-            sendChangedAttrs(card, oldAttrs);
-        }
-    }
-}
-
 Resumable ServerPlayer::playEventEffects(ServerCard *card) {
     auto expectedCopy = mExpectedCommands;
     clearExpectedComands();

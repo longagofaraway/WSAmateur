@@ -7,6 +7,7 @@
 
 #include "abilities/basicTypes.h"
 #include "attributeChange.h"
+#include "cardBuffManager.h"
 #include "cardInfo.h"
 
 class ServerCardZone;
@@ -32,10 +33,9 @@ enum StageRow {
 
 struct AbilityState {
     asn::Ability ability;
-    int id = 0; //for communicating with client
+    int id = 0;
     bool permanent = true;
     bool active = false; // for cont
-    int duration = 0;
     int activationTimes = 0;
     AbilityState(const asn::Ability &ab, int id_) : ability(ab), id(id_) {}
 };
@@ -47,11 +47,6 @@ class ServerCard : public CardBase
     ServerCardZone *mZone;
     std::string mCode;
     std::vector<AbilityState> mAbilities;
-
-    std::vector<AttributeChange> mBuffs;
-    std::vector<ContAttributeChange> mContBuffs;
-    std::vector<BoolAttributeChange> mBoolAttrChanges;
-    std::vector<AbilityAsContBuff> mAbilitiesAsContBuffs;
 
     StageRow mRow;
     int mPosition;
@@ -69,6 +64,8 @@ class ServerCard : public CardBase
     bool mCannotFrontAttack = false;
     bool mCannotSideAttack = false;
     bool mCannotBecomeReversed = false;
+
+    CardBuffManager mBuffManager;
 
 public:
     ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone, int uniqueId);
@@ -112,26 +109,10 @@ public:
     bool cannotBecomeReversed() const { return mCannotBecomeReversed; }
     void setCannotBecomeReversed(bool val) { mCannotBecomeReversed = val; }
 
-    void addAttrBuff(asn::AttributeType attr, int delta, int duration);
-    void addBoolAttrChange(BoolAttributeType type, int duration);
-    bool addContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr, int delta, bool positional = false);
-    bool addContBoolAttrChange(ServerCard *card, int abilityId, BoolAttributeType type, bool positional);
-    AbilityAsContBuff& addAbilityAsContBuff(ServerCard *card, int abilityId, bool positional, bool &abilityCreated);
-    int removeAbilityAsContBuff(ServerCard *card, int abilityId, bool &abilityRemoved);
-    int removeAbilityAsPositionalContBuff(bool &abilityRemoved);
-    int removeAbilityAsPositionalContBuffBySource(ServerCard *card, bool &abilityRemoved);
-    void removeContAttrBuff(ServerCard *card, int abilityId, asn::AttributeType attr);
-    void removeContBoolAttrChange(ServerCard *card, int abilityId, BoolAttributeType type);
-    void removePositionalContAttrBuffs();
-    std::vector<BoolAttributeType> removePositionalContBoolAttrChanges();
-    void removeContBuffsBySource(ServerCard *card);
-    void removePositionalContAttrBuffsBySource(ServerCard *card);
-    std::vector<BoolAttributeType> removePositionalContBoolAttrChangeBySource(ServerCard *card);
-    void validateAttrBuffs();
-    std::vector<BoolAttributeType> validateBoolAttrChanges();
-    bool hasBoolAttrChange(BoolAttributeType type) const;
+    CardBuffManager* buffManager() { return &mBuffManager; }
+
     std::vector<AbilityState>& abilities() { return mAbilities; }
-    int addAbility(const asn::Ability &a, int duration);
+    int addAbility(const asn::Ability &a);
     void removeAbility(int id);
     void changeAttr(asn::AttributeType type, int delta);
     void changeBoolAttribute(BoolAttributeType type, bool value);

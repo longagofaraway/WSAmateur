@@ -539,12 +539,12 @@ void ServerPlayer::switchPositions(int from, int to) {
     std::tuple<int, int, int> oldAttrs2;
     if (card1) {
         oldAttrs1 = card1->attributes();
-        removePositionalContBuffsFromCard(card1);
+        card1->buffManager()->removePositionalContBuffs();
         mGame->removePositionalContBuffsBySource(card1);
     }
     if (card2) {
         oldAttrs2 = card2->attributes();
-        removePositionalContBuffsFromCard(card2);
+        card2->buffManager()->removePositionalContBuffs();
         mGame->removePositionalContBuffsBySource(card2);
     }
 
@@ -556,9 +556,9 @@ void ServerPlayer::switchPositions(int from, int to) {
 
     mGame->resolveAllContAbilities();
     if (card1)
-        sendChangedAttrs(card1, oldAttrs1);
+        card1->buffManager()->sendChangedAttrs(oldAttrs1);
     if (card2)
-        sendChangedAttrs(card2, oldAttrs2);
+        card2->buffManager()->sendChangedAttrs(oldAttrs2);
 }
 
 bool ServerPlayer::canPlay(ServerCard *card) {
@@ -655,9 +655,9 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     sendToBoth(event);
 
     if (type == AttackType::DirectAttack)
-        addAttributeBuff(attCard, asn::AttributeType::Soul, 1);
+        attCard->buffManager()->addAttributeBuff(asn::AttributeType::Soul, 1);
     else if (type == AttackType::SideAttack)
-        addAttributeBuff(attCard, asn::AttributeType::Soul, -battleOpp->level());
+        attCard->buffManager()->addAttributeBuff(asn::AttributeType::Soul, -battleOpp->level());
 
     if (type == AttackType::FrontAttack) {
         attCard->setInBattle(true);
@@ -699,7 +699,7 @@ Resumable ServerPlayer::performTriggerStep(int pos) {
     checkOnTriggerReveal(card);
     for (auto trigger: card->triggers()) {
         if (trigger == TriggerIcon::Soul)
-            addAttributeBuff(attackingCard(), asn::AttributeType::Soul, 1);
+            attackingCard()->buffManager()->addAttributeBuff(asn::AttributeType::Soul, 1);
         else
             co_await resolveTrigger(card, trigger);
     }
@@ -955,47 +955,6 @@ void ServerPlayer::reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone dest
     }
 }
 
-int ServerPlayer::addAbilityToCard(ServerCard *card, const asn::Ability &a, int duration) {
-    int newId = card->addAbility(a, duration);
-    EventAbilityGain ev;
-    ev.set_zone(card->zone()->name());
-    ev.set_card_pos(card->pos());
-    ev.set_ability_id(newId);
-
-    std::vector<uint8_t> abilityBuf = encodeAbility(a);
-    ev.set_ability(abilityBuf.data(), abilityBuf.size());
-    sendToBoth(ev);
-
-    if (a.type == asn::AbilityType::Cont)
-        playContAbilities(card);
-
-    return newId;
-}
-
-void ServerPlayer::removeAbilityFromCard(ServerCard *card, int abilityId) {
-    for (const auto &it: card->abilities()) {
-        if (it.id != abilityId)
-            continue;
-
-        if (it.active && it.ability.type == asn::AbilityType::Cont) {
-            AbilityPlayer a(this);
-            a.setThisCard(CardImprint(card->zone()->name(), card));
-            a.setAbilityId(it.id);
-            a.revertContAbility(std::get<asn::ContAbility>(it.ability.ability));
-        }
-
-        card->removeAbility(abilityId);
-
-        EventRemoveAbility event;
-        event.set_card_pos(card->pos());
-        event.set_zone(card->zone()->name());
-        event.set_ability_id(it.id);
-        sendToBoth(event);
-
-        break;
-    }
-}
-
 void ServerPlayer::setCardState(ServerCard *card, asn::State state) {
     if (card->state() == state)
         return;
@@ -1072,19 +1031,6 @@ Resumable ServerPlayer::takeDamage(int damage) {
 
     if (zone("clock")->count() >= 7)
         co_await levelUp();
-}
-
-void ServerPlayer::setCardBoolAttr(ServerCard *card, BoolAttributeType type, bool value) {
-    card->changeBoolAttribute(type, value);
-    sendBoolAttrChange(card->pos(), type, value);
-}
-
-void ServerPlayer::sendBoolAttrChange(int cardPos, BoolAttributeType type, bool value) {
-    EventSetCardBoolAttr event;
-    event.set_card_pos(cardPos);
-    event.set_attr(getProtoBoolAttrType(type));
-    event.set_value(value);
-    sendToBoth(event);
 }
 
 void ServerPlayer::sendPlayerAttrChange(PlayerAttrType type, bool value) {

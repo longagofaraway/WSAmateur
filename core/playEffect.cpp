@@ -644,11 +644,11 @@ void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e) {
             value = card->level() * e.value;
         if (cont()) {
             if (revert())
-                mPlayer->removeContAttributeBuff(card, thisCard().card, abilityId(), e.type);
+                card->buffManager()->removeContAttributeBuff(thisCard().card, abilityId(), e.type);
             else
-                mPlayer->addContAttributeBuff(card, thisCard().card, abilityId(), e.type, value, positional);
+                card->buffManager()->addContAttributeBuff(thisCard().card, abilityId(), e.type, value, positional);
         } else {
-            mPlayer->addAttributeBuff(card, e.type, value, e.duration);
+            card->buffManager()->addAttributeBuff(e.type, value, e.duration);
         }
     }
 }
@@ -743,6 +743,7 @@ void AbilityPlayer::playShuffle(const asn::Shuffle &e) {
 Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
     auto targets = getTargets(e.target);
     if (static_cast<size_t>(e.number) < e.abilities.size()) {
+        assert(e.number == 1);
         std::vector<uint8_t> buf;
         encodeAbilityGain(e, buf);
 
@@ -768,14 +769,14 @@ Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
         mPlayer->clearExpectedComands();
 
         for (auto card: targets)
-            card->player()->addAbilityToCard(card, e.abilities[chosenAbilityId], e.duration);
+            card->buffManager()->addAbilityBuff(e.abilities[chosenAbilityId], e.duration);
 
         co_return;
     }
 
     for (const auto &a: e.abilities)
         for (auto card: targets)
-            card->player()->addAbilityToCard(card, a, e.duration);
+            card->buffManager()->addAbilityBuff(a, e.duration);
 }
 
 void AbilityPlayer::playTemporaryAbilityGain(const asn::AbilityGain &e) {
@@ -798,9 +799,9 @@ void AbilityPlayer::playTemporaryAbilityGain(const asn::AbilityGain &e) {
 
     for (auto card: targets) {
         if (!revert())
-            mPlayer->addAbilityAsContBuff(card, thisCard().card, abilityId(), e.abilities[0], positional);
+            card->buffManager()->addAbilityAsContBuff(thisCard().card, abilityId(), e.abilities[0], positional);
         else
-            mPlayer->removeAbilityAsContBuff(card, thisCard().card, abilityId());
+            card->buffManager()->removeAbilityAsContBuff(thisCard().card, abilityId());
     }
 }
 
@@ -950,7 +951,7 @@ Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
 void AbilityPlayer::playBackup(const asn::Backup &e) {
     auto opponent = mPlayer->getOpponent();
     auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
-    mPlayer->addAttributeBuff(charInBattle, asn::AttributeType::Power, e.power, 1);
+    charInBattle->buffManager()->addAttributeBuff(asn::AttributeType::Power, e.power, 1);
     mPlayer->checkOnBackup(thisCard().card);
 }
 
@@ -1054,9 +1055,9 @@ void AbilityPlayer::sendLookCard(ServerCard *card) {
 
 void AbilityPlayer::playEarlyPlay() {
     if (revert())
-        mPlayer->removeContAttributeBuff(thisCard().card, thisCard().card, abilityId(), asn::AttributeType::Level);
+        thisCard().card->buffManager()->removeContAttributeBuff(thisCard().card, abilityId(), asn::AttributeType::Level);
     else
-        mPlayer->addContAttributeBuff(thisCard().card, thisCard().card, abilityId(), asn::AttributeType::Level, -1);
+        thisCard().card->buffManager()->addContAttributeBuff(thisCard().card, abilityId(), asn::AttributeType::Level, -1);
 }
 
 void AbilityPlayer::playCannotPlay() {
@@ -1142,14 +1143,13 @@ void AbilityPlayer::playCannotAttack(const asn::CannotAttack &e) {
         auto attr = e.type == asn::AttackType::FronalAttack ? BoolAttributeType::CannotFrontAttack
                                                             : BoolAttributeType::CannotSideAttack;
 
-        auto player = target->player();
         if (cont()) {
             if (revert())
-                player->removeContBoolAttrChange(target, thisCard().card, abilityId(), attr);
+                target->buffManager()->removeContBoolAttrChange(thisCard().card, abilityId(), attr);
             else
-                player->addContBoolAttrChange(target, thisCard().card, abilityId(), attr, positional);
+                target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), attr, positional);
         } else {
-            player->addBoolAttrChange(target, attr, e.duration);
+            target->buffManager()->addBoolAttrChange(attr, e.duration);
         }
     }
 }
@@ -1164,14 +1164,13 @@ void AbilityPlayer::playCannotBecomeReversed(const asn::CannotBecomeReversed &e)
     auto attr = BoolAttributeType::CannotBecomeReversed;
     auto targets = getTargets(e.target);
     for (auto target: targets) {
-        auto player = target->player();
         if (cont()) {
             if (revert())
-                player->removeContBoolAttrChange(target, thisCard().card, abilityId(), attr);
+                target->buffManager()->removeContBoolAttrChange(thisCard().card, abilityId(), attr);
             else
-                player->addContBoolAttrChange(target, thisCard().card, abilityId(), attr, positional);
+                target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), attr, positional);
         } else {
-            player->addBoolAttrChange(target, attr, e.duration);
+            target->buffManager()->addBoolAttrChange(attr, e.duration);
         }
     }
 }
