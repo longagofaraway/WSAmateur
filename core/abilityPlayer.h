@@ -117,6 +117,7 @@ public:
     bool evaluateConditionInBattleWithThis();
     bool evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c);
     bool evaluateConditionDuringTurn(const asn::ConditionDuringTurn &c);
+    bool evaluateConditionCheckOpenedCards(const asn::ConditionCheckOpenedCards &c);
 
     void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);

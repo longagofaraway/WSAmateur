@@ -823,6 +823,7 @@ void AbilityPlayer::playTemporaryAbilityGain(const asn::AbilityGain &e) {
 
 Resumable AbilityPlayer::playPerformEffect(const asn::PerformEffect &e) {
     if (static_cast<size_t>(e.numberOfEffects) < e.effects.size()) {
+        assert(e.numberOfEffects == 1);
         std::vector<uint8_t> buf;
         encodePerformEffect(e, buf);
 

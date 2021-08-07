@@ -21,6 +21,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionSumOfLevels(std::get<asn::ConditionSumOfLevels>(c.cond));
     case asn::ConditionType::DuringTurn:
         return evaluateConditionDuringTurn(std::get<asn::ConditionDuringTurn>(c.cond));
+    case asn::ConditionType::CheckOpenedCards:
+        return evaluateConditionCheckOpenedCards(std::get<asn::ConditionCheckOpenedCards>(c.cond));
     default:
         assert(false);
         return false;
@@ -128,4 +130,15 @@ bool AbilityPlayer::evaluateConditionDuringTurn(const asn::ConditionDuringTurn &
         assert(false);
         return true;
     }
+}
+
+bool AbilityPlayer::evaluateConditionCheckOpenedCards(const asn::ConditionCheckOpenedCards &c) {
+    auto &thoseCards = lastMovedCards();
+    int count = 0;
+    for (int i = 0; i < thoseCards.size(); ++i) {
+        if (checkCard(c.card.cardSpecifiers, *thoseCards[i].card) &&
+            checkNumber(c.number, ++count))
+            return true;
+    }
+    return false;
 }
