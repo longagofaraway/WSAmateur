@@ -204,6 +204,8 @@ std::string printRevealCard(const RevealCard &e) {
             s += "it ";
         else
             s += "them ";
+    } else if (e.type == RevealType::FromHand) {
+        s += printCard(*e.card) + " from your hand ";
     }
 
     return s;

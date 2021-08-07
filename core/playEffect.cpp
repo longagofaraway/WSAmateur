@@ -624,6 +624,19 @@ void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {
     case asn::RevealType::ChosenCards:
         setRevealChosen(true);
         break;
+    case asn::RevealType::FromHand: {
+        auto hand = mPlayer->zone("hand");
+        for (int i = 0; i < hand->count(); ++i) {
+            if (checkCard(e.card->cardSpecifiers, *hand->card(i))) {
+                EventRevealFromHand event;
+                event.set_hand_pos(hand->card(i)->pos());
+                event.set_code(hand->card(i)->code());
+                mPlayer->sendToBoth(event);
+                break;
+            }
+        }
+        break;
+    }
     default:
         assert(false);
         break;

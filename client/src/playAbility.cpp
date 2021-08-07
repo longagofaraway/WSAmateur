@@ -405,6 +405,15 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
             } else {
                 assert(false);
             }
+        } else if (item.type == asn::EffectType::RevealCard) {
+            const auto &e = std::get<asn::RevealCard>(item.effect);
+            assert(e.number.value == 1);
+            auto hand = zone("hand");
+            for (int i = 0; i < hand->model().count(); ++i)
+                if (checkCard(e.card->cardSpecifiers, hand->model().cards()[i]))
+                    return true;
+
+            return false;
         }
         return true;
     }

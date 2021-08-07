@@ -114,3 +114,8 @@ message EventSetPlayerAttr {
     ProtoPlayerAttribute attr = 1;
     bool value = 2;
 }
+
+message EventRevealFromHand {
+    sint32 hand_pos = 1;
+    string code = 2;
+}

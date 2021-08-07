@@ -39,6 +39,7 @@ class EventSetCannotPlay;
 class EventSetCardStateTargetChoice;
 class EventSetCardBoolAttr;
 class EventSetPlayerAttr;
+class EventRevealFromHand;
 
 class Game;
 class GameEvent;
@@ -185,6 +186,7 @@ private:
     void setPlayerAttr(const EventSetPlayerAttr &event);
     void processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event);
     void processSetCardBoolAttr(const EventSetCardBoolAttr &event);
+    void processRevealFromHand(const EventRevealFromHand &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t) const;

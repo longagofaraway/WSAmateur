@@ -50,6 +50,26 @@ Card {
     }
 
     function setupMoveToZone() {
+        if (targetZone === "reveal") {
+            toX = opponent ? root.width * 0.15 : root.width * 0.75;
+            toY = opponent ? root.height * 0.3 : root.height * 0.6;
+            let szone = gGame.getZone(startZone, opponent);
+            let backX = szone.getXForCard(startPos);
+            let backY = szone.getYForCard(startPos);
+            if (opponent) {
+                movingCard.mSource = "cardback";
+                toImg = code;
+                oppRevealAnim.backX = backX;
+                oppRevealAnim.backY = backY;
+                oppRevealAnim.start();
+            } else {
+                playerRevealAnim.backX = backX;
+                playerRevealAnim.backY = backY;
+                playerRevealAnim.start();
+            }
+            return;
+        }
+
         let tzone = gGame.getZone(targetZone, opponent);
         if (targetPos == -1) {
             toX = tzone.getXForNewCard(targetPos);
@@ -181,5 +201,47 @@ Card {
             NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 200 }
         }
         ScriptAction { script: finishMove() }
+    }
+
+    SequentialAnimation {
+        id: playerRevealAnim
+        property real backX
+        property real backY
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
+        }
+        PauseAnimation { duration: 500 }
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: playerRevealAnim.backX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: playerRevealAnim.backY; duration: 300; }
+        }
+        ScriptAction { script: completeAction() }
+    }
+
+    SequentialAnimation {
+        id: oppRevealAnim
+        property real backX
+        property real backY
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 200 }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 200 }
+            SequentialAnimation {
+                NumberAnimation { target: yRot; property: "angle"; from: 0; to: 90; duration: 100; }
+                PropertyAction { target: movingCard; property: "mSource"; value: toImg }
+                NumberAnimation { target: yRot; property: "angle"; from: -90; to: 0; duration: 100; }
+            }
+        }
+        PauseAnimation { duration: 800 }
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: oppRevealAnim.backX; duration: 200 }
+            NumberAnimation { target: movingCard; property: "y"; to: oppRevealAnim.backY; duration: 200 }
+            SequentialAnimation {
+                NumberAnimation { target: yRot; property: "angle"; from: 0; to: 90; duration: 100; }
+                PropertyAction { target: movingCard; property: "mSource"; value: "cardback" }
+                NumberAnimation { target: yRot; property: "angle"; from: -90; to: 0; duration: 100; }
+            }
+        }
+        ScriptAction { script: completeAction() }
     }
 }

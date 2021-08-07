@@ -352,3 +352,13 @@ void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
         assert(false);
     }
 }
+
+void Player::processRevealFromHand(const EventRevealFromHand &event) {
+    int handPos = event.hand_pos();
+    if (mHand->model().count() <= handPos)
+        return;
+
+    auto &card = mHand->cards()[handPos];
+    std::string code = event.code();
+    createMovingCard(card.id(), QString::fromStdString(code), "hand", handPos, "reveal", 0, false, false, true);
+}

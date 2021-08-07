@@ -183,6 +183,15 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
             } else {
                 assert(false);
             }
+        } else if (item.type == asn::EffectType::RevealCard) {
+            const auto &e = std::get<asn::RevealCard>(item.effect);
+            assert(e.number.value == 1);
+            auto hand = mPlayer->zone("hand");
+            for (int i = 0; i < hand->count(); ++i)
+                if (checkCard(e.card->cardSpecifiers, *hand->card(i)))
+                    return true;
+
+            return false;
         } else {
             assert(false);
         }

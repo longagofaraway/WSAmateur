@@ -247,6 +247,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventSetCardBoolAttr ev;
         event->event().UnpackTo(&ev);
         processSetCardBoolAttr(ev);
+    } else if (event->event().Is<EventRevealFromHand>()) {
+        EventRevealFromHand ev;
+        event->event().UnpackTo(&ev);
+        processRevealFromHand(ev);
     }
 }
 
