@@ -96,8 +96,12 @@ enum ValueType {
 
 ChooseCard {
   executor Player,
-  targets Array of Target,
-  excluding Array of Card,
+  targets Array of TargetAndPlace,
+  excluding Array of Card
+}
+
+TargetAndPlace {
+  target Target,
   placeType PlaceType,
   place Choice {
     Place,

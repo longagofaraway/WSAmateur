@@ -14,14 +14,20 @@ AttributeGain decodeAttributeGain(Iterator &it, Iterator end) {
     return e;
 }
 
-ChooseCard decodeChooseCard(Iterator &it, Iterator end) {
-    ChooseCard e;
-    e.executor = decodeEnum<Player>(it, end);
-    e.targets = decodeArray(it, end, decodeTarget);
-    e.excluding = decodeArray(it, end, decodeCard);
+TargetAndPlace decodeTargetAndPlace(Iterator &it, Iterator end) {
+    TargetAndPlace e;
+    e.target = decodeTarget(it, end);
     e.placeType = decodeEnum<PlaceType>(it, end);
     if (e.placeType == PlaceType::SpecificPlace)
         e.place = decodePlace(it, end);
+    return e;
+}
+
+ChooseCard decodeChooseCard(Iterator &it, Iterator end) {
+    ChooseCard e;
+    e.executor = decodeEnum<Player>(it, end);
+    e.targets = decodeArray(it, end, decodeTargetAndPlace);
+    e.excluding = decodeArray(it, end, decodeCard);
     return e;
 }
 

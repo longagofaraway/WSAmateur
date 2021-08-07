@@ -14,13 +14,17 @@ void encodeAttributeGain(const AttributeGain &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.duration));
 }
 
-void encodeChooseCard(const ChooseCard &e, Buf &buf) {
-    buf.push_back(static_cast<uint8_t>(e.executor));
-    encodeArray(e.targets, buf, encodeTarget);
-    encodeArray(e.excluding, buf, encodeCard);
+void encodeTargetAndPlace(const TargetAndPlace &e, Buf &buf) {
+    encodeTarget(e.target, buf);
     buf.push_back(static_cast<uint8_t>(e.placeType));
     if (e.place)
         encodePlace(*e.place, buf);
+}
+
+void encodeChooseCard(const ChooseCard &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.executor));
+    encodeArray(e.targets, buf, encodeTargetAndPlace);
+    encodeArray(e.excluding, buf, encodeCard);
 }
 
 void encodeRevealCard(const RevealCard &e, Buf &buf) {

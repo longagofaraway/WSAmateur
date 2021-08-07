@@ -27,26 +27,26 @@ void Player::processChooseCard(const EventChooseCard &event) {
         (!mOpponent && effect.executor == asn::Player::Opponent))
         return;
     if (effect.targets.size() != 1 ||
-        effect.targets[0].type != asn::TargetType::SpecificCards) {
+        effect.targets[0].target.type != asn::TargetType::SpecificCards) {
         assert(false);
         return;
     }
 
-    const auto &spec = *effect.targets[0].targetSpecification;
+    const auto &spec = *effect.targets[0].target.targetSpecification;
     bool mandatory = event.mandatory();
     if (spec.number.mod == asn::NumModifier::UpTo)
         mandatory = false;
 
     int eligibleCardsNum;
-    bool fromView = effect.placeType == asn::PlaceType::Selection;
+    bool fromView = effect.targets[0].placeType == asn::PlaceType::Selection;
     if (fromView)
         eligibleCardsNum = highlightEligibleCards(zone("view"), spec.cards.cardSpecifiers,
                                                   spec.mode, mAbilityList->ability(mAbilityList->activeId()));
     else
-        eligibleCardsNum = highlightCardsForChoice(effect.targets[0], *effect.place);
+        eligibleCardsNum = highlightCardsForChoice(effect.targets[0].target, *effect.targets[0].place);
     if (eligibleCardsNum)
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
-    processChooseCardInternal(eligibleCardsNum, fromView ? std::nullopt : OptionalPlace(*effect.place),
+    processChooseCardInternal(eligibleCardsNum, fromView ? std::nullopt : OptionalPlace(*effect.targets[0].place),
                               mandatory, effect.executor);
 }
 
@@ -278,8 +278,8 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
             mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
         } else if (std::holds_alternative<asn::ChooseCard>(activeAbility.nextEffect)) {
             const auto &chooseEffect = std::get<asn::ChooseCard>(activeAbility.nextEffect);
-            if (chooseEffect.targets[0].type == asn::TargetType::SpecificCards) {
-                const auto &spec = *chooseEffect.targets[0].targetSpecification;
+            if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
+                const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
                 if (spec.number.mod == asn::NumModifier::UpTo)
                     mAbilityList->activateCancel(mAbilityList->activeId(), true);
             }

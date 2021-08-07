@@ -160,17 +160,17 @@ std::string printChooseCard(const ChooseCard &e) {
     bool plural = false;
     bool article = true;
     const auto &target = e.targets[0];
-    if (target.type == TargetType::SpecificCards) {
-        const auto &spec = *target.targetSpecification;
+    if (target.target.type == TargetType::SpecificCards) {
+        const auto &spec = *target.target.targetSpecification;
         if ((spec.number.value > 1 && spec.number.mod == NumModifier::ExactMatch) ||
-            (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) ||
+            (target.placeType == PlaceType::SpecificPlace && target.place->zone == Zone::Stage) ||
             spec.number.mod == NumModifier::UpTo) {
             s += printNumber(spec.number);
             if (spec.number.mod == NumModifier::UpTo)
                 article = false;
         }
-        if (e.placeType == PlaceType::SpecificPlace && e.place->zone == Zone::Stage) {
-            s += "of " + printPlayer(e.place->owner);
+        if (target.placeType == PlaceType::SpecificPlace && target.place->zone == Zone::Stage) {
+            s += "of " + printPlayer(target.place->owner);
             plural = true;
         }
         if (spec.mode == TargetMode::FrontRow)
@@ -182,9 +182,9 @@ std::string printChooseCard(const ChooseCard &e) {
         s += printCard(spec.cards, plural, article) + " ";
     }
 
-    if (e.placeType == PlaceType::SpecificPlace && e.place->zone != Zone::Stage) {
-        s += "in " + printPlayer(e.place->owner);
-        s += printZone(e.place->zone) + " ";
+    if (target.placeType == PlaceType::SpecificPlace && target.place->zone != Zone::Stage) {
+        s += "in " + printPlayer(target.place->owner);
+        s += printZone(target.place->zone) + " ";
     }
 
     return s;

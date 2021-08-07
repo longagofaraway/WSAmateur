@@ -18,12 +18,16 @@ enum class PlaceType : uint8_t {
     SpecificPlace
 };
 
-struct ChooseCard {
-    Player executor;
-    std::vector<Target> targets;
-    std::vector<Card> excluding;
+struct TargetAndPlace {
+    Target target;
     PlaceType placeType;
     std::optional<Place> place;
+};
+
+struct ChooseCard {
+    Player executor;
+    std::vector<TargetAndPlace> targets;
+    std::vector<Card> excluding;
 };
 
 enum class ValueType : uint8_t {

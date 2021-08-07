@@ -184,8 +184,8 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
             cmd.command().UnpackTo(&chooseCmd);
             // check more cases
             assert(e.targets.size() == 1);
-            if (e.targets[0].type == asn::TargetType::SpecificCards) {
-                auto &spec = e.targets[0].targetSpecification;
+            if (e.targets[0].target.type == asn::TargetType::SpecificCards) {
+                auto &spec = e.targets[0].target.targetSpecification;
                 if ((spec->number.mod == asn::NumModifier::ExactMatch &&
                     spec->number.value != chooseCmd.positions_size()) ||
                     (spec->number.mod == asn::NumModifier::AtLeast &&
@@ -215,7 +215,7 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
                 // here we assume that chosen cards from revealed/being looked at are moved after being chosen
                 // it's probably better to do this at the moment the chosen card is being moved
                 // by checking its unique id in selection
-                if (e.placeType == asn::PlaceType::Selection)
+                if (e.targets[0].placeType == asn::PlaceType::Selection)
                     removeMentionedCard(card->id());
             }
             break;
@@ -1242,7 +1242,7 @@ Resumable AbilityPlayer::playS79_20() {
 
     if (pCard->level() > oCard->level()) {
         asn::ChooseCard c;
-        c.placeType = asn::PlaceType::SpecificPlace;
+        asn::TargetAndPlace tp;
         asn::Target t;
         t.type = asn::TargetType::SpecificCards;
         asn::TargetSpecificCards spec;
@@ -1251,9 +1251,11 @@ Resumable AbilityPlayer::playS79_20() {
         spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::CardType, asn::CardType::Char});
         spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::Trait, asn::Trait{"Shuchiin"}});
         t.targetSpecification = spec;
+        tp.target = t;
+        tp.placeType = asn::PlaceType::SpecificPlace;
+        tp.place = asn::Place{asn::Position::NotSpecified, asn::Zone::WaitingRoom, asn::Player::Player};
+        c.targets.push_back(tp);
         c.executor = asn::Player::Player;
-        c.targets.push_back(t);
-        c.place = asn::Place{asn::Position::NotSpecified, asn::Zone::WaitingRoom, asn::Player::Player};
 
         co_await playChooseCard(c);
 
@@ -1269,6 +1271,7 @@ Resumable AbilityPlayer::playS79_20() {
         co_await playMoveCard(m);
     } else if (pCard->level() < oCard->level()) {
         asn::ChooseCard c;
+        asn::TargetAndPlace tp;
         asn::Target t;
         t.type = asn::TargetType::SpecificCards;
         asn::TargetSpecificCards spec;
@@ -1276,9 +1279,10 @@ Resumable AbilityPlayer::playS79_20() {
         spec.number = asn::Number{asn::NumModifier::ExactMatch, 1, std::nullopt};
         spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::CardType, asn::CardType::Char});
         t.targetSpecification = spec;
-        c.placeType = asn::PlaceType::SpecificPlace;
-        c.targets.push_back(t);
-        c.place = asn::Place{asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Opponent};
+        tp.target = t;
+        tp.placeType = asn::PlaceType::SpecificPlace;
+        tp.place = asn::Place{asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Opponent};
+        c.targets.push_back(tp);
         c.executor = asn::Player::Opponent;
 
         co_await playChooseCard(c);

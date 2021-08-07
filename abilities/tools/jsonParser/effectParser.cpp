@@ -32,6 +32,22 @@ AttributeGain parseAttributeGain(const QJsonObject &json) {
     return e;
 }
 
+TargetAndPlace parseTargetAndPlace(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in TargetAndPlace");
+    if (!json.contains("placeType") || !json["placeType"].isDouble())
+        throw std::runtime_error("no placeType in TargetAndPlace");
+    if (json.contains("place") && !json["place"].isObject())
+        throw std::runtime_error("wrong place in TargetAndPlace");
+
+    TargetAndPlace t;
+    t.target = parseTarget(json["target"].toObject());
+    t.placeType = static_cast<PlaceType>(json["placeType"].toInt());
+    if (t.placeType == PlaceType::SpecificPlace)
+        t.place = parsePlace(json["place"].toObject());
+    return t;
+}
+
 ChooseCard parseChooseCard(const QJsonObject &json) {
     if (json.contains("executor") && !json["executor"].isDouble())
         throw std::runtime_error("wrong executor in ChooseCard");
@@ -39,22 +55,15 @@ ChooseCard parseChooseCard(const QJsonObject &json) {
         throw std::runtime_error("no targets in ChooseCard");
     if (json.contains("excluding") && !json["excluding"].isArray())
         throw std::runtime_error("wrong excluding in ChooseCard");
-    if (!json.contains("placeType") || !json["placeType"].isDouble())
-        throw std::runtime_error("no placeType in ChooseCard");
-    if (json.contains("place") && !json["place"].isObject())
-        throw std::runtime_error("wrong place in ChooseCard");
 
     ChooseCard e;
     if (json.contains("executor"))
         e.executor = static_cast<Player>(json["executor"].toInt());
     else
         e.executor = Player::Player;
-    e.targets = parseArray(json["targets"].toArray(), parseTarget);
+    e.targets = parseArray(json["targets"].toArray(), parseTargetAndPlace);
     if (json.contains("excluding"))
         e.excluding = parseArray(json["excluding"].toArray(), parseCard);
-    e.placeType = static_cast<PlaceType>(json["placeType"].toInt());
-    if (e.placeType == PlaceType::SpecificPlace)
-        e.place = parsePlace(json["place"].toObject());
 
     return e;
 }

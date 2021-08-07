@@ -54,13 +54,13 @@ void Player::processChooseCardInternal(int eligibleCount, OptionalPlace place, b
 
 void Player::sendChooseCard(const asn::ChooseCard &e) {
     CardZone *from;
-    if (e.placeType == asn::PlaceType::Selection) {
+    if (e.targets[0].placeType == asn::PlaceType::Selection) {
         from = zone("view");
     } else {
-        if (e.place->owner == asn::Player::Player)
-            from = zone(asnZoneToString(e.place->zone));
-        else if (e.place->owner == asn::Player::Opponent)
-            from = mGame->opponent()->zone(asnZoneToString(e.place->zone));
+        if (e.targets[0].place->owner == asn::Player::Player)
+            from = zone(asnZoneToString(e.targets[0].place->zone));
+        else if (e.targets[0].place->owner == asn::Player::Opponent)
+            from = mGame->opponent()->zone(asnZoneToString(e.targets[0].place->zone));
     }
 
     CommandChooseCard cmd;
@@ -68,7 +68,7 @@ void Player::sendChooseCard(const asn::ChooseCard &e) {
     if (zoneName == "deckView" || zoneName == "view")
         zoneName = "deck";
     cmd.set_zone(zoneName);
-    cmd.set_owner(e.place->owner == asn::Player::Player ? ProtoPlayer : ProtoOpponent);
+    cmd.set_owner(e.targets[0].place->owner == asn::Player::Player ? ProtoPlayer : ProtoOpponent);
     const auto &cards = from->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
@@ -194,7 +194,8 @@ void Player::doneChoosing() {
     auto &effect = a.effect;
     if (std::holds_alternative<asn::ChooseCard>(effect)) {
         auto &ef = std::get<asn::ChooseCard>(effect);
-        dehighlightCards(ef.placeType, ef.place ? OptionalPlace(*ef.place) : std::nullopt);
+        auto target = ef.targets[0];
+        dehighlightCards(target.placeType, target.place ? OptionalPlace(*target.place) : std::nullopt);
     } else if (std::holds_alternative<asn::MoveCard>(effect)) {
         auto &ef = std::get<asn::MoveCard>(effect);
         dehighlightCards(asn::PlaceType::SpecificPlace, ef.from);
@@ -205,7 +206,7 @@ void Player::doneChoosing() {
         zone("deck")->visualItem()->setProperty("mGlow", false);
         if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
             auto &ef = std::get<asn::ChooseCard>(a.nextEffect);
-            dehighlightCards(ef.placeType, ef.place ? OptionalPlace(*ef.place) : std::nullopt);
+            dehighlightCards(ef.targets[0].placeType, ef.targets[0].place ? OptionalPlace(*ef.targets[0].place) : std::nullopt);
         }
     } else if (std::holds_alternative<asn::ChangeState>(effect)) {
         asn::Place place{ asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Both };
@@ -273,10 +274,10 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
                     std::get<asn::ChooseCard>(effect) :
                     std::get<asn::ChooseCard>(a->nextEffect);
         assert(ef.targets.size() == 1);
-        if (ef.targets[0].type != asn::TargetType::SpecificCards)
+        if (ef.targets[0].target.type != asn::TargetType::SpecificCards)
             return;
 
-        number = ef.targets[0].targetSpecification->number;
+        number = ef.targets[0].target.targetSpecification->number;
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         auto &ef = std::get<asn::SearchCard>(effect);
         assert(ef.targets.size() == 1);
@@ -485,9 +486,9 @@ void Player::cardInserted(QString targetZone) {
         if (std::holds_alternative<asn::Look>(a.effect)) {
             if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
                 const auto &chooseEffect = std::get<asn::ChooseCard>(a.nextEffect);
-                if (chooseEffect.targets[0].type == asn::TargetType::SpecificCards) {
-                    const auto &spec = *chooseEffect.targets[0].targetSpecification;
-                    if (chooseEffect.placeType == asn::PlaceType::Selection) {
+                if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
+                    if (chooseEffect.targets[0].placeType == asn::PlaceType::Selection) {
                         auto from = zone("view");
                         highlightEligibleCards(from, spec.cards.cardSpecifiers, spec.mode, a);
                     }
