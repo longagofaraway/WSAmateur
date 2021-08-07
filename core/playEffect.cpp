@@ -82,6 +82,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::CannotBecomeReversed:
         playCannotBecomeReversed(std::get<asn::CannotBecomeReversed>(e.effect));
         break;
+    case asn::EffectType::StockSwap:
+        playStockSwap();
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -1186,6 +1189,17 @@ void AbilityPlayer::playOpponentAutoCannotDealDamage(const asn::OpponentAutoCann
     } else {
         buffManager->addAttrChange(attr, e.duration);
     }
+}
+
+void AbilityPlayer::playStockSwap() {
+    auto opponent = mPlayer->getOpponent();
+    auto stock = opponent->zone("stock");
+    int stockCount = stock->count();
+    while (stock->count())
+        opponent->moveCard("stock", stock->count() - 1, "wr");
+
+    for (int i = 0; i < stockCount; ++i)
+        opponent->moveTopDeck("stock");
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

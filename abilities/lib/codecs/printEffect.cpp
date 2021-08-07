@@ -644,6 +644,11 @@ std::string printOpponentAutoCannotDealDamage(const OpponentAutoCannotDealDamage
     return "you cannot take damage from your opponent character's 【AUTO】 effects ";
 }
 
+std::string printStockSwap() {
+    return "put all of your opponent's stock into your opponent's waiting room, and"
+           " your opponent puts the same number of cards from the top of their deck into the stock ";
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -730,6 +735,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::OpponentAutoCannotDealDamage:
         s += printOpponentAutoCannotDealDamage(std::get<OpponentAutoCannotDealDamage>(e.effect));
+        break;
+    case EffectType::StockSwap:
+        s += printStockSwap();
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));
