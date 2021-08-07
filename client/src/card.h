@@ -37,6 +37,7 @@ class Card : public CardBase {
     bool mCannotFrontAttack = false;
     bool mCannotSideAttack = false;
     bool mCannotBecomeReversed = false;
+    bool mCannotMove = false;
 
 public:
     Card(CardZone *zone) : mZone(zone) {}
@@ -84,6 +85,8 @@ public:
     void setCannotSideAttack(bool p) { mCannotSideAttack = p; }
     bool cannotBecomeReversed() const { return mCannotBecomeReversed; }
     void setCannotBecomeReversed(bool p) { mCannotBecomeReversed = p; }
+    bool cannotMove() const { return mCannotMove; }
+    void setCannotMove(bool p) { mCannotMove = p; }
 
     QString text(int abilityId) const { return mAbilityModel->text(abilityId); }
     AbilityModel* textModel() { return mAbilityModel.get(); }

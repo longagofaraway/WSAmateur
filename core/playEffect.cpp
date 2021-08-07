@@ -134,6 +134,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::OpponentAutoCannotDealDamage:
         playOpponentAutoCannotDealDamage(std::get<asn::OpponentAutoCannotDealDamage>(e.effect));
         break;
+    case asn::EffectType::CannotMove:
+        playCannotMove(std::get<asn::CannotMove>(e.effect));
+        break;
     default:
         break;
     }
@@ -1214,6 +1217,22 @@ void AbilityPlayer::playStockSwap() {
 
     for (int i = 0; i < stockCount; ++i)
         opponent->moveTopDeck("stock");
+}
+
+void AbilityPlayer::playCannotMove(const asn::CannotMove &e) {
+    bool positional = isPositional(e.target);
+
+    auto targets = getTargets(e.target);
+    for (auto &target: targets) {
+        if (cont()) {
+            if (revert())
+                target->buffManager()->removeContBoolAttrChange(thisCard().card, abilityId(), BoolAttributeType::CannotMove);
+            else
+                target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), BoolAttributeType::CannotMove, positional);
+        } else {
+            target->buffManager()->addBoolAttrChange(BoolAttributeType::CannotMove, e.duration);
+        }
+    }
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

@@ -191,6 +191,13 @@ OpponentAutoCannotDealDamage decodeOpponentAutoCannotDealDamage(Iterator &it, It
     return e;
 }
 
+CannotMove decodeCannotMove(Iterator &it, Iterator end) {
+    CannotMove e;
+    e.target = decodeTarget(it, end);
+    e.duration = decodeUInt8(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -281,6 +288,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::OpponentAutoCannotDealDamage:
         e.effect = decodeOpponentAutoCannotDealDamage(it, end);
+        break;
+    case EffectType::CannotMove:
+        e.effect = decodeCannotMove(it, end);
         break;
     case EffectType::OtherEffect:
         e.effect = decodeOtherEffect(it, end);

@@ -107,6 +107,7 @@ public:
     void playCannotBecomeReversed(const asn::CannotBecomeReversed &e);
     void playOpponentAutoCannotDealDamage(const asn::OpponentAutoCannotDealDamage &e);
     void playStockSwap();
+    void playCannotMove(const asn::CannotMove &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

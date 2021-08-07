@@ -651,6 +651,16 @@ std::string printStockSwap() {
            " your opponent puts the same number of cards from the top of their deck into the stock ";
 }
 
+std::string printCannotMove(const CannotMove &e) {
+    std::string s;
+
+    s += printDuration(e.duration);
+    s += printTarget(e.target);
+    s += "cannot move to another position on the stage ";
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -740,6 +750,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::StockSwap:
         s += printStockSwap();
+        break;
+    case EffectType::CannotMove:
+        s += printCannotMove(std::get<CannotMove>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

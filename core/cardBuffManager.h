@@ -36,21 +36,24 @@ public:
     void removeAbilityAsContBuff(ServerCard *source, int sourceAbilityId);
 
     void removePositionalContBuffs();
-    void removePositionalContAttrBuffs();
-    void removePositionalContBoolAttrChanges();
-    void removeAbilityAsPositionalContBuff();
 
     void removePositionalContBuffsBySource(ServerCard *source);
-    void removePositionalContAttrBuffsBySource(ServerCard *source);
-    void removeAbilityAsPositionalContBuffBySource(ServerCard *source);
-    void removePositionalContBoolAttrChangeBySource(ServerCard *source);
 
     void endOfTurnEffectValidation();
-    void validateAttrBuffs();
-    void validateAbilities();
-    void validateBoolAttrChanges();
 
 private:
     int addAbility(const asn::Ability &a);
     bool hasBoolAttrChange(BoolAttributeType type) const;
+
+    void removePositionalContAttrBuffs();
+    void removePositionalContBoolAttrChanges();
+    void removeAbilityAsPositionalContBuff();
+
+    void removePositionalContAttrBuffsBySource(ServerCard *source);
+    void removeAbilityAsPositionalContBuffBySource(ServerCard *source);
+    void removePositionalContBoolAttrChangeBySource(ServerCard *source);
+
+    void validateAttrBuffs();
+    void validateAbilities();
+    void validateBoolAttrChanges();
 };

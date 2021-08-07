@@ -336,7 +336,7 @@ void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice
 }
 
 void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
-    if (mStage->model().count() >= event.card_pos())
+    if (mStage->model().count() <= event.card_pos())
         return;
     switch (event.attr()) {
     case ProtoCannotFrontAttack:
@@ -347,6 +347,9 @@ void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
         break;
     case ProtoCannotBecomeReversed:
         mStage->cards()[event.card_pos()].setCannotBecomeReversed(event.value());
+        break;
+    case ProtoCannotMove:
+        mStage->model().setCannotMove(event.card_pos(), event.value());
         break;
     default:
         assert(false);

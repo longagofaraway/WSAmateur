@@ -78,6 +78,8 @@ ListView {
                         return;
                     if (drag.source.index === mIndex)
                         return;
+                    if (model.cannotMove)
+                        return;
 
                     root.stageDropTarget = stagePlace;
                     if (mStageCard !== null)
@@ -107,7 +109,7 @@ ListView {
                 hoverEnabled: true
                 rotation: (model.state === "Rested") ? 90 : 0
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
-                drag.target: (stage.opponent || !stage.mDragEnabled) ? undefined : mStageCard
+                drag.target: (stage.opponent || !stage.mDragEnabled || model.cannotMove) ? undefined : mStageCard;
                 drag.onActiveChanged: {
                     if (active)
                         destroyCardInfo();

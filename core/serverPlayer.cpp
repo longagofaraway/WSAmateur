@@ -538,6 +538,11 @@ void ServerPlayer::switchPositions(int from, int to) {
     ServerCardZone *stage = zone("stage");
     auto card1 = stage->card(from);
     auto card2 = stage->card(to);
+
+    if ((card1 && card1->cannotMove()) ||
+        (card2 && card2->cannotMove()))
+        return;
+
     std::tuple<int, int, int> oldAttrs1;
     std::tuple<int, int, int> oldAttrs2;
     if (card1) {
@@ -972,6 +977,9 @@ void ServerPlayer::setCardState(ServerCard *card, asn::State state) {
 ServerCard *ServerPlayer::oppositeCard(ServerCard *card) const {
     auto opponent = mGame->opponentOfPlayer(mId);
     if (!opponent)
+        return nullptr;
+
+    if (card->pos() > 2)
         return nullptr;
 
     return opponent->zone("stage")->card(card->pos());

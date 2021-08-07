@@ -74,6 +74,8 @@ std::string printTarget(const Target &t, bool plural) {
             article = false;
         }
         s += printCard(spec.cards, plural, article, spec.mode) + " ";
+    } else if (t.type == TargetType::OppositeThis) {
+        s += "the character facing this card ";
     }
 
     return s;

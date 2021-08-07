@@ -26,6 +26,7 @@ Effect {
     DrawCard,
     CannotBecomeReversed,
     OpponentAutoCannotDealDamage,
+    CannotMove,
     OtherEffect,
     Nothing
   }
@@ -290,6 +291,11 @@ CannotBecomeReversed {
 }
 
 OpponentAutoCannotDealDamage {
+  duration UInt8
+}
+
+CannotMove {
+  target Target,
   duration UInt8
 }
 

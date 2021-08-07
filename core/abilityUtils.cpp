@@ -253,6 +253,8 @@ ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type) {
         return ProtoCannotSideAttack;
     case BoolAttributeType::CannotBecomeReversed:
         return ProtoCannotBecomeReversed;
+    case BoolAttributeType::CannotMove:
+        return ProtoCannotMove;
     }
     assert(false);
     return ProtoCannotFrontAttack;

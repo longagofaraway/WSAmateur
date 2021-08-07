@@ -160,6 +160,7 @@ ListView {
                 property var enlargeAnim: mEnlargeAnim
                 property var shrinkAnim: mShrinkAnim
                 property string cardType: opponent ? "" : model.type
+                property bool cannotMove: model.cannotMove
 
                 Component.onDestruction: destroyTextFrame(cardImgDelegate)
                 anchors.centerIn: cardDelegate

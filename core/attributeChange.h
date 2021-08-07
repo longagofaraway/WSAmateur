@@ -59,7 +59,8 @@ inline bool operator==(const AbilityBuff &lhs, const AbilityBuff &rhs) {
 enum class BoolAttributeType {
     CannotFrontAttack,
     CannotSideAttack,
-    CannotBecomeReversed
+    CannotBecomeReversed,
+    CannotMove
 };
 
 class BoolAttributeChange {

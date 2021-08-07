@@ -64,6 +64,7 @@ class ServerCard : public CardBase
     bool mCannotFrontAttack = false;
     bool mCannotSideAttack = false;
     bool mCannotBecomeReversed = false;
+    bool mCannotMove = false;
 
     CardBuffManager mBuffManager;
 
@@ -103,11 +104,9 @@ public:
     bool inBattle() const { return mInBattle; }
     void setInBattle(bool val) { mInBattle = val; }
     bool cannotFrontAttack() const { return mCannotFrontAttack; }
-    void setCannotFrontAttack(bool val) { mCannotFrontAttack = val; }
     bool cannotSideAttack() const { return mCannotSideAttack; }
-    void setCannotSideAttack(bool val) { mCannotSideAttack = val; }
     bool cannotBecomeReversed() const { return mCannotBecomeReversed; }
-    void setCannotBecomeReversed(bool val) { mCannotBecomeReversed = val; }
+    bool cannotMove() const { return mCannotMove; }
 
     CardBuffManager* buffManager() { return &mBuffManager; }
 

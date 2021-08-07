@@ -27,7 +27,8 @@ public:
         PowerRole,
         SoulRole,
         LevelRole,
-        TextModelRole
+        TextModelRole,
+        CannotMoveRole
     };
     Q_ENUM(CardRoles)
     static QVector<int> mRoles;
@@ -55,6 +56,7 @@ public:
     void setSelected(int row, bool selected);
     void setState(int row, asn::State state);
     void setAttr(int row, ProtoCardAttribute attr, int value);
+    void setCannotMove(int row, int value);
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int count() const { return rowCount(); }

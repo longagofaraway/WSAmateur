@@ -422,6 +422,18 @@ OpponentAutoCannotDealDamage parseOpponentAutoCannotDealDamage(const QJsonObject
     return e;
 }
 
+CannotMove parseCannotMove(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in CannotMove");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in CannotMove");
+
+    CannotMove e;
+    e.target = parseTarget(json["target"].toObject());
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
@@ -514,12 +526,14 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::OpponentAutoCannotDealDamage:
         e.effect = parseOpponentAutoCannotDealDamage(json["effect"].toObject());
         break;
+    case EffectType::CannotMove:
+        e.effect = parseCannotMove(json["effect"].toObject());
+        break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:
     case EffectType::CannotPlay:
     case EffectType::CharAutoCannotDealDamage:
     case EffectType::StockSwap:
-    case EffectType::CannotMove:
     case EffectType::SideAttackWithoutPenalty:
     case EffectType::Standby:
         break;

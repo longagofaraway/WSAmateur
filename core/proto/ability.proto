@@ -26,6 +26,7 @@ enum ProtoCardBoolAttribute {
     ProtoCannotFrontAttack = 0;
     ProtoCannotSideAttack = 1;
     ProtoCannotBecomeReversed = 2;
+    ProtoCannotMove = 3;
 }
 
 enum ProtoPlayerAttribute {

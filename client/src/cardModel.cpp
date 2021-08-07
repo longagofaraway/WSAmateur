@@ -5,7 +5,7 @@
 
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
     mRoles = QVector<int>() << CodeRole << CardIdRole << GlowRole << SelectedRole << TypeRole
-                            << StateRole << PowerRole << SoulRole << LevelRole;
+                            << StateRole << PowerRole << SoulRole << LevelRole << CannotMoveRole;
 }
 
 void CardModel::clear() {
@@ -132,6 +132,11 @@ void CardModel::setAttr(int row, ProtoCardAttribute attr, int value) {
     setData(index, value, role);
 }
 
+void CardModel::setCannotMove(int row, int value) {
+    auto index = createIndex(row, 0);
+    setData(index, value, CannotMoveRole);
+}
+
 bool CardModel::setData(const QModelIndex &index, const QVariant &value, int role) {
     if (static_cast<size_t>(index.row()) >= mCards.size())
         return false;
@@ -158,6 +163,9 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         break;
     case LevelRole:
         card.setLevel(value.toInt());
+        break;
+    case CannotMoveRole:
+        card.setCannotMove(value.toBool());
         break;
     default:
         return false;
@@ -195,6 +203,8 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
         return card.soul();
     case LevelRole:
         return card.level();
+    case CannotMoveRole:
+        return card.cannotMove();
     default:
         return QVariant();
     }
@@ -213,6 +223,7 @@ QHash<int, QByteArray> CardModel::roleNames() const {
         (*roles)[PowerRole] = "power";
         (*roles)[SoulRole] = "soul";
         (*roles)[LevelRole] = "level";
+        (*roles)[CannotMoveRole] = "cannotMove";
     }
     return *roles;
 }

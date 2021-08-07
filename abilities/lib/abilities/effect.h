@@ -207,6 +207,11 @@ struct OpponentAutoCannotDealDamage {
     int duration;
 };
 
+struct CannotMove {
+    Target target;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -283,6 +288,7 @@ struct Effect {
         Shuffle,
         CannotBecomeReversed,
         OpponentAutoCannotDealDamage,
+        CannotMove,
         OtherEffect
     > effect;
 };
