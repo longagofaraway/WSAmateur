@@ -277,14 +277,18 @@ Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, in
     auto player = owner(e.from.owner);
     auto pzone = player->zone(asnZoneToString(e.from.zone));
     const auto &spec = *e.target.targetSpecification;
-    clearLastMovedCards();
+
+    if (!isPayingCost())
+        clearLastMovedCards();
+
     for (int i = 0; i < spec.number.value; ++i) {
         auto card = pzone->topCard();
         if (!card)
             break;
 
         player->moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
-        addLastMovedCard(CardImprint(card->zone()->name(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
+        if (!isPayingCost())
+            addLastMovedCard(CardImprint(card->zone()->name(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
         // TODO: refresh and levelup are triggered at the same time, give choice
         if (e.from.zone == asn::Zone::Deck && player->zone("deck")->count() == 0)
@@ -556,10 +560,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         cardsToMove[card->pos()] = card;
     }
 
-    clearLastMovedCards();
+    if (!isPayingCost())
+        clearLastMovedCards();
     for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
         player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
-        addLastMovedCard(CardImprint(it->second->zone()->name(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
+        if (!isPayingCost())
+            addLastMovedCard(CardImprint(it->second->zone()->name(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
             player->setCardState(it->second, asn::State::Rested);

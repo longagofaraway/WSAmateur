@@ -20,6 +20,7 @@ class AbilityPlayer {
     bool mRevert = false; // revert effect of cont ability
     bool mConditionNotMet = false;
     bool mIsCont = false; // ability that is being played is CONT
+    bool mIsPayingCost = false; // in the process of paying cost
     int mAbilityId;
     std::vector<CardImprint> mChosenCards;
     std::vector<CardImprint> mMentionedCards;
@@ -52,6 +53,8 @@ public:
     void setThisCard(const CardImprint &c) { mThisCard = c; }
     bool cont() const { return mIsCont; }
     void setCont(bool cont) { mIsCont = cont; }
+    bool isPayingCost() const { return mIsPayingCost; }
+    void setPayingCost(bool p) { mIsPayingCost = p; }
 
     void addChosenCard(CardImprint &&c) { mChosenCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& chosenCards() { return mChosenCards; }

@@ -8,6 +8,7 @@ Resumable AbilityPlayer::payCost() {
     if (!hasCost())
         co_return;
 
+    setPayingCost(true);
     for (const auto &item: cost().items) {
         if (item.type == asn::CostType::Stock) {
             for (int i = 0; i < std::get<asn::StockCost>(item.costItem).value; ++i)
@@ -16,6 +17,7 @@ Resumable AbilityPlayer::payCost() {
             co_await playEffect(std::get<asn::Effect>(item.costItem));
         }
     }
+    setPayingCost(false);
 }
 
 Resumable AbilityPlayer::playEventAbility(const asn::EventAbility &a) {
