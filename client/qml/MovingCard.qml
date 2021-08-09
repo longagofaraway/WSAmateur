@@ -45,6 +45,10 @@ Card {
             movingCard.rotation += -90;
         else if (startZone === "level")
             movingCard.rotation += 90;
+        else if (targetZone == "climax") {
+            movingCard.rotation += -90;
+            movingCard.y += -((root.cardHeight - root.cardWidth) / 2 + root.cardWidth);
+        }
         if (startZone === "clock" || startZone === "level")
             movingCard.scale = szone.scaleForMovingCard();
     }

@@ -266,7 +266,9 @@ std::string printMoveCard(const MoveCard &e) {
         s += "return";
     else if (e.from.zone == Zone::Hand)
         s += "discard";
-    else if (e.to[0].pos == Position::EmptySlotBackRow)
+    else if (e.to[0].pos == Position::EmptySlotBackRow ||
+             e.to[0].pos == Position::EmptySlotFrontRow ||
+             e.to[0].pos == Position::EmptySlot)
         s += "move";
     else
         s += "put";
@@ -331,9 +333,11 @@ std::string printMoveCard(const MoveCard &e) {
         if (e.to[i].pos == Position::EmptySlotBackRow)
             return s + "to an empty slot in the back stage ";
         else if (e.to[i].pos == Position::EmptySlotFrontRow)
-            return s + "to an empty slot in the center stage";
+            return s + "to an empty slot in the center stage ";
+        else if (e.to[i].pos == Position::EmptySlot)
+            return s + "to an empty slot of " + printPlayer(e.to[i].owner) + "stage ";
         else if (e.to[i].pos == asn::Position::SlotThisWasIn)
-            return s + "to its previous position as" + printState(asn::State::Rested);
+            return s + "to its previous position as" + printState(asn::State::Rested) + " ";
 
         if (e.to[i].zone == Zone::Stage) {
             s += "on ";

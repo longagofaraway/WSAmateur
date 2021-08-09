@@ -16,6 +16,7 @@ ListView {
     property MulliganHeader mHeader: null
     property CardModel mModel: innerModel
     property var mLastDragPosition: null
+    property int mLastDragCardId
 
     width: length
     height: root.cardHeight
@@ -319,7 +320,10 @@ ListView {
                         dragActive = false;
                         if (model.selected) {
                             if (cardImgDelegate.cardType === "Climax") {
-                                startPlayingClimax(cardImgDelegate, model.code, model.index);
+                                handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
+                                handView.mLastDragCardId = model.cardId;
+                                gGame.player.cardPlayed(model.index, 0);
+                                return;
                             } else if (gGame.isCounterStep()) {
                                 handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
                                 gGame.player.sendPlayCounter(model.index);
@@ -477,24 +481,6 @@ ListView {
         }
     }
 
-    function startPlayingClimax(imgDelegate, code, index) {
-        let comp = Qt.createComponent("MovingCard.qml");
-        const point = root.mapFromItem(handView, imgDelegate.x, imgDelegate.y);
-        let card = comp.createObject(root, { x: point.x, y: point.y });
-        gGame.startUiAction();
-        card.opponent = false;
-        card.isQmlAction = true;
-        card.startZone = "hand";
-        card.startPos = index;
-        card.targetZone = "climax";
-        card.targetPos = index;
-        card.code = code;
-        card.mSource = code;
-        card.rotation = imgDelegate.rotation;
-        card.startAnimation();
-        gGame.sendClimaxPhaseCommand();
-    }
-
     function addCard(id, code) {
         if (hidden) gGame.getPlayer(opponent).addCard(0, "", "hand");
         else gGame.getPlayer(opponent).addCard(id, code, "hand");
@@ -511,16 +497,24 @@ ListView {
     function getXForNewCard() { return handView.x + handDelegate.count * root.cardWidth * 2/3; }
     function getYForNewCard() { return handView.y + getFanOffset(handDelegate.count); }
     function getXForCard(modelId) {
-        if (handView.mLastDragPosition !== null)
-            return handView.mLastDragPosition.x;
+        if (handView.mLastDragPosition !== null) {
+            const index = handView.mModel.index(modelId, 0);
+            const cardId = handView.mModel.data(index, CardModel.CardIdRole);
+            if (cardId === handView.mLastDragCardId)
+                return handView.mLastDragPosition.x;
+        }
 
         return handView.x + getVisualIndexFromModelIndex(modelId) * root.cardWidth * 2/3;
     }
     function getYForCard(modelId) {
         if (handView.mLastDragPosition !== null) {
-            const y = handView.mLastDragPosition.y;
-            handView.mLastDragPosition = null;
-            return y;
+            const index = handView.mModel.index(modelId, 0);
+            const cardId = handView.mModel.data(index, CardModel.CardIdRole);
+            if (cardId === handView.mLastDragCardId) {
+                const y = handView.mLastDragPosition.y;
+                handView.mLastDragPosition = null;
+                return y;
+            }
         }
 
         return handView.y + getFanOffset(getVisualIndexFromModelIndex(modelId));

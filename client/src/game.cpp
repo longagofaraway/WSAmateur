@@ -22,8 +22,8 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="1" code="IMC/W43-127"/>
-        <card number="20" code="KGL/S79-035"/>
+        <card number="19" code="IMC/W43-127"/>
+        <card number="20" code="KGL/S79-067"/>
         <card number="2" code="KGL/S79-040"/>
         <card number="1" code="IMC/W43-046"/>
         <card number="1" code="IMC/W43-009"/>
@@ -38,7 +38,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="0" code="IMC/W43-127"/>
-        <card number="40" code="KGL/S79-063"/>
+        <card number="40" code="KGL/S79-035"/>
         <card number="1" code="IMC/W43-009"/>
         <card number="1" code="IMC/W43-091"/>
     </main>
@@ -165,10 +165,6 @@ void Game::sendClockPhaseFinished() {
 
 void Game::sendMainPhaseFinished() {
     mPlayer->mainPhaseFinished();
-}
-
-void Game::sendClimaxPhaseCommand() {
-    mPlayer->sendClimaxPhaseCommand();
 }
 
 void Game::sendTakeDamageCommand() {

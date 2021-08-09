@@ -55,7 +55,6 @@ public:
     Q_INVOKABLE void sendMulliganFinished();
     Q_INVOKABLE void sendClockPhaseFinished();
     Q_INVOKABLE void sendMainPhaseFinished();
-    Q_INVOKABLE void sendClimaxPhaseCommand();
     Q_INVOKABLE void sendTakeDamageCommand();
     Q_INVOKABLE void sendEncoreCommand();
     Q_INVOKABLE void sendEndTurn();

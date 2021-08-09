@@ -90,7 +90,6 @@ public:
     void clockPhaseFinished();
     void mainPhaseFinished();
     void counterStepFinished();
-    void sendClimaxPhaseCommand();
     void sendTakeDamageCommand();
     void sendEncoreCommand();
     void sendEndTurnCommand();
@@ -198,4 +197,8 @@ public slots:
     void sendEncore(int pos);
     void sendDiscardCard(int id);
     void sendPlayActAbility(int cardPos, int abilityId);
+
+private:
+    bool mPlayingClimax = false;
+    int mClimaxId;
 };

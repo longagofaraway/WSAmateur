@@ -349,21 +349,6 @@ void Player::counterStepFinished() {
     mGame->endCounterStep();
 }
 
-void Player::sendClimaxPhaseCommand() {
-    // a little about playing climaxes
-    // climax phase starts when player presses 'Next(to attack)' or when he plays a climax
-    // this approach eliminates unnecessary button click 'Next(to climax phase)', but has a drawback in current realization
-    // 1. Player plays a climax, climax is added to the climax zone and removed from hand on player's side,
-    //    but not on the server's. Climax effects are not performed yet. Player sends CommandClimaxPhase.
-    // 2. Server triggers 'At the start of climax phase' abilities. Player resolves abilities.
-    // 3. Player sends 'play climax' command. Climax effects are resolved.
-    // If there are 'At the start of climax phase' abilities that mess with card count in hand or
-    // smth like that we are fcked;
-    mHand->endPlayTiming();
-    mStage->endMainPhase();
-    sendGameCommand(CommandClimaxPhase());
-}
-
 void Player::sendTakeDamageCommand() {
     counterStepFinished();
     sendGameCommand(CommandTakeDamage());
@@ -468,15 +453,18 @@ void Player::moveCard(const EventMoveCard &event) {
 }
 
 void Player::playCard(const EventPlayCard &event) {
-    // player's chars and climaxes are played before events from the server
-    // TODO: play player's chars and climaxes using EventMoveCard as the rest of the cards
-    if (!mOpponent)
-        return;
-
+    // player's chars are played before events from the server
+    // TODO: play player's chars using EventMoveCard as the rest of the cards
     auto &cards = mHand->cards();
     if (size_t(event.hand_pos()) >= cards.size()
         || size_t(event.stage_pos()) >= mStage->cards().size())
         return;
+
+    if (!mOpponent) {
+        if (!mPlayingClimax)
+            return;
+        mPlayingClimax = false;
+    }
 
     QString code = QString::fromStdString(event.code());
     if (code.isEmpty())
@@ -535,14 +523,23 @@ void Player::playClimax() {
     if (mOpponent)
         return;
 
-    auto climaxZone = zone("climax");
-    if (climaxZone->cards().empty()) {
+    if (!mPlayingClimax) {
         sendGameCommand(CommandAttackPhase());
         return;
     }
-    int handIndex = climaxZone->visualItem()->property("mHandIndex").toInt();
+
+    int cardPos = -1;
+    for (int i = 0; i < mHand->cards().size(); ++i)
+        if (mHand->cards()[i].id() == mClimaxId)
+            cardPos = i;
+
+    if (cardPos == -1) {
+        sendGameCommand(CommandAttackPhase());
+        return;
+    }
+
     CommandPlayCard cmd;
-    cmd.set_hand_pos(handIndex);
+    cmd.set_hand_pos(cardPos);
     sendGameCommand(cmd);
 }
 
@@ -677,6 +674,24 @@ void Player::sendPlayActAbility(int cardPos, int abilityId) {
 }
 
 void Player::cardPlayed(int handId, int stageId) {
+    if (mHand->cards()[handId].type() == CardType::Climax) {
+        // a little about playing climaxes
+        // climax phase starts when player presses 'Next(to attack)' or when he plays a climax
+        // this approach eliminates unnecessary button click 'Next(to climax phase)', but has a drawback
+        // you have to commit to playing climax before 'on the start of climax phase' abilities resolve
+        // 1. Player plays a climax, climax is not yet added to the climax zone.
+        // 2. Player sends CommandClimaxPhase.
+        // 3. At the start of the climax phase check timing.
+        // 4. After the check timing player sends CommandPlayCard with this climax
+        mHand->endPlayTiming();
+        mStage->endMainPhase();
+
+        mPlayingClimax = true;
+        mClimaxId = mHand->cards()[handId].id();
+        sendGameCommand(CommandClimaxPhase());
+        return;
+    }
+
     CommandPlayCard cmd;
     cmd.set_hand_pos(handId);
     cmd.set_stage_pos(stageId);

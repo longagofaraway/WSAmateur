@@ -488,13 +488,10 @@ Resumable ServerPlayer::playClimax(int handIndex) {
         co_return;
     auto cardPtr = climaxZone->addCard(std::move(card));
 
-    EventPlayCard eventPublic;
-    eventPublic.set_hand_pos(static_cast<google::protobuf::uint32>(handIndex));
-    EventPlayCard eventPrivate(eventPublic);
-    eventPublic.set_code(cardPtr->code());
-
-    sendGameEvent(eventPrivate);
-    mGame->sendPublicEvent(eventPublic, mId);
+    EventPlayCard event;
+    event.set_hand_pos(static_cast<google::protobuf::uint32>(handIndex));
+    event.set_code(cardPtr->code());
+    sendToBoth(event);
 
     mGame->resolveAllContAbilities();
 
