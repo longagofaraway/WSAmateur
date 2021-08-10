@@ -351,6 +351,8 @@ void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
     case ProtoCannotMove:
         mStage->model().setCannotMove(event.card_pos(), event.value());
         break;
+    case ProtoSideAttackWithoutPenalty:
+        break;
     default:
         assert(false);
     }

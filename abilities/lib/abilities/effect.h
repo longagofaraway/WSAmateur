@@ -212,6 +212,11 @@ struct CannotMove {
     int duration;
 };
 
+struct SideAttackWithoutPenalty {
+    Target target;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -289,6 +294,7 @@ struct Effect {
         CannotBecomeReversed,
         OpponentAutoCannotDealDamage,
         CannotMove,
+        SideAttackWithoutPenalty,
         OtherEffect
     > effect;
 };

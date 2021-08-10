@@ -659,10 +659,12 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     event.set_attack_type(type);
     sendToBoth(event);
 
-    if (type == AttackType::DirectAttack)
+    if (type == AttackType::DirectAttack) {
         attCard->buffManager()->addAttributeBuff(asn::AttributeType::Soul, 1);
-    else if (type == AttackType::SideAttack)
-        attCard->buffManager()->addAttributeBuff(asn::AttributeType::Soul, -battleOpp->level());
+    } else if (type == AttackType::SideAttack) {
+        if (!attCard->sideAttackWithoutPenalty() && battleOpp->level())
+            attCard->buffManager()->addAttributeBuff(asn::AttributeType::Soul, -battleOpp->level());
+    }
 
     if (type == AttackType::FrontAttack) {
         attCard->setInBattle(true);

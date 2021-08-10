@@ -155,6 +155,11 @@ void encodeCannotMove(const CannotMove &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.duration));
 }
 
+void encodeSideAttackWithoutPenalty(const SideAttackWithoutPenalty &e, Buf &buf) {
+    encodeTarget(e.target, buf);
+    buf.push_back(static_cast<uint8_t>(e.duration));
+}
+
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
     encodeString(e.cardCode, buf);
     buf.push_back(zzenc_8(e.effectId));
@@ -245,6 +250,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::CannotMove:
         encodeCannotMove(std::get<CannotMove>(e.effect), buf);
+        break;
+    case EffectType::SideAttackWithoutPenalty:
+        encodeSideAttackWithoutPenalty(std::get<SideAttackWithoutPenalty>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

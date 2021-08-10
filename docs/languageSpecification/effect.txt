@@ -27,6 +27,7 @@ Effect {
     CannotBecomeReversed,
     OpponentAutoCannotDealDamage,
     CannotMove,
+    SideAttackWithoutPenalty,
     OtherEffect,
     Nothing
   }
@@ -295,6 +296,11 @@ OpponentAutoCannotDealDamage {
 }
 
 CannotMove {
+  target Target,
+  duration UInt8
+}
+
+SideAttackWithoutPenalty {
   target Target,
   duration UInt8
 }

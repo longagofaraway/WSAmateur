@@ -82,8 +82,14 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::CannotBecomeReversed:
         playCannotBecomeReversed(std::get<asn::CannotBecomeReversed>(e.effect));
         break;
+    case asn::EffectType::OpponentAutoCannotDealDamage:
+        playOpponentAutoCannotDealDamage(std::get<asn::OpponentAutoCannotDealDamage>(e.effect));
+        break;
     case asn::EffectType::StockSwap:
         playStockSwap();
+        break;
+    case asn::EffectType::SideAttackWithoutPenalty:
+        playSideAttackWithoutPenalty(std::get<asn::SideAttackWithoutPenalty>(e.effect));
         break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
@@ -136,6 +142,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
         break;
     case asn::EffectType::CannotMove:
         playCannotMove(std::get<asn::CannotMove>(e.effect));
+        break;
+    case asn::EffectType::SideAttackWithoutPenalty:
+        playSideAttackWithoutPenalty(std::get<asn::SideAttackWithoutPenalty>(e.effect));
         break;
     default:
         break;
@@ -1237,6 +1246,23 @@ void AbilityPlayer::playCannotMove(const asn::CannotMove &e) {
                 target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), BoolAttributeType::CannotMove, positional);
         } else {
             target->buffManager()->addBoolAttrChange(BoolAttributeType::CannotMove, e.duration);
+        }
+    }
+}
+
+void AbilityPlayer::playSideAttackWithoutPenalty(const asn::SideAttackWithoutPenalty &e) {
+    auto attr = BoolAttributeType::SideAttackWithoutPenalty;
+    bool positional = isPositional(e.target);
+
+    auto targets = getTargets(e.target);
+    for (auto &target: targets) {
+        if (cont()) {
+            if (revert())
+                target->buffManager()->removeContBoolAttrChange(thisCard().card, abilityId(), attr);
+            else
+                target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), attr, positional);
+        } else {
+            target->buffManager()->addBoolAttrChange(attr, e.duration);
         }
     }
 }

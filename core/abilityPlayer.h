@@ -111,6 +111,7 @@ public:
     void playOpponentAutoCannotDealDamage(const asn::OpponentAutoCannotDealDamage &e);
     void playStockSwap();
     void playCannotMove(const asn::CannotMove &e);
+    void playSideAttackWithoutPenalty(const asn::SideAttackWithoutPenalty &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 
