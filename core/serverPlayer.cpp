@@ -80,6 +80,8 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
         CommandPlayAct actCmd;
         cmd.command().UnpackTo(&actCmd);
         mGame->startAsyncTask(processPlayActCmd(actCmd));
+    } else if (cmd.command().Is<CommandTest>()) {
+        mGame->startAsyncTask(testAction());
     }
 
     if (mGame->ended()) {
@@ -1043,6 +1045,43 @@ Resumable ServerPlayer::takeDamage(int damage) {
         co_await levelUp();
 }
 
+Resumable ServerPlayer::checkRefreshAndLevelUp() {
+    bool needRefresh = zone("deck")->count() == 0;
+    bool needLevelUp = zone("clock")->count() >= 7;
+    if (needRefresh && needLevelUp) {
+        sendToBoth(EventRuleActionChoice());
+
+        clearExpectedComands();
+        addExpectedCommand(CommandChoice::descriptor()->name());
+
+        int choice;
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandChoice>()) {
+                CommandChoice choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                choice = choiceCmd.choice();
+                break;
+            }
+        }
+        clearExpectedComands();
+
+        if (choice == 0) {
+            refresh();
+            co_await levelUp();
+        } else {
+            co_await levelUp();
+            refresh();
+        }
+        co_return;
+    }
+
+    if (needRefresh)
+        refresh();
+    if (needLevelUp)
+        co_await levelUp();
+}
+
 void ServerPlayer::sendPlayerAttrChange(PlayerAttrType type, bool value) {
     EventSetPlayerAttr event;
     event.set_attr(getProtoPlayerAttrType(type));
@@ -1058,4 +1097,9 @@ asn::Ability TriggeredAbility::getAbility() const {
     else if (type == ProtoGlobal)
         return globalAbility(static_cast<GlobalAbility>(abilityId));
     return {};
+}
+
+Resumable ServerPlayer::testAction() {
+    moveCard("deck", zone("deck")->count() - 1, "clock");
+    co_await checkRefreshAndLevelUp();
 }

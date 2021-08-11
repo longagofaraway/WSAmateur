@@ -33,3 +33,5 @@ message EventSetCardState {
 message EventGameEnded {
     bool victory = 1;
 }
+
+message EventRuleActionChoice {}

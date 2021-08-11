@@ -251,6 +251,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventRevealFromHand ev;
         event->event().UnpackTo(&ev);
         processRevealFromHand(ev);
+    } else if (event->event().Is<EventRuleActionChoice>()) {
+        processRuleActionChoice();
     }
 }
 
@@ -730,14 +732,7 @@ void Player::addCard(int id, QString code, QString zoneName, int targetPos) {
 
 void Player::testAction()
 {
-    static int i = 0;
-    if (i % 3 == 0)
-        createMovingCard(1, "IMC/W43-046", "wr", 1, "clock", -1, false, false, true);
-    else if (i % 3 == 1)
-        createMovingCard(1, "KGL/S79-001", "wr", 1, "clock", 0, false, false, true);
-    else if (i % 3 == 2)
-        createMovingCard(1, "KGL/S79-002", "wr", 1, "clock", 0, false, false, true);
-    i++;
+    sendGameCommand(CommandTest());
 
     //QTimer::singleShot(1000, this, [this]() { createMovingCard(1, "IMC/W43-046", "deck", 0, "level", 0); });
     //QMetaObject::invokeMethod(zone("view")->visualItem(), "getCardOrder");

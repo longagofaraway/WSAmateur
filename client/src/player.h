@@ -186,6 +186,7 @@ private:
     void processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event);
     void processSetCardBoolAttr(const EventSetCardBoolAttr &event);
     void processRevealFromHand(const EventRevealFromHand &event);
+    void processRuleActionChoice();
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t) const;

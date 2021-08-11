@@ -299,11 +299,8 @@ Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, in
         if (!isPayingCost())
             addLastMovedCard(CardImprint(card->zone()->name(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
-        // TODO: refresh and levelup are triggered at the same time, give choice
-        if (e.from.zone == asn::Zone::Deck && player->zone("deck")->count() == 0)
-            player->refresh();
-        if (e.to[toZoneIndex].zone == asn::Zone::Clock && player->zone("clock")->count() >= 7)
-            co_await player->levelUp();
+        if (e.from.zone == asn::Zone::Deck || e.to[toZoneIndex].zone == asn::Zone::Clock)
+            co_await player->checkRefreshAndLevelUp();
     }
 }
 
@@ -580,10 +577,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             player->setCardState(it->second, asn::State::Rested);
 
         // TODO: refresh and levelup are triggered at the same time, give choice
-        if (e.from.zone == asn::Zone::Deck && player->zone("deck")->count() == 0)
-            player->refresh();
-        if (e.to[toZoneIndex].zone == asn::Zone::Clock && player->zone("clock")->count() >= 7)
-            co_await player->levelUp();
+        if (e.from.zone == asn::Zone::Deck || e.to[toZoneIndex].zone == asn::Zone::Clock)
+            co_await player->checkRefreshAndLevelUp();
     }
 }
 

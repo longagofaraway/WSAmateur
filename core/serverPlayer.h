@@ -151,6 +151,7 @@ public:
     Resumable processPlayActCmd(const CommandPlayAct &cmd);
     void reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone);
     Resumable takeDamage(int damage);
+    Resumable checkRefreshAndLevelUp();
 
     void removePositionalContBuffsBySource(ServerCard *card);
     void setCardState(ServerCard *card, asn::State state);
@@ -184,4 +185,6 @@ private:
                                AbilityState &abilityState,
                                ServerCard *card,
                                std::string_view cardZone = "");
+
+    Resumable testAction();
 };

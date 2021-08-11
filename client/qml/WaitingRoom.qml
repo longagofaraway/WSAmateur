@@ -14,7 +14,8 @@ Card {
         function onCountChanged() {
             if (mModel.count == 0) {
                 waitingRoom.visible = false;
-                mView.visible = false;
+                if (mView !== null)
+                    mView.visible = false;
             } else if (!waitingRoom.visible) {
                 waitingRoom.visible = true;
             }

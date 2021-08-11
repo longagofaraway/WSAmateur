@@ -29,3 +29,5 @@ message CommandPlayAct {
     sint32 card_pos = 1;
     sint32 ability_id = 2;
 }
+
+message CommandTest {}

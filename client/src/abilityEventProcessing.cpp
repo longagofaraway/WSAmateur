@@ -367,3 +367,13 @@ void Player::processRevealFromHand(const EventRevealFromHand &event) {
     std::string code = event.code();
     createMovingCard(card.id(), QString::fromStdString(code), "hand", handPos, "reveal", 0, false, false, true);
 }
+
+void Player::processRuleActionChoice() {
+    std::vector<QString> data;
+    data.emplace_back("Refresh");
+    data.emplace_back("Level up");
+
+    auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+    choiceDlg->setData("Choose what to perform first", data);
+    mChoiceDialog = std::move(choiceDlg);
+}
