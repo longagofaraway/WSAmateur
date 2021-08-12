@@ -134,7 +134,9 @@ Resumable ServerGame::battleStep() {
         co_return;
 
     setPhase(asn::Phase::BattleStep);
-    //at the beginning of battle step, check timing
+
+    checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::BattleStep);
+    co_await checkTiming();
 
     auto attCard = attPlayer->attackingCard();
     if (!attCard || attCard->zone()->name() != "stage")
@@ -174,6 +176,9 @@ Resumable ServerGame::encoreStep() {
     auto turnPlayer = activePlayer();
     auto opponent = opponentOfPlayer(turnPlayer->id());
     opponent->clearExpectedComands();
+
+    checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::EncoreStep);
+    co_await checkTiming();
 
     co_await turnPlayer->encoreStep();
     co_await opponent->encoreStep();

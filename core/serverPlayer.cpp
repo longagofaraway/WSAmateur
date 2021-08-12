@@ -154,12 +154,17 @@ void ServerPlayer::startGame() {
 Resumable ServerPlayer::startTurn() {
     sendToBoth(EventStartTurn());
 
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::StandPhase);
+    co_await mGame->checkTiming();
+
     auto stage = zone("stage");
     for (int i = 0; i < 5; ++i) {
         auto card = stage->card(i);
         if (card && card->state() != asn::State::Standing)
             setCardState(card, asn::State::Standing);
     }
+
+    co_await mGame->checkTiming();
 
     mGame->setPhase(asn::Phase::DrawPhase);
     mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::DrawPhase);
@@ -169,6 +174,9 @@ Resumable ServerPlayer::startTurn() {
     co_await mGame->checkTiming();
 
     mGame->setPhase(asn::Phase::ClockPhase);
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::ClockPhase);
+    co_await mGame->checkTiming();
+
     sendToBoth(EventClockPhase());
 
     addExpectedCommand(CommandClockPhase::descriptor()->name());
@@ -379,6 +387,9 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
     co_await mGame->checkTiming();
 
     mGame->setPhase(asn::Phase::MainPhase);
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::MainPhase);
+    co_await mGame->checkTiming();
+
     sendToBoth(EventMainPhase());
 
     clearExpectedComands();
@@ -685,6 +696,9 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
 Resumable ServerPlayer::triggerStep(int pos) {
     sendPhaseEvent(asn::Phase::TriggerStep);
 
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::TriggerStep);
+    co_await mGame->checkTiming();
+
     co_await performTriggerStep(pos);
     if (mAttackingCard->triggerCheckTwice()) {
         co_await performTriggerStep(pos);
@@ -719,12 +733,17 @@ void ServerPlayer::counterStep() {
     addExpectedCommand(CommandTakeDamage::descriptor()->name());
     addExpectedCommand(CommandPlayCounter::descriptor()->name());
     sendToBoth(EventCounterStep());
+
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::CounterStep);
 }
 
 Resumable ServerPlayer::damageStep() {
     mGame->setPhase(asn::Phase::DamageStep);
-
     clearExpectedComands();
+
+    mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::DamageStep);
+    co_await mGame->checkTiming();
+
     auto attCard = getOpponent()->attackingCard();
     if (!attCard)
         co_return;
@@ -739,18 +758,22 @@ Resumable ServerPlayer::damageStep() {
 
 void ServerPlayer::endOfAttack() {
     if (attackType() == AttackType::FrontAttack) {
-        // assuming attacking card cannot be removed from the stage during attack
         auto attCard = attackingCard();
-        if (attCard) {
+        if (attCard)
             attCard->setInBattle(false);
-            auto battleOpp = oppositeCard(attCard);
-            if (battleOpp)
-                battleOpp->setInBattle(false);
 
-            // for 'in battles involving this card'
-            mGame->resolveAllContAbilities();
+        auto oppStage = getOpponent()->zone("stage");
+        for (int i = 0; i < oppStage->count(); ++i) {
+            auto card = oppStage->card(i);
+            if (card)
+                card->setInBattle(false);
         }
     }
+
+    // for 'in battles involving this card'
+    mGame->resolveAllContAbilities();
+
+    // TODO: check 'at the end of the attack'
 
     setAttackingCard(nullptr);
     sendToBoth(EventEndOfAttack());
