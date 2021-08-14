@@ -69,6 +69,8 @@ bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
             return false;
 
         return checkCard(c.neededCard[0].cardSpecifiers, *card);
+    } else if (c.target.type == asn::TargetType::ThisCard) {
+        return checkCard(c.neededCard[0].cardSpecifiers, *thisCard().card);
     }
     return false;
 }

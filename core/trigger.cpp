@@ -241,6 +241,24 @@ void ServerPlayer::triggerBackupAbility(ServerCard *card) {
     }
 }
 
+void ServerPlayer::triggerRuleAction(RuleAction action, ServerCard *thisCard) {
+    if (action == RuleAction::InsufficientPower) {
+        // only one instance of this rule action is needed
+        auto it = std::find_if(mQueue.begin(), mQueue.end(), [](const TriggeredAbility &el) {
+            return el.type == ProtoRuleAction &&
+                    el.abilityId == static_cast<int>(RuleAction::InsufficientPower);
+        });
+        if (it != mQueue.end())
+            return;
+    }
+    TriggeredAbility a;
+    a.type = ProtoRuleAction;
+    a.abilityId = static_cast<int>(action);
+    if (thisCard)
+        a.card = CardImprint(thisCard->zone()->name(), thisCard);
+    mQueue.push_back(a);
+}
+
 void ServerPlayer::checkOnReversed(ServerCard *card) {
     auto &abs = card->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {

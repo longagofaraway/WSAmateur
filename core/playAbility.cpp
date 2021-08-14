@@ -12,7 +12,7 @@
 
 bool ServerPlayer::canBePlayed(ServerCard *thisCard, const asn::Ability &a) {
     AbilityPlayer aplayer(this);
-    aplayer.setThisCard(CardImprint(thisCard->zone()->name(), thisCard));
+    aplayer.setThisCard(thisCard);
     return aplayer.canBePlayed(a);
 }
 
@@ -52,7 +52,7 @@ void ServerPlayer::playContAbilities(ServerCard *card, bool revert) {
             continue;
 
         AbilityPlayer a(this);
-        a.setThisCard(CardImprint(card->zone()->name(), card));
+        a.setThisCard(card);
         a.setAbilityId(abs[i].id);
         if (!revert) {
             a.playContAbility(cont, abs[i].active);
@@ -90,7 +90,7 @@ Resumable ServerPlayer::playEventEffects(ServerCard *card) {
         sendToBoth(evStart);
 
         AbilityPlayer a(this);
-        a.setThisCard(CardImprint(card->zone()->name(), card));
+        a.setThisCard(card);
         co_await a.playAbility(abs[i].ability);
 
         EventAbilityResolved evEnd;
@@ -126,13 +126,9 @@ Resumable ServerPlayer::checkTiming() {
     clearExpectedComands();
     while (mQueue.size()) {
         // first play all rule actions
-        bool ruleActionFound = false;
-        co_await processRuleActions(ruleActionFound);
-        if (ruleActionFound)
-            continue;
-        co_await mGame->opponentOfPlayer(mId)->processRuleActions(ruleActionFound);
+        co_await mGame->processRuleActions();
 
-        if (!mActive && mGame->opponentOfPlayer(mId)->hasActivatedAbilities()) {
+        if (!mActive && getOpponent()->hasActivatedAbilities()) {
             // priority to the master of the turn
             for (size_t i = 0; i < mQueue.size(); ++i)
                 mQueue[i].uniqueId = 0;
@@ -199,7 +195,6 @@ Resumable ServerPlayer::checkTiming() {
 
                 AbilityPlayer a(this);
                 a.setThisCard(mQueue[j].card);
-                // not a reliable way to get temporary ability (in case the card changed zone)
                 co_await a.playAbility(mQueue[j].getAbility());
 
                 EventAbilityResolved evEnd;
@@ -216,24 +211,32 @@ Resumable ServerPlayer::checkTiming() {
     mExpectedCommands = expectedCopy;
 }
 
-Resumable ServerPlayer::processRuleActions(bool &ruleActionFound) {
+Resumable ServerPlayer::processRuleActions() {
     if (mQueue.empty())
         co_return;
 
-    auto it = mQueue.begin();
-    while (it != mQueue.end()) {
-        if (it->type == ProtoAbilityType::ProtoRuleAction) {
+    bool actionFound = false;
+    do {
+        actionFound = false;
+        for (size_t i = 0; i < mQueue.size(); ++i) {
+            if (mQueue[i].type != ProtoAbilityType::ProtoRuleAction)
+                continue;
             AbilityPlayer a(this);
-            co_await a.playAbility(ruleActionAbility(static_cast<RuleAction>(it->abilityId)));
-            ruleActionFound = true;
-            it = mQueue.erase(it);
-        } else {
-            ++it;
+            a.setThisCard(mQueue[i].card);
+            co_await a.playAbility(ruleActionAbility(static_cast<RuleAction>(mQueue[i].abilityId)));
+            mQueue.erase(mQueue.begin() + i);
+            actionFound = true;
         }
-    }
+    } while (actionFound);
 }
 
 bool ServerPlayer::hasActivatedAbilities() const {
     return !mQueue.empty();
+}
+
+bool ServerPlayer::hasTriggeredRuleActions() const {
+    return std::any_of(mQueue.begin(), mQueue.end(), [](const auto &elem) {
+        return elem.type == ProtoRuleAction;
+    });
 }
 

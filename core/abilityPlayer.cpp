@@ -91,6 +91,10 @@ ServerPlayer* AbilityPlayer::owner(ServerCard *card) const {
     return player ? mPlayer : mPlayer->game()->opponentOfPlayer(mPlayer->id());
 }
 
+void AbilityPlayer::setThisCard(ServerCard *card) {
+    mThisCard = CardImprint(card->zone()->name(), card);
+}
+
 void AbilityPlayer::removeMentionedCard(int cardId) {
     std::erase_if(mMentionedCards, [cardId](CardImprint &im) { return cardId == im.card->id(); });
 }
@@ -146,7 +150,8 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t) {
             if (checkCard(spec.cards.cardSpecifiers, *card))
                 targets.push_back(card);
         }
-    } else if (t.type == asn::TargetType::OppositeThis) {
+    } else if (t.type == asn::TargetType::OppositeThis ||
+               t.type == asn::TargetType::BattleOpponent) {
         auto card = mPlayer->oppositeCard(thisCard().card);
         if (card)
             targets.push_back(card);

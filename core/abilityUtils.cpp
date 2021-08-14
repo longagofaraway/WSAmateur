@@ -128,6 +128,12 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
                 eligible = false;
             break;
         }
+        case asn::CardSpecifierType::Power: {
+            const auto &number = std::get<asn::Power>(spec.specifier).value;
+            if (!checkNumber(number, card.power()))
+                eligible = false;
+            break;
+        }
         case asn::CardSpecifierType::Cost: {
             const auto &number = std::get<asn::CostSpecifier>(spec.specifier).value;
             if (!checkNumber(number, card.cost()))

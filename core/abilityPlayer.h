@@ -33,6 +33,20 @@ class AbilityPlayer {
 public:
     AbilityPlayer(ServerPlayer *player) : mPlayer(player) {}
 
+    // set this before playing an ability, if applicable
+    void setThisCard(const CardImprint &c) { mThisCard = c; }
+    void setThisCard(ServerCard *card);
+
+    // must be set if ability is CONT
+    void setAbilityId(int abilityId) { mAbilityId = abilityId; }
+
+    bool canBePlayed(const asn::Ability &a);
+
+    Resumable playAbility(const asn::Ability &a);
+    void playContAbility(const asn::ContAbility &a, bool &active);
+    void revertContAbility(const asn::ContAbility &a);
+
+private:
     ServerPlayer* owner(asn::Player player) const;
     ServerPlayer* owner(ServerCard *card) const;
 
@@ -45,12 +59,10 @@ public:
     bool revealChosen() const { return mRevealChosen; }
     void setRevealChosen(bool revealChosen) { mRevealChosen = revealChosen; }
     int abilityId() const { return mAbilityId; }
-    void setAbilityId(int abilityId) { mAbilityId = abilityId; }
     const asn::Cost& cost() const { return *mCost; }
     bool hasCost() const { return mCost.has_value(); }
     void setCost(const asn::Cost &cost) { mCost = cost; }
     CardImprint& thisCard() { return mThisCard; }
-    void setThisCard(const CardImprint &c) { mThisCard = c; }
     bool cont() const { return mIsCont; }
     void setCont(bool cont) { mIsCont = cont; }
     bool isPayingCost() const { return mIsPayingCost; }
@@ -70,15 +82,11 @@ public:
     void clearLastMovedCards() { mLastMovedCards.clear(); }
 
     bool canBePayed(const asn::CostItem &c);
-    bool canBePlayed(const asn::Ability &a);
 
-    Resumable playAbility(const asn::Ability &a);
     Resumable playAutoAbility(const asn::AutoAbility &a);
     Resumable playActAbility(const asn::ActAbility &a);
     Resumable playEventAbility(const asn::EventAbility &a);
 
-    void playContAbility(const asn::ContAbility &a, bool &active);
-    void revertContAbility(const asn::ContAbility &a);
     void playContEffect(const asn::Effect &e);
     Resumable playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect = {});
     Resumable playEffects(const std::vector<asn::Effect> &e);

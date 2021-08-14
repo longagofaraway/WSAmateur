@@ -20,7 +20,8 @@ enum class CardSpecifierType : uint8_t {
     Color,
     Cost,
     TriggerIcon,
-    HasMarker
+    HasMarker,
+    Power
 };
 
 enum class CardType : uint8_t {
@@ -53,6 +54,9 @@ struct Level {
 struct CostSpecifier {
     Number value;
 };
+struct Power {
+    Number value;
+};
 
 enum class TriggerIcon : uint8_t {
     Soul = 1,
@@ -79,7 +83,8 @@ struct CardSpecifier {
         Level,
         Color,
         CostSpecifier,
-        TriggerIcon
+        TriggerIcon,
+        Power
     > specifier;
 };
 

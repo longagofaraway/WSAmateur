@@ -27,7 +27,9 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
     }
 
     bool article = true;
-    if (c.target.type == TargetType::MentionedCards ||
+    if (c.target.type == TargetType::ThisCard) {
+        s += "this card is ";
+    } else if (c.target.type == TargetType::MentionedCards ||
         c.target.type == TargetType::ChosenCards) {
         if (gPrintState.mentionedCardsNumber.value == 1)
             s += "that card is ";

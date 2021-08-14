@@ -15,7 +15,6 @@
 #include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "cardDatabase.h"
-#include "globalAbilities/globalAbilities.h"
 #include "serverCardZone.h"
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
@@ -63,7 +62,7 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
     } else if (cmd.command().Is<CommandSwitchStagePositions>()) {
         CommandSwitchStagePositions switchCmd;
         cmd.command().UnpackTo(&switchCmd);
-        switchPositions(switchCmd);
+        mGame->startAsyncTask(switchPositions(switchCmd));
     } else if (cmd.command().Is<CommandClimaxPhase>()) {
         mGame->startAsyncTask(climaxPhase());
     } else if (cmd.command().Is<CommandAttackPhase>()) {
@@ -535,13 +534,15 @@ Resumable ServerPlayer::playEvent(int handIndex) {
     co_await mGame->checkTiming();
 }
 
-void ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
+Resumable ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
     ServerCardZone *stage = zone("stage");
     if (cmd.stage_pos_from() >= stage->count()
         || cmd.stage_pos_to() >= stage->count())
-        return;
+        co_return;
 
     switchPositions(cmd.stage_pos_from(), cmd.stage_pos_to());
+
+    co_await mGame->checkTiming();
 }
 
 void ServerPlayer::switchPositions(int from, int to) {
@@ -916,10 +917,7 @@ void ServerPlayer::refresh() {
     moveWrToDeck();
     sendToBoth(EventRefresh());
 
-    TriggeredAbility a;
-    a.type = ProtoRuleAction;
-    a.abilityId = static_cast<int>(RuleAction::RefreshPoint);
-    mQueue.push_back(a);
+    triggerRuleAction(RuleAction::RefreshPoint);
 }
 
 void ServerPlayer::moveWrToDeck() {

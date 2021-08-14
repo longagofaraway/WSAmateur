@@ -1,8 +1,10 @@
+#pragma once
+
 #include "abilities.h"
-#include "../cardInfo.h"
 
 enum class RuleAction {
-    RefreshPoint
+    RefreshPoint,
+    InsufficientPower
 };
 
 enum class GlobalAbility {

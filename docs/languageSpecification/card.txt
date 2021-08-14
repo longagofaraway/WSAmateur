@@ -16,6 +16,7 @@ CardSpecifier {
     Color,
     CostSpecifier,
     TriggerIcon,
+    Power,
     Nothing
   }
 }
@@ -31,7 +32,8 @@ enum CardSpecifierType {
   color = 8,
   cost = 9,
   triggerIcon = 10,
-  hasMarker = 11
+  hasMarker = 11,
+  power = 12
 }
 
 enum CardType {
@@ -58,5 +60,9 @@ Level {
 }
 
 CostSpecifier {
+  number Number
+}
+
+Power {
   number Number
 }

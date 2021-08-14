@@ -34,6 +34,9 @@ void encodeCardSpecifier(const CardSpecifier &c, Buf &buf) {
     case CardSpecifierType::TriggerIcon:
         buf.push_back(static_cast<uint8_t>(std::get<TriggerIcon>(c.specifier)));
         break;
+    case CardSpecifierType::Power:
+        encodeNumber(std::get<Power>(c.specifier).value, buf);
+        break;
     default:
         break;
     }

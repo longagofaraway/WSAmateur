@@ -487,10 +487,10 @@ CardDatabase::CardDatabase() {
 
     auto info36 = std::make_shared<CardInfo>();
     info36->setCode("KGL/S79-035");
-    info36->setLevel(1);
+    info36->setLevel(0);
     info36->setCost(0);
     info36->setSoul(1);
-    info36->setPower(3000);
+    info36->setPower(500);
     info36->setName("Kei, Killing Hello Return");
     info36->setType(CardType::Char);
     info36->setCounter(true);
@@ -561,7 +561,7 @@ CardDatabase::CardDatabase() {
     info41->setName("cardName");
     info41->setType(CardType::Char);
     info41->setColor('G');
-    info41->addAbility({0x01, 0x03, 0x01, 0x20, 0x00, 0x01, 0x00, 0x00});
+    info41->addAbility({0x01, 0x03, 0x01, 0x01, 0x00, 0x08, 0x01, 0x01, 0xe7, 0x03, 0x00, 0x00, 0x00, 0x00});
     mDb.emplace(info41->code(), info41);
 }
 

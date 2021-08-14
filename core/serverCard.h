@@ -17,6 +17,7 @@ class CardBase {
 public:
     virtual ~CardBase() = default;
 
+    virtual int power() const = 0;
     virtual int level() const = 0;
     virtual int cost() const = 0;
     virtual const std::string& name() const = 0;
@@ -87,7 +88,7 @@ public:
     const std::string& name() const override { return mCardInfo->name(); }
     int level() const override { return mLevel; }
     int cost() const override { return mCardInfo->cost(); }
-    int power() const { return mPower; }
+    int power() const override { return mPower; }
     int soul() const { return mSoul; }
     CardType type() const override { return mCardInfo->type(); }
     char color() const { return mCardInfo->color(); }

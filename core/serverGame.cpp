@@ -209,14 +209,21 @@ Resumable ServerGame::checkTiming() {
     if (!aplayer || !opponent)
         co_return;
 
-    while (true) {
+    do {
         co_await aplayer->checkTiming();
         co_await opponent->checkTiming();
-        if (aplayer->hasActivatedAbilities() ||
-            opponent->hasActivatedAbilities())
-            continue;
-        break;
-    }
+    } while (aplayer->hasActivatedAbilities() || opponent->hasActivatedAbilities());
+}
+
+Resumable ServerGame::processRuleActions() {
+    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
+
+    // TODO: process rule actions correctly
+    do {
+        co_await aplayer->processRuleActions();
+        co_await opponent->processRuleActions();
+    } while (aplayer->hasTriggeredRuleActions() || opponent->hasTriggeredRuleActions());
 }
 
 void ServerGame::resolveAllContAbilities() {

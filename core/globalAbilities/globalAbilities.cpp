@@ -40,6 +40,10 @@ std::unordered_map<RuleAction, std::vector<uint8_t>> gRuleActionBinAbilities = {
     { RuleAction::RefreshPoint, {
           #include "refreshPoint"
       }
+    },
+    { RuleAction::InsufficientPower, {
+          #include "charWithInsufficientPower"
+      }
     }
 };
 std::unordered_map<GlobalAbility, std::vector<uint8_t>> gGlobalBinAbilities = {

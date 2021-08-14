@@ -34,6 +34,9 @@ CardSpecifier decodeCardSpecifier(Iterator &it, Iterator end) {
     case CardSpecifierType::TriggerIcon:
         c.specifier = decodeEnum<TriggerIcon>(it, end);
         break;
+    case CardSpecifierType::Power:
+        c.specifier = Power{ decodeNumber(it, end) };
+        break;
     default:
         break;
     }

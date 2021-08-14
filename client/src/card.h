@@ -62,7 +62,7 @@ public:
     bool isCounter() const { return mInfo->isCounter(); }
     int level() const override { return mLevel; }
     void setLevel(int level) { mLevel = level; }
-    int power() const { return mPower; }
+    int power() const override { return mPower; }
     void setPower(int power) { mPower = power; }
     int soul() const { return mSoul; }
     void setSoul(int soul) { mSoul = soul; }

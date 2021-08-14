@@ -49,6 +49,8 @@ void CardBuffManager::sendBoolAttrChange(BoolAttributeType type, bool value) {
 void CardBuffManager::addAttributeBuff(asn::AttributeType attr, int delta, int duration) {
     mBuffs.emplace_back(attr, delta, duration);
     mCard->changeAttr(attr, delta);
+    if (mCard->power() <= 0)
+        mCard->player()->triggerRuleAction(RuleAction::InsufficientPower, mCard);
 
     sendAttrChange(attr);
 }
@@ -75,6 +77,8 @@ void CardBuffManager::addContAttributeBuff(ServerCard *source, int abilityId, as
         mCard->changeAttr(attr, delta - it->value);
         it->value = delta;
     }
+    if (mCard->power() <= 0)
+        mCard->player()->triggerRuleAction(RuleAction::InsufficientPower, mCard);
 
     sendAttrChange(attr);
 }
@@ -101,6 +105,10 @@ void CardBuffManager::removeContAttributeBuff(ServerCard *source, int abilityId,
 
     mCard->changeAttr(attr, -it->value);
     mContBuffs.erase(it);
+
+    if (mCard->power() <= 0)
+        mCard->player()->triggerRuleAction(RuleAction::InsufficientPower, mCard);
+
     sendAttrChange(attr);
 }
 
@@ -190,6 +198,9 @@ void CardBuffManager::removePositionalContBuffs() {
     removePositionalContAttrBuffs();
     removePositionalContBoolAttrChanges();
     removeAbilityAsPositionalContBuff();
+
+    if (mCard->power() <= 0)
+        mCard->player()->triggerRuleAction(RuleAction::InsufficientPower, mCard);
 }
 
 void CardBuffManager::removePositionalContAttrBuffs() {
@@ -233,6 +244,9 @@ void CardBuffManager::removePositionalContBuffsBySource(ServerCard *source) {
     auto oldAttrs = mCard->attributes();
     removePositionalContAttrBuffsBySource(source);
     sendChangedAttrs(oldAttrs);
+
+    if (mCard->power() <= 0)
+        mCard->player()->triggerRuleAction(RuleAction::InsufficientPower, mCard);
 
     removeAbilityAsPositionalContBuffBySource(source);
     removePositionalContBoolAttrChangeBySource(source);
@@ -289,6 +303,9 @@ void CardBuffManager::validateAttrBuffs() {
     }
     std::erase_if(mBuffs, [](const AttributeChange &o){ return o.duration <= 0; });
     sendChangedAttrs(oldAttrs);
+
+    if (mCard->power() <= 0)
+        mCard->player()->triggerRuleAction(RuleAction::InsufficientPower, mCard);
 }
 
 void CardBuffManager::validateAbilities() {

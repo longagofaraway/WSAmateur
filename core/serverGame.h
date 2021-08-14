@@ -58,6 +58,7 @@ public:
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
 
     Resumable checkTiming();
+    Resumable processRuleActions();
 
     void resolveAllContAbilities();
     void removePositionalContBuffsBySource(ServerCard *source);

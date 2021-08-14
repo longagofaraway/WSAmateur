@@ -116,6 +116,9 @@ CardSpecifier parseCardSpecifier(const QJsonObject &json) {
     case CardSpecifierType::TriggerIcon:
         c.specifier = static_cast<TriggerIcon>(json["specifier"].toInt());
         break;
+    case CardSpecifierType::Power:
+        c.specifier = parseNumberType<Power>(json["specifier"].toObject());
+        break;
     case CardSpecifierType::HasMarker:
     case CardSpecifierType::LevelHigherThanOpp:
          break;

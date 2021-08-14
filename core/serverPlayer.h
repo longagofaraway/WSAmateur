@@ -15,6 +15,7 @@
 #include "coroutineTask.h"
 #include "commands.h"
 #include "deckList.h"
+#include "globalAbilities/globalAbilities.h"
 #include "playerBuffManager.h"
 #include "serverCardZone.h"
 
@@ -126,7 +127,7 @@ public:
     Resumable playCharacter(const CommandPlayCard &cmd);
     Resumable playClimax(int handIndex);
     Resumable playEvent(int handIndex);
-    void switchPositions(const CommandSwitchStagePositions &cmd);
+    Resumable switchPositions(const CommandSwitchStagePositions &cmd);
     void switchPositions(int from, int to);
     bool canPlay(ServerCard *card);
     Resumable climaxPhase();
@@ -168,16 +169,18 @@ public:
     void checkOnPlayTrigger(ServerCard *card);
     void checkOtherTrigger(const std::string &code);
     void triggerBackupAbility(ServerCard *card);
+    void triggerRuleAction(RuleAction action, ServerCard *thisCard = nullptr);
 
     bool canBePlayed(ServerCard *thisCard, const asn::Ability &a);
 
     Resumable playEventEffects(ServerCard *card);
     Resumable resolveTrigger(ServerCard *card, asn::TriggerIcon trigger);
-    Resumable processRuleActions(bool &ruleActionFound);
+    Resumable processRuleActions();
     void playContAbilities(ServerCard *card, bool revert = false);
     void resolveAllContAbilities();
 
     bool hasActivatedAbilities() const;
+    bool hasTriggeredRuleActions() const;
     Resumable checkTiming();
 
 private:
