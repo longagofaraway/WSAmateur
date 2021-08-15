@@ -21,7 +21,8 @@ enum class CardSpecifierType : uint8_t {
     Cost,
     TriggerIcon,
     HasMarker,
-    Power
+    Power,
+    StandbyTarget
 };
 
 enum class CardType : uint8_t {

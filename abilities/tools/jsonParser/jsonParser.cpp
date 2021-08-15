@@ -121,6 +121,7 @@ CardSpecifier parseCardSpecifier(const QJsonObject &json) {
         break;
     case CardSpecifierType::HasMarker:
     case CardSpecifierType::LevelHigherThanOpp:
+    case CardSpecifierType::StandbyTarget:
          break;
     default:
         throw std::runtime_error("wrong CardSpecifierType");

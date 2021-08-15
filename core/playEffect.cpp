@@ -91,6 +91,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::SideAttackWithoutPenalty:
         playSideAttackWithoutPenalty(std::get<asn::SideAttackWithoutPenalty>(e.effect));
         break;
+    case asn::EffectType::PutOnStageRested:
+        co_await playPutOnStageRested(std::get<asn::PutOnStageRested>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -1260,6 +1263,23 @@ void AbilityPlayer::playSideAttackWithoutPenalty(const asn::SideAttackWithoutPen
             target->buffManager()->addBoolAttrChange(attr, e.duration);
         }
     }
+}
+
+Resumable AbilityPlayer::playPutOnStageRested(const asn::PutOnStageRested &e) {
+    asn::MoveCard effect;
+    effect.executor = asn::Player::Player;
+    effect.target = e.target;
+    effect.from = e.from;
+    effect.order = asn::Order::NotSpecified;
+    effect.to.emplace_back(asn::Place{e.to, asn::Zone::Stage, asn::Player::Player});
+
+    co_await playMoveCard(effect);
+
+    // notice: using lastMovedCard might not always work, but we assume it will
+    for (auto &target: lastMovedCards())
+        target.card->player()->setCardState(target.card, asn::State::Rested);
+
+    co_return;
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

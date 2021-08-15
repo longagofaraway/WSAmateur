@@ -28,6 +28,7 @@ Effect {
     OpponentAutoCannotDealDamage,
     CannotMove,
     SideAttackWithoutPenalty,
+    PutOnStageRested,
     OtherEffect,
     Nothing
   }
@@ -68,6 +69,7 @@ enum EffectType {
   sideAttackWithoutPenalty = 32,
   standby = 33,
   shuffle = 34,
+  putOnStageRested = 35,
   
   otherEffect = 255
 }
@@ -308,4 +310,10 @@ SideAttackWithoutPenalty {
 OtherEffect {
   cardCode String,
   effectId Int8
+}
+
+PutOnStageRested {
+  target Target,
+  from Place,
+  pos Position
 }

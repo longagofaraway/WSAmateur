@@ -76,7 +76,7 @@ public:
     QString qcode() const { return QString::fromStdString(mCode); }
     const std::string& code() const { return mCode; }
     const std::string& name() const override { return mInfo->name(); }
-    bool levelGtPlayerLevel() const override;
+    int playersLevel() const override;
     bool cannotPlay() const { return mCannotPlay; }
     void setCannotPlay(bool p) { mCannotPlay = p; }
     bool cannotFrontAttack() const { return mCannotFrontAttack; }

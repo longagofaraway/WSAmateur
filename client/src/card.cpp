@@ -75,8 +75,8 @@ QString Card::qtype() const {
     return "";
 }
 
-bool Card::levelGtPlayerLevel() const {
-    return mLevel > mZone->player()->level();
+int Card::playersLevel() const {
+    return mZone->player()->level();
 }
 
 void Card::addAbility(const asn::Ability &a, int id) {

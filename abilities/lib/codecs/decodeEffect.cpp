@@ -205,6 +205,14 @@ SideAttackWithoutPenalty decodeSideAttackWithoutPenalty(Iterator &it, Iterator e
     return e;
 }
 
+PutOnStageRested decodePutOnStageRested(Iterator &it, Iterator end) {
+    PutOnStageRested e;
+    e.target = decodeTarget(it, end);
+    e.from = decodePlace(it, end);
+    e.to = decodeEnum<Position>(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -304,6 +312,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::OtherEffect:
         e.effect = decodeOtherEffect(it, end);
+        break;
+    case EffectType::PutOnStageRested:
+        e.effect = decodePutOnStageRested(it, end);
         break;
     default:
         break;

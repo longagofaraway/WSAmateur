@@ -217,6 +217,12 @@ struct SideAttackWithoutPenalty {
     int duration;
 };
 
+struct PutOnStageRested {
+    Target target;
+    Place from;
+    Position to;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -258,6 +264,7 @@ enum class EffectType : uint8_t {
     SideAttackWithoutPenalty,
     Standby,
     Shuffle,
+    PutOnStageRested,
 
     OtherEffect = 255
 };
@@ -295,6 +302,7 @@ struct Effect {
         OpponentAutoCannotDealDamage,
         CannotMove,
         SideAttackWithoutPenalty,
+        PutOnStageRested,
         OtherEffect
     > effect;
 };

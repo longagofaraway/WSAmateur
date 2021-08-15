@@ -56,8 +56,8 @@ ServerPlayer* ServerCard::player() const {
     return mZone->player();
 }
 
-bool ServerCard::levelGtPlayerLevel() const {
-    return mLevel > mZone->player()->level();
+int ServerCard::playersLevel() const {
+    return mZone->player()->level();
 }
 
 int ServerCard::addAbility(const asn::Ability &a) {

@@ -446,6 +446,21 @@ SideAttackWithoutPenalty parseSideAttackWithoutPenalty(const QJsonObject &json) 
     return e;
 }
 
+PutOnStageRested parsePutOnStageRested(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in PutOnStageRested");
+    if (!json.contains("from") || !json["from"].isObject())
+        throw std::runtime_error("no from in PutOnStageRested");
+    if (!json.contains("to") || !json["to"].isDouble())
+        throw std::runtime_error("no to in PutOnStageRested");
+
+    PutOnStageRested e;
+    e.target = parseTarget(json["target"].toObject());
+    e.from = parsePlace(json["from"].toObject());
+    e.to = static_cast<Position>(json["to"].toInt());
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -542,6 +557,9 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::SideAttackWithoutPenalty:
         e.effect = parseSideAttackWithoutPenalty(json["effect"].toObject());
+        break;
+    case EffectType::PutOnStageRested:
+        e.effect = parsePutOnStageRested(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

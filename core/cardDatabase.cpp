@@ -70,7 +70,7 @@ CardDatabase::CardDatabase() {
     info5->setName("花火の音は聞こえない");
     info5->setType(CardType::Climax);
     info5->setColor('G');
-    info5->setTriggers({ TriggerIcon::Bag });
+    info5->setTriggers({ TriggerIcon::Standby });
     mDb.emplace(info5->code(), info5);
 
     auto info6 = std::make_shared<CardInfo>();

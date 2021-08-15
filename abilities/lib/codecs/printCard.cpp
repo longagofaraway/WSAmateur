@@ -120,6 +120,11 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
             s += "with level higher than your opponent's level ";
     }
 
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::StandbyTarget)
+            s += "with level equal to or less than your level +1 ";
+    }
+
     if (s[s.size() - 1] == ' ')
         s.pop_back();
 

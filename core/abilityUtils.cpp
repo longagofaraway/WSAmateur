@@ -155,7 +155,11 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             break;
         }
         case asn::CardSpecifierType::LevelHigherThanOpp:
-            if (!card.levelGtPlayerLevel())
+            if (card.playersLevel() >= card.level())
+                eligible = false;
+            break;
+        case asn::CardSpecifierType::StandbyTarget:
+            if (card.level() > card.playersLevel() + 1)
                 eligible = false;
             break;
         case asn::CardSpecifierType::Owner:

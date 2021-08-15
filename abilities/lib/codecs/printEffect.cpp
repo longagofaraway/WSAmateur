@@ -676,6 +676,22 @@ std::string printSideAttackWithoutPenalty(const SideAttackWithoutPenalty &e) {
     return s;
 }
 
+std::string printPutOnStageRested(const PutOnStageRested &e) {
+    std::string s;
+
+    MoveCard m;
+    m.target = e.target;
+    m.from = e.from;
+    m.executor = Player::Player;
+    m.order = Order::NotSpecified;
+    m.to.emplace_back(Place{e.to, Zone::Stage, Player::Player});
+
+    s += printMoveCard(m);
+    s += "as" + printState(State::Rested);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -771,6 +787,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::SideAttackWithoutPenalty:
         s += printSideAttackWithoutPenalty(std::get<SideAttackWithoutPenalty>(e.effect));
+        break;
+    case EffectType::PutOnStageRested:
+        s += printPutOnStageRested(std::get<PutOnStageRested>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

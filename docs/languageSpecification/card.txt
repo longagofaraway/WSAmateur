@@ -33,7 +33,8 @@ enum CardSpecifierType {
   cost = 9,
   triggerIcon = 10,
   hasMarker = 11,
-  power = 12
+  power = 12,
+  standbyTarget = 13 // with level equal to or less than your level +1
 }
 
 enum CardType {
