@@ -8,6 +8,7 @@ set(coreSources
     cardDatabase.cpp
     cardInfo.cpp
     condition.cpp
+    connectionManager.cpp
     deckList.cpp
     playAbility.cpp
     playEffect.cpp
@@ -29,6 +30,7 @@ set(coreSources
     cardImprint.h
     commands.h
     connection.h
+    connectionManager.h
     coroutineTask.h
     deckList.h
     playerBuffManager.h

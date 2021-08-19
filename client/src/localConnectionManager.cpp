@@ -1,13 +1,11 @@
-#include "localServer.h"
+#include "localConnectionManager.h"
 
 #include "localServerConnection.h"
-#include "serverProtocolHandler.h"
 
-LocalServerConnection* LocalServer::newConnection() {
+LocalServerConnection* LocalConnectionManager::newConnection() {
     auto conn = std::make_unique<LocalServerConnection>();
-    conn->moveToThread(thread());
     auto connPtr = conn.get();
-    auto client = std::make_unique<ServerProtocolHandler>(this, std::move(conn));
+    auto client = std::make_unique<ServerProtocolHandler>(mServer, std::move(conn));
     client->moveToThread(thread());
     mClients.emplace_back(std::move(client));
     return connPtr;

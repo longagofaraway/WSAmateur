@@ -16,9 +16,57 @@
 #include <QDebug>
 
 ServerProtocolHandler::ServerProtocolHandler(Server *server, std::unique_ptr<Connection> &&connection)
-    : mServer(server), mConnection(std::move(connection)), mGameId(0), mPlayerId(0) {
-    connect(mConnection.get(), SIGNAL(messageReady(std::shared_ptr<CommandContainer>)),
+    : mServer(server), mGameId(0), mPlayerId(0) {
+    connection->setParent(this);
+    mConnection = connection.release();
+    connect(mConnection, SIGNAL(messageReady(std::shared_ptr<CommandContainer>)),
             this, SLOT(processCommand(std::shared_ptr<CommandContainer>)));
+    connect(mConnection, SIGNAL(connectionClosed()), this, SLOT(onConnectionClosed()));
+    connect(this, SIGNAL(outputQueueChanged()), this, SLOT(flushOutputQueue()), Qt::QueuedConnection);
+}
+
+ServerProtocolHandler::~ServerProtocolHandler()
+{
+    qDebug() << "handler deleted";
+    flushOutputQueue();
+}
+
+void ServerProtocolHandler::initConnection() {
+    mConnection->init();
+}
+
+void ServerProtocolHandler::flushOutputQueue() {
+    QMutexLocker locker(&mOutputQueueMutex);
+    if (mOutputQueue.empty() || !mConnection)
+        return;
+
+    while (!mOutputQueue.empty()) {
+        auto message = mOutputQueue.front();
+        mOutputQueue.pop();
+        locker.unlock();
+
+        mConnection->sendMessage(message);
+
+        locker.relock();
+    }
+    mConnection->flush();
+}
+
+void ServerProtocolHandler::onConnectionClosed() {
+    if (!mConnection)
+        return;
+
+    mServer->removeClient(this);
+
+    auto game = mServer->game(mGameId);
+    if (game) {
+        auto player = game->player(mPlayerId);
+        if (player)
+            player->disconnectClient();
+    }
+
+    mConnection = nullptr;
+    deleteLater();
 }
 
 void ServerProtocolHandler::processCommand(std::shared_ptr<CommandContainer> cont) {
@@ -34,6 +82,7 @@ void ServerProtocolHandler::processCommand(std::shared_ptr<CommandContainer> con
     }
     } catch (const std::exception &) {}
 }
+
 
 void ServerProtocolHandler::processLobbyCommand(LobbyCommand &cmd) {
     if (cmd.command().Is<CommandCreateGame>()) {
@@ -68,7 +117,13 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
 void ServerProtocolHandler::sendProtocolItem(const ::google::protobuf::Message &event) {
     auto message = std::make_shared<ServerMessage>();
     message->mutable_message()->PackFrom(event);
-    mConnection->sendMessage(message);
+
+    QMutexLocker locker(&mOutputQueueMutex);
+    mOutputQueue.push(message);
+    locker.unlock();
+
+    // working through signals here to use only client's thread
+    emit outputQueueChanged();
 }
 
 void ServerProtocolHandler::sendLobbyEvent(const ::google::protobuf::Message &event) {

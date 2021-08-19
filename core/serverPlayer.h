@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 
+#include <QMutex>
+
 #include <google/protobuf/message.h>
 
 #include "ability.pb.h"
@@ -67,8 +69,12 @@ class ServerPlayer
 
     std::vector<TriggeredAbility> mQueue;
 
+    QMutex mPlayerMutex;
+
 public:
     ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id);
+
+    void disconnectClient();
 
     ServerGame* game() { return mGame; }
     int id() const { return mId; }

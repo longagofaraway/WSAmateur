@@ -1,7 +1,7 @@
 #include "game.h"
 
 #include "localClientConnection.h"
-#include "localServer.h"
+#include "localConnectionManager.h"
 
 #include "abilityCommands.pb.h"
 #include "abilityEvents.pb.h"
@@ -13,6 +13,7 @@
 #include "moveEvents.pb.h"
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
+#include "server.h"
 
 #include <QTimer>
 #include <QDebug>
@@ -71,11 +72,15 @@ void Game::componentComplete() {
 }
 
 void Game::startLocalGame() {
-    mLocalServer = std::make_unique<LocalServer>();
+    auto connManagerPtr = std::make_unique<LocalConnectionManager>();
+    auto connManager = connManagerPtr.get();
+    connManager->moveToThread(&mClientThread);
+
+    mLocalServer = std::make_unique<Server>(std::move(connManagerPtr));
     mLocalServer->moveToThread(&mClientThread);
 
-    addClient();
-    addClient();
+    addClient(connManager);
+    addClient(connManager);
 
     mClientThread.start();
 
@@ -92,8 +97,8 @@ void Game::startLocalGame() {
     mClients.front()->sendLobbyCommand(command);
 }
 
-void Game::addClient() {
-    auto serverConnection = mLocalServer->newConnection();
+void Game::addClient(LocalConnectionManager *connManager) {
+    auto serverConnection = connManager->newConnection();
     auto localConnection = std::make_unique<LocalClientConnection>(serverConnection);
     localConnection->moveToThread(&mClientThread);
 

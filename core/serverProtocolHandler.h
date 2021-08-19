@@ -1,5 +1,8 @@
 #pragma once
 
+#include <queue>
+
+#include <QMutex>
 #include <QObject>
 
 #include <google/protobuf/message.h>
@@ -15,12 +18,16 @@ class ServerProtocolHandler : public QObject
     Q_OBJECT
 private:
     Server *mServer;
-    std::unique_ptr<Connection> mConnection;
+    Connection *mConnection;
     int mGameId;
     int mPlayerId;
 
+    QMutex mOutputQueueMutex;
+    std::queue<std::shared_ptr<ServerMessage>> mOutputQueue;
+
 public:
     ServerProtocolHandler(Server *server, std::unique_ptr<Connection> &&connection);
+    ~ServerProtocolHandler();
 
     void sendLobbyEvent(const ::google::protobuf::Message &event);
     void sendGameEvent(const ::google::protobuf::Message &event, int playerId);
@@ -28,8 +35,16 @@ public:
 
     void addGameAndPlayer(int gameId, int playerId);
 
+signals:
+    void outputQueueChanged();
+
 public slots:
     void processCommand(std::shared_ptr<CommandContainer>);
+    void initConnection();
+
+private slots:
+    void flushOutputQueue();
+    void onConnectionClosed();
 
 private:
     void processLobbyCommand(LobbyCommand &cmd);

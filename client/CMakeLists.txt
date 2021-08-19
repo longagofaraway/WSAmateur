@@ -16,7 +16,7 @@ set(clientSources
     src/hand.cpp
     src/imageProvider.cpp
     src/localClientConnection.cpp
-    src/localServer.cpp
+    src/localConnectionManager.cpp
     src/localServerConnection.cpp
     src/main.cpp
     src/playAbility.cpp
@@ -38,7 +38,7 @@ set(clientSources
     src/hand.h
     src/imageProvider.h
     src/localClientConnection.h
-    src/localServer.h
+    src/localConnectionManager.h
     src/localServerConnection.h
     src/player.h
     src/stage.h

@@ -23,7 +23,12 @@
 #include <QDebug>
 
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
-    : mGame(game), mClient(client), mId(id), mBuffManager(this) { }
+    : mGame(game), mClient(client), mId(id), mBuffManager(this) {}
+
+void ServerPlayer::disconnectClient() {
+    QMutexLocker locker(&mPlayerMutex);
+    mClient = nullptr;
+}
 
 void ServerPlayer::processGameCommand(GameCommand &cmd) {
     if (!expectsCommand(cmd))
@@ -94,7 +99,10 @@ void ServerPlayer::processGameCommand(GameCommand &cmd) {
 void ServerPlayer::sendGameEvent(const ::google::protobuf::Message &event, int playerId) {
     if (!playerId)
         playerId = mId;
-    mClient->sendGameEvent(event, playerId);
+
+    QMutexLocker locker(&mPlayerMutex);
+    if (mClient)
+        mClient->sendGameEvent(event, playerId);
 }
 
 void ServerPlayer::sendToBoth(const google::protobuf::Message &event) {
@@ -103,6 +111,7 @@ void ServerPlayer::sendToBoth(const google::protobuf::Message &event) {
 }
 
 void ServerPlayer::addDeck(const std::string &deck) {
+    qDebug("deck set");
     mDeck = std::make_unique<DeckList>(deck);
     mExpectedCommands.push_back(CommandReadyToStart::descriptor()->name());
 }

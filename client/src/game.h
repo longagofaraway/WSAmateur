@@ -9,13 +9,14 @@
 
 #include "client.h"
 #include "player.h"
-#include "localServer.h"
+#include "localConnectionManager.h"
 
 class QQmlContext;
 class QQmlEngine;
 class QQmlContext;
 class LocalServer;
 class Client;
+class Server;
 
 extern std::string gDeck;
 
@@ -28,7 +29,7 @@ class Game : public QQuickItem
 private:
     std::unique_ptr<Player> mPlayer;
     std::unique_ptr<Player> mOpponent;
-    std::unique_ptr<LocalServer> mLocalServer;
+    std::unique_ptr<Server> mLocalServer;
     QThread mClientThread;
     std::vector<std::unique_ptr<Client>> mClients;
     bool mActionInProgress = false;
@@ -113,7 +114,7 @@ public slots:
 
 private:
     void startLocalGame();
-    void addClient();
+    void addClient(LocalConnectionManager *connManager);
 
     Client* getClientForPlayer(int playerId);
 
