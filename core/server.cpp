@@ -18,6 +18,17 @@ Server::Server(std::unique_ptr<ConnectionManager> cm)
     mConnectionManager->initialize(this);
 }
 
+EventGameList Server::gameList() {
+    QReadLocker locker(&mGamesLock);
+    EventGameList gamesInfo;
+    for (const auto &game: mGames) {
+        auto newGame = gamesInfo.add_games();
+        newGame->set_id(game.second->id());
+        newGame->set_name(game.second->description());
+    }
+    return gamesInfo;
+}
+
 int Server::nextGameId() {
     return ++mNextGameId;
 }

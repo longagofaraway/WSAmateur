@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message PlayerInfo {
+    sint32 id = 1;
+    string name = 2;
+    string deck = 3;
+}

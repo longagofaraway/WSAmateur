@@ -1,7 +1,5 @@
 #include "game.h"
 
-#include "localClientConnection.h"
-#include "localConnectionManager.h"
 
 #include "abilityCommands.pb.h"
 #include "abilityEvents.pb.h"
@@ -13,6 +11,10 @@
 #include "moveEvents.pb.h"
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
+
+#include "localClientConnection.h"
+#include "localConnectionManager.h"
+#include "remoteClientConnection.h"
 #include "server.h"
 
 #include <QTimer>
@@ -48,9 +50,13 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
 Game::Game() {
     qRegisterMetaType<std::shared_ptr<EventGameJoined>>("std::shared_ptr<EventGameJoined>");
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
+    qRegisterMetaType<std::shared_ptr<EventGameList>>("std::shared_ptr<EventGameList>");
+    qRegisterMetaType<std::shared_ptr<CommandContainer>>("std::shared_ptr<CommandContainer>");
 }
 
 Game::~Game() {
+    for (auto &client: mClients)
+        client.release()->deleteLater();
     mClientThread.quit();
     mClientThread.wait();
 }
@@ -69,6 +75,71 @@ void Game::componentComplete() {
     QQuickItem::componentComplete();
 
     startLocalGame();
+    //startNetworkGame();
+}
+
+void Game::startNetworkGame() {
+    auto conn = std::make_unique<RemoteClientConnection>();
+
+    auto clientPtr = std::make_unique<Client>(std::move(conn));
+    clientPtr->moveToThread(&mClientThread);
+    auto client = mClients.emplace_back(std::move(clientPtr)).get();
+    connect(client, &Client::gameListReceived, this, &Game::gameListReceived);
+    connect(client, &Client::gameJoinedEventReceived, this, &Game::gameJoined);
+    connect(client, &Client::gameEventReceived, this, &Game::processGameEvent);
+
+    mClientThread.start();
+    client->connectToHost("127.0.0.1", 7474);
+}
+
+void Game::gameListReceived(const std::shared_ptr<EventGameList> event) {
+    if (!event->games_size()) {
+        CommandCreateGame cmd;
+        cmd.set_description("lol");
+        mClients.front()->sendLobbyCommand(cmd);
+        return;
+    }
+
+    const auto &game = event->games(0);
+    CommandJoinGame cmd;
+    cmd.set_game_id(game.id());
+    mClients.front()->sendLobbyCommand(cmd);
+}
+
+void Game::gameJoined(const std::shared_ptr<EventGameJoined> event) {
+    mPlayer = std::make_unique<Player>(event->player_id(), this, false);
+
+    mPlayer->setDeck(gDeck);
+    CommandSetDeck cmd;
+    cmd.set_deck(gDeck);
+    mClients.front()->sendGameCommand(cmd);
+
+    CommandReadyToStart readyCmd;
+    readyCmd.set_ready(true);
+    mClients.front()->sendGameCommand(readyCmd);
+}
+
+void Game::addOpponent(const PlayerInfo &info) {
+    if (mOpponent)
+        return;
+    mOpponent = std::make_unique<Player>(info.id(), this, true);
+    mOpponent->setDeck(info.deck());
+}
+
+void Game::processGameInfo(const GameInfo &game_info) {
+    for (int i = 0; i < game_info.players_size(); ++i) {
+        if (mPlayer->id() == game_info.players(i).id())
+            continue;
+
+        addOpponent(game_info.players(i));
+    }
+}
+
+void Game::setOpponentDeck(const EventDeckSet &event) {
+    if (event.player_id() != mOpponent->id() || mOpponent->deckSet())
+        return;
+
+    mOpponent->setDeck(event.deck());
 }
 
 void Game::startLocalGame() {
@@ -79,8 +150,8 @@ void Game::startLocalGame() {
     mLocalServer = std::make_unique<Server>(std::move(connManagerPtr));
     mLocalServer->moveToThread(&mClientThread);
 
-    addClient(connManager);
-    addClient(connManager);
+    addLocalClient(connManager);
+    addLocalClient(connManager);
 
     mClientThread.start();
 
@@ -97,7 +168,7 @@ void Game::startLocalGame() {
     mClients.front()->sendLobbyCommand(command);
 }
 
-void Game::addClient(LocalConnectionManager *connManager) {
+void Game::addLocalClient(LocalConnectionManager *connManager) {
     auto serverConnection = connManager->newConnection();
     auto localConnection = std::make_unique<LocalClientConnection>(serverConnection);
     localConnection->moveToThread(&mClientThread);
@@ -111,14 +182,14 @@ void Game::localGameCreated(const std::shared_ptr<EventGameJoined> event) {
     mPlayer = std::make_unique<Player>(event->player_id(), this, false);
 
     connect(mClients.back().get(), SIGNAL(gameJoinedEventReceived(const std::shared_ptr<EventGameJoined>)),
-            this, SLOT(opponentJoined(const std::shared_ptr<EventGameJoined>)));
+            this, SLOT(localOpponentJoined(const std::shared_ptr<EventGameJoined>)));
 
     CommandJoinGame command;
     command.set_game_id(event->game_id());
     mClients.back()->sendLobbyCommand(command);
 }
 
-void Game::opponentJoined(const std::shared_ptr<EventGameJoined> event) {
+void Game::localOpponentJoined(const std::shared_ptr<EventGameJoined> event) {
     mOpponent = std::make_unique<Player>(event->player_id(), this, true);
 
     mPlayer->setDeck(gDeck);
@@ -145,11 +216,14 @@ void Game::processGameEventFromQueue() {
     if (mActionInProgress || mUiActionInProgress || mEventQueue.empty())
         return;
 
+    if (!mPlayer)
+        return;
+
     auto event = mEventQueue.front();
     mEventQueue.pop_front();
     if (mPlayer->id() == event->player_id())
         mPlayer->processGameEvent(event);
-    else
+    else if (mOpponent)
         mOpponent->processGameEvent(event);
 
     if (!mEventQueue.empty())

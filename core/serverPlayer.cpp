@@ -114,6 +114,11 @@ void ServerPlayer::addDeck(const std::string &deck) {
     qDebug("deck set");
     mDeck = std::make_unique<DeckList>(deck);
     mExpectedCommands.push_back(CommandReadyToStart::descriptor()->name());
+
+    EventDeckSet event;
+    event.set_player_id(mId);
+    event.set_deck(deck);
+    mGame->sendPublicEvent(event, mId);
 }
 
 ServerCardZone* ServerPlayer::addZone(std::string_view name, ZoneType type) {

@@ -3,13 +3,28 @@ syntax = "proto3";
 import "google/protobuf/any.proto";
 import "attackType.proto";
 import "cardAttribute.proto";
+import "gameInfo.proto";
+import "playerInfo.proto";
 
 message GameEvent {
     sint32 player_id = 1;
     google.protobuf.Any event = 2;
 }
 
-message EventStartTurn { }
+message EventPlayerJoined {
+    PlayerInfo player_info = 1;
+}
+
+message EventGameInfo {
+    GameInfo game_info = 1;
+}
+
+message EventDeckSet {
+    sint32 player_id = 1;
+    string deck = 2;
+}
+
+message EventStartTurn {}
 message EventLevelUp {}
 message EventRefresh {}
 message EventDiscardDownTo7 {}

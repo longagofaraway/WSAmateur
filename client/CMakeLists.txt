@@ -21,6 +21,7 @@ set(clientSources
     src/main.cpp
     src/playAbility.cpp
     src/player.cpp
+    src/remoteClientConnection.cpp
     src/stage.cpp
     src/utils.cpp
     src/abilityModel.h
@@ -41,6 +42,7 @@ set(clientSources
     src/localConnectionManager.h
     src/localServerConnection.h
     src/player.h
+    src/remoteClientConnection.h
     src/stage.h
     src/utils.h)
 

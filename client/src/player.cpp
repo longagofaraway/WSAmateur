@@ -79,6 +79,7 @@ void Player::setDeck(const std::string &deck) {
 
     auto deckZone = zone("deck");
     deckZone->model().addCards(cardCount, deckZone);
+    mDeckSet = true;
 }
 
 Player* Player::getOpponent() const {
@@ -95,7 +96,20 @@ CardZone* Player::zone(std::string_view name) const {
 }
 
 void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
-    if (event->event().Is<EventInitialHand>()) {
+    if (event->event().Is<EventPlayerJoined>()) {
+        assert(!mOpponent);
+        EventPlayerJoined ev;
+        event->event().UnpackTo(&ev);
+        mGame->addOpponent(ev.player_info());
+    } else if (event->event().Is<EventGameInfo>()) {
+        EventGameInfo ev;
+        event->event().UnpackTo(&ev);
+        mGame->processGameInfo(ev.game_info());
+    } else if (event->event().Is<EventDeckSet>()) {
+        EventDeckSet ev;
+        event->event().UnpackTo(&ev);
+        mGame->setOpponentDeck(ev);
+    } else if (event->event().Is<EventInitialHand>()) {
         EventInitialHand ev;
         event->event().UnpackTo(&ev);
         setInitialHand(ev);

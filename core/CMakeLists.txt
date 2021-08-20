@@ -34,6 +34,7 @@ set(coreSources
     coroutineTask.h
     deckList.h
     playerBuffManager.h
+    networkUtils.h
     server.h
     serverCard.h
     serverCardZone.h

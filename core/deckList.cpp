@@ -20,6 +20,7 @@ void DeckList::readCards(QXmlStreamReader &xml) {
 }
 
 DeckList::DeckList(const std::string &deck)
+    : mDeck(deck)
 {
     QXmlStreamReader xml;
 

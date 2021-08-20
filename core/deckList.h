@@ -17,10 +17,12 @@ class DeckList
     std::string mName;
     std::string mComments;
     std::vector<DeckCard> mCards;
+    std::string mDeck;
 public:
     DeckList(const std::string &deck);
 
-    std::vector<DeckCard>& cards() { return mCards; }
+    const std::vector<DeckCard>& cards() const { return mCards; }
+    const std::string& deck() const { return mDeck; }
 
 private:
     void readCards(QXmlStreamReader &xml);

@@ -6,6 +6,8 @@
 #include <QMutex>
 #include <QReadWriteLock>
 
+#include "lobbyEvent.pb.h"
+
 #include "connectionManager.h"
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
@@ -28,6 +30,7 @@ public:
     Server(std::unique_ptr<ConnectionManager> cm);
 
     QReadWriteLock mGamesLock;
+    EventGameList gameList();
     ServerGame* game(int id);
 
     ServerProtocolHandler* addClient(std::unique_ptr<ServerProtocolHandler>);

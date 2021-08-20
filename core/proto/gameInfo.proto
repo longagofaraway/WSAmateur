@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "playerInfo.proto";
+
+message GameInfo {
+    sint32 id = 1;
+    string name = 2;
+    repeated PlayerInfo players = 3;
+}

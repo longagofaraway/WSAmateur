@@ -22,6 +22,8 @@ int main(int argc, char *argv[])
     qmlRegisterType<ChoiceDialogModel>("wsamateur", 1, 0, "ChoiceDialogModel");
     qmlRegisterType<AbilityModel>("wsamateur", 1, 0, "AbilityModel");
 
+    qRegisterMetaType<uint16_t>("uint16_t");
+
     QQmlApplicationEngine engine;
 
     engine.addImageProvider("imgprov", new AsyncImageProvider);

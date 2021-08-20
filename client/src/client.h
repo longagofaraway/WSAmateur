@@ -11,12 +11,14 @@
 class GameEvent;
 class LobbyEvent;
 class EventGameJoined;
+class EventGameList;
 
 class Client : public QObject
 {
     Q_OBJECT
 private:
-    std::unique_ptr<ClientConnection> mConnection;
+    ClientConnection *mConnection;
+
 public:
     Client(std::unique_ptr<ClientConnection> &&connection);
 
@@ -28,20 +30,24 @@ public:
     void sendLobbyCommand(const ::google::protobuf::Message &cmd);
     void sendGameCommand(const ::google::protobuf::Message &cmd);
 
+    void connectToHost(const std::string &hostname, uint16_t port);
+
 signals:
     void queueCommand(std::shared_ptr<CommandContainer> command);
     void gameJoinedEventReceived(const std::shared_ptr<EventGameJoined> event);
     void gameEventReceived(const std::shared_ptr<GameEvent> event);
+    void gameListReceived(const std::shared_ptr<EventGameList> event);
+
+    void sigConnectToHost(const QString &hostname, uint16_t port);
 
 private slots:
-    void sendCommandContainer(std::shared_ptr<CommandContainer> command) {
-        mConnection->sendMessage(command);
-    }
+    void sendCommandContainer(std::shared_ptr<CommandContainer> command);
+    void doConnectToHost(const QString &hostname, uint16_t port);
 
     void processServerMessage(std::shared_ptr<ServerMessage> message);
 
 private:
-    void processLobbyEvent(LobbyEvent &event);
+    void processLobbyEvent(const LobbyEvent &event);
 
 protected:
 };

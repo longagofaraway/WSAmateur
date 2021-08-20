@@ -27,12 +27,13 @@ std::shared_ptr<CommandContainer> prepareGameCommand(const ::google::protobuf::M
 }
 }
 
-Client::Client(std::unique_ptr<ClientConnection> &&connection)
-    : mConnection(std::move(connection)) {
-    connect(this, SIGNAL(queueCommand(std::shared_ptr<CommandContainer>)),
-        this, SLOT(sendCommandContainer(std::shared_ptr<CommandContainer>)));
-    connect(mConnection.get(), SIGNAL(messageReady(std::shared_ptr<ServerMessage>)),
-            this, SLOT(processServerMessage(std::shared_ptr<ServerMessage>)));
+Client::Client(std::unique_ptr<ClientConnection> &&connection) {
+    connection->setParent(this);
+    mConnection = connection.release();
+    connect(this, &Client::queueCommand, this, &Client::sendCommandContainer);
+    connect(mConnection, &ClientConnection::messageReady, this, &Client::processServerMessage);
+
+    connect(this, &Client::sigConnectToHost, this, &Client::doConnectToHost);
 }
 
 void Client::sendLobbyCommand(const ::google::protobuf::Message &cmd) {
@@ -41,6 +42,19 @@ void Client::sendLobbyCommand(const ::google::protobuf::Message &cmd) {
 
 void Client::sendGameCommand(const ::google::protobuf::Message &cmd) {
     sendCommand(prepareGameCommand(cmd));
+}
+
+void Client::connectToHost(const std::string &hostname, uint16_t port) {
+    auto host = QString::fromStdString(hostname);
+    emit sigConnectToHost(host, port);
+}
+
+void Client::sendCommandContainer(std::shared_ptr<CommandContainer> command) {
+    mConnection->sendMessage(command);
+}
+
+void Client::doConnectToHost(const QString &hostname, uint16_t port) {
+    mConnection->connectToHost(hostname, port);
 }
 
 void Client::processServerMessage(std::shared_ptr<ServerMessage> message) {
@@ -57,10 +71,14 @@ void Client::processServerMessage(std::shared_ptr<ServerMessage> message) {
     } catch(const std::exception &) {}
 }
 
-void Client::processLobbyEvent(LobbyEvent &event) {
+void Client::processLobbyEvent(const LobbyEvent &event) {
     if (event.event().Is<EventGameJoined>()) {
         auto ev = std::make_shared<EventGameJoined>();
         event.event().UnpackTo(ev.get());
         emit gameJoinedEventReceived(ev);
+    } else if (event.event().Is<EventGameList>()) {
+        auto ev = std::make_shared<EventGameList>();
+        event.event().UnpackTo(ev.get());
+        emit gameListReceived(ev);
     }
 }

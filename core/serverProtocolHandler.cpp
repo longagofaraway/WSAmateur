@@ -33,6 +33,9 @@ ServerProtocolHandler::~ServerProtocolHandler()
 
 void ServerProtocolHandler::initConnection() {
     mConnection->init();
+
+    auto event = mServer->gameList();
+    sendLobbyEvent(event);
 }
 
 void ServerProtocolHandler::flushOutputQueue() {

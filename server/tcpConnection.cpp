@@ -3,20 +3,7 @@
 #include "commandContainer.pb.h"
 #include "serverMessage.pb.h"
 
-namespace {
-uint32_t fromBigEndian(const uint8_t *data) {
-    uint32_t val = 0;
-    for (int i = 0; i < sizeof(val); ++i)
-        val += data[i] << (sizeof(val) - i - 1) * 8;
-    return val;
-}
-
-void toBigEndian(uint32_t val, char *data) {
-    for (int i = 0; i < sizeof(val); ++i) {
-        data[sizeof(val) - i - 1] = (val >> i * 8) & 0xFF;
-    }
-}
-}
+#include "networkUtils.h"
 
 TcpConnection::TcpConnection(qintptr socketDescriptor)
     : socketDescriptor(socketDescriptor) {
@@ -41,7 +28,7 @@ void TcpConnection::init() {
 
 void TcpConnection::sendMessage(std::shared_ptr<ServerMessage> message) {
     QByteArray buf;
-    uint32_t size = message->ByteSize();
+    uint32_t size = static_cast<uint32_t>(message->ByteSizeLong());
     buf.resize(size + sizeof(size));
     toBigEndian(size, buf.data());
     message->SerializePartialToArray(buf.data() + sizeof(size), size);

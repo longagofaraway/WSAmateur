@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
+import "gameInfo.proto";
 
 message LobbyEvent {
 	google.protobuf.Any event = 1;
@@ -9,4 +10,8 @@ message LobbyEvent {
 message EventGameJoined {
 	sint32 player_id = 1;
 	sint32 game_id = 2;
+}
+
+message EventGameList {
+	repeated GameInfo games = 1;
 }

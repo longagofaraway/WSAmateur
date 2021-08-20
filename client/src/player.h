@@ -58,6 +58,7 @@ private:
     Hand *mHand;
     Stage *mStage;
     DeckView *mDeckView;
+    bool mDeckSet = false;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
     std::unique_ptr<ActivatedAbilities> mAbilityList;
     std::unique_ptr<ChoiceDialogBase> mChoiceDialog;
@@ -78,6 +79,7 @@ public:
     void setActivePlayer(bool active) { mActivePlayer = active; }
     void setDeck(const std::string &deck);
     Player* getOpponent() const;
+    bool deckSet() const { return mDeckSet; }
 
     int id() const { return mId; }
     int level() const { return mLevel; }

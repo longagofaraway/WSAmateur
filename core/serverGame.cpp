@@ -51,6 +51,28 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     event.set_player_id(static_cast<google::protobuf::uint32>(newId));
     event.set_game_id(static_cast<google::protobuf::uint32>(mId));
     client->sendLobbyEvent(event);
+
+    EventGameInfo ev;
+    auto gameInfo = ev.mutable_game_info();
+    gameInfo->set_id(mId);
+    gameInfo->set_name(mDescription);
+    for (const auto &p: mPlayers) {
+        auto playerRecord = gameInfo->add_players();
+        playerRecord->set_id(p.second->id());
+    }
+    client->sendGameEvent(ev, newId);
+
+    // send event to the opponent
+    for (const auto &p: mPlayers) {
+        if (p.second->id() == newId)
+            continue;
+        EventPlayerJoined evJoined;
+        auto playerInfo = evJoined.mutable_player_info();
+        playerInfo->set_id(p.second->id());
+        if (p.second->deck())
+            playerInfo->set_deck(p.second->deck()->deck());
+        p.second->sendGameEvent(evJoined);
+    }
 }
 
 ServerPlayer* ServerGame::opponentOfPlayer(int id) const {

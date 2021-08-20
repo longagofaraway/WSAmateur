@@ -7,12 +7,14 @@ set(protoSources
     commandContainer.proto
     gameCommand.proto
     gameEvent.proto
+    gameInfo.proto
     moveCommands.proto
     moveEvents.proto
     lobbyCommand.proto
     lobbyEvent.proto
     phaseCommand.proto
     phaseEvent.proto
+    playerInfo.proto
     serverMessage.proto
     )
 

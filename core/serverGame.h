@@ -29,6 +29,9 @@ public:
 
     QMutex mGameMutex;
 
+    int id() const { return mId; }
+    const std::string& description() const { return mDescription; }
+
     void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 
     bool taskInProgress() const { return mTask.has_value(); }

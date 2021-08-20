@@ -17,6 +17,9 @@ class QQmlContext;
 class LocalServer;
 class Client;
 class Server;
+class PlayerInfo;
+class GameInfo;
+class EventDeckSet;
 
 extern std::string gDeck;
 
@@ -105,16 +108,22 @@ public:
 
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);
-    void opponentJoined(const std::shared_ptr<EventGameJoined> event);
+    void localOpponentJoined(const std::shared_ptr<EventGameJoined> event);
     void processGameEvent(const std::shared_ptr<GameEvent> event);
     void processGameEventFromQueue();
     void processGameEventByOpponent(const std::shared_ptr<GameEvent> event);
+    void gameListReceived(const std::shared_ptr<EventGameList> event);
+    void gameJoined(const std::shared_ptr<EventGameJoined> event);
+    void addOpponent(const PlayerInfo &info);
+    void processGameInfo(const GameInfo &game_info);
+    void setOpponentDeck(const EventDeckSet &event);
 
     void cardMoveFinished();
 
 private:
     void startLocalGame();
-    void addClient(LocalConnectionManager *connManager);
+    void startNetworkGame();
+    void addLocalClient(LocalConnectionManager *connManager);
 
     Client* getClientForPlayer(int playerId);
 
