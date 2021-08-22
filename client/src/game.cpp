@@ -74,8 +74,8 @@ void Game::uiActionComplete() {
 void Game::componentComplete() {
     QQuickItem::componentComplete();
 
-    startLocalGame();
-    //startNetworkGame();
+    //startLocalGame();
+    startNetworkGame();
 }
 
 void Game::startNetworkGame() {
@@ -108,7 +108,15 @@ void Game::gameListReceived(const std::shared_ptr<EventGameList> event) {
 
 void Game::gameJoined(const std::shared_ptr<EventGameJoined> event) {
     mPlayer = std::make_unique<Player>(event->player_id(), this, false);
+}
 
+void Game::addOpponent(const PlayerInfo &info) {
+    if (mOpponent)
+        return;
+    mOpponent = std::make_unique<Player>(info.id(), this, true);
+    mOpponent->setDeck(info.deck());
+
+    // for testing
     mPlayer->setDeck(gDeck);
     CommandSetDeck cmd;
     cmd.set_deck(gDeck);
@@ -117,13 +125,6 @@ void Game::gameJoined(const std::shared_ptr<EventGameJoined> event) {
     CommandReadyToStart readyCmd;
     readyCmd.set_ready(true);
     mClients.front()->sendGameCommand(readyCmd);
-}
-
-void Game::addOpponent(const PlayerInfo &info) {
-    if (mOpponent)
-        return;
-    mOpponent = std::make_unique<Player>(info.id(), this, true);
-    mOpponent->setDeck(info.deck());
 }
 
 void Game::processGameInfo(const GameInfo &game_info) {

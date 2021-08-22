@@ -37,7 +37,9 @@ void ServerCardZone::switchPositions(int pos1, int pos2) {
 }
 
 void ServerCardZone::shuffle() {
-    std::shuffle(mCards.begin(), mCards.end(), std::mt19937((unsigned int)time(0)));
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(mCards.begin(), mCards.end(), g);
     resetPositions();
 }
 

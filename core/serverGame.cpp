@@ -68,7 +68,7 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
             continue;
         EventPlayerJoined evJoined;
         auto playerInfo = evJoined.mutable_player_info();
-        playerInfo->set_id(p.second->id());
+        playerInfo->set_id(newId);
         if (p.second->deck())
             playerInfo->set_deck(p.second->deck()->deck());
         p.second->sendGameEvent(evJoined);

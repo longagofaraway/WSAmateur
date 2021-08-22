@@ -69,13 +69,13 @@ Player::Player(int id, Game *game, bool opponent)
 }
 
 void Player::setDeck(const std::string &deck) {
+    if (deck.empty())
+        return;
+
     DeckList decklist(deck);
     int cardCount = 0;
-    for (auto &card: decklist.cards()) {
-        auto cardInfo = CardDatabase::get().getCard(card.code);
-        for (int i = 0; i < card.count; ++i)
-            cardCount++;
-    }
+    for (auto &card: decklist.cards())
+        cardCount += card.count;
 
     auto deckZone = zone("deck");
     deckZone->model().addCards(cardCount, deckZone);
