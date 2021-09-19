@@ -42,7 +42,7 @@ void Stage::setAttr(int row, ProtoCardAttribute attr, int value) {
 }
 
 void Stage::mainPhase() {
-    mQmlObject->connect(mQmlObject, SIGNAL(switchPositions(int, int)), mPlayer, SLOT(sendSwitchPositions(int, int)));
+    mQmlObject->connect(mQmlObject, SIGNAL(switchPositions(int,int)), mPlayer, SLOT(sendSwitchPositions(int,int)));
     mQmlObject->setProperty("mDragEnabled", true);
 }
 
@@ -53,7 +53,7 @@ void Stage::endMainPhase() {
 
 void Stage::attackDeclarationStep() {
     mQmlObject->setProperty("state", "attack");
-    mQmlObject->connect(mQmlObject, SIGNAL(declareAttack(int, bool)), mPlayer, SLOT(sendAttackDeclaration(int, bool)));
+    mQmlObject->connect(mQmlObject, SIGNAL(declareAttack(int,bool)), mPlayer, SLOT(sendAttackDeclaration(int,bool)));
     unhighlightAttacker();
     highlightAttackers(true);
 }

@@ -1,7 +1,35 @@
 set(abilityMakerSources
+    abilityComponent.h
+    abilityComponent.cpp
     abilityMaker.h
     abilityMaker.cpp
+    arrayOfAbilitiesComponent.h
+    arrayOfAbilitiesComponent.cpp
+    arrayOfEffectsComponent.h
+    arrayOfEffectsComponent.cpp
+    baseComponent.h
+    baseComponent.cpp
+    cardComponent.h
+    cardComponent.cpp
+    conditionComponent.h
+    conditionComponent.cpp
+    conditionImplComponent.h
+    conditionImplComponent.cpp
+    costComponent.h
+    costComponent.cpp
+    effectComponent.h
+    effectComponent.cpp
+    effectImplComponent.h
+    effectImplComponent.cpp
     main.cpp
+    placeComponent.h
+    placeComponent.cpp
+    targetComponent.h
+    targetComponent.cpp
+    triggerComponent.h
+    triggerComponent.cpp
+    triggerImplComponent.h
+    triggerImplComponent.cpp
     qml.qrc)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)

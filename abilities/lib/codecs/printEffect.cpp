@@ -110,7 +110,7 @@ std::string printAttributeGain(const AttributeGain &e) {
             res += "the character facing this card gets ";
             break;
         default:
-            assert(false);
+            break;
         }
     } else {
         res += "and ";

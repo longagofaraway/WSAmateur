@@ -44,6 +44,14 @@ enum CardType {
   marker = 4
 }
 
+enum Color {
+  Yellow = 1,
+  Green = 2,
+  Red = 3,
+  Blue = 4,
+  Purple = 5
+}
+
 Trait {
   value String
 }

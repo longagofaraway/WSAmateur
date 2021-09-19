@@ -1,47 +1,21 @@
 #include "abilityMaker.h"
 
-#include <QUuid>
+#include <QObject>
 
 #include "abilities.h"
+#include "abilityComponent.h"
 
-using namespace asn;
 
-namespace {
-QString generateName() {
-    return QUuid::createUuid().toString();
+void AbilityMaker::componentComplete() {
+    QQuickItem::componentComplete();
+
+    qmlAbility = std::make_unique<AbilityComponent>(this);
+    connect(qmlAbility.get(), &AbilityComponent::componentChanged, this, &AbilityMaker::translate);
+    qmlAbility->removeButtons();
 }
 
-AutoAbility createAutoAbility(QObject *item) {
-    AutoAbility a;
-    a.activationTimes = item->property("activationTimes").toInt();
-    auto llist = item->property("keywords").toList();
-    int w = llist[0].toInt();
-
-    return a;
-}
-}
-
-void AbilityMaker::createAbility() {
-    auto type = this->property("abilityType").toUInt();
-    auto abilityId = this->property("ability").toString();
-    QObject *item = this->findChild<QObject*>(abilityId);
-
-    Ability ability;
-    ability.type = static_cast<AbilityType>(type);
-    switch (type) {
-    case 2:
-        ability.ability = createAutoAbility(item);
-        break;
-    }
-}
-
-QString AbilityMaker::createComponent(QString componentName) {
-    QQmlComponent component(qmlEngine(this), "qrc:/" + componentName + ".qml");
-    auto obj = component.create(qmlContext(this));
-    QQuickItem *item = qobject_cast<QQuickItem*>(obj);
-    item->setParentItem(this);
-    item->setParent(this);
-    auto newName = generateName();
-    item->setProperty("objectName", newName);
-    return newName;
+void AbilityMaker::translate(const asn::Ability &ability) {
+    auto str = printAbility(ability);
+    auto descr = QString::fromStdString(printAbility(ability));
+    QMetaObject::invokeMethod(this, "setDescription", Q_ARG(QVariant, descr));
 }

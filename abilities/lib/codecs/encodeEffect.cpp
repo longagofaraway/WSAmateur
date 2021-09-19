@@ -17,7 +17,7 @@ void encodeAttributeGain(const AttributeGain &e, Buf &buf) {
 void encodeTargetAndPlace(const TargetAndPlace &e, Buf &buf) {
     encodeTarget(e.target, buf);
     buf.push_back(static_cast<uint8_t>(e.placeType));
-    if (e.place)
+    if (e.placeType == PlaceType::SpecificPlace)
         encodePlace(*e.place, buf);
 }
 
