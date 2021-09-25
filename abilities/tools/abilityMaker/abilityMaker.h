@@ -11,7 +11,10 @@ class AbilityMaker : public QQuickItem {
     Q_OBJECT
 private:
     std::unique_ptr<AbilityComponent> qmlAbility;
+    asn::Ability ability_;
 
+public:
+    asn::Ability getAbility() const { return ability_; }
 public slots:
     void translate(const asn::Ability &ability);
 

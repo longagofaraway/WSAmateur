@@ -52,5 +52,6 @@
         <file>qml/Cost.qml</file>
         <file>qml/basicTypes/CostType.qml</file>
         <file>qml/basicTypes/StockCostEffects.qml</file>
+        <file>qml/DbControls.qml</file>
     </qresource>
 </RCC>

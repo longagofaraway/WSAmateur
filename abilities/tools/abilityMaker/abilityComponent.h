@@ -5,8 +5,11 @@
 #include "abilities.h"
 #include "baseComponent.h"
 #include "costComponent.h"
+#include "dbControls.h"
 #include "arrayOfEffectsComponent.h"
 #include "triggerComponent.h"
+
+class AbilityMaker;
 
 class AbilityComponent : public BaseComponent
 {
@@ -26,12 +29,15 @@ private:
     std::unique_ptr<CostComponent> qmlCost;
     std::optional<asn::Cost> cost;
 
+    std::unique_ptr<DbControls> dbControls;
+
 public:
     AbilityComponent(QQuickItem *parent);
     AbilityComponent(const asn::Ability &a, QQuickItem *parent);
 
     void removeButtons();
     void fixEventAbility();
+    void addDbControls(AbilityMaker *maker);
 
 signals:
     void componentChanged(const asn::Ability &ability);

@@ -19,7 +19,7 @@ cur = con.cursor()
 #   (Soul, Shot, Bounce, Choice, GoldBar, Bag, Door, Standby, Book, Gate)
 #   double soul is written as Soul,Soul
 # abilities - array of binary data in the form of:
-#   1 byte length of array | 2 bytes size of the next ability | n bytes ability | 2 bytes size ...
+#   1 byte length of array | 2 bytes size of the next ability LE | n bytes ability | 2 bytes size ...
 # counter - 1 - card can be played during counter phase (backup/counter), else 0. Filled by hand
 # card_references - comma-separated list of card codes, whose names are mentioned in the effects text.
 #   This is used to show the pictures of those cards, because their names are in english. Filled by hand

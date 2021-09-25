@@ -3,6 +3,8 @@ import QtQuick 2.12
 Rectangle {
     signal valueChanged(string value)
 
+    property string text: textInput.text
+
     width: 100
     height: 30
     border.color: "gray"
