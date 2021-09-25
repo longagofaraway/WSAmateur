@@ -1,0 +1,49 @@
+{
+    "type": 2,
+    "ability": {
+        "keyword": [1],
+        "trigger": {
+            "type": 1,
+            "trigger": {
+                "target": [{
+                    "type": 1
+                }],
+                "from": 1,
+                "to": 2
+            }
+        },
+        "cost": {
+            "items": [{
+                "type": 1,
+                "costItem": {
+                    "value": 3
+                }
+            }]
+        },
+        "effects": [
+        {
+            "type": 6,
+            "effect": {
+                "ifYouDo": [{
+                    "type": 4,
+                    "effect": {
+                        "target": {
+                            "type": 1
+                        },
+                        "from": {
+                            "pos": 0,
+                            "zone": 2,
+                            "owner": 1
+                        },
+                        "to": [{
+                            "pos": 8,
+                            "zone": 1,
+                            "owner": 1
+                        }]
+                    }
+                }],
+                "ifYouDont": []
+            }
+        }]
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "type": 4,
+    "ability": {
+        "effects": [{
+            "type": 4,
+            "condition": {
+                "type": 1,
+                "cond": {
+                    "target": {
+                        "type": 1
+                    },
+                    "neededCard": [{
+                        "cardSpecifiers": [{
+                            "type": 12,
+                            "specifier": {
+                                "number": {
+                                    "mod": 2,
+                                    "value": 0
+                                }
+                            }
+                        }]
+                    }]
+                }
+            },
+            "effect": {
+                "target": {
+                    "type": 1
+                },
+                "from": {
+                    "pos": 0,
+                    "zone": 1,
+                    "owner": 1
+                },
+                "to": [{
+                    "pos": 0,
+                    "zone": 2,
+                    "owner": 1
+                }]
+            }
+        }]
+    }
+}

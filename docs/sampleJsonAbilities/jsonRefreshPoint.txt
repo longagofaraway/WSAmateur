@@ -1,0 +1,36 @@
+{
+    "type": 4,
+    "ability": {
+        "effects": [
+        {
+            "type": 4,
+            "effect": {
+                "executor": 1,
+                "target": {
+                    "type": 3,
+                    "targetSpecification": {
+                        "mode": 0,
+                        "number": {
+                            "mod": 1,
+                            "value": 1
+                        },
+                        "cards": {
+                            "cardSpecifiers": []
+                        }
+                    }
+                },
+                "from": {
+                    "pos": 1,
+                    "zone": 3,
+                    "owner": 1
+                },
+                "to": [{
+                    "pos": 0,
+                    "zone": 4,
+                    "owner": 1
+                }],
+                "order": 0
+            }
+        }]
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "type": 4,
+    "ability": {
+        "effects": [
+        {
+            "type": 13,
+            "effect": {
+                "effect": [{
+                    "type": 20,
+                    "effect": {
+                        "executor": 1,
+                        "number": {
+                            "mod": 1,
+                            "value": 1
+                        }
+                    }
+                }],
+                "ifYouDo": [],
+                "ifYouDont": []
+            }
+        }
+        ]
+    }
+}
