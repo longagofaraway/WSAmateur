@@ -4,7 +4,7 @@
 
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QVariant>
+#include <QVariant>\
 
 namespace {
 void addAbilityToArray(QByteArray &data, const asn::Ability &ability) {
@@ -80,6 +80,10 @@ DbManager::DbManager(QString path) {
         auto msg = "failed to open database at " + path;
         throw std::runtime_error(msg.toStdString());
     }
+}
+
+DbManager::~DbManager() {
+    db.close();
 }
 
 void DbManager::addAbility(QString code, const asn::Ability ability) {

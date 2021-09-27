@@ -27,7 +27,6 @@ ServerProtocolHandler::ServerProtocolHandler(Server *server, std::unique_ptr<Con
 
 ServerProtocolHandler::~ServerProtocolHandler()
 {
-    qDebug() << "handler deleted";
     flushOutputQueue();
 }
 

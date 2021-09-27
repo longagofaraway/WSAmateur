@@ -46,7 +46,7 @@ set(coreSources
     globalAbilities/globalAbilities.cpp
     )
 
-find_package(Qt5 COMPONENTS Quick REQUIRED)
+find_package(Qt5 COMPONENTS Quick Sql REQUIRED)
 
 add_library(wsamateurCore STATIC ${coreSources})
 
@@ -62,6 +62,6 @@ if (UNIX)
 	target_compile_options(wsamateurCore PUBLIC -fcoroutines)
 endif (UNIX)
 
-target_link_libraries(wsamateurCore PUBLIC wsamateurProto wsamateurAbilities
+target_link_libraries(wsamateurCore PUBLIC wsamateurProto wsamateurAbilities Qt5::Sql
     PRIVATE Qt5::Core)
 

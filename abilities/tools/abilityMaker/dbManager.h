@@ -11,6 +11,7 @@ class DbManager
 
 public:
     DbManager(QString path);
+    ~DbManager();
 
     void addAbility(QString code, const asn::Ability ability);
     void popAbility(QString code);

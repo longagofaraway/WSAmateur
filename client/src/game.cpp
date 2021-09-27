@@ -12,6 +12,7 @@
 #include "phaseCommand.pb.h"
 #include "phaseEvent.pb.h"
 
+#include "cardDatabase.h"
 #include "localClientConnection.h"
 #include "localConnectionManager.h"
 #include "remoteClientConnection.h"
@@ -25,13 +26,8 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="20" code="IMC/W43-127"/>
         <card number="20" code="KGL/S79-068"/>
         <card number="2" code="KGL/S79-040"/>
-        <card number="1" code="IMC/W43-046"/>
-        <card number="1" code="IMC/W43-009"/>
-        <card number="1" code="IMC/W43-111"/>
-        <card number="1" code="IMC/W43-091"/>
     </main>
 </deck>)delim";
 
@@ -40,10 +36,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="0" code="IMC/W43-127"/>
         <card number="40" code="KGL/S79-035"/>
-        <card number="1" code="IMC/W43-009"/>
-        <card number="1" code="IMC/W43-091"/>
     </main>
 </deck>)delim";
 
@@ -73,6 +66,14 @@ void Game::uiActionComplete() {
 
 void Game::componentComplete() {
     QQuickItem::componentComplete();
+
+    try {
+        // init db
+        CardDatabase::get();
+    } catch (const std::exception &e) {
+        qDebug() << e.what();
+        throw;
+    }
 
     //startLocalGame();
     startNetworkGame();
@@ -172,7 +173,6 @@ void Game::startLocalGame() {
 void Game::addLocalClient(LocalConnectionManager *connManager) {
     auto serverConnection = connManager->newConnection();
     auto localConnection = std::make_unique<LocalClientConnection>(serverConnection);
-    localConnection->moveToThread(&mClientThread);
 
     auto client = std::make_unique<Client>(std::move(localConnection));
     client->moveToThread(&mClientThread);
