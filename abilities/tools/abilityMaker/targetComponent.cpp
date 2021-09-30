@@ -57,6 +57,8 @@ void TargetComponent::updateTarget(int index) {
 
 void TargetComponent::typeChanged(int index) {
     type = static_cast<asn::TargetType>(index);
+    if (type == asn::TargetType::SpecificCards)
+        emit initNumValue("1");
 }
 
 void TargetComponent::targetModeChanged(int index) {

@@ -26,8 +26,8 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="20" code="KGL/S79-068"/>
-        <card number="2" code="KGL/S79-040"/>
+        <card number="20" code="KGL/S79-001"/>
+        <card number="20" code="KGL/S79-002"/>
     </main>
 </deck>)delim";
 
@@ -36,7 +36,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="40" code="KGL/S79-035"/>
+        <card number="40" code="KGL/S79-015"/>
     </main>
 </deck>)delim";
 

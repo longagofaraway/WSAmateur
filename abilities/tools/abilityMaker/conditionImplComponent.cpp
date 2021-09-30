@@ -1,6 +1,7 @@
 #include "conditionImplComponent.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include <QQmlContext>
 #include <QString>
@@ -98,7 +99,8 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
 }
 
 ConditionImplComponent::~ConditionImplComponent() {
-    qmlObject->deleteLater();
+    if (qmlObject)
+        qmlObject->deleteLater();
 }
 
 void ConditionImplComponent::init(QQuickItem *parent) {
@@ -106,6 +108,13 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         { asn::ConditionType::IsCard, "IsCard" },
         { asn::ConditionType::HaveCards, "HaveCards" }
     };
+
+    std::unordered_set<asn::ConditionType> readyComponents {
+        asn::ConditionType::NoCondition
+    };
+    if (readyComponents.contains(type))
+        return;
+
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/conditions/" + components.at(type) + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
     QObject *obj = component.create(context);

@@ -31,7 +31,6 @@ signals:
 
 private slots:
     void setEffectType(int index);
-    void updateEffect(int index);
     void onEffectChanged(const VarEffect &e);
 
 private:

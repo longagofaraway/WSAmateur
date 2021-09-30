@@ -17,7 +17,7 @@ public:
     using VarEffect = decltype(asn::Effect::effect);
 
 private:
-    QQuickItem *qmlObject;
+    QQuickItem *qmlObject = nullptr;
 
     asn::EffectType type;
     VarEffect effect;

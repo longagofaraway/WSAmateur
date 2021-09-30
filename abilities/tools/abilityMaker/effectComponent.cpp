@@ -12,7 +12,6 @@ EffectComponent::EffectComponent(const asn::Effect &e, QQuickItem *parent)
 }
 
 void EffectComponent::init() {
-    connect(qmlObject, SIGNAL(presetChanged(int)), this, SLOT(updateEffect(int)));
     connect(qmlObject, SIGNAL(effectTypeChanged(int)), this, SLOT(setEffectType(int)));
 
     connect(this, SIGNAL(passEffectType(int)), qmlObject, SIGNAL(incomingEffectType(int)));
@@ -61,10 +60,6 @@ void EffectComponent::setEffectType(int index) {
 
     if (needImpl)
         connect(qmlEffectImpl.get(), &EffectImplComponent::componentChanged, this, &EffectComponent::onEffectChanged);
-}
-
-void EffectComponent::updateEffect(int index) {
-
 }
 
 void EffectComponent::onEffectChanged(const VarEffect &e) {

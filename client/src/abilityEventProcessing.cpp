@@ -51,6 +51,9 @@ void Player::processChooseCard(const EventChooseCard &event) {
 }
 
 void Player::processSearchCard(const EventSearchCard &event) {
+    if (mOpponent)
+        return;
+
     auto effect = decodingWrapper(event.effect(), decodeSearchCard);
     assert(effect.place.zone == asn::Zone::Deck);
     assert(effect.targets.size() == 1);

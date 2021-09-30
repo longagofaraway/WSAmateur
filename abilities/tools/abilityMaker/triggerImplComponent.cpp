@@ -152,11 +152,13 @@ void TriggerImplComponent::componentReady() {
 void TriggerImplComponent::setFrom(int index) {
     auto &trig = std::get<asn::ZoneChangeTrigger>(trigger);
     trig.from = static_cast<asn::Zone>(index);
+    emit componentChanged(trigger);
 }
 
 void TriggerImplComponent::setTo(int index) {
     auto &trig = std::get<asn::ZoneChangeTrigger>(trigger);
     trig.to = static_cast<asn::Zone>(index);
+    emit componentChanged(trigger);
 }
 
 void TriggerImplComponent::editTarget() {

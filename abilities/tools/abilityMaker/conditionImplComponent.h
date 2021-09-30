@@ -14,7 +14,7 @@ public:
     using VarCondition = decltype(asn::Condition::cond);
 
 private:
-    QQuickItem *qmlObject;
+    QQuickItem *qmlObject = nullptr;
 
     asn::ConditionType type;
     VarCondition condition;

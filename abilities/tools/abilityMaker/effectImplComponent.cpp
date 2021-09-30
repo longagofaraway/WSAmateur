@@ -1,6 +1,7 @@
 #include "effectImplComponent.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include <QQmlContext>
 #include <QString>
@@ -43,7 +44,6 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         auto e = asn::RevealCard();
         e.number = defaultNum;
         e.type = asn::RevealType::TopDeck;
-        e.card = asn::Card();
         effect = e;
         break;
     }
@@ -94,6 +94,12 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     case asn::EffectType::NonMandatory: {
         effect = asn::NonMandatory();
         break;
+    }
+    case asn::EffectType::Shuffle: {
+        auto e  = asn::Shuffle();
+        e.owner = asn::Player::Player;
+        e.zone = asn::Zone::Deck;
+        effect = e;
     }
     default:
         break;
@@ -211,7 +217,8 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
 }
 
 EffectImplComponent::~EffectImplComponent() {
-    qmlObject->deleteLater();
+    if (qmlObject)
+        qmlObject->deleteLater();
 }
 
 void EffectImplComponent::init(QQuickItem *parent) {
@@ -227,6 +234,14 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::PerformEffect, "PerformEffect" },
         { asn::EffectType::NonMandatory, "NonMandatory" },
     };
+
+    std::unordered_set<asn::EffectType> readyComponents {
+        asn::EffectType::Shuffle
+    };
+
+    if (readyComponents.contains(type))
+        return;
+
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/effects/" + components.at(type) + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
     QObject *obj = component.create(context);
@@ -453,6 +468,15 @@ void EffectImplComponent::onPlaceTypeChanged(int value) {
     case asn::EffectType::ChooseCard: {
         auto &e = std::get<asn::ChooseCard>(effect);
         e.targets[0].placeType = static_cast<asn::PlaceType>(value);
+        if (e.targets[0].placeType == asn::PlaceType::Selection)
+            e.targets[0].place = std::nullopt;
+        else {
+            auto defaultPlace = asn::Place();
+            defaultPlace.owner = asn::Player::Player;
+            defaultPlace.pos = asn::Position::NotSpecified;
+            defaultPlace.zone = asn::Zone::Stage;
+            e.targets[0].place = defaultPlace;
+        }
         break;
     }
     default:
@@ -494,6 +518,11 @@ void EffectImplComponent::cardReady(const asn::Card &card_) {
         e.card = card_;
         break;
     }
+    case asn::EffectType::SearchCard: {
+        auto &e = std::get<asn::SearchCard>(effect);
+        e.targets[0].cards[0] = card_;
+        break;
+    }
     default:
         assert(false);
     }
@@ -510,6 +539,10 @@ void EffectImplComponent::onRevealTypeChanged(int value) {
     case asn::EffectType::RevealCard: {
         auto &e = std::get<asn::RevealCard>(effect);
         e.type = static_cast<asn::RevealType>(value);
+        if (e.type == asn::RevealType::FromHand)
+            e.card = asn::Card();
+        else
+            e.card = std::nullopt;
         break;
     }
     default:

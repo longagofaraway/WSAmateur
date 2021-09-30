@@ -15,6 +15,8 @@ class ArrayOfEffectsComponent : public BaseComponent
 private:
     using VarEffect = decltype(asn::Effect::effect);
 
+    asn::Effect defaultEffect;
+
     std::vector<QQuickItem*> qmlEffects;
     std::vector<asn::Effect> effects;
     std::vector<bool> effectSet;

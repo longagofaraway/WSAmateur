@@ -6,11 +6,11 @@ ComboBox {
 
     signal setValue(int value)
     onSetValue: {
-        currentIndex = value - 1;
+        currentIndex = value;
     }
 
-    model: ["Stage", "Waiting Room", "Deck", "Clock",
+    model: ["Not specified", "Stage", "Waiting Room", "Deck", "Clock",
             "Hand", "Memory", "Stock", "Level", "Climax"]
     currentIndex: -1
-    onCurrentIndexChanged: valueChanged(currentIndex + 1)
+    onCurrentIndexChanged: valueChanged(currentIndex)
 }

@@ -28,10 +28,15 @@ ArrayOfEffectsComponent::ArrayOfEffectsComponent(const std::vector<asn::Effect> 
     for (size_t i = 0; i < ef.size(); ++i) {
         createEffect();
         effectSet.push_back(true);
+        conditionSet.push_back(true);
     }
 }
 
 void ArrayOfEffectsComponent::init() {
+    asn::Condition cond;
+    cond.type = asn::ConditionType::NoCondition;
+    defaultEffect.cond = cond;
+
     qmlObject->setProperty("kOffset", kElemOffset);
     connect(qmlObject, SIGNAL(addEffect()), this, SLOT(addEffect()));
 
@@ -40,9 +45,9 @@ void ArrayOfEffectsComponent::init() {
 
 void ArrayOfEffectsComponent::addEffect() {
     createEffect();
-    effects.push_back(asn::Effect());
+    effects.push_back(defaultEffect);
     effectSet.push_back(false);
-    conditionSet.push_back(false);
+    conditionSet.push_back(true);
 }
 
 void ArrayOfEffectsComponent::editEffect(int pos) {
@@ -72,7 +77,8 @@ void ArrayOfEffectsComponent::destroyEffect() {
 }
 
 void ArrayOfEffectsComponent::effectReady(const asn::Effect &effect) {
-    effects[currentPos] = effect;
+    effects[currentPos].type = effect.type;
+    effects[currentPos].effect = effect.effect;
     effectSet[currentPos] = true;
     emit componentChanged(effects);
 }
@@ -88,6 +94,8 @@ void ArrayOfEffectsComponent::conditionReady(const asn::Condition &condition) {
 }
 
 void ArrayOfEffectsComponent::componentReady() {
+    if (std::any_of(effectSet.begin(), effectSet.end(), [](bool v){ return !v; }))
+        return;
     emit componentChanged(effects);
     emit close();
 }

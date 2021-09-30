@@ -87,6 +87,8 @@ void CostComponent::onCostTypeChanged(int pos, int value) {
         obj = createQmlObject("basicTypes/CardSpecifierTextInput", qmlObject);
         if (initState)
             initComponent(pos, obj);
+        else
+            QMetaObject::invokeMethod(obj, "setValue", Q_ARG(QVariant, "1"));
         connect(obj, SIGNAL(valueChanged(int,QString)), this, SLOT(stringSet(int,QString)));
         effectSet[pos] = false;
         break;
@@ -139,7 +141,13 @@ void CostComponent::destroyEffect() {
 
 void CostComponent::effectReady(const asn::Effect &effect) {
     effectSet[currentPos] = true;
-    costItems[currentPos].costItem = effect;
+
+    auto dup = effect;
+    asn::Condition cond;
+    cond.type = asn::ConditionType::NoCondition;
+    dup.cond = cond;
+    costItems[currentPos].costItem = dup;
+
     emit componentChanged(constructCost());
 }
 

@@ -4,7 +4,6 @@ import QtQuick.Controls 2.12
 Rectangle {
     id: effect
 
-    signal presetChanged(int index)
     signal effectTypeChanged(int index)
     signal componentReady()
     signal cancel()
@@ -28,30 +27,6 @@ Rectangle {
     }
 
     Text {
-        id: presetLabel
-        anchors.horizontalCenter: effect.horizontalCenter
-        text: "Choose from a preset:"
-    }
-
-    ComboBox {
-        id: presetCombo
-        anchors.top: presetLabel.bottom
-        anchors.horizontalCenter: effect.horizontalCenter
-        width: 200
-        model: ["Placed from hand to stage", "When this card attacks"]
-        currentIndex: -1
-        onCurrentIndexChanged: presetChanged(currentIndex)
-    }
-
-    Text {
-        id: delimiterLabel
-        anchors { top: presetCombo.bottom; topMargin: 10 }
-        anchors.horizontalCenter: effect.horizontalCenter
-        text: "Or specify each field"
-        font.pointSize: 12
-    }
-
-    Text {
         id: typeLabel
         anchors.right: effectTypeCombo.left
         anchors.verticalCenter: effectTypeCombo.verticalCenter
@@ -60,7 +35,6 @@ Rectangle {
 
     ComboBox {
         id: effectTypeCombo
-        anchors { top: delimiterLabel.bottom; topMargin: 10 }
         anchors.horizontalCenter: effect.horizontalCenter
         model: ["Attribute Gain", "Choose Card", "Reveal Card", "Move Card", "Search Card",
                 "Pay Cost", "Ability Gain", "Move wr to deck", "Flip Over", "Backup",
@@ -76,7 +50,11 @@ Rectangle {
     }
 
     ConfirmButton {
-        onClicked: componentReady()
+        onClicked: {
+            if (effectTypeCombo.currentIndex == -1)
+                return;
+            componentReady()
+        }
     }
 
     CancelButton {

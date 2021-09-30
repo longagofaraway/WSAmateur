@@ -40,6 +40,7 @@ Rectangle {
         model: ["No condition", "Is card", "Have cards", "And", "Or", "In battle with this",
                 "Sum of levels", "Card's location", "During turn", "Check opened cards",
                 "Revealed card", "Player's level"]
+        currentIndex: -1
         onCurrentIndexChanged: {
             conditionTypeChanged(currentIndex);
         }

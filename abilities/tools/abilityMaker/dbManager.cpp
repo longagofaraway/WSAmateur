@@ -4,7 +4,7 @@
 
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QVariant>\
+#include <QVariant>
 
 namespace {
 void addAbilityToArray(QByteArray &data, const asn::Ability &ability) {
