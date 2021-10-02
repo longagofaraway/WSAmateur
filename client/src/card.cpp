@@ -42,6 +42,7 @@ void Card::clear() {
 
     mGlow = false;
     mSelected = false;
+    mHighlightedByAbility = false;
     mState = asn::State::Standing;
     mAbilityModel.reset();
 }

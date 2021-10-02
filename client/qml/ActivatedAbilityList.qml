@@ -42,4 +42,8 @@ ListView {
         NumberAnimation { property: "y"; from: 0; to: -removeTrans.ViewTransition.item.height / 2; duration: 200 }
         NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 200 }
     }
+
+    function hightlightCard(row, value) {
+        mModel.highlightCorrespondingCard(row, value);
+    }
 }

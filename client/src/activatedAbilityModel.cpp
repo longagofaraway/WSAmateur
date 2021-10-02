@@ -1,16 +1,36 @@
 #include "activatedAbilityModel.h"
 
-int ActivatedAbilityModel::idByUniqueId(uint32_t uniqueId) const {
-    for (int i = 0; i < static_cast<int>(mAbilities.size()); ++i) {
-        if (mAbilities[i].uniqueId == uniqueId)
+#include "player.h"
+
+ActivatedAbilityModel::ActivatedAbilityModel()
+    : QAbstractListModel(nullptr) {}
+
+void ActivatedAbilityModel::init(Player *player_) {
+    player = player_;
+}
+
+void ActivatedAbilityModel::highlightCorrespondingCard(int row, bool on) {
+    if (row < 0 || row >= abilities.size())
+        return;
+
+    const auto &info = abilities[row];
+    auto zone = player->zone(info.zone);
+    auto &model = zone->model();
+
+    model.setHighlightedByAbility(model.findById(info.cardId), on);
+}
+
+int ActivatedAbilityModel::indexByUniqueId(uint32_t uniqueId) const {
+    for (int i = 0; i < static_cast<int>(abilities.size()); ++i) {
+        if (abilities[i].uniqueId == uniqueId)
             return i;
     }
     return 0;
 }
 
 int ActivatedAbilityModel::activeId() const {
-    for (int i = 0; i < static_cast<int>(mAbilities.size()); ++i) {
-        if (mAbilities[i].active)
+    for (int i = 0; i < static_cast<int>(abilities.size()); ++i) {
+        if (abilities[i].active)
             return i;
     }
     return 0;
@@ -23,28 +43,30 @@ void ActivatedAbilityModel::setActive(int row, bool active) {
 
 void ActivatedAbilityModel::addAbility(const ActivatedAbility &a) {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    mAbilities.push_back(a);
+    abilities.push_back(a);
     endInsertRows();
 }
 
 void ActivatedAbilityModel::removeAbility(int row) {
-    if (static_cast<size_t>(row) >= mAbilities.size())
+    if (static_cast<size_t>(row) >= abilities.size())
         return;
 
+    highlightCorrespondingCard(row, false);
+
     beginRemoveRows(QModelIndex(), row, row);
-    mAbilities.erase(mAbilities.begin() + row);
+    abilities.erase(abilities.begin() + row);
     endRemoveRows();
 }
 
 int ActivatedAbilityModel::rowCount(const QModelIndex&) const {
-    return static_cast<int>(mAbilities.size());
+    return static_cast<int>(abilities.size());
 }
 
 QVariant ActivatedAbilityModel::data(const QModelIndex &index, int role) const {
-    if (static_cast<size_t>(index.row()) >= mAbilities.size())
+    if (static_cast<size_t>(index.row()) >= abilities.size())
         return QVariant();
 
-    const ActivatedAbility &ab = mAbilities[index.row()];
+    const ActivatedAbility &ab = abilities[index.row()];
     switch(role) {
     case CodeRole:
         return QString::fromStdString(ab.code);
@@ -81,10 +103,10 @@ void ActivatedAbilityModel::setPlayBtnText(int row, const QString &text) {
 }
 
 bool ActivatedAbilityModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if (static_cast<size_t>(index.row()) >= mAbilities.size())
+    if (static_cast<size_t>(index.row()) >= abilities.size())
         return false;
 
-    ActivatedAbility &ab = mAbilities[index.row()];
+    ActivatedAbility &ab = abilities[index.row()];
 
     switch(role) {
     case ActiveRole:

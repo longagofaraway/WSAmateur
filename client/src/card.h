@@ -19,6 +19,7 @@ class Card : public CardBase {
     std::string mCode;
     bool mGlow = false;
     bool mSelected = false;
+    bool mHighlightedByAbility = false;
 
     char mColor;
     int mLevel;
@@ -87,6 +88,8 @@ public:
     void setCannotBecomeReversed(bool p) { mCannotBecomeReversed = p; }
     bool cannotMove() const { return mCannotMove; }
     void setCannotMove(bool p) { mCannotMove = p; }
+    bool highlightedByAbility() const { return mHighlightedByAbility; }
+    void setHighlightedByAbility(bool p) { mHighlightedByAbility = p; }
 
     QString textById(int abilityId) const { return mAbilityModel->textById(abilityId); }
     QString textByIndex(int index) const { return mAbilityModel->textByIndex(index); }

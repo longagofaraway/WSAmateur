@@ -10,6 +10,8 @@
 
 #include "abilities.h"
 
+class Player;
+
 enum class ChoiceType {
     Card,
     DestinationIndex
@@ -52,7 +54,8 @@ class ActivatedAbilityModel : public QAbstractListModel
 {
     Q_OBJECT
 private:
-    std::vector<ActivatedAbility> mAbilities;
+    std::vector<ActivatedAbility> abilities;
+    Player *player;
 
 public:
     enum AbilityRoles {
@@ -64,12 +67,15 @@ public:
         Button2TextRole,
         ActiveRole
     };
-    ActivatedAbilityModel() : QAbstractListModel(nullptr) {}
+    ActivatedAbilityModel();
+    void init(Player *player_);
 
-    int idByUniqueId(uint32_t uniqueId) const;
+    Q_INVOKABLE void highlightCorrespondingCard(int row, bool on);
+
+    int indexByUniqueId(uint32_t uniqueId) const;
     int activeId() const;
     void setActive(int row, bool active);
-    ActivatedAbility& ability(int index) { return mAbilities.at(index); }
+    ActivatedAbility& ability(int index) { return abilities.at(index); }
     void addAbility(const ActivatedAbility &a);
     void removeAbility(int row);
     void activatePlayButton(int row, bool active);

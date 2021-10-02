@@ -6,6 +6,7 @@
 #include "game.h"
 
 ActivatedAbilities::ActivatedAbilities(Player *player, Game *game) {
+    mModel.init(player);
     QQmlComponent component(game->engine(), "qrc:/qml/ActivatedAbilityList.qml");
     QQmlContext *context = new QQmlContext(game->context(), game);
     context->setContextProperty("innerModel", QVariant::fromValue(&mModel));
@@ -26,7 +27,7 @@ void ActivatedAbilities::activateCancel(int index, bool active) {
 }
 
 void ActivatedAbilities::setActiveByUniqueId(uint32_t uniqueId, bool active) {
-    mModel.setActive(mModel.idByUniqueId(uniqueId), active);
+    mModel.setActive(mModel.indexByUniqueId(uniqueId), active);
 }
 
 void ActivatedAbilities::removeActiveAbility() {

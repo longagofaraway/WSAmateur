@@ -13,6 +13,15 @@ Rectangle {
         color: "#FCDE01"
     }
 
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+
+        onEntered: lview.hightlightCard(model.index, true)
+        onExited: lview.hightlightCard(model.index, false)
+    }
+
     Column {
         id: col
         spacing: -5

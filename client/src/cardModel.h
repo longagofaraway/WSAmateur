@@ -28,7 +28,8 @@ public:
         SoulRole,
         LevelRole,
         TextModelRole,
-        CannotMoveRole
+        CannotMoveRole,
+        HighlightedByAbilityRole
     };
     Q_ENUM(CardRoles)
     static QVector<int> mRoles;
@@ -54,6 +55,7 @@ public:
 
     void setGlow(int row, bool glow);
     void setSelected(int row, bool selected);
+    void setHighlightedByAbility(int row, bool highlighted);
     void setState(int row, asn::State state);
     void setAttr(int row, ProtoCardAttribute attr, int value);
     void setCannotMove(int row, int value);
@@ -61,6 +63,8 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int count() const { return rowCount(); }
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+    int findById(int id) const;
 
 signals:
     void countChanged();

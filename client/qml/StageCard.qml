@@ -8,6 +8,7 @@ Card {
     property bool cardOverGlow: false
     property bool glow: false
     property bool selected: false
+    property bool highlightedByAbility: false
     property int index
     property int power: 9000
     property int soul: 1
@@ -118,7 +119,7 @@ Card {
         color: getGlowColor()
         cornerRadius: 0
         glowRadius: 10
-        visible: cardOverGlow || glow || selected
+        visible: cardOverGlow || glow || selected || highlightedByAbility
     }
     SequentialAnimation {
         running: cardGlow.visible
@@ -165,7 +166,11 @@ Card {
         text.startAnim();
     }
 
-    function getGlowColor() { return cardOverGlow ? "#FFFFFF" : (selected ? "#FCDE01" : "#2BFDFF"); }
+    function getGlowColor() {
+        if (highlightedByAbility)
+            return "red";
+        return cardOverGlow ? "#FFFFFF" : (selected ? "#FCDE01" : "#2BFDFF");
+    }
     function onCardEntered() { cardOverGlow = true; }
     function onCardExited() { cardOverGlow = false; }
 

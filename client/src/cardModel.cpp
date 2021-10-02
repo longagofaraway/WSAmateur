@@ -5,7 +5,8 @@
 
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
     mRoles = QVector<int>() << CodeRole << CardIdRole << GlowRole << SelectedRole << TypeRole
-                            << StateRole << PowerRole << SoulRole << LevelRole << CannotMoveRole;
+                            << StateRole << PowerRole << SoulRole << LevelRole << CannotMoveRole
+                            << HighlightedByAbilityRole;
 }
 
 void CardModel::clear() {
@@ -115,6 +116,11 @@ void CardModel::setSelected(int row, bool selected) {
     setData(index, selected, SelectedRole);
 }
 
+void CardModel::setHighlightedByAbility(int row, bool highlighted) {
+    auto index = createIndex(row, 0);
+    setData(index, highlighted, HighlightedByAbilityRole);
+}
+
 void CardModel::setState(int row, asn::State state) {
     auto index = createIndex(row, 0);
     setData(index, static_cast<int>(state), StateRole);
@@ -167,6 +173,9 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
     case CannotMoveRole:
         card.setCannotMove(value.toBool());
         break;
+    case HighlightedByAbilityRole:
+        card.setHighlightedByAbility(value.toBool());
+        break;
     default:
         return false;
     }
@@ -205,9 +214,19 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
         return card.level();
     case CannotMoveRole:
         return card.cannotMove();
+    case HighlightedByAbilityRole:
+        return card.highlightedByAbility();
     default:
         return QVariant();
     }
+}
+
+int CardModel::findById(int id) const {
+    for (size_t i = 0; i < mCards.size(); ++i) {
+        if (id == mCards[i].id())
+            return i;
+    }
+    return -1;
 }
 
 QHash<int, QByteArray> CardModel::roleNames() const {
@@ -224,6 +243,7 @@ QHash<int, QByteArray> CardModel::roleNames() const {
         (*roles)[SoulRole] = "soul";
         (*roles)[LevelRole] = "level";
         (*roles)[CannotMoveRole] = "cannotMove";
+        (*roles)[HighlightedByAbilityRole] = "highlightedByAbility";
     }
     return *roles;
 }

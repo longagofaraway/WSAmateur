@@ -118,6 +118,7 @@ ListView {
                 Binding { target: mStageCard; property: "dragActive"; value: stagePlaceMouseArea.drag.active }
                 Binding { target: mStageCard; property: "glow"; value: model.glow }
                 Binding { target: mStageCard; property: "selected"; value: model.selected }
+                Binding { target: mStageCard; property: "highlightedByAbility"; value: model.highlightedByAbility }
                 Binding { target: mStageCard; property: "power"; value: model.power }
                 Binding { target: mStageCard; property: "soul"; value: model.soul }
                 Binding { target: mStageCard; property: "level"; value: model.level }
