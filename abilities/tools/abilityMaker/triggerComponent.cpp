@@ -64,6 +64,19 @@ void TriggerComponent::thisCardAttacks() {
     emit passTriggerType((int)type);
 }
 
+void TriggerComponent::thisCardBecomesReversed() {
+    auto tr = asn::StateChangeTrigger();
+    auto targ = asn::Target();
+    targ.type = asn::TargetType::ThisCard;
+    tr.target = targ;
+    tr.state = asn::State::Reversed;
+
+    type = asn::TriggerType::OnStateChange;
+    trigger = tr;
+    initializing = true;
+    emit passTriggerType((int)type);
+}
+
 void TriggerComponent::componentReady() {
     emit componentChanged(constructTrigger());
     emit close();
@@ -76,7 +89,6 @@ void TriggerComponent::setTriggerType(int index) {
     case asn::TriggerType::OnBackupOfThis:
     case asn::TriggerType::OnEndOfThisCardsAttack:
     case asn::TriggerType::OnEndOfThisTurn:
-    case asn::TriggerType::OnReversed:
     case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
     case asn::TriggerType::OtherTrigger:
         needImpl = false;
@@ -113,6 +125,9 @@ void TriggerComponent::updateTrigger(int index) {
         break;
     case 1:
         thisCardAttacks();
+        break;
+    case 2:
+        thisCardBecomesReversed();
         break;
     }
 }

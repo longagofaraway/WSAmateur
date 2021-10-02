@@ -42,4 +42,5 @@ private:
 
     void fromHandToStagePreset();
     void thisCardAttacks();
+    void thisCardBecomesReversed();
 };

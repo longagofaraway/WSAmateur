@@ -163,8 +163,15 @@ Target parseTarget(const QJsonObject &json) {
 
     Target t;
     t.type = static_cast<TargetType>(json["type"].toInt());
-    if (t.type == TargetType::SpecificCards)
+    if (t.type == TargetType::SpecificCards ||
+        (t.type == TargetType::BattleOpponent && json.contains("targetSpecification")))
         t.targetSpecification = parseTargetSpecificCards(json["targetSpecification"].toObject());
+    if (t.type == TargetType::BattleOpponent && !json.contains("targetSpecification")) {
+        TargetSpecificCards spec;
+        spec.mode = TargetMode::Any;
+        spec.number = Number{NumModifier::ExactMatch, 1};
+        t.targetSpecification = spec;
+    }
 
     return t;
 }
@@ -181,6 +188,19 @@ ZoneChangeTrigger parseZoneChangeTrigger(const QJsonObject &json) {
     t.target = parseArray(json["target"].toArray(), parseTarget);
     t.from = static_cast<Zone>(json["from"].toInt());
     t.to = static_cast<Zone>(json["to"].toInt());
+
+    return t;
+}
+
+StateChangeTrigger parseStateChangeTrigger(const QJsonObject &json) {
+    if (!json.contains("state") || !json["state"].isDouble())
+        throw std::runtime_error("no state in StateChangeTrigger");
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in StateChangeTrigger");
+
+    StateChangeTrigger t;
+    t.state = static_cast<State>(json["state"].toInt());
+    t.target = parseTarget(json["target"].toObject());
 
     return t;
 }
@@ -225,8 +245,8 @@ Trigger parseTrigger(const QJsonObject &json) {
     case TriggerType::OnPhaseEvent:
         t.trigger = parsePhaseTrigger(json["trigger"].toObject());
         break;
-    case TriggerType::OnBattleOpponentReversed:
-        t.trigger = parseCardType<BattleOpponentReversedTrigger>(json["trigger"].toObject());
+    case TriggerType::OnStateChange:
+        t.trigger = parseStateChangeTrigger(json["trigger"].toObject());
         break;
     case TriggerType::OnTriggerReveal:
         t.trigger = parseCardType<TriggerRevealTrigger>(json["trigger"].toObject());
@@ -241,7 +261,6 @@ Trigger parseTrigger(const QJsonObject &json) {
     case TriggerType::OnEndOfThisCardsAttack:
     case TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
     case TriggerType::OnEndOfThisTurn:
-    case TriggerType::OnReversed:
          break;
     case TriggerType::OtherTrigger:
         t.trigger = parseOtherTrigger(json["trigger"].toObject());

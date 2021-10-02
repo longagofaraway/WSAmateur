@@ -76,6 +76,8 @@ std::string printTarget(const Target &t, bool plural) {
         s += printCard(spec.cards, plural, article, spec.mode) + " ";
     } else if (t.type == TargetType::OppositeThis) {
         s += "the character facing this card ";
+    } else if (t.type == TargetType::BattleOpponent) {
+        s += "this card's battle opponent ";
     }
 
     return s;

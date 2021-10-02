@@ -8,9 +8,8 @@ namespace asn {
 enum class TriggerType : uint8_t {
     OnZoneChange = 1,
     OnPlay,
-    OnReversed,
+    OnStateChange,
     OnAttack,
-    OnBattleOpponentReversed,
     OnBackupOfThis,
     OnTriggerReveal,
     OnPhaseEvent,
@@ -67,8 +66,9 @@ struct OnAttackTrigger {
     Target target;
 };
 
-struct BattleOpponentReversedTrigger {
-    Card card;
+struct StateChangeTrigger {
+    State state;
+    Target target;
 };
 
 struct OtherTrigger {
@@ -84,7 +84,7 @@ struct Trigger {
         TriggerRevealTrigger,
         OnPlayTrigger,
         OnAttackTrigger,
-        BattleOpponentReversedTrigger,
+        StateChangeTrigger,
         OtherTrigger
     > trigger;
 };

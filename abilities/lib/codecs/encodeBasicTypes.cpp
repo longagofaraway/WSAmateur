@@ -12,8 +12,9 @@ void encodeTargetSpecificCards(const TargetSpecificCards &t, Buf &buf) {
 
 void encodeTarget(const Target &t, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(t.type));
-    if (t.targetSpecification)
-        encodeTargetSpecificCards(*t.targetSpecification, buf);
+    if (t.type == TargetType::SpecificCards ||
+        t.type == TargetType::BattleOpponent)
+        encodeTargetSpecificCards(t.targetSpecification.value(), buf);
 }
 
 void encodeForEachMultiplier(const ForEachMultiplier &m, Buf &buf) {

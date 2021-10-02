@@ -17,9 +17,12 @@ void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerTy
     case asn::TriggerType::OnAttack:
         trigger = asn::OnAttackTrigger();
         break;
-    case asn::TriggerType::OnBattleOpponentReversed:
-        trigger = asn::BattleOpponentReversedTrigger();
+    case asn::TriggerType::OnStateChange: {
+        auto tr = asn::StateChangeTrigger();
+        tr.state = asn::State::Reversed;
+        trigger = tr;
         break;
+    }
     case asn::TriggerType::OnTriggerReveal:
         trigger = asn::TriggerRevealTrigger();
         break;
@@ -34,7 +37,6 @@ void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerTy
     case asn::TriggerType::OnBackupOfThis:
     case asn::TriggerType::OnEndOfThisCardsAttack:
     case asn::TriggerType::OnEndOfThisTurn:
-    case asn::TriggerType::OnReversed:
     case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
     case asn::TriggerType::OtherTrigger:
         trigger = std::monostate();
@@ -88,10 +90,11 @@ TriggerImplComponent::TriggerImplComponent(asn::TriggerType type, const VarTrigg
         cardSet = true;
         break;
     }
-    case asn::TriggerType::OnBattleOpponentReversed: {
-        const auto &trImpl = std::get<asn::TriggerRevealTrigger>(tr);
-        card = trImpl.card;
-        cardSet = true;
+    case asn::TriggerType::OnStateChange: {
+        const auto &trImpl = std::get<asn::StateChangeTrigger>(tr);
+        QMetaObject::invokeMethod(qmlObject, "setCardState", Q_ARG(QVariant, static_cast<int>(trImpl.state)));
+        target = trImpl.target;
+        targetSet = true;
         break;
     }
     default:
@@ -106,7 +109,7 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         { asn::TriggerType::OnAttack, "OnAttackTrigger" },
         { asn::TriggerType::OnPhaseEvent, "PhaseTrigger" },
         { asn::TriggerType::OnTriggerReveal, "TriggerReveal" },
-        { asn::TriggerType::OnBattleOpponentReversed, "BattleOpReversed" }
+        { asn::TriggerType::OnStateChange, "StateChangeTrigger" }
     };
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/triggers/" + components.at(type) + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
@@ -131,8 +134,12 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(phaseChanged(int)), this, SLOT(setPhase(int)));
         connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(setOwner(int)));
         break;
+    case asn::TriggerType::OnStateChange:
+        connect(qmlObject, SIGNAL(cardStateChanged(int)), this, SLOT(setState(int)));
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        QMetaObject::invokeMethod(qmlObject, "setCardState", Q_ARG(QVariant, static_cast<int>(asn::State::Reversed)));
+        break;
     case asn::TriggerType::OnTriggerReveal:
-    case asn::TriggerType::OnBattleOpponentReversed:
         connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
         connect(qmlObject, SIGNAL(clearCard()), this, SLOT(clearCard()));
         break;
@@ -195,8 +202,9 @@ void TriggerImplComponent::targetReady(const asn::Target &t) {
         trig.target = t;
         break;
     }
-    case asn::TriggerType::OnPhaseEvent: {
-        trigger = phaseTrigger;
+    case asn::TriggerType::OnStateChange: {
+        auto &trig = std::get<asn::StateChangeTrigger>(trigger);
+        trig.target = t;
         break;
     }
     default:
@@ -223,6 +231,12 @@ void TriggerImplComponent::setOwner(int index) {
     emit componentChanged(trigger);
 }
 
+void TriggerImplComponent::setState(int index) {
+    auto &tr = std::get<asn::StateChangeTrigger>(trigger);
+    tr.state = static_cast<asn::State>(index);
+    emit componentChanged(trigger);
+}
+
 void TriggerImplComponent::editCard() {
     if (cardSet)
         qmlCard = std::make_unique<CardComponent>(card, qmlObject);
@@ -244,11 +258,6 @@ void TriggerImplComponent::cardReady(const asn::Card &card_) {
     switch (type) {
     case asn::TriggerType::OnTriggerReveal: {
         auto &tr = std::get<asn::TriggerRevealTrigger>(trigger);
-        tr.card = card;
-        break;
-    }
-    case asn::TriggerType::OnBattleOpponentReversed: {
-        auto &tr = std::get<asn::BattleOpponentReversedTrigger>(trigger);
         tr.card = card;
         break;
     }

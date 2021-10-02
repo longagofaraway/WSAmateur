@@ -13,7 +13,8 @@ TargetSpecificCards decodeTargetSpecificCards(Iterator &it, Iterator end) {
 Target decodeTarget(Iterator &it, Iterator end) {
     Target t;
     t.type = decodeEnum<TargetType>(it, end);
-    if (t.type == TargetType::SpecificCards)
+    if (t.type == TargetType::SpecificCards ||
+        t.type == TargetType::BattleOpponent)
         t.targetSpecification = decodeTargetSpecificCards(it, end);
     return t;
 }

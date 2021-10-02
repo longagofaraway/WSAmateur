@@ -22,6 +22,15 @@ ZoneChangeTrigger decodeZoneChangeTrigger(Iterator &it, Iterator end) {
     return t;
 }
 
+StateChangeTrigger decodeStateChangeTrigger(Iterator &it, Iterator end) {
+    StateChangeTrigger t;
+
+    t.state = decodeEnum<State>(it, end);
+    t.target = decodeTarget(it, end);
+
+    return t;
+}
+
 Trigger decodeTrigger(Iterator &it, Iterator end) {
     Trigger t;
 
@@ -33,8 +42,8 @@ Trigger decodeTrigger(Iterator &it, Iterator end) {
     case TriggerType::OnPhaseEvent:
         t.trigger = decodePhaseTrigger(it, end);
         break;
-    case TriggerType::OnBattleOpponentReversed:
-        t.trigger = BattleOpponentReversedTrigger{ decodeCard(it, end) };
+    case TriggerType::OnStateChange:
+        t.trigger = decodeStateChangeTrigger(it, end);
         break;
     case TriggerType::OnTriggerReveal:
         t.trigger = TriggerRevealTrigger{ decodeCard(it, end) };

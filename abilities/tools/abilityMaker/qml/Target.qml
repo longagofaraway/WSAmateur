@@ -56,7 +56,7 @@ Rectangle {
                     "Character opposite this", "Last moved card"]
             currentIndex: -1
             onCurrentIndexChanged: {
-                if (currentIndex == 2) {
+                if (currentIndex == 2 || currentIndex == 4) {
                     specRow.enabled = true;
                 } else {
                     specRow.enabled = false;

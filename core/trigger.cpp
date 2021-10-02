@@ -265,26 +265,37 @@ void ServerPlayer::checkOnReversed(ServerCard *card) {
         if (abs[i].ability.type != asn::AbilityType::Auto)
             continue;
         const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (autoab.trigger.type != asn::TriggerType::OnReversed)
+        if (autoab.trigger.type != asn::TriggerType::OnStateChange)
+            continue;
+        const auto &trigger = std::get<asn::StateChangeTrigger>(autoab.trigger.trigger);
+        if (trigger.state != asn::State::Reversed)
+            continue;
+        const auto &target = trigger.target;
+        if (target.type != asn::TargetType::ThisCard)
             continue;
 
         queueActivatedAbility(autoab, abs[i], card);
     }
 }
 
-void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *attCard, ServerCard *battleOpp) {
-    auto &abs = attCard->abilities();
+void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *thisCard, ServerCard *battleOpp) {
+    auto &abs = thisCard->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
         if (abs[i].ability.type != asn::AbilityType::Auto)
             continue;
         const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (autoab.trigger.type != asn::TriggerType::OnBattleOpponentReversed)
+        if (autoab.trigger.type != asn::TriggerType::OnStateChange)
             continue;
-        const auto &trig = std::get<asn::BattleOpponentReversedTrigger>(autoab.trigger.trigger);
-        if (!checkCard(trig.card.cardSpecifiers, *battleOpp))
+        const auto &trig = std::get<asn::StateChangeTrigger>(autoab.trigger.trigger);
+        if (trig.state != asn::State::Reversed)
+            continue;
+        if (trig.target.type != asn::TargetType::BattleOpponent)
+            continue;
+        const auto &spec = trig.target.targetSpecification.value();
+        if (!checkCard(spec.cards.cardSpecifiers, *battleOpp))
             continue;
 
-        queueActivatedAbility(autoab, abs[i], attCard);
+        queueActivatedAbility(autoab, abs[i], thisCard);
     }
 }
 

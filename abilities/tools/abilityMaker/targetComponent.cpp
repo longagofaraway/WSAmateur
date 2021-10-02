@@ -57,7 +57,8 @@ void TargetComponent::updateTarget(int index) {
 
 void TargetComponent::typeChanged(int index) {
     type = static_cast<asn::TargetType>(index);
-    if (type == asn::TargetType::SpecificCards)
+    if (type == asn::TargetType::SpecificCards ||
+        type == asn::TargetType::BattleOpponent)
         emit initNumValue("1");
 }
 
@@ -100,7 +101,8 @@ void TargetComponent::destroyCard() {
 asn::Target TargetComponent::constructTarget() {
     asn::Target t;
     t.type = type;
-    if (type == asn::TargetType::SpecificCards) {
+    if (type == asn::TargetType::SpecificCards ||
+        type == asn::TargetType::BattleOpponent) {
         t.targetSpecification = asn::TargetSpecificCards();
         t.targetSpecification->mode = mode;
         t.targetSpecification->number = number;

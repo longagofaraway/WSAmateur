@@ -3,7 +3,7 @@ Trigger {
   trigger Choice {
     ZoneChangeTrigger,
     PhaseTrigger,
-    BattleOpponentReversedTrigger,
+    StateChangeTrigger,
     TriggerRevealTrigger,
     OnPlayTrigger,
     OnAttackTrigger,
@@ -15,15 +15,14 @@ Trigger {
 enum TriggerType {
   onZoneChange = 1,
   onPlay = 2,
-  onReverse = 3,
+  onStateChanged = 3,
   onAttack = 4,
-  onBattleOpponentReversed = 5,
-  onBackupOfThis = 6,
-  onTriggerReveal = 7,
-  onPhaseEvent = 8
-  onEndOfThisCardsAttack = 9,
-  onOppCharPlacedByStandbyTriggerReveal = 10,
-  onEndOfThisTurn = 11,
+  onBackupOfThis = 5,
+  onTriggerReveal = 6,
+  onPhaseEvent = 7,
+  onEndOfThisCardsAttack = 8,
+  onOppCharPlacedByStandbyTriggerReveal = 9,
+  onEndOfThisTurn = 10,
   
   otherTrigger = 255
 }
@@ -35,8 +34,8 @@ ZoneChangeTrigger {
 }
 
 PhaseTrigger {
-  state PhaseState
-  phase Phase
+  state PhaseState,
+  phase Phase,
   owner Player
 }  
 
@@ -52,8 +51,9 @@ OnAttackTrigger {
   target Target
 }
 
-BattleOpponentReversedTrigger {
-  card Card
+StateChangeTrigger {
+  state State,
+  target Target
 }
 
 OtherTrigger {

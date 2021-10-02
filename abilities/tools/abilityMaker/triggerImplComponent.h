@@ -46,6 +46,7 @@ private slots:
     void setPhaseState(int index);
     void setPhase(int index);
     void setOwner(int index);
+    void setState(int index);
 
     void editCard();
     void clearCard();

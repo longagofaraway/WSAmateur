@@ -38,7 +38,7 @@ Rectangle {
         anchors.top: presetLabel.bottom
         anchors.horizontalCenter: trigger.horizontalCenter
         width: 200
-        model: ["Placed from hand to stage", "When this card attacks"]
+        model: ["Placed from hand to stage", "When this card attacks", "When this becomes reversed"]
         currentIndex: -1
         onCurrentIndexChanged: presetChanged(currentIndex)
     }
@@ -62,8 +62,8 @@ Rectangle {
         id: triggerTypeCombo
         anchors { top: delimiterLabel.bottom; topMargin: 10 }
         anchors.horizontalCenter: trigger.horizontalCenter
-        model: ["Zone change", "On play", "On reverse", "On attack", "Battle opp reversed",
-                "On backup of this", "On trigger reveal", "Phase event", "End of this card's attack",
+        model: ["Zone change", "On play", "On state change", "On attack", "On backup of this",
+                "On trigger reveal", "Phase event", "End of this card's attack",
                 "On standby trigger effect", "End of turn"]
         currentIndex: -1
         onCurrentIndexChanged: {

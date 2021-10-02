@@ -27,7 +27,7 @@
         <file>qml/basicTypes/PhaseState.qml</file>
         <file>qml/basicTypes/Phase.qml</file>
         <file>qml/triggers/TriggerReveal.qml</file>
-        <file>qml/triggers/BattleOpReversed.qml</file>
+        <file>qml/triggers/StateChangeTrigger.qml</file>
         <file>qml/ArrayOfEffects.qml</file>
         <file>qml/effects/EffectButton.qml</file>
         <file>qml/Effect.qml</file>
@@ -53,5 +53,6 @@
         <file>qml/basicTypes/CostType.qml</file>
         <file>qml/basicTypes/StockCostEffects.qml</file>
         <file>qml/DbControls.qml</file>
+        <file>qml/basicTypes/State.qml</file>
     </qresource>
 </RCC>

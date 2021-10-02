@@ -48,9 +48,16 @@ std::string printOnAttackTrigger(const OnAttackTrigger &t) {
     return "";
 }
 
-std::string printBattleOpponentReversedTrigger(const BattleOpponentReversedTrigger &) {
-    return "When this card's battle opponent becomes" + printState(State::Reversed) + ", ";
+std::string printStateChangeTrigger(const StateChangeTrigger &t) {
+    std::string s = "When ";
+
+    s += printTarget(t.target);
+
+    s += "becomes" + printState(t.state) + ", ";
+
+    return s;
 }
+
 std::string printOnBackupOfThis() {
     return "When you use this card's \"<b>Backup</b>\", ";
 }
@@ -100,17 +107,14 @@ std::string printTrigger(const Trigger &t) {
     case TriggerType::OnAttack:
         s += printOnAttackTrigger(std::get<OnAttackTrigger>(t.trigger));
         break;
-    case TriggerType::OnBattleOpponentReversed:
-        s += printBattleOpponentReversedTrigger(std::get<BattleOpponentReversedTrigger>(t.trigger));
+    case TriggerType::OnStateChange:
+        s += printStateChangeTrigger(std::get<StateChangeTrigger>(t.trigger));
         break;
     case TriggerType::OnPhaseEvent:
         s += printPhaseTrigger(std::get<PhaseTrigger>(t.trigger));
         break;
     case TriggerType::OnBackupOfThis:
         s += printOnBackupOfThis();
-        break;
-    case TriggerType::OnReversed:
-        s += printOnReversed();
         break;
     case TriggerType::OnTriggerReveal:
         s += printOnTriggerReveal(std::get<TriggerRevealTrigger>(t.trigger));
@@ -120,6 +124,8 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));
+        break;
+    default:
         break;
     }
 
