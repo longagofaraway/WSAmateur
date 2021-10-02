@@ -88,8 +88,10 @@ public:
     bool cannotMove() const { return mCannotMove; }
     void setCannotMove(bool p) { mCannotMove = p; }
 
-    QString text(int abilityId) const { return mAbilityModel->text(abilityId); }
+    QString textById(int abilityId) const { return mAbilityModel->textById(abilityId); }
+    QString textByIndex(int index) const { return mAbilityModel->textByIndex(index); }
     AbilityModel* textModel() { return mAbilityModel.get(); }
+    const AbilityInfo& abilityInfo(int index) const { return mAbilityModel->info(index); }
     int abilityCount() const { return mAbilityModel->count(); }
     const asn::Ability& ability(int index) const { return mAbilityModel->ability(index); }
     const asn::Ability& abilityById(int abilityId) const { return mAbilityModel->abilityById(abilityId); }

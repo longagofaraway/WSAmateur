@@ -1,8 +1,13 @@
 syntax = "proto3";
 
+message InitialCard {
+    string code = 1;
+    sint32 id = 2;
+}
+
 message EventInitialHand {
     sint32 count = 1;
-    repeated string codes = 2;
+    repeated InitialCard cards = 2;
     bool first_turn = 3;
 }
 

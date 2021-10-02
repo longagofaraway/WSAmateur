@@ -61,6 +61,8 @@ void Player::sendChooseCard(const asn::ChooseCard &e) {
             from = zone(asnZoneToString(e.targets[0].place->zone));
         else if (e.targets[0].place->owner == asn::Player::Opponent)
             from = mGame->opponent()->zone(asnZoneToString(e.targets[0].place->zone));
+        else
+            throw std::runtime_error("shouldn't happen");
     }
 
     CommandChooseCard cmd;
@@ -361,7 +363,8 @@ void Player::playActAbility(int index) {
             if (canPlay(card, ab)) {
                 if (!choiceDlg)
                     choiceDlg = std::make_unique<ActChoiceDialog>(mGame);
-                choiceDlg->addAbility(index, i, card.text(i));
+                auto &abilityInfo = card.abilityInfo(i);
+                choiceDlg->addAbility(index, abilityInfo.id, abilityInfo.text);
             }
         }
     }

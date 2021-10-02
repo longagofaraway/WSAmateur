@@ -382,16 +382,15 @@ void Player::sendEndTurnCommand() {
 
 void Player::setInitialHand(const EventInitialHand &event) {
     auto deck = zone("deck");
-    if (!event.codes_size()) {
+    if (!event.cards_size()) {
         for (int i = 0; i < event.count(); ++i) {
             deck->model().removeCard(deck->model().count() - 1);
             mHand->addCard();
         }
     } else {
-        for (int i = 0; i < event.codes_size(); ++i) {
-            int id = deck->model().count() - 1;
-            deck->model().removeCard(id);
-            mHand->addCard(id, event.codes(i));
+        for (int i = 0; i < event.cards_size(); ++i) {
+            deck->model().removeCard(deck->model().count() - 1);
+            mHand->addCard(event.cards(i).id(), event.cards(i).code());
         }
     }
 
@@ -495,7 +494,6 @@ void Player::playCard(const EventPlayCard &event) {
         targetZone = "climax";
     else
         targetZone = "stage";
-
 
     createMovingCard(event.card_id(), code, "hand", event.hand_pos(), targetZone, event.stage_pos());
 }
@@ -757,7 +755,7 @@ void Player::testAction()
 
 bool Player::playCards(CardModel &hand) {
     auto &cards = mStage->cards();
-    for (int i = 2; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i) {
         if (cards[i].cardPresent())
             continue;
         auto &handCards = hand.cards();

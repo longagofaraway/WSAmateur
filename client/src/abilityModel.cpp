@@ -2,11 +2,19 @@
 
 #include <stdexcept>
 
-QString AbilityModel::text(int row) const {
+QString AbilityModel::textByIndex(int row) const {
     if (static_cast<size_t>(row) >= mAbilities.size())
         return "";
 
     return mAbilities[row].text;
+}
+
+QString AbilityModel::textById(int id) const {
+    auto it = std::find_if(mAbilities.begin(), mAbilities.end(), [id](const AbilityInfo &i) { return id == i.id; });
+    if (it == mAbilities.end())
+        throw std::runtime_error("wrong ability id");
+
+    return it->text;
 }
 
 const asn::Ability &AbilityModel::ability(int row) const {

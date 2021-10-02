@@ -233,8 +233,9 @@ void ServerPlayer::dealStartingHand() {
         auto card = deck->takeTopCard();
         if (!card)
             continue;
-        auto code = eventPrivate.add_codes();
-        *code = card->code();
+        auto code = eventPrivate.add_cards();
+        code->set_code(card->code());
+        code->set_id(card->id());
         hand->addCard(std::move(card));
     }
 
@@ -306,7 +307,8 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     eventPublic.set_start_pos(startPos);
     eventPublic.set_target_pos(targetPos);
 
-    if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PublicZone) {
+    if ((startZone->type() == ZoneType::HiddenZone || startZone->type() == ZoneType::PrivateZone)
+        && targetZone->type() == ZoneType::PublicZone) {
         eventPublic.set_code(card->code());
         eventPublic.set_card_id(card->id());
     }
@@ -318,12 +320,6 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
         eventPrivate.set_card_id(card->id());
         if (reveal)
             eventPublic.set_code(card->code());
-    }
-
-    // revealing card from hand, opponent didn't see this card yet
-    if (startZone->type() == ZoneType::PrivateZone && targetZone->type() == ZoneType::PublicZone) {
-        eventPublic.set_code(card->code());
-        eventPublic.set_card_id(card->id());
     }
 
     sendGameEvent(eventPrivate);
@@ -482,14 +478,13 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
     auto oldStageCard = stage->putOnStage(std::move(card), cmd.stage_pos());
     auto cardInPlay = stage->card(cmd.stage_pos());
 
-    EventPlayCard eventPublic;
-    eventPublic.set_hand_pos(cmd.hand_pos());
-    eventPublic.set_stage_pos(cmd.stage_pos());
-    EventPlayCard eventPrivate(eventPublic);
-    eventPublic.set_code(cardInPlay->code());
+    EventPlayCard event;
+    event.set_card_id(cardInPlay->id());
+    event.set_hand_pos(cmd.hand_pos());
+    event.set_stage_pos(cmd.stage_pos());
+    event.set_code(cardInPlay->code());
 
-    sendGameEvent(eventPrivate);
-    mGame->sendPublicEvent(eventPublic, mId);
+    sendToBoth(event);
 
     if (oldStageCard)
         zone("wr")->addCard(std::move(oldStageCard));

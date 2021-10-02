@@ -26,7 +26,9 @@ public:
     };
     AbilityModel() : QAbstractListModel(nullptr) {}
 
-    QString text(int row) const;
+    const AbilityInfo& info(int index) const { return mAbilities.at(index); }
+    QString textById(int id) const;
+    QString textByIndex(int row) const;
     const asn::Ability &ability(int row) const;
     const asn::Ability& abilityById(int id) const;
     void addAbility(const asn::Ability &a, int id, asn::CardType cardType = asn::CardType::Char, bool permanent = true);

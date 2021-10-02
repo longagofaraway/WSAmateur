@@ -146,7 +146,7 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
             a.code = protoa.card_code();
             if (protoa.type() == ProtoAbilityType::ProtoCard) {
                 a.ability = card->abilityById(a.abilityId);
-                a.text = card->text(a.abilityId);
+                a.text = card->textById(a.abilityId);
             }
         }
         if (protoa.type() == ProtoAbilityType::ProtoClimaxTrigger) {

@@ -37,7 +37,7 @@ std::string gOppDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="40" code="KGL/S79-015"/>
+        <card number="40" code="KGL/S79-007"/>
     </main>
 </deck>)delim";
 
@@ -76,8 +76,8 @@ void Game::componentComplete() {
         throw;
     }
 
-    //startLocalGame();
-    startNetworkGame();
+    startLocalGame();
+    //startNetworkGame();
 }
 
 void Game::startNetworkGame() {
@@ -376,9 +376,9 @@ void Game::processGameEventByOpponent(const std::shared_ptr<GameEvent> event) {
     if (event->event().Is<EventInitialHand>()) {
         EventInitialHand ev;
         event->event().UnpackTo(&ev);
-        for (int i = 0; i < ev.codes_size(); ++i) {
+        for (int i = 0; i < ev.cards_size(); ++i) {
             mOpponent->zone("deck")->model().removeCard(mOpponent->zone("deck")->model().count());
-            hand.addCard(0, ev.codes(i), mOpponent->zone("hand"));
+            hand.addCard(ev.cards(i).id(), ev.cards(i).code(), mOpponent->zone("hand"));
         }
         CommandMulligan cmd;
         //cmd.add_ids(0);
