@@ -22,6 +22,7 @@ class CardInfo
     std::vector<std::string> mTraits;
     std::vector<TriggerIcon> mTriggers;
     std::vector<std::vector<uint8_t>> mAbilities;
+    std::vector<std::string> mReferences;
 
 public:
     CardInfo();
@@ -50,4 +51,6 @@ public:
     void setTriggers(const std::vector<TriggerIcon> &triggers) { mTriggers = triggers; }
     const std::vector<std::vector<uint8_t>>& abilities() const { return mAbilities; }
     void addAbility(const std::vector<uint8_t> &ability) { mAbilities.push_back(ability); }
+    const std::vector<std::string>& references() const { return mReferences; }
+    void setReferences(const std::vector<std::string> &ref) { mReferences = ref; }
 };

@@ -9,6 +9,7 @@
 #include "activatedAbilities.h"
 #include "cardZone.h"
 #include "choiceDialog.h"
+#include "deckList.h"
 #include "deckView.h"
 
 class EventInitialHand;
@@ -59,6 +60,7 @@ private:
     Stage *mStage;
     DeckView *mDeckView;
     bool mDeckSet = false;
+    DeckList mDeckList;
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
     std::unique_ptr<ActivatedAbilities> mAbilityList;
     std::unique_ptr<ChoiceDialogBase> mChoiceDialog;
@@ -113,6 +115,8 @@ public:
 
     bool hasActivatedAbilities() const { return mAbilityList->count(); }
     ActivatedAbility& activeAbility() { return mAbilityList->ability(mAbilityList->activeId()); }
+
+    std::vector<std::string> cardReferences(const std::string &code) const;
 
     //test section
     void testAction();
@@ -192,6 +196,7 @@ private:
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t) const;
+    void fillReferenceCache();
 
 public slots:
     void sendSwitchPositions(int from, int to);
@@ -204,4 +209,5 @@ public slots:
 private:
     bool mPlayingClimax = false;
     int mClimaxId;
+    std::unordered_multimap<std::string, std::string> cardReferenceCache; // code to code
 };

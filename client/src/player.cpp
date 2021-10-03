@@ -72,14 +72,35 @@ void Player::setDeck(const std::string &deck) {
     if (deck.empty())
         return;
 
-    DeckList decklist(deck);
+    mDeckList.setDeck(deck);
     int cardCount = 0;
-    for (auto &card: decklist.cards())
+    for (const auto &card: mDeckList.cards())
         cardCount += card.count;
 
     auto deckZone = zone("deck");
     deckZone->model().addCards(cardCount, deckZone);
     mDeckSet = true;
+
+    std::unordered_multimap<std::string, std::string> finalCache;
+    fillReferenceCache();
+}
+
+void Player::fillReferenceCache() {
+    std::unordered_multimap<std::string, std::string> nameCodeCache;
+    for (const auto &card: mDeckList.cards()) {
+        auto info = CardDatabase::get().getCard(card.code);
+        nameCodeCache.emplace(info->name(), info->code());
+    }
+    for (const auto &card: mDeckList.cards()) {
+        auto info = CardDatabase::get().getCard(card.code);
+        for (const auto &ref: info->references()) {
+            if (nameCodeCache.contains(ref)) {
+               auto range = nameCodeCache.equal_range(ref);
+               for (auto it = range.first; it != range.second; ++it)
+                   cardReferenceCache.emplace(card.code, it->second);
+            }
+        }
+    }
 }
 
 Player* Player::getOpponent() const {
@@ -727,6 +748,18 @@ void Player::sendFromStageToWr(int pos) {
 void Player::resetChoiceDialog() {
     auto ptr = mChoiceDialog.release();
     ptr->deleteLater();
+}
+
+std::vector<std::string> Player::cardReferences(const std::string &code) const {
+    if (!cardReferenceCache.contains(code))
+        return {};
+
+    std::vector<std::string> references;
+    auto range = cardReferenceCache.equal_range(code);
+    for (auto it = range.first; it != range.second; ++it)
+        references.push_back(it->second);
+
+    return references;
 }
 
 void Player::sendPlayCounter(int handId) {

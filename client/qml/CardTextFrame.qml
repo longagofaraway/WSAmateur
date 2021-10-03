@@ -12,6 +12,18 @@ Image {
     height: effectsView.height + borderRect.borderWidth * 2
     source: "qrc:///resources/images/textFrame"
 
+    /* references work but need proper visualization
+    ListView {
+        width: contentWidth
+        height: root.cardHeight / 2
+        y: bgImage.height
+        orientation: ListView.Horizontal
+        model: mModel.getReferences()
+        delegate: Card {
+            mSource: modelData
+        }
+    }*/
+
     Rectangle {
         id: borderRect
         property real borderWidth: 2

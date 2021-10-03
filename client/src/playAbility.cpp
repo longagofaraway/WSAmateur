@@ -4,7 +4,6 @@
 
 #include "abilities.h"
 #include "abilityUtils.h"
-#include "cardDatabase.h"
 #include "codecs/decode.h"
 #include "game.h"
 #include "globalAbilities/globalAbilities.h"

@@ -30,6 +30,8 @@ void Card::init(int id, const std::string &code) {
     QQmlEngine::setObjectOwnership(mAbilityModel.get(), QQmlEngine::CppOwnership);
     for (const auto &abBuf: mInfo->abilities())
         mAbilityModel->addAbility(decodeAbility(abBuf), mAbilityModel->count(), mType);
+
+    mAbilityModel->setReferences(mZone->player()->cardReferences(mCode));
 }
 
 void Card::clear() {

@@ -19,9 +19,7 @@ void DeckList::readCards(QXmlStreamReader &xml) {
     }
 }
 
-DeckList::DeckList(const std::string &deck)
-    : mDeck(deck)
-{
+void DeckList::setDeck(const std::string &deck) {
     QXmlStreamReader xml;
 
     xml.addData(deck.c_str());
@@ -48,5 +46,4 @@ DeckList::DeckList(const std::string &deck)
     if (xml.hasError()) {
 
     }
-
 }

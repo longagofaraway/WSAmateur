@@ -111,8 +111,9 @@ void ServerPlayer::sendToBoth(const google::protobuf::Message &event) {
 }
 
 void ServerPlayer::addDeck(const std::string &deck) {
-    qDebug("deck set");
-    mDeck = std::make_unique<DeckList>(deck);
+    mDeck = std::make_unique<DeckList>();
+    mDeck->setDeck(deck);
+
     mExpectedCommands.push_back(CommandReadyToStart::descriptor()->name());
 
     EventDeckSet event;

@@ -140,6 +140,24 @@ void parseTraits(CardInfo *info) {
 
     info->setTraits(traits);
 }
+
+void parseReferences(CardInfo *info, QVariant blob) {
+    if (blob.isNull())
+        return;
+
+    const QString kSep = "||";
+    auto refs = blob.toString();
+    if (refs.isEmpty())
+        return;
+
+    auto refList = refs.split(kSep);
+    std::vector<std::string> res;
+    for (const auto &ref: refList) {
+        res.push_back(ref.toStdString());
+    }
+
+    info->setReferences(res);
+}
 }
 
 CardDatabase::CardDatabase() {
@@ -191,6 +209,7 @@ void CardDatabase::fillCache() {
         parseAbilities(cardInfo.get(), query.value("abilities"));
         cardInfo->setCounter(parseCounter(query.value("counter")));
         parseTraits(cardInfo.get());
+        parseReferences(cardInfo.get(), query.value("card_references"));
 
         cards[cardInfo->code()] = cardInfo;
     }

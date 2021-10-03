@@ -19,7 +19,9 @@ class DeckList
     std::vector<DeckCard> mCards;
     std::string mDeck;
 public:
-    DeckList(const std::string &deck);
+    DeckList() {}
+
+    void setDeck(const std::string &deck);
 
     const std::vector<DeckCard>& cards() const { return mCards; }
     const std::string& deck() const { return mDeck; }

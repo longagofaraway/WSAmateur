@@ -224,7 +224,7 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
 int CardModel::findById(int id) const {
     for (size_t i = 0; i < mCards.size(); ++i) {
         if (id == mCards[i].id())
-            return i;
+            return static_cast<int>(i);
     }
     return -1;
 }
