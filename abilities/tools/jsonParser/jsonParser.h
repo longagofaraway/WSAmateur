@@ -80,4 +80,7 @@ public:
     Q_INVOKABLE QString printEncodedAbility();
     Q_INVOKABLE QString printDecodedAbility();
     Q_INVOKABLE QString initialText();
+    Q_INVOKABLE QString addToDb(QString code, QString json);
+    Q_INVOKABLE QString popFromDb(QString code);
+
 };

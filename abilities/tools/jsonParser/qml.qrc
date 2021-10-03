@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>DbControls.qml</file>
+        <file>BasicTextInput.qml</file>
     </qresource>
 </RCC>

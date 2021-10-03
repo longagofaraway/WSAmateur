@@ -41,13 +41,13 @@ Window {
 
     TextArea {
         id: resultBox
-        height: 100
+        height: 90
         width: root.width * 0.8
         verticalAlignment: TextInput.AlignTop
     }
     TextArea {
         id: hexBox
-        height: 100
+        height: 90
         width: root.width * 0.8
         verticalAlignment: TextInput.AlignTop
     }
@@ -56,6 +56,16 @@ Window {
         height: 50
         width: root.width * 0.8
         verticalAlignment: TextInput.AlignTop
+    }
+    DbControls {
+        id: dbControls
+        anchors { top: fromBinBox.bottom; topMargin: 10 }
+        onAddAbility: {
+            statusText = jsonParser.addToDb(getCode(), textBox.text);
+        }
+        onPopAbility: {
+            statusText = jsonParser.popFromDb(getCode());
+        }
     }
     }
 }

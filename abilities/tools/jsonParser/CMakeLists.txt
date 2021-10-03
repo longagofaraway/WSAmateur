@@ -3,6 +3,7 @@ set(jsonParserSources
     jsonParser.cpp
     conditionParser.cpp
     effectParser.cpp
+    abilityParser.cpp
     main.cpp
     qml.qrc)
 
@@ -14,6 +15,6 @@ target_compile_features(jsonParser PRIVATE cxx_std_20)
 target_compile_definitions(jsonParser
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(jsonParser
-  PRIVATE Qt5::Core Qt5::Quick)
+  PRIVATE Qt5::Core Qt5::Quick dbManager)
 
 target_link_libraries(jsonParser PUBLIC wsamateurAbilities)

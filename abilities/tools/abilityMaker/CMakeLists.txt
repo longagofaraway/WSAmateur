@@ -19,8 +19,6 @@ set(abilityMakerSources
     costComponent.cpp
     dbControls.h
     dbControls.cpp
-    dbManager.h
-    dbManager.cpp
     effectComponent.h
     effectComponent.cpp
     effectImplComponent.h
@@ -36,7 +34,7 @@ set(abilityMakerSources
     triggerImplComponent.cpp
     qml.qrc)
 
-find_package(Qt5 COMPONENTS Quick Sql REQUIRED)
+find_package(Qt5 COMPONENTS Quick REQUIRED)
 
 add_executable(AbilityMaker ${abilityMakerSources})
 
@@ -48,6 +46,6 @@ if (UNIX)
 endif (UNIX)
 
 target_link_libraries(AbilityMaker
-  PRIVATE Qt5::Core Qt5::Quick Qt5::Sql)
+  PRIVATE Qt5::Core Qt5::Quick dbManager)
 
 target_link_libraries(AbilityMaker PUBLIC wsamateurAbilities)
