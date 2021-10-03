@@ -110,10 +110,18 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
             s += "with a " + printTriggerIcon(std::get<TriggerIcon>(cardSpec.specifier)) + " trigger ";
     }
 
+    count = 0;
     for (const auto &cardSpec: c.cardSpecifiers) {
-        if (cardSpec.type == CardSpecifierType::NameContains)
-            s += "with \"" + std::get<NameContains>(cardSpec.specifier).value + "\" in its card name ";
+        if (cardSpec.type == CardSpecifierType::NameContains) {
+            if (!count++)
+                s += "with ";
+            else
+                s += " or ";
+            s += "\"" + std::get<NameContains>(cardSpec.specifier).value + "\"";
+        }
     }
+    if (count)
+        s += " in its card name ";
 
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::LevelHigherThanOpp)

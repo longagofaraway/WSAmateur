@@ -303,14 +303,20 @@ std::string printMoveCard(const MoveCard &e) {
     } else if(e.target.type == TargetType::SpecificCards) {
         bool plural = false;
         const auto &spec = *e.target.targetSpecification;
-        if (e.from.pos == Position::Top && spec.number.mod == NumModifier::ExactMatch) {
-            s += "the top ";
+        // 'of' case
+        if ((e.from.pos == Position::Top ||e.from.pos == Position::Bottom)
+                && spec.number.mod == NumModifier::ExactMatch) {
+            if (e.from.pos == Position::Top)
+                s += "the top ";
+            else if (e.from.pos == Position::Bottom)
+                s += "the bottom ";
             if (spec.number.value > 1) {
                 plural = true;
                 s += std::to_string(spec.number.value) + " ";
             }
             s += printCard(spec.cards, plural, false) + " of ";
         } else {
+            // 'from' case
             bool plural = false;
             if (spec.mode == TargetMode::All) {
                 plural = true;
