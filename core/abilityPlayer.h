@@ -132,6 +132,7 @@ private:
     bool evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c);
     bool evaluateConditionDuringTurn(const asn::ConditionDuringTurn &c);
     bool evaluateConditionCheckOpenedCards(const asn::ConditionCheckOpenedCards &c);
+    bool evaluateConditionCardsLocation(const asn::ConditionCardsLocation &c);
 
     void sendLookCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);

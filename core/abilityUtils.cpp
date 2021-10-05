@@ -6,6 +6,7 @@
 #include <QByteArray>
 
 #include "../client/src/card.h"
+#include "serverCardZone.h"
 
 std::string_view asnZoneToString(asn::Zone zone) {
     switch (zone) {
@@ -305,4 +306,28 @@ bool isPositional(const asn::Target &t) {
         return true;
     }
     return false;
+}
+
+bool checkPlace(const ServerCard *card, const asn::Place &place) {
+    if (card->zone()->name() != asnZoneToString(place.zone))
+        return false;
+    if (place.pos == asn::Position::FrontRow &&
+        !isFrontRow(card->pos()))
+        return false;
+    switch (place.pos) {
+    case asn::Position::FrontRow:
+        if (!isFrontRow(card->pos()))
+            return false;
+        break;
+    case asn::Position::BackRow:
+        if (!isBackRow(card->pos()))
+            return false;
+        break;
+    case asn::Position::Top:
+        if (card->pos() != card->zone()->count() - 1)
+            return false;
+        break;
+    }
+    assert(false);
+    return true;
 }

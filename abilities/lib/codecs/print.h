@@ -25,6 +25,7 @@ std::string printTriggerIcon(asn::TriggerIcon icon);
 std::string printForEachMultiplier(const asn::ForEachMultiplier &m);
 std::string printAttackType(asn::AttackType t);
 std::string printDuration(int duration);
+std::string printPlace(asn::Place place);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
 std::string printKeywords(const std::vector<asn::Keyword> &keywords);

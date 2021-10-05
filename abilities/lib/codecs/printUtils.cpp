@@ -187,6 +187,8 @@ std::string printPhase(Phase p) {
         return "draw phase";
     case Phase::EncoreStep:
         return "encore step";
+    default:
+        break;
     }
     return "";
 }
@@ -227,6 +229,20 @@ std::string printDuration(int duration) {
         return "until end of turn ";
     if (duration == 2)
         return "until end of your opponent's turn ";
+    return "";
+}
+
+std::string printPlace(Place place) {
+    std::string s = printPlayer(place.owner);
+
+    switch(place.pos) {
+    case Position::FrontRow:
+        return s + "center stage";
+    case Position::BackRow:
+        return s + "back stage";
+    default:
+        break;
+    }
     return "";
 }
 

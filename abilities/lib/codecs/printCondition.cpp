@@ -153,6 +153,16 @@ std::string printConditionCheckOpenedCards(const ConditionCheckOpenedCards &c) {
     return s;
 }
 
+std::string printCardsLocation(const ConditionCardsLocation &c) {
+    std::string s = "if ";
+
+    s = printTarget(c.target);
+    s += "is in ";
+    s += printPlace(c.place) + ", ";
+
+    return s;
+}
+
 std::string printCondition(const Condition &c) {
     std::string s;
 
@@ -177,6 +187,11 @@ std::string printCondition(const Condition &c) {
         break;
     case ConditionType::CheckOpenedCards:
         s += printConditionCheckOpenedCards(std::get<ConditionCheckOpenedCards>(c.cond));
+        break;
+    case ConditionType::CardsLocation:
+        s += printCardsLocation(std::get<ConditionCardsLocation>(c.cond));
+        break;
+    default:
         break;
     }
 

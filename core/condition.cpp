@@ -23,6 +23,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionDuringTurn(std::get<asn::ConditionDuringTurn>(c.cond));
     case asn::ConditionType::CheckOpenedCards:
         return evaluateConditionCheckOpenedCards(std::get<asn::ConditionCheckOpenedCards>(c.cond));
+    case asn::ConditionType::CardsLocation:
+        return evaluateConditionCardsLocation(std::get<asn::ConditionCardsLocation>(c.cond));
     default:
         assert(false);
         return false;
@@ -143,4 +145,19 @@ bool AbilityPlayer::evaluateConditionCheckOpenedCards(const asn::ConditionCheckO
             return true;
     }
     return false;
+}
+
+bool AbilityPlayer::evaluateConditionCardsLocation(const asn::ConditionCardsLocation &c) {
+    auto targets = getTargets(c.target);
+
+    if (targets.empty()) {
+        assert(false);
+        return false;
+    }
+
+    for (auto card: targets) {
+        if (!checkPlace(card, c.place))
+            return false;
+    }
+    return true;
 }

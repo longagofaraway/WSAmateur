@@ -29,3 +29,4 @@ bool checkNumber(const asn::Number &numObj, int n);
 bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card);
 bool checkTargetMode(asn::TargetMode mode, const ServerCard *thisCard, const ServerCard *card);
 bool isPositional(const asn::Target &t);
+bool checkPlace(const ServerCard *card, const asn::Place &place);
