@@ -42,7 +42,7 @@ void encodeCondition(const Condition &c, Buf &buf) {
         encodeConditionAndOr(std::get<ConditionOr>(c.cond), buf);
         break;
     case ConditionType::SumOfLevels:
-        buf.push_back(static_cast<uint8_t>(std::get<ConditionSumOfLevels>(c.cond).moreThan));
+        buf.push_back(static_cast<uint8_t>(std::get<ConditionSumOfLevels>(c.cond).equalOrMoreThan));
         break;
     case ConditionType::CardsLocation:
         encodeConditionCardsLocation(std::get<ConditionCardsLocation>(c.cond), buf);

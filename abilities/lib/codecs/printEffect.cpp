@@ -42,7 +42,7 @@ std::string printEffects(const std::vector<Effect> &effects) {
 
     for (size_t i = 0; i < effects.size(); ++i) {
         bool makeUpper = false;
-        if (!gPrintState.attributeGainChaining) {
+        if (!gPrintState.abilityChainingSecond) {
             if (i != 0 && effects[i].cond.type != ConditionType::NoCondition) {
                 s[s.size() - 1] = '.';
                 s.push_back(' ');
@@ -57,15 +57,23 @@ std::string printEffects(const std::vector<Effect> &effects) {
                 }
             }
         }
+
+        bool chaining = false;
+        if (canChain(effects[i].type) && effects.size() > i + 1 &&
+             canChain(effects[i + 1].type)) {
+            chaining = true;
+            if (compareChainTargets(effects[i], effects[i + 1]))
+                gPrintState.abilityChainingFirst = true;
+        }
+
         auto effectText = printEffect(effects[i]);
         if (makeUpper)
             effectText[0] = std::toupper(effectText[0]);
         s += effectText;
 
-        if (canChain(effects[i].type) && effects.size() > i + 1 &&
-            canChain(effects[i + 1].type)) {
+        if (chaining) {
             if (compareChainTargets(effects[i], effects[i + 1]))
-                gPrintState.attributeGainChaining = true;
+                gPrintState.abilityChainingSecond = true;
         }
     }
 
@@ -75,7 +83,7 @@ std::string printEffects(const std::vector<Effect> &effects) {
 std::string printAttributeGain(const AttributeGain &e) {
     std::string res;
 
-    if (!gPrintState.attributeGainChaining) {
+    if (!gPrintState.abilityChainingSecond) {
         switch (e.target.type) {
         case TargetType::ChosenCards:
             if (gPrintState.chosenCardsNumber.value == 1) {
@@ -114,7 +122,7 @@ std::string printAttributeGain(const AttributeGain &e) {
         }
     } else {
         res += "and ";
-        gPrintState.attributeGainChaining = false;
+        gPrintState.abilityChainingSecond = false;
     }
 
     if (e.value > 0)
@@ -141,7 +149,10 @@ std::string printAttributeGain(const AttributeGain &e) {
         res += printForEachMultiplier(*e.modifier->specifier);
     }
 
-    res += printDuration(e.duration);
+    if (!gPrintState.abilityChainingFirst) {
+        res += printDuration(e.duration);
+        gPrintState.abilityChainingFirst = false;
+    }
 
     if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::TimesLevel) {
         res.pop_back();
@@ -432,11 +443,11 @@ std::string printShuffle(const Shuffle &e) {
 std::string printAbilityGain(const AbilityGain &e) {
     std::string s;
 
-    if (!gPrintState.attributeGainChaining) {
+    if (!gPrintState.abilityChainingSecond) {
         s += printTarget(e.target) + "gets ";
     } else {
         s += "and ";
-        gPrintState.attributeGainChaining = false;
+        gPrintState.abilityChainingSecond = false;
     }
 
     if (static_cast<size_t>(e.number) == e.abilities.size()) {

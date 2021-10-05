@@ -6,7 +6,8 @@ struct PrintState {
     asn::Number mentionedCardsNumber;
     asn::Number chosenCardsNumber;
     bool battleOpponentMentioned = false;
-    bool attributeGainChaining = false;
+    bool abilityChainingFirst = false;
+    bool abilityChainingSecond = false;
     bool mandatory = true;
 };
 extern PrintState gPrintState;

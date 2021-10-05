@@ -79,19 +79,20 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         else if (c.who == Player::Opponent)
             s += "your opponent has ";
 
-        if (c.howMany.mod == NumModifier::AtLeast ||
-            c.howMany.mod == NumModifier::ExactMatch) {
-            if (c.howMany.value == 1 && c.excludingThis) {
-                s += "another ";
-            } else if (c.howMany.value == 0 && c.excludingThis) {
-                plural = true;
-                s += "no other ";
-            } else {
-                plural = true;
-                s += std::to_string(c.howMany.value) + " or more ";
-                if (c.excludingThis)
-                    s += "other ";
-            }
+        if (c.howMany.value == 1 && c.excludingThis) {
+            s += "another ";
+        } else if (c.howMany.value == 0 && c.excludingThis) {
+            plural = true;
+            s += "no other ";
+        } else {
+            plural = true;
+            s += std::to_string(c.howMany.value) + " ";
+            if (c.howMany.mod == NumModifier::AtLeast)
+                s += "or more ";
+            else if (c.howMany.mod == NumModifier::UpTo)
+                s += "or less ";
+            if (c.excludingThis)
+                s += "other ";
         }
     }
 
@@ -134,7 +135,7 @@ std::string printConditionInBatteWithThis() {
 
 std::string printConditionSumOfLevels(const ConditionSumOfLevels &c) {
     std::string s = "if the total level of cards in your level is ";
-    s += std::to_string(c.moreThan) + " or higher, ";
+    s += std::to_string(c.equalOrMoreThan) + " or higher, ";
     return s;
 }
 

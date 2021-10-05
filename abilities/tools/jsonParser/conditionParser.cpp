@@ -87,11 +87,11 @@ ConditionCardsLocation parseConditionCardsLocation(const QJsonObject &json) {
 }
 
 ConditionSumOfLevels parseConditionSumOfLevels(const QJsonObject &json) {
-    if (!json.contains("moreThan") || !json["moreThan"].isDouble())
-        throw std::runtime_error("no moreThan in ConditionSumOfLevels");
+    if (!json.contains("equalOrMoreThan") || !json["equalOrMoreThan"].isDouble())
+        throw std::runtime_error("no equalOrMoreThan in ConditionSumOfLevels");
 
     ConditionSumOfLevels c;
-    c.moreThan = json["moreThan"].toInt();
+    c.equalOrMoreThan = json["equalOrMoreThan"].toInt();
 
     return c;
 }

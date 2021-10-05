@@ -77,6 +77,7 @@ std::string printTarget(const Target &t, bool plural) {
     } else if (t.type == TargetType::OppositeThis) {
         s += "the character facing this card ";
     } else if (t.type == TargetType::BattleOpponent) {
+        gPrintState.battleOpponentMentioned = true;
         s += "this card's battle opponent ";
     }
 

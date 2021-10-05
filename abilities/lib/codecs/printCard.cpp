@@ -89,9 +89,11 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
                     s += "e";
                 break;
             case CardType::Event:
-                if (s.substr(s.size() - 2, 2) == "a ") {
-                    s[s.size() - 1] = 'n';
-                    s.push_back(' ');
+                if (s.size() >= 2) {
+                    if (s.substr(s.size() - 2, 2) == "a ") {
+                        s[s.size() - 1] = 'n';
+                        s.push_back(' ');
+                    }
                 }
                 s += "event";
                 break;

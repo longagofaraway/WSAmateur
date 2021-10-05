@@ -34,7 +34,7 @@ struct ConditionHaveCard {
 };
 
 struct ConditionSumOfLevels {
-    int moreThan;
+    int equalOrMoreThan;
 };
 
 struct ConditionCardsLocation {

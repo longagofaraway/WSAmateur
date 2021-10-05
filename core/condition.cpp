@@ -120,7 +120,7 @@ bool AbilityPlayer::evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels
     int sum = 0;
     for (int i = 0; i < level->count(); ++i)
         sum += level->card(i)->level();
-    return sum > c.moreThan;
+    return sum >= c.equalOrMoreThan;
 }
 
 bool AbilityPlayer::evaluateConditionDuringTurn(const asn::ConditionDuringTurn &c) {

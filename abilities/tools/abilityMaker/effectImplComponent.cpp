@@ -100,7 +100,11 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         e.owner = asn::Player::Player;
         e.zone = asn::Zone::Deck;
         effect = e;
+        break;
     }
+    case asn::EffectType::EarlyPlay:
+        effect = std::monostate();
+        break;
     default:
         break;
     }
@@ -236,7 +240,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
-        asn::EffectType::Shuffle
+        asn::EffectType::Shuffle,
+        asn::EffectType::EarlyPlay
     };
 
     if (readyComponents.contains(type))
