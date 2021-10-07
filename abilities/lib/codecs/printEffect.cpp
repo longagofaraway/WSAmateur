@@ -496,7 +496,7 @@ std::string printChangeState(const ChangeState &e) {
     s += printState(e.state) + " ";
     if (e.target.type == TargetType::SpecificCards) {
         const auto &spec = *e.target.targetSpecification;
-        if (spec.number.value > 1) {
+        if (spec.number.value > 1 || spec.mode == TargetMode::AllOther) {
             plural = true;
             s += std::to_string(spec.number.value) + " of ";
         }

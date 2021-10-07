@@ -26,7 +26,9 @@ enum class TargetMode : uint8_t {
     AllOther,
     InFrontOfThis,
     FrontRow,
-    BackRow
+    BackRow,
+    FrontRowOther,
+    BackRowOther
 };
 
 struct TargetSpecificCards {

@@ -74,6 +74,12 @@ std::string printTarget(const Target &t, bool plural) {
             article = false;
         }
         s += printCard(spec.cards, plural, article, spec.mode) + " ";
+
+        // it's for multiplier
+        if (spec.mode == TargetMode::FrontRowOther)
+            s += "in the center stage ";
+        else if (spec.mode == TargetMode::BackRowOther)
+            s += "in the back stage ";
     } else if (t.type == TargetType::OppositeThis) {
         s += "the character facing this card ";
     } else if (t.type == TargetType::BattleOpponent) {

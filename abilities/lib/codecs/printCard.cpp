@@ -36,7 +36,8 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
         }
     }
 
-    if (mode == TargetMode::AllOther)
+    if (mode == TargetMode::AllOther || mode == TargetMode::FrontRowOther ||
+            mode == TargetMode::BackRowOther)
         s += "other ";
 
     int count = 0;

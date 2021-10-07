@@ -51,7 +51,7 @@ ConditionHaveCard {
 }
 
 ConditionSumOfLevels {
-  moreThan UInt8
+  equalOrMoreThan UInt8
 }
 
 ConditionCardsLocation {
