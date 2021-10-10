@@ -214,20 +214,20 @@ void TriggerImplComponent::targetReady(const asn::Target &t) {
 }
 
 void TriggerImplComponent::setPhaseState(int index) {
-    phaseTrigger.state = static_cast<asn::PhaseState>(index);
-    trigger = phaseTrigger;
+    auto &tr = std::get<asn::PhaseTrigger>(trigger);
+    tr.state = static_cast<asn::PhaseState>(index);
     emit componentChanged(trigger);
 }
 
 void TriggerImplComponent::setPhase(int index) {
-    phaseTrigger.phase = static_cast<asn::Phase>(index);
-    trigger = phaseTrigger;
+    auto &tr = std::get<asn::PhaseTrigger>(trigger);
+    tr.phase = static_cast<asn::Phase>(index);
     emit componentChanged(trigger);
 }
 
 void TriggerImplComponent::setOwner(int index) {
-    phaseTrigger.player = static_cast<asn::Player>(index);
-    trigger = phaseTrigger;
+    auto &tr = std::get<asn::PhaseTrigger>(trigger);
+    tr.player = static_cast<asn::Player>(index);
     emit componentChanged(trigger);
 }
 

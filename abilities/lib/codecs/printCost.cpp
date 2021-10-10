@@ -20,8 +20,10 @@ std::string printCost(const Cost &c) {
 
     for (size_t i = 0; i < c.items.size(); ++i) {
         auto tmp = printCostItem(c.items[i]);
-        if (firstEffect && c.items[i].type != CostType::Stock)
+        if (firstEffect && c.items[i].type != CostType::Stock) {
             tmp[0] = std::toupper(tmp[0]);
+            firstEffect = false;
+        }
         s += tmp;
         // if not the last costItem, add comma
         if (i < c.items.size() - 1) {

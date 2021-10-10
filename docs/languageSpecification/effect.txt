@@ -315,5 +315,5 @@ OtherEffect {
 PutOnStageRested {
   target Target,
   from Place,
-  pos Position
+  to Position
 }

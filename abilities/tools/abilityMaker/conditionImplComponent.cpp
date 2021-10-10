@@ -33,6 +33,24 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         condition = c;
         break;
     }
+    case asn::ConditionType::CardsLocation: {
+        auto c = asn::ConditionCardsLocation();
+        c.place = defaultPlace;
+        condition = c;
+        break;
+    }
+    case asn::ConditionType::CheckOpenedCards: {
+        auto c = asn::ConditionCheckOpenedCards();
+        c.number = defaultNum;
+        condition = c;
+        break;
+    }
+    case asn::ConditionType::SumOfLevels: {
+        auto c = asn::ConditionSumOfLevels();
+        c.equalOrMoreThan = 0;
+        condition = c;
+        break;
+    }
     default: break;
     }
 }
@@ -43,6 +61,10 @@ const asn::Place& getPlace(ConditionImplComponent::VarCondition &condition, asn:
     case asn::ConditionType::HaveCards: {
         const auto &c = std::get<asn::ConditionHaveCard>(condition);
         return c.where;
+    }
+    case asn::ConditionType::CardsLocation: {
+        const auto &c = std::get<asn::ConditionCardsLocation>(condition);
+        return c.place;
     }
     default:
         assert(false);
@@ -59,6 +81,10 @@ const asn::Card& getCard(ConditionImplComponent::VarCondition &condition, asn::C
     case asn::ConditionType::HaveCards: {
         const auto &c = std::get<asn::ConditionHaveCard>(condition);
         return c.whichCards;
+    }
+    case asn::ConditionType::CheckOpenedCards: {
+        const auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+        return c.card;
     }
     default:
         assert(false);
@@ -93,6 +119,23 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.howMany.value)));
         break;
     }
+    case asn::ConditionType::CardsLocation: {
+        const auto &cond = std::get<asn::ConditionCardsLocation>(c);
+        target = cond.target;
+        targetSet = true;
+        break;
+    }
+    case asn::ConditionType::CheckOpenedCards: {
+        const auto &cond = std::get<asn::ConditionCheckOpenedCards>(c);
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)cond.number.mod));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.number.value)));
+        break;
+    }
+    case asn::ConditionType::SumOfLevels: {
+        const auto &cond = std::get<asn::ConditionSumOfLevels>(c);
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.equalOrMoreThan)));
+        break;
+    }
     default:
         break;
     }
@@ -106,7 +149,10 @@ ConditionImplComponent::~ConditionImplComponent() {
 void ConditionImplComponent::init(QQuickItem *parent) {
     std::unordered_map<asn::ConditionType, QString> components {
         { asn::ConditionType::IsCard, "IsCard" },
-        { asn::ConditionType::HaveCards, "HaveCards" }
+        { asn::ConditionType::HaveCards, "HaveCards" },
+        { asn::ConditionType::CardsLocation, "CardsLocation" },
+        { asn::ConditionType::CheckOpenedCards, "CheckOpenedCards" },
+        { asn::ConditionType::SumOfLevels, "SumOfLevels" },
     };
 
     std::unordered_set<asn::ConditionType> readyComponents {
@@ -142,6 +188,23 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(onPlayerChanged(int)));
         connect(qmlObject, SIGNAL(excludingThisChanged(bool)), this, SLOT(onExcludingThisChanged(bool)));
         break;
+    case asn::ConditionType::CardsLocation:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
+        break;
+    case asn::ConditionType::CheckOpenedCards:
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
+
+        connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
+        connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
+        connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        break;
+    case asn::ConditionType::SumOfLevels:
+        QMetaObject::invokeMethod(qmlObject, "setSum", Q_ARG(QVariant, QString::number(0)));
+
+        connect(qmlObject, SIGNAL(sumChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        break;
     default: break;
     }
 }
@@ -167,6 +230,11 @@ void ConditionImplComponent::targetReady(const asn::Target &t) {
     switch (type) {
     case asn::ConditionType::IsCard: {
         auto &c = std::get<asn::ConditionIsCard>(condition);
+        c.target = target;
+        break;
+    }
+    case asn::ConditionType::CardsLocation: {
+        auto &c = std::get<asn::ConditionCardsLocation>(condition);
         c.target = target;
         break;
     }
@@ -197,6 +265,11 @@ void ConditionImplComponent::cardReady(const asn::Card &card_) {
         c.whichCards = card_;
         break;
     }
+    case asn::ConditionType::CheckOpenedCards: {
+        auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+        c.card = card_;
+        break;
+    }
     default:
         assert(false);
     }
@@ -224,6 +297,11 @@ void ConditionImplComponent::placeReady(const asn::Place &p) {
     case asn::ConditionType::HaveCards: {
         auto &c = std::get<asn::ConditionHaveCard>(condition);
         c.where = p;
+        break;
+    }
+    case asn::ConditionType::CardsLocation: {
+        auto &c = std::get<asn::ConditionCardsLocation>(condition);
+        c.place = p;
         break;
     }
     default:
@@ -265,6 +343,11 @@ void ConditionImplComponent::onNumModifierChanged(int value) {
         c.howMany.mod = static_cast<asn::NumModifier>(value);
         break;
     }
+    case asn::ConditionType::CheckOpenedCards: {
+        auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+        c.number.mod = static_cast<asn::NumModifier>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -282,6 +365,16 @@ void ConditionImplComponent::onNumValueChanged(QString value) {
     case asn::ConditionType::HaveCards: {
         auto &c = std::get<asn::ConditionHaveCard>(condition);
         c.howMany.value = val;
+        break;
+    }
+    case asn::ConditionType::CheckOpenedCards: {
+        auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+        c.number.value = val;
+        break;
+    }
+    case asn::ConditionType::SumOfLevels: {
+        auto &c = std::get<asn::ConditionSumOfLevels>(condition);
+        c.equalOrMoreThan = val;
         break;
     }
     default:

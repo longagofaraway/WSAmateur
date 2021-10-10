@@ -54,7 +54,7 @@ void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability,
 }
 
 void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {
-    auto checkTrigger = [=](ServerCard *card) {
+    auto checkTrigger = [=, this](ServerCard *card) {
         for (int j = 0; static_cast<size_t>(j) < card->abilities().size(); ++j) {
             auto &a = card->abilities()[j];
             if (a.ability.type != asn::AbilityType::Auto)

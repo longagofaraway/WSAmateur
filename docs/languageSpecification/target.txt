@@ -15,7 +15,8 @@ enum TargetType {
   mentionedCards = 6,
   charInBattle = 7,
   oppositeThis = 8,
-  lastMovedCards = 9
+  lastMovedCards = 9,
+  mentionedInTrigger = 10
 }
 mentionedCards are revealed, beeing looked at etc
 

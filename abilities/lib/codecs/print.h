@@ -46,7 +46,11 @@ template<typename T>
 std::string printSpecificAbility(const T &a, asn::CardType cardType) {
     std::string s;
 
-    gPrintState = { asn::Number(), asn::Number(), false, false };
+    static asn::Number defaultNumber;
+    defaultNumber.mod = asn::NumModifier::ExactMatch;
+    defaultNumber.value = 0;
+
+    gPrintState = { defaultNumber, defaultNumber, false, false };
 
     if constexpr (std::is_same_v<T, asn::AutoAbility>)
         s += "【AUTO】 ";

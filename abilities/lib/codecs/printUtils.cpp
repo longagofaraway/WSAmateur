@@ -56,6 +56,18 @@ std::string printTriggerIcon(TriggerIcon icon) {
     }
 }
 
+namespace {
+bool cardHasAttr(const Card &c) {
+    for (const auto &spec: c.cardSpecifiers) {
+        if (spec.type == CardSpecifierType::Cost ||
+            spec.type == CardSpecifierType::Level ||
+            spec.type == CardSpecifierType::Power)
+            return true;
+    }
+    return false;
+}
+}
+
 std::string printTarget(const Target &t, bool plural) {
     std::string s;
 
@@ -83,8 +95,20 @@ std::string printTarget(const Target &t, bool plural) {
     } else if (t.type == TargetType::OppositeThis) {
         s += "the character facing this card ";
     } else if (t.type == TargetType::BattleOpponent) {
-        gPrintState.battleOpponentMentioned = true;
-        s += "this card's battle opponent ";
+        if (gPrintState.battleOpponentMentioned) {
+            gPrintState.battleOpponentMentioned = false;
+            s += "that character ";
+        } else {
+            gPrintState.battleOpponentMentioned = true;
+            s += "this card's battle opponent ";
+        }
+        if (t.targetSpecification) {
+            const auto &spec = *t.targetSpecification;
+            if (cardHasAttr(spec.cards)) {
+                s += "with ";
+                s += printCard(spec.cards, false, false, spec.mode) + " ";
+            }
+        }
     }
 
     return s;

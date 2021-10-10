@@ -21,8 +21,6 @@ private:
     asn::Target target;
     bool targetSet = false;
 
-    asn::PhaseTrigger phaseTrigger;
-
     std::unique_ptr<CardComponent> qmlCard;
     asn::Card card;
     bool cardSet = false;

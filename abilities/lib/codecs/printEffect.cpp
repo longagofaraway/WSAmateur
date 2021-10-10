@@ -191,6 +191,10 @@ std::string printChooseCard(const ChooseCard &e) {
 
         gPrintState.chosenCardsNumber = spec.number;
         s += printCard(spec.cards, plural, article) + " ";
+    } else if (target.target.type == TargetType::CharInBattle) {
+        s += "one of your characters in battle ";
+        gPrintState.battleOpponentMentioned = true;
+        gPrintState.chosenCardsNumber = Number{NumModifier::ExactMatch, 1};
     }
 
     if (target.placeType == PlaceType::SpecificPlace && target.place->zone != Zone::Stage) {
@@ -305,7 +309,7 @@ std::string printMoveCard(const MoveCard &e) {
         else
             s += "this card's battle opponent ";
     } else if (e.target.type == TargetType::MentionedCards) {
-        if (gPrintState.mentionedCardsNumber.value == 1)
+        if (gPrintState.mentionedCardsNumber.value <= 1)
             s += "it ";
         else
             s += "them ";
@@ -521,6 +525,7 @@ std::string printTriggerCheckTwice() {
 std::string printLook(const Look &e) {
     std::string s = "look at ";
 
+    gPrintState.mentionedCardsNumber = e.number;
     if (e.number.mod != NumModifier::UpTo)
         s += "the top ";
 

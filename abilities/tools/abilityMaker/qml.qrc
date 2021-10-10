@@ -42,13 +42,20 @@
         <file>qml/effects/SearchCard.qml</file>
         <file>qml/effects/PayCost.qml</file>
         <file>qml/effects/AbilityGain.qml</file>
+        <file>qml/effects/DealDamage.qml</file>
+        <file>qml/effects/Backup.qml</file>
         <file>qml/ArrayOfAbilities.qml</file>
         <file>qml/effects/AbilityButton.qml</file>
         <file>qml/effects/PerformEffect.qml</file>
         <file>qml/effects/NonMandatory.qml</file>
+        <file>qml/effects/ChangeState.qml</file>
+        <file>qml/effects/FlipOver.qml</file>
         <file>qml/Condition.qml</file>
         <file>qml/conditions/IsCard.qml</file>
         <file>qml/conditions/HaveCards.qml</file>
+        <file>qml/conditions/CardsLocation.qml</file>
+        <file>qml/conditions/CheckOpenedCards.qml</file>
+        <file>qml/conditions/SumOfLevels.qml</file>
         <file>qml/Cost.qml</file>
         <file>qml/basicTypes/CostType.qml</file>
         <file>qml/basicTypes/StockCostEffects.qml</file>

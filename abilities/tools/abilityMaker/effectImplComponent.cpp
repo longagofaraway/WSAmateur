@@ -102,7 +102,45 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::DealDamage: {
+        auto e = asn::DealDamage();
+        e.damageType = asn::ValueType::Raw;
+        e.damage = 1;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::ChangeState: {
+        auto e = asn::ChangeState();
+        e.target = asn::Target();
+        e.state = asn::State::Rested;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::Backup: {
+        auto e = asn::Backup();
+        e.level = 1;
+        e.power = 1000;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::FlipOver: {
+        auto e = asn::FlipOver();
+        e.number = defaultNum;
+        e.number.value = 4;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::DrawCard: {
+        auto e = asn::DrawCard();
+        e.executor = asn::Player::Player;
+        e.value.mod = asn::NumModifier::ExactMatch;
+        e.value.value = 1;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
+    case asn::EffectType::StockSwap:
         effect = std::monostate();
         break;
     default:
@@ -144,6 +182,10 @@ const asn::Card& getCard(EffectImplComponent::VarEffect &effect, asn::EffectType
     case asn::EffectType::SearchCard: {
         const auto &e = std::get<asn::SearchCard>(effect);
         return e.targets[0].cards[0];
+    }
+    case asn::EffectType::FlipOver: {
+        const auto &e = std::get<asn::FlipOver>(effect);
+        return e.forEach;
     }
     default:
         assert(false);
@@ -215,6 +257,30 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setEffectTimes", Q_ARG(QVariant, QString::number(ef.numberOfTimes)));
         break;
     }
+    case asn::EffectType::DealDamage: {
+        const auto &ef = std::get<asn::DealDamage>(e);
+        QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString::number(ef.damage)));
+        break;
+    }
+    case asn::EffectType::ChangeState: {
+        const auto &ef = std::get<asn::ChangeState>(e);
+        target = ef.target;
+        targetSet = true;
+        QMetaObject::invokeMethod(qmlObject, "setCardState", Q_ARG(QVariant, (int)ef.state));
+        break;
+    }
+    case asn::EffectType::Backup: {
+        const auto &ef = std::get<asn::Backup>(e);
+        QMetaObject::invokeMethod(qmlObject, "setPower", Q_ARG(QVariant, QString::number(ef.power)));
+        QMetaObject::invokeMethod(qmlObject, "setLevel", Q_ARG(QVariant, QString::number(ef.level)));
+        break;
+    }
+    case asn::EffectType::FlipOver: {
+        const auto &ef = std::get<asn::FlipOver>(e);
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)ef.number.mod));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(ef.number.value)));
+        break;
+    }
     default:
         break;
     }
@@ -237,11 +303,18 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::AbilityGain, "AbilityGain" },
         { asn::EffectType::PerformEffect, "PerformEffect" },
         { asn::EffectType::NonMandatory, "NonMandatory" },
+        { asn::EffectType::DealDamage, "DealDamage" },
+        { asn::EffectType::ChangeState, "ChangeState" },
+        { asn::EffectType::Backup, "Backup" },
+        { asn::EffectType::FlipOver, "FlipOver" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
         asn::EffectType::Shuffle,
-        asn::EffectType::EarlyPlay
+        asn::EffectType::EarlyPlay,
+        asn::EffectType::TriggerCheckTwice,
+        asn::EffectType::StockSwap,
+        asn::EffectType::DrawCard // temporary
     };
 
     if (readyComponents.contains(type))
@@ -331,6 +404,32 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(effectNumChanged(QString)), this, SLOT(onNumValueChanged(QString)));
         connect(qmlObject, SIGNAL(effectTimesChanged(QString)), this, SLOT(onNumOfTimesChanged(QString)));
         break;
+    case asn::EffectType::DealDamage:
+        QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString("1")));
+
+        connect(qmlObject, SIGNAL(valueInputChanged(QString)), this, SLOT(onAttrChanged(QString)));
+        break;
+    case asn::EffectType::ChangeState:
+        QMetaObject::invokeMethod(qmlObject, "setCardState", Q_ARG(QVariant, static_cast<int>(asn::State::Rested)));
+
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(cardStateChanged(int)), this, SLOT(onCardStateChanged(int)));
+        break;
+    case asn::EffectType::Backup:
+        QMetaObject::invokeMethod(qmlObject, "setPower", Q_ARG(QVariant, QString("1000")));
+        QMetaObject::invokeMethod(qmlObject, "setLevel", Q_ARG(QVariant, QString("1")));
+
+        connect(qmlObject, SIGNAL(powerChanged(QString)), this, SLOT(onAttrChanged(QString)));
+        connect(qmlObject, SIGNAL(levelChanged(QString)), this, SLOT(onBackupLevelChanged(QString)));
+        break;
+    case asn::EffectType::FlipOver:
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString("4")));
+
+        connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
+        connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
+        connect(qmlObject, SIGNAL(editEffects()), this, SLOT(editEffectsField()));
+        break;
     default:
         break;
     }
@@ -375,6 +474,11 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
         e.target = target;
         break;
     }
+    case asn::EffectType::ChangeState: {
+        auto &e = std::get<asn::ChangeState>(effect);
+        e.target = target;
+        break;
+    }
     default:
         assert(false);
     }
@@ -389,11 +493,47 @@ void EffectImplComponent::onAttrTypeChanged(int value) {
 }
 
 void EffectImplComponent::onAttrChanged(QString value) {
-    auto &e = std::get<asn::AttributeGain>(effect);
     bool ok;
-    e.value = value.toInt(&ok);
-    if (ok)
-        emit componentChanged(effect);
+    int val = value.toInt(&ok);
+    if (!ok)
+        return;
+    switch (type) {
+    case asn::EffectType::AttributeGain: {
+        auto &e = std::get<asn::AttributeGain>(effect);
+        e.value = val;
+        break;
+    }
+    case asn::EffectType::DealDamage: {
+        auto &e = std::get<asn::DealDamage>(effect);
+        e.damage = val;
+        break;
+    }
+    case asn::EffectType::Backup: {
+        auto &e = std::get<asn::Backup>(effect);
+        e.power = val;
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onBackupLevelChanged(QString value) {
+    bool ok;
+    int val = value.toInt(&ok);
+    if (!ok)
+        return;
+    switch (type) {
+    case asn::EffectType::Backup: {
+        auto &e = std::get<asn::Backup>(effect);
+        e.level = val;
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
 }
 
 void EffectImplComponent::onDurationChanged(int value) {
@@ -528,6 +668,11 @@ void EffectImplComponent::cardReady(const asn::Card &card_) {
         e.targets[0].cards[0] = card_;
         break;
     }
+    case asn::EffectType::FlipOver: {
+        auto &e = std::get<asn::FlipOver>(effect);
+        e.forEach = card_;
+        break;
+    }
     default:
         assert(false);
     }
@@ -574,6 +719,11 @@ void EffectImplComponent::onNumModifierChanged(int value) {
         e.targets[0].number.mod = static_cast<asn::NumModifier>(value);
         break;
     }
+    case asn::EffectType::FlipOver: {
+        auto &e = std::get<asn::FlipOver>(effect);
+        e.number.mod = static_cast<asn::NumModifier>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -613,6 +763,11 @@ void EffectImplComponent::onNumValueChanged(QString value) {
         e.numberOfEffects = val;
         break;
     }
+    case asn::EffectType::FlipOver: {
+        auto &e = std::get<asn::FlipOver>(effect);
+        e.number.value = val;
+        break;
+    }
     default:
         assert(false);
     }
@@ -631,6 +786,9 @@ void EffectImplComponent::editEffectsField() {
     switch (type) {
     case asn::EffectType::NonMandatory:
         eff = &std::get<asn::NonMandatory>(effect).effect;
+        break;
+    case asn::EffectType::FlipOver:
+        eff = &std::get<asn::FlipOver>(effect).effect;
         break;
     default: assert(false);
     }
@@ -681,6 +839,11 @@ void EffectImplComponent::effectsReady(const std::vector<asn::Effect> &effects) 
     switch (type) {
     case asn::EffectType::NonMandatory: {
         auto &e = std::get<asn::NonMandatory>(effect);
+        e.effect = effects;
+        break;
+    }
+    case asn::EffectType::FlipOver: {
+        auto &e = std::get<asn::FlipOver>(effect);
         e.effect = effects;
         break;
     }
@@ -782,5 +945,17 @@ void EffectImplComponent::onNumOfTimesChanged(QString value) {
 
     auto &e = std::get<asn::PerformEffect>(effect);
     e.numberOfTimes = val;
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onCardStateChanged(int value) {
+    switch (type) {
+    case asn::EffectType::ChangeState: {
+        auto &e = std::get<asn::ChangeState>(effect);
+        e.state = static_cast<asn::State>(value);
+        break;
+    }
+    default: assert(false);
+    }
     emit componentChanged(effect);
 }

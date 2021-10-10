@@ -5,6 +5,21 @@ using namespace asn;
 extern PrintState gPrintState;
 namespace {
 bool isPartOfAndOr = false;
+bool firstInHaveCardChain = true;
+
+bool haveCardChain(int current, std::vector<Condition> vc) {
+    // check if the next condition 'HaveCards' describes the same
+    if (vc.size() <= current + 1)
+        return false;
+
+    if (vc[current].type != ConditionType::HaveCards ||
+        vc[current + 1].type != ConditionType::HaveCards)
+        return false;
+
+    auto &c1 = std::get<ConditionHaveCard>(vc[current].cond);
+    auto &c2 = std::get<ConditionHaveCard>(vc[current + 1].cond);
+    return c1.where.zone == c2.where.zone;
+}
 }
 
 std::string printConditionIsCard(const ConditionIsCard &c) {
@@ -16,9 +31,17 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
         const auto &spec = c.neededCard[0].cardSpecifiers[0];
         if (spec.type == CardSpecifierType::LevelHigherThanOpp)
             s += "the level of this card's battle opponent is higher than your opponent's level, ";
-        else if (spec.type == CardSpecifierType::Cost) {
-            s += "the cost of this card's battle opponent is ";
-            s += printNumber(std::get<CostSpecifier>(spec.specifier).value, true);
+        else if (spec.type == CardSpecifierType::Cost ||
+                 spec.type == CardSpecifierType::Level) {
+            std::string t = "of this card's battle opponent is ";
+            if (spec.type == CardSpecifierType::Cost) {
+                s += "the cost " + t;
+                s += printNumber(std::get<CostSpecifier>(spec.specifier).value, true);
+            } else if (spec.type == CardSpecifierType::Level) {
+                s += "the level " + t;
+                s += printNumber(std::get<Level>(spec.specifier).value, true);
+            }
+
             s.pop_back();
             s += ", ";
         }
@@ -57,10 +80,20 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
     return s;
 }
 
+namespace {
+std::string playerHas(asn::Player p) {
+    if (p == Player::Player)
+        return "you have ";
+    else if (p == Player::Opponent)
+        return "your opponent has ";
+    else return "";
+}
+}
 std::string printConditionHaveCard(const ConditionHaveCard &c) {
     std::string s = isPartOfAndOr ? "" : "if ";
 
     bool plural = false;
+    bool article = false;
 
     if (c.invert) {
         if (c.howMany.mod == NumModifier::AtLeast &&
@@ -72,6 +105,8 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
 
         return s;
     } else if (haveExactName(c.whichCards.cardSpecifiers)) {
+        if (c.where.zone == Zone::Stage && firstInHaveCardChain)
+            s += playerHas(c.who);
         s += "a card named ";
     } else {
         if (c.who == Player::Player)
@@ -85,9 +120,14 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
             plural = true;
             s += "no other ";
         } else {
-            plural = true;
-            s += std::to_string(c.howMany.value) + " ";
-            if (c.howMany.mod == NumModifier::AtLeast)
+            if (!(c.where.zone == Zone::Stage && c.howMany.value == 1)) {
+                plural = true;
+                s += std::to_string(c.howMany.value) + " ";
+            } else {
+                article = true;
+            }
+            if (c.howMany.mod == NumModifier::AtLeast &&
+                !(c.where.zone == Zone::Stage && c.howMany.value == 1))
                 s += "or more ";
             else if (c.howMany.mod == NumModifier::UpTo)
                 s += "or less ";
@@ -96,7 +136,7 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         }
     }
 
-    s += printCard(c.whichCards, plural, false) + " ";
+    s += printCard(c.whichCards, plural, article) + " ";
 
     if (c.where.zone != Zone::Stage) {
         if (haveExactName(c.whichCards.cardSpecifiers)) {
@@ -112,17 +152,21 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         s.pop_back();
     if (!isPartOfAndOr)
         s += ", ";
+    if (firstInHaveCardChain)
+        firstInHaveCardChain = false;
     return s;
 }
 
 std::string printConditionAnd(const ConditionAnd &c) {
     std::string s = "if ";
     isPartOfAndOr = true;
+    firstInHaveCardChain = true;
 
     for (size_t i = 0; i < c.cond.size(); ++i) {
         s += printCondition(c.cond[i]);
         if (i != c.cond.size() - 1)
             s += " and ";
+        firstInHaveCardChain = !haveCardChain(i, c.cond);
     }
 
     isPartOfAndOr = false;
@@ -156,7 +200,7 @@ std::string printConditionCheckOpenedCards(const ConditionCheckOpenedCards &c) {
 std::string printCardsLocation(const ConditionCardsLocation &c) {
     std::string s = "if ";
 
-    s = printTarget(c.target);
+    s += printTarget(c.target);
     s += "is in ";
     s += printPlace(c.place) + ", ";
 

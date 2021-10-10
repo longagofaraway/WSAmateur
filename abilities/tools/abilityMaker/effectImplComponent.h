@@ -82,6 +82,10 @@ private slots:
 
     void onNumOfTimesChanged(QString value);
 
+    void onCardStateChanged(int value);
+
+    void onBackupLevelChanged(QString value);
+
 private:
     void init(QQuickItem *parent);
 };

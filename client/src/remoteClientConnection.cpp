@@ -21,7 +21,11 @@ void RemoteClientConnection::onConnected() {
 }
 
 void RemoteClientConnection::sendMessage(std::shared_ptr<CommandContainer> cont) {
+#if GOOGLE_PROTOBUF_VERSION > 3001000
     uint32_t size = static_cast<uint32_t>(cont->ByteSizeLong());
+#else
+    uint32_t size = static_cast<uint32_t>(cont->ByteSize());
+#endif
 
     QByteArray buf;
     buf.resize(size + 4);

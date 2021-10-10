@@ -28,7 +28,11 @@ void TcpConnection::init() {
 
 void TcpConnection::sendMessage(std::shared_ptr<ServerMessage> message) {
     QByteArray buf;
+#if GOOGLE_PROTOBUF_VERSION > 3001000
     uint32_t size = static_cast<uint32_t>(message->ByteSizeLong());
+#else
+    uint32_t size = static_cast<uint32_t>(message->ByteSize());
+#endif
     buf.resize(size + sizeof(size));
     toBigEndian(size, buf.data());
     message->SerializePartialToArray(buf.data() + sizeof(size), size);
