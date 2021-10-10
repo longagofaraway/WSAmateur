@@ -42,6 +42,7 @@ struct TriggeredAbility {
     int abilityId;
     uint32_t uniqueId = 0;
     std::optional<asn::Ability> ability;
+    ServerCard *cardFromTrigger = nullptr;
 
     asn::Ability getAbility() const;
 };
@@ -193,7 +194,8 @@ private:
     void queueActivatedAbility(const asn::AutoAbility &ability,
                                AbilityState &abilityState,
                                ServerCard *card,
-                               std::string_view cardZone = "");
+                               std::string_view cardZone = "",
+                               ServerCard *cardFromTrigger = nullptr);
 
     Resumable testAction();
 };

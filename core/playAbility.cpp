@@ -195,6 +195,7 @@ Resumable ServerPlayer::checkTiming() {
 
                 AbilityPlayer a(this);
                 a.setThisCard(mQueue[j].card);
+                a.setCardFromTrigger(mQueue[j].cardFromTrigger);
                 co_await a.playAbility(mQueue[j].getAbility());
 
                 EventAbilityResolved evEnd;

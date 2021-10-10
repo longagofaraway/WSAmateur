@@ -345,6 +345,8 @@ std::string printMoveCard(const MoveCard &e) {
         }
         s += printPlayer(e.from.owner, e.executor);
         s += printZone(e.from.zone) + " ";
+    } else if (e.target.type == TargetType::MentionedInTrigger) {
+        s += "that character ";
     }
 
     for (size_t i = 0; i < e.to.size(); ++i) {

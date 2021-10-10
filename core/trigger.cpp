@@ -36,7 +36,8 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
 void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability,
                                          AbilityState &abilityState,
                                          ServerCard *card,
-                                         std::string_view cardZone) {
+                                         std::string_view cardZone,
+                                         ServerCard *cardFromTrigger) {
     if (ability.activationTimes > 0) {
         if (abilityState.activationTimes >= ability.activationTimes)
             return;
@@ -48,6 +49,7 @@ void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability,
     ta.card = CardImprint(cardZone.empty() ? card->zone()->name() : std::string(cardZone), card);
     ta.type = ProtoCard;
     ta.abilityId = abilityState.id;
+    ta.cardFromTrigger = cardFromTrigger;
     if (!abilityState.permanent)
         ta.ability = abilityState.ability;
     mQueue.emplace_back(std::move(ta));
@@ -91,7 +93,7 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
             if (!found)
                 continue;
 
-            queueActivatedAbility(aa, a, card, cardZone);
+            queueActivatedAbility(aa, a, card, cardZone, movedCard);
         }
     };
 

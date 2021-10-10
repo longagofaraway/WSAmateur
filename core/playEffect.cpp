@@ -567,6 +567,9 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         auto card = mPlayer->oppositeCard(thisCard().card);
         player = owner(card);
         cardsToMove[card->pos()] = card;
+    } else if (e.target.type == asn::TargetType::MentionedInTrigger) {
+        if (cardFromTrigger())
+            cardsToMove[cardFromTrigger()->pos()] = cardFromTrigger();
     }
 
     if (!isPayingCost())

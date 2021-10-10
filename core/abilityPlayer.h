@@ -27,6 +27,7 @@ class AbilityPlayer {
     std::vector<CardImprint> mLastMovedCards;
     CardImprint mThisCard;
     std::optional<asn::Cost> mCost;
+    ServerCard *mCardFromTrigger = nullptr;
 
     std::optional<GameCommand> mLastCommand;
 
@@ -39,6 +40,10 @@ public:
 
     // must be set if ability is CONT
     void setAbilityId(int abilityId) { mAbilityId = abilityId; }
+
+    // if some card mentioned in the trigger is used in the effect,
+    // it needs to be stored
+    void setCardFromTrigger(ServerCard *card) { mCardFromTrigger = card; }
 
     bool canBePlayed(const asn::Ability &a);
 
@@ -80,6 +85,8 @@ private:
     void addLastMovedCard(CardImprint &&c) { mLastMovedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& lastMovedCards() { return mLastMovedCards; }
     void clearLastMovedCards() { mLastMovedCards.clear(); }
+
+    ServerCard* cardFromTrigger() { return mCardFromTrigger; }
 
     bool canBePayed(const asn::CostItem &c);
 

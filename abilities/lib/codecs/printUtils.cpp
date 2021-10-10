@@ -109,6 +109,8 @@ std::string printTarget(const Target &t, bool plural) {
                 s += printCard(spec.cards, false, false, spec.mode) + " ";
             }
         }
+    } else if (t.type == TargetType::MentionedInTrigger) {
+        s += "that character ";
     }
 
     return s;
