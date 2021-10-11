@@ -60,14 +60,10 @@ Number parseNumber(const QJsonObject &json) {
         throw std::runtime_error("no NumModifier");
     if (!json.contains("value") || !json["value"].isDouble())
         throw std::runtime_error("no value in number");
-    if (json.contains("multiplier") && !json["multiplier"].isObject())
-        throw std::runtime_error("wrong multiplier in number");
 
     Number n;
     n.mod = static_cast<NumModifier>(json["mod"].toInt());
     n.value = json["value"].toInt();
-    if (n.mod == NumModifier::Multiplier)
-        n.multiplier = parseMultiplier(json["multiplier"].toObject());
 
     return n;
 }

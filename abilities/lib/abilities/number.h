@@ -3,22 +3,18 @@
 #include <memory>
 #include <optional>
 
-#include "multiplier.h"
-
 namespace asn {
 
 enum class NumModifier : uint8_t {
     NotSpecified = 0,
     ExactMatch,
     UpTo,
-    AtLeast,
-    Multiplier
+    AtLeast
 };
 
 struct Number {
     NumModifier mod;
     int8_t value;
-    std::optional<Multiplier> multiplier;
 };
 
 inline bool operator==(const Number &lhs, const Number &rhs) {

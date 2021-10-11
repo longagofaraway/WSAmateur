@@ -39,7 +39,7 @@ void popAbilityFromArray(QByteArray &data) {
     int index = 1;
     while (n--) {
         uint16_t size = 0;
-        size = data[index] + (data[index + 1] << 8);
+        size = static_cast<uint8_t>(data[index]) + (static_cast<uint8_t>(data[index + 1]) << 8);
         index += size + 2;
     }
 

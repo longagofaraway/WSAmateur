@@ -37,8 +37,6 @@ void encodePlace(const Place &c, Buf &buf) {
 void encodeNumber(const Number &n, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(n.mod));
     buf.push_back(zzenc_8(n.value));
-    if (n.multiplier)
-        encodeMultiplier(*n.multiplier, buf);
 }
 
 void encodeString(const std::string &str, Buf &buf) {

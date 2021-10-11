@@ -56,8 +56,6 @@ Number decodeNumber(Iterator &it, Iterator end) {
 
     n.mod = decodeEnum<NumModifier>(it, end);
     n.value = decodeInt8(it, end);
-    if (n.mod == NumModifier::Multiplier)
-        n.multiplier = decodeMultiplier(it, end);
 
     return n;
 }

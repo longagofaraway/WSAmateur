@@ -1318,7 +1318,7 @@ Resumable AbilityPlayer::playS79_20() {
         t.type = asn::TargetType::SpecificCards;
         asn::TargetSpecificCards spec;
         spec.mode = asn::TargetMode::Any;
-        spec.number = asn::Number{asn::NumModifier::ExactMatch, 1, std::nullopt};
+        spec.number = asn::Number{asn::NumModifier::ExactMatch, 1};
         spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::CardType, asn::CardType::Char});
         spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::Trait, asn::Trait{"Shuchiin"}});
         t.targetSpecification = spec;
@@ -1347,7 +1347,7 @@ Resumable AbilityPlayer::playS79_20() {
         t.type = asn::TargetType::SpecificCards;
         asn::TargetSpecificCards spec;
         spec.mode = asn::TargetMode::Any;
-        spec.number = asn::Number{asn::NumModifier::ExactMatch, 1, std::nullopt};
+        spec.number = asn::Number{asn::NumModifier::ExactMatch, 1};
         spec.cards.cardSpecifiers.push_back(asn::CardSpecifier{asn::CardSpecifierType::CardType, asn::CardType::Char});
         t.targetSpecification = spec;
         tp.target = t;

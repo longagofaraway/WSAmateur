@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "condition.h"
+#include "multiplier.h"
 #include "number.h"
 #include "target.h"
 
@@ -53,6 +54,8 @@ struct AttributeGain {
 struct Look {
     Number number;
     Place place;
+    ValueType valueType;
+    std::optional<Multiplier> multiplier;
 };
 
 enum class RevealType : uint8_t {

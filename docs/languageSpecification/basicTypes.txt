@@ -48,11 +48,7 @@ enum PhaseState {
 
 Number {
   mod NumModifier,
-  value Int8,
-  multiplier Choice {
-    Multiplier,
-    Nothing
-  }
+  value Int8
 }
 
 NumModifier {

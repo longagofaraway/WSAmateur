@@ -1,3 +1,4 @@
 add_subdirectory(abilityMaker)
+add_subdirectory(dbTool)
 add_subdirectory(jsonParser)
 add_subdirectory(libs)

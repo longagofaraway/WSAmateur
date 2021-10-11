@@ -91,7 +91,7 @@ void parseAbilities(CardInfo *info, QVariant blob) {
     int it = 1;
     for (int i = 0; i < count; ++i) {
         uint16_t size = 0;
-        size = bytes[it] + (bytes[it + 1] << 8);
+        size = static_cast<uint8_t>(bytes[it]) + (static_cast<uint8_t>(bytes[it + 1]) << 8);
         it += 2;
         std::vector<uint8_t> ability(bytes.data() + it, bytes.data() + it + size);
         info->addAbility(ability);
