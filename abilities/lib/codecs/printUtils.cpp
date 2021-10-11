@@ -68,7 +68,7 @@ bool cardHasAttr(const Card &c) {
 }
 }
 
-std::string printTarget(const Target &t, bool plural) {
+std::string printTarget(const Target &t, bool plural, bool nominative) {
     std::string s;
 
     if (t.type == TargetType::ThisCard)
@@ -77,7 +77,7 @@ std::string printTarget(const Target &t, bool plural) {
         if (gPrintState.chosenCardsNumber.value == 1)
             s += "it ";
         else
-            s += "them ";
+            s += nominative ? "they " : "them ";
     } else if (t.type == TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
         bool article = true;

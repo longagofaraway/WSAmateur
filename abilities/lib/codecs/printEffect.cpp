@@ -397,6 +397,12 @@ std::string printDrawCard(const DrawCard &e) {
             s += "a card ";
         else
             s += std::to_string(e.value.value) + " cards ";
+    } else {
+        s += printNumber(e.value);
+        s += " card";
+        if (e.value.value > 1)
+            s += "s";
+        s += " ";
     }
     return s;
 }
@@ -450,7 +456,12 @@ std::string printAbilityGain(const AbilityGain &e) {
     std::string s;
 
     if (!gPrintState.abilityChainingSecond) {
-        s += printTarget(e.target) + "gets ";
+        s += printTarget(e.target, false, true);
+        s += "get";
+        if (e.target.type == TargetType::ChosenCards &&
+            gPrintState.chosenCardsNumber.value == 1)
+            s += "s";
+        s += " ";
     } else {
         s += "and ";
         gPrintState.abilityChainingSecond = false;
@@ -479,7 +490,9 @@ std::string printAbilityGain(const AbilityGain &e) {
 std::string printMoveWrToDeck(const MoveWrToDeck &e) {
     std::string s;
     if (e.executor == asn::Player::Both)
-        s += "all players return all cards in their waiting room to their deck, and all players shuffle their decks ";
+        s += "each player returns all cards in the waiting room to their deck, and each player shuffles their deck ";
+    else if (e.executor == asn::Player::Player)
+        s += "return all cards in your waiting room to your deck, and shuffle your deck ";
 
     return s;
 }

@@ -50,6 +50,9 @@
         <file>qml/effects/NonMandatory.qml</file>
         <file>qml/effects/ChangeState.qml</file>
         <file>qml/effects/FlipOver.qml</file>
+        <file>qml/effects/DrawCard.qml</file>
+        <file>qml/effects/CannotAttack.qml</file>
+        <file>qml/effects/TargetDurationEffect.qml</file>
         <file>qml/Condition.qml</file>
         <file>qml/conditions/IsCard.qml</file>
         <file>qml/conditions/HaveCards.qml</file>

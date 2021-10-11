@@ -23,7 +23,7 @@ bool haveCardChain(int current, std::vector<Condition> vc) {
 }
 
 std::string printConditionIsCard(const ConditionIsCard &c) {
-    std::string s = isPartOfAndOr ? "" : "if ";
+    std::string s = "if ";
 
     if (c.target.type == TargetType::BattleOpponent && c.neededCard.size() &&
         c.neededCard[0].cardSpecifiers.size()) {
@@ -67,6 +67,9 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
             s += " are ";
             article = false;
         }
+    } else if (c.target.type == TargetType::OppositeThis) {
+        s += printTarget(c.target) + "is ";
+        article = false;
     }
 
     for (size_t i = 0; i < c.neededCard.size(); ++i) {
@@ -75,8 +78,7 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
         s += printCard(c.neededCard[i], false, article);
     }
 
-    if (!isPartOfAndOr)
-        s += ", ";
+    s += ", ";
     return s;
 }
 
@@ -90,7 +92,7 @@ std::string playerHas(asn::Player p) {
 }
 }
 std::string printConditionHaveCard(const ConditionHaveCard &c) {
-    std::string s = isPartOfAndOr ? "" : "if ";
+    std::string s = "if ";
 
     bool plural = false;
     bool article = false;
@@ -150,22 +152,33 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
 
     if (s.back() == ' ')
         s.pop_back();
-    if (!isPartOfAndOr)
-        s += ", ";
+    s += ", ";
     if (firstInHaveCardChain)
         firstInHaveCardChain = false;
     return s;
 }
 
 std::string printConditionAnd(const ConditionAnd &c) {
-    std::string s = "if ";
+    std::string s;
     isPartOfAndOr = true;
     firstInHaveCardChain = true;
 
+    bool firstIf = true;
     for (size_t i = 0; i < c.cond.size(); ++i) {
-        s += printCondition(c.cond[i]);
-        if (i != c.cond.size() - 1)
-            s += " and ";
+        auto condStr = printCondition(c.cond[i]);
+        if (condStr.starts_with("if ")) {
+            if (i > 0 && !firstIf)
+                condStr.erase(0, 3);
+            firstIf = false;
+        }
+        s += condStr;
+        if (c.cond[i].type != ConditionType::DuringTurn) {
+            if (s.ends_with(", "))
+                s.erase(s.size() - 2, 2);
+            if (i != c.cond.size() - 1)
+                s += " and ";
+        }
+
         firstInHaveCardChain = !haveCardChain(i, c.cond);
     }
 

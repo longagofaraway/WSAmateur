@@ -987,7 +987,8 @@ Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
 void AbilityPlayer::playBackup(const asn::Backup &e) {
     auto opponent = mPlayer->getOpponent();
     auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
-    charInBattle->buffManager()->addAttributeBuff(asn::AttributeType::Power, e.power, 1);
+    if (charInBattle)
+        charInBattle->buffManager()->addAttributeBuff(asn::AttributeType::Power, e.power, 1);
     mPlayer->checkOnBackup(thisCard().card);
 }
 

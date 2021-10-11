@@ -34,7 +34,7 @@ std::string printCost(const asn::Cost &c);
 std::string printEffect(const asn::Effect &e);
 std::string printEffects(const std::vector<asn::Effect> &effects);
 std::string printTrigger(const asn::Trigger &t);
-std::string printTarget(const asn::Target &t, bool plural = false);
+std::string printTarget(const asn::Target &t, bool plural = false, bool nominative = false);
 
 // effects
 std::string printMoveCard(const asn::MoveCard &e);

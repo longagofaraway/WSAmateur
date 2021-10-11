@@ -138,9 +138,23 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::CannotAttack: {
+        auto e = asn::CannotAttack();
+        e.type = asn::AttackType::Any;
+        e.duration = 0;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::SideAttackWithoutPenalty: {
+        auto e = asn::SideAttackWithoutPenalty();
+        e.duration = 0;
+        effect = e;
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
     case asn::EffectType::StockSwap:
+    case asn::EffectType::Standby:
         effect = std::monostate();
         break;
     default:
@@ -281,6 +295,28 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(ef.number.value)));
         break;
     }
+    case asn::EffectType::DrawCard: {
+        const auto &ef = std::get<asn::DrawCard>(e);
+        QMetaObject::invokeMethod(qmlObject, "setExecutor", Q_ARG(QVariant, (int)ef.executor));
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)ef.value.mod));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(ef.value.value)));
+        break;
+    }
+    case asn::EffectType::CannotAttack: {
+        const auto &ef = std::get<asn::CannotAttack>(e);
+        target = ef.target;
+        targetSet = true;
+        QMetaObject::invokeMethod(qmlObject, "setAttackType", Q_ARG(QVariant, (int)ef.type));
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
+    case asn::EffectType::SideAttackWithoutPenalty: {
+        const auto &ef = std::get<asn::SideAttackWithoutPenalty>(e);
+        target = ef.target;
+        targetSet = true;
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
     default:
         break;
     }
@@ -307,6 +343,9 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::ChangeState, "ChangeState" },
         { asn::EffectType::Backup, "Backup" },
         { asn::EffectType::FlipOver, "FlipOver" },
+        { asn::EffectType::DrawCard, "DrawCard" },
+        { asn::EffectType::CannotAttack, "CannotAttack" },
+        { asn::EffectType::SideAttackWithoutPenalty, "TargetDurationEffect" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -314,10 +353,13 @@ void EffectImplComponent::init(QQuickItem *parent) {
         asn::EffectType::EarlyPlay,
         asn::EffectType::TriggerCheckTwice,
         asn::EffectType::StockSwap,
-        asn::EffectType::DrawCard // temporary
+        asn::EffectType::Standby
     };
 
     if (readyComponents.contains(type))
+        return;
+
+    if (!components.contains(type))
         return;
 
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/effects/" + components.at(type) + ".qml");
@@ -430,6 +472,22 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
         connect(qmlObject, SIGNAL(editEffects()), this, SLOT(editEffectsField()));
         break;
+    case asn::EffectType::DrawCard:
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString("1")));
+
+        connect(qmlObject, SIGNAL(executorChanged(int)), this, SLOT(onPlayerChanged(int)));
+        connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
+        connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        break;
+    case asn::EffectType::CannotAttack:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(attackTypeChanged(int)), this, SLOT(onAttackTypeChanged(int)));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::SideAttackWithoutPenalty:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
     default:
         break;
     }
@@ -476,6 +534,16 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::EffectType::ChangeState: {
         auto &e = std::get<asn::ChangeState>(effect);
+        e.target = target;
+        break;
+    }
+    case asn::EffectType::CannotAttack: {
+        auto &e = std::get<asn::CannotAttack>(effect);
+        e.target = target;
+        break;
+    }
+    case asn::EffectType::SideAttackWithoutPenalty: {
+        auto &e = std::get<asn::SideAttackWithoutPenalty>(effect);
         e.target = target;
         break;
     }
@@ -536,6 +604,19 @@ void EffectImplComponent::onBackupLevelChanged(QString value) {
     emit componentChanged(effect);
 }
 
+void EffectImplComponent::onAttackTypeChanged(int value) {
+    switch (type) {
+    case asn::EffectType::CannotAttack: {
+        auto &e = std::get<asn::CannotAttack>(effect);
+        e.type = static_cast<asn::AttackType>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
 void EffectImplComponent::onDurationChanged(int value) {
     switch (type) {
     case asn::EffectType::AttributeGain: {
@@ -545,6 +626,16 @@ void EffectImplComponent::onDurationChanged(int value) {
     }
     case asn::EffectType::AbilityGain: {
         auto &e = std::get<asn::AbilityGain>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::CannotAttack: {
+        auto &e = std::get<asn::CannotAttack>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::SideAttackWithoutPenalty: {
+        auto &e = std::get<asn::SideAttackWithoutPenalty>(effect);
         e.duration = value;
         break;
     }
@@ -642,6 +733,11 @@ void EffectImplComponent::onPlayerChanged(int value) {
         e.executor = static_cast<asn::Player>(value);
         break;
     }
+    case asn::EffectType::DrawCard: {
+        auto &e = std::get<asn::DrawCard>(effect);
+        e.executor = static_cast<asn::Player>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -724,6 +820,11 @@ void EffectImplComponent::onNumModifierChanged(int value) {
         e.number.mod = static_cast<asn::NumModifier>(value);
         break;
     }
+    case asn::EffectType::DrawCard: {
+        auto &e = std::get<asn::DrawCard>(effect);
+        e.value.mod = static_cast<asn::NumModifier>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -766,6 +867,11 @@ void EffectImplComponent::onNumValueChanged(QString value) {
     case asn::EffectType::FlipOver: {
         auto &e = std::get<asn::FlipOver>(effect);
         e.number.value = val;
+        break;
+    }
+    case asn::EffectType::DrawCard: {
+        auto &e = std::get<asn::DrawCard>(effect);
+        e.value.value = val;
         break;
     }
     default:

@@ -53,6 +53,7 @@ private slots:
     void destroyPlace();
     void placeReady(const asn::Place &p);
     void placeToReady(const asn::Place &p);
+
     void onPlaceTypeChanged(int value);
     void onPlayerChanged(int value);
 
@@ -85,6 +86,8 @@ private slots:
     void onCardStateChanged(int value);
 
     void onBackupLevelChanged(QString value);
+
+    void onAttackTypeChanged(int value);
 
 private:
     void init(QQuickItem *parent);
