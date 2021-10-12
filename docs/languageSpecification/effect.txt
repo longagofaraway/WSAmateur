@@ -116,11 +116,6 @@ TargetAndPlace {
 Usually you'll use just one Target, but you'll need several in these cases: 
 "look at up to 6 cards from top of your deck, choose up to 1 red character and up to 1 blue character"
 
-PlaceType {
-  selection = 1,
-  specificPlace = 2
-}
-
 
 Look {
   number Number,

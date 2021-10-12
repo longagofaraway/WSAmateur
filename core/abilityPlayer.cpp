@@ -102,20 +102,31 @@ void AbilityPlayer::removeMentionedCard(int cardId) {
 int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
     auto &specifier = m.specifier.value();
     assert(specifier.target->type == asn::TargetType::SpecificCards);
-    auto pzone = mPlayer->zone(asnZoneToString(specifier.zone));
-    int cardCount = 0;
-    for (int i = 0; i < pzone->count(); ++i) {
-        auto card = pzone->card(i);
+
+    auto checkTargetCard = [this](const asn::TargetSpecificCards &spec, ServerCard *card) {
         if (!card)
-            continue;
+            return false;
 
-        const auto &tspec = specifier.target->targetSpecification;
+        if (!checkTargetMode(spec.mode, thisCard().card, card))
+            return false;
 
-        if (!checkTargetMode(tspec->mode, thisCard().card, card))
-            continue;
+        return checkCard(spec.cards.cardSpecifiers, *card);
+    };
 
-        if (checkCard(tspec->cards.cardSpecifiers, *card))
-            cardCount++;
+    int cardCount = 0;
+    const auto &tspec = specifier.target->targetSpecification.value();
+
+    if (specifier.placeType == asn::PlaceType::SpecificPlace) {
+        auto pzone = mPlayer->zone(asnZoneToString(specifier.place->zone));
+        for (int i = 0; i < pzone->count(); ++i) {
+            if (checkTargetCard(tspec, pzone->card(i)))
+                cardCount++;
+        }
+    } else if (specifier.placeType == asn::PlaceType::LastMovedCards) {
+        for (const auto &card: lastMovedCards()) {
+            if (checkTargetCard(tspec, card.card))
+                cardCount++;
+        }
     }
 
     return cardCount;

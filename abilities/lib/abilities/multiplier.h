@@ -1,6 +1,6 @@
 #pragma once
 
-#include <variant>
+#include <optional>
 
 #include "basicTypes.h"
 
@@ -17,7 +17,8 @@ enum class MultiplierType : uint8_t {
 struct ForEachMultiplier {
     // shared_ptr to break circular dependecy
     std::shared_ptr<Target> target;
-    Zone zone;
+    PlaceType placeType;
+    std::optional<Place> place;
 };
 
 struct Multiplier {

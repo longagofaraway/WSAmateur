@@ -145,7 +145,7 @@ std::string printAttributeGain(const AttributeGain &e) {
     }
 
     if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::ForEach) {
-        res += "for each of ";
+        res += "for each ";
         res += printForEachMultiplier(*e.modifier->specifier);
     }
 
@@ -369,6 +369,8 @@ std::string printMoveCard(const MoveCard &e) {
         } else if (e.to[i].zone == Zone::Deck) {
             if (e.to[i].pos == Position::Top)
                 s += "on the top of ";
+            else if (e.to[i].pos == Position::Bottom)
+                s += "on the bottom of ";
         } else {
             s += "into ";
         }
@@ -568,7 +570,7 @@ std::string printLook(const Look &e) {
 
     if (e.valueType == ValueType::Multiplier && e.multiplier.value().type == MultiplierType::ForEach) {
         s += "(X is equal to the number of ";
-        s += printForEachMultiplier(e.multiplier.value().specifier.value());
+        s += printForEachMultiplier(e.multiplier.value().specifier.value(), true);
         s.pop_back();
         s += ") ";
     }
@@ -626,7 +628,7 @@ std::string printDealDamage(const DealDamage &e) {
     if (e.damageType == ValueType::Multiplier) {
         s += ". X is equal to ";
         if (e.modifier->type == MultiplierType::ForEach)
-            s += "the number of " + printForEachMultiplier(*e.modifier->specifier);
+            s += "the number " + printForEachMultiplier(*e.modifier->specifier, true);
     } else
         s += " ";
 

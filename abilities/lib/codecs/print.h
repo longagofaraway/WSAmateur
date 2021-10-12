@@ -22,7 +22,7 @@ std::string printPlayer(asn::Player p, asn::Player executor = asn::Player::Playe
 std::string printState(asn::State s);
 std::string printPhase(asn::Phase p);
 std::string printTriggerIcon(asn::TriggerIcon icon);
-std::string printForEachMultiplier(const asn::ForEachMultiplier &m);
+std::string printForEachMultiplier(const asn::ForEachMultiplier &m, bool addOf = false);
 std::string printAttackType(asn::AttackType t);
 std::string printDuration(int duration);
 std::string printPlace(asn::Place place);
@@ -34,7 +34,8 @@ std::string printCost(const asn::Cost &c);
 std::string printEffect(const asn::Effect &e);
 std::string printEffects(const std::vector<asn::Effect> &effects);
 std::string printTrigger(const asn::Trigger &t);
-std::string printTarget(const asn::Target &t, bool plural = false, bool nominative = false);
+std::string printTarget(const asn::Target &t, bool plural = false, bool nominative = false,
+                        std::optional<bool> optArticle = {});
 
 // effects
 std::string printMoveCard(const asn::MoveCard &e);

@@ -53,4 +53,10 @@ struct Place {
     Player owner;
 };
 
+enum class PlaceType : uint8_t {
+    Selection = 1,
+    SpecificPlace,
+    LastMovedCards
+};
+
 }

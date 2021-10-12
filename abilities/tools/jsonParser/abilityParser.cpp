@@ -12,12 +12,16 @@ Target parseTarget(const QJsonObject &json);
 ForEachMultiplier parseForEachMultiplier(const QJsonObject &json) {
     if (!json.contains("target") || !json["target"].isObject())
         throw std::runtime_error("no target in ForEachMultiplier");
-    if (!json.contains("zone") || !json["zone"].isDouble())
-        throw std::runtime_error("no zone in ForEachMultiplier");
+    if (!json.contains("placeType") || !json["placeType"].isDouble())
+        throw std::runtime_error("no placeType in ForEachMultiplier");
+    if (json.contains("place") && !json["place"].isObject())
+        throw std::runtime_error("wrong place in ForEachMultiplier");
 
     ForEachMultiplier m;
     m.target = std::make_shared<Target>(parseTarget(json["target"].toObject()));
-    m.zone = static_cast<Zone>(json["zone"].toInt());
+    m.placeType = static_cast<PlaceType>(json["placeType"].toInt());
+    if (m.placeType == PlaceType::SpecificPlace)
+        m.place = parsePlace(json["place"].toObject());
 
     return m;
 }

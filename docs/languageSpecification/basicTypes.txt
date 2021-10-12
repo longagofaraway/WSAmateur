@@ -74,7 +74,17 @@ enum MultiplierType {
 
 ForEachMultiplier {
   target Target,
-  zone Zone
+  placeType PlaceType,
+  place Choice {
+    Place,
+    Nothing
+  }
+}
+
+PlaceType {
+  selection = 1,
+  specificPlace = 2,
+  lastMovedCards = 3
 }
 
 Place {

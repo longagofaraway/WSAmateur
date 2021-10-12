@@ -36,7 +36,9 @@ ForEachMultiplier decodeForEachMultiplier(Iterator &it, Iterator end) {
     ForEachMultiplier m;
 
     m.target = std::make_shared<Target>(decodeTarget(it, end));
-    m.zone = decodeEnum<Zone>(it, end);
+    m.placeType = decodeEnum<PlaceType>(it, end);
+    if (m.placeType == PlaceType::SpecificPlace)
+        m.place = decodePlace(it, end);
 
     return m;
 }

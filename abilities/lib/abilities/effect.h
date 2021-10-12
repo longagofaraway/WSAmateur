@@ -14,11 +14,6 @@ struct Ability;
 struct EventAbility;
 struct Effect;
 
-enum class PlaceType : uint8_t {
-    Selection = 1,
-    SpecificPlace
-};
-
 struct TargetAndPlace {
     Target target;
     PlaceType placeType;

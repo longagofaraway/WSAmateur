@@ -68,7 +68,7 @@ bool cardHasAttr(const Card &c) {
 }
 }
 
-std::string printTarget(const Target &t, bool plural, bool nominative) {
+std::string printTarget(const Target &t, bool plural, bool nominative, std::optional<bool> optArticle) {
     std::string s;
 
     if (t.type == TargetType::ThisCard)
@@ -85,6 +85,9 @@ std::string printTarget(const Target &t, bool plural, bool nominative) {
             plural = true;
             article = false;
         }
+
+        if (optArticle)
+            article = optArticle.value();
         s += printCard(spec.cards, plural, article, spec.mode) + " ";
 
         // it's for multiplier
@@ -232,13 +235,36 @@ bool haveExactName(const std::vector<CardSpecifier> &s) {
     return false;
 }
 
-std::string printForEachMultiplier(const ForEachMultiplier &m) {
+std::string printForEachMultiplier(const ForEachMultiplier &m, bool addOf) {
     std::string s;
 
-    s += printTarget(*m.target, true);
+    bool plural = true;
+    std::optional<bool> article;
+    if (m.target->type == TargetType::SpecificCards && !addOf) {
+        const auto &spec = m.target->targetSpecification.value();
+        bool hasOwnership = std::any_of(spec.cards.cardSpecifiers.begin(),
+                                        spec.cards.cardSpecifiers.end(),
+                                        [](const auto &cardSpec) {
+            return cardSpec.type == CardSpecifierType::Owner;
+        });
+        if (hasOwnership)
+            s += "of ";
+        else {
+            plural = false;
+            article = false;
+        }
+    } else if (addOf) {
+        s += "of ";
+    }
 
-    if (m.zone != Zone::Stage)
-        s += "in your " + printZone(m.zone) + " ";
+    s += printTarget(*m.target, plural, false, article);
+
+    if (m.placeType == PlaceType::SpecificPlace) {
+        if (m.place->zone != Zone::Stage)
+            s += "in your " + printZone(m.place->zone) + " ";
+    } else if (m.placeType == PlaceType::LastMovedCards) {
+        s += "among those cards ";
+    }
 
     return s;
 }

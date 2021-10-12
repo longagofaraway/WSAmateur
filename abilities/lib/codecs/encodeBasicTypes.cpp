@@ -19,7 +19,9 @@ void encodeTarget(const Target &t, Buf &buf) {
 
 void encodeForEachMultiplier(const ForEachMultiplier &m, Buf &buf) {
     encodeTarget(*m.target, buf);
-    buf.push_back(static_cast<uint8_t>(m.zone));
+    buf.push_back(static_cast<uint8_t>(m.placeType));
+    if (m.placeType == PlaceType::SpecificPlace)
+        encodePlace(m.place.value(), buf);
 }
 
 void encodeMultiplier(const Multiplier &m, Buf &buf) {
