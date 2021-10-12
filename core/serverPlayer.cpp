@@ -767,9 +767,14 @@ Resumable ServerPlayer::damageStep() {
     co_await mGame->checkTiming();
 }
 
-void ServerPlayer::endOfAttack() {
+Resumable ServerPlayer::endOfAttack() {
+    auto attCard = attackingCard();
+    if (attCard)
+        triggerOnEndOfCardsAttack(attCard);
+
+    co_await mGame->checkTiming();
+
     if (attackType() == AttackType::FrontAttack) {
-        auto attCard = attackingCard();
         if (attCard)
             attCard->setInBattle(false);
 
@@ -783,8 +788,6 @@ void ServerPlayer::endOfAttack() {
 
     // for 'in battles involving this card'
     mGame->resolveAllContAbilities();
-
-    // TODO: check 'at the end of the attack'
 
     setAttackingCard(nullptr);
     sendToBoth(EventEndOfAttack());

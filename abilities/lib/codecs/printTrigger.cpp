@@ -93,6 +93,10 @@ std::string printOnPlay(const OnPlayTrigger &t) {
     return s;
 }
 
+std::string printEndOfAttack() {
+    return "At the end of this card's attack, ";
+}
+
 std::string printOtherTrigger(const OtherTrigger &t) {
     return gOtherTriggers[t.cardCode];
 }
@@ -121,6 +125,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnPlay:
         s += printOnPlay(std::get<OnPlayTrigger>(t.trigger));
+        break;
+    case TriggerType::OnEndOfThisCardsAttack:
+        s += printEndOfAttack();
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));

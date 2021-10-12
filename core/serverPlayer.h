@@ -139,7 +139,7 @@ public:
     bool canPlay(ServerCard *card);
     Resumable climaxPhase();
     bool canAttack();
-    void endOfAttack();
+    Resumable endOfAttack();
     Resumable startAttackPhase();
     Resumable startOfAttackPhase();
     void attackDeclarationStep();
@@ -177,6 +177,7 @@ public:
     void checkOtherTrigger(const std::string &code);
     void triggerBackupAbility(ServerCard *card);
     void triggerRuleAction(RuleAction action, ServerCard *thisCard = nullptr);
+    void triggerOnEndOfCardsAttack(ServerCard *card);
 
     bool canBePlayed(ServerCard *thisCard, const asn::Ability &a);
 

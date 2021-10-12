@@ -138,7 +138,7 @@ Resumable ServerGame::continueFromDamageStep() {
     defPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     co_await defPlayer->damageStep();
     co_await battleStep();
-    attPlayer->endOfAttack();
+    co_await attPlayer->endOfAttack();
     if (attPlayer->canAttack())
         attPlayer->attackDeclarationStep();
     else

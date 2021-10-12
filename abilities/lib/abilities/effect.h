@@ -233,6 +233,7 @@ struct OtherEffect {
 
 
 enum class EffectType : uint8_t {
+    NotSpecified = 0,
     AttributeGain = 1,
     ChooseCard,
     RevealCard,

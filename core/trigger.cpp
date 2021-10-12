@@ -261,6 +261,25 @@ void ServerPlayer::triggerRuleAction(RuleAction action, ServerCard *thisCard) {
     mQueue.push_back(a);
 }
 
+void ServerPlayer::triggerOnEndOfCardsAttack(ServerCard *card) {
+    auto &abs = card->abilities();
+    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+        if (abs[i].ability.type != asn::AbilityType::Auto)
+            continue;
+        const auto &actab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        if (actab.trigger.type != asn::TriggerType::OnEndOfThisCardsAttack)
+            continue;
+
+        TriggeredAbility a;
+        a.card = CardImprint(card->zone()->name(), card);
+        a.type = ProtoCard;
+        a.abilityId = abs[i].id;
+        mQueue.push_back(a);
+
+        return;
+    }
+}
+
 void ServerPlayer::checkOnReversed(ServerCard *card) {
     auto &abs = card->abilities();
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {

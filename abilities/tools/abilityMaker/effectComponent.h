@@ -15,7 +15,7 @@ public:
     using VarEffect = decltype(asn::Effect::effect);
 
 private:
-    asn::EffectType type;
+    asn::EffectType type = asn::EffectType::NotSpecified;
     VarEffect effect;
     bool initializing = false;
 
