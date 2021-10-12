@@ -315,22 +315,13 @@ bool isPositional(const asn::Target &t) {
 bool checkPlace(const ServerCard *card, const asn::Place &place) {
     if (card->zone()->name() != asnZoneToString(place.zone))
         return false;
-    if (place.pos == asn::Position::FrontRow &&
-        !isFrontRow(card->pos()))
-        return false;
     switch (place.pos) {
     case asn::Position::FrontRow:
-        if (!isFrontRow(card->pos()))
-            return false;
-        break;
+        return isFrontRow(card->pos());
     case asn::Position::BackRow:
-        if (!isBackRow(card->pos()))
-            return false;
-        break;
+        return isBackRow(card->pos());
     case asn::Position::Top:
-        if (card->pos() != card->zone()->count() - 1)
-            return false;
-        break;
+        return card->pos() == (card->zone()->count() - 1);
     }
     assert(false);
     return true;

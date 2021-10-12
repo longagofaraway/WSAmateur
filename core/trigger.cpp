@@ -137,18 +137,19 @@ void ServerPlayer::checkOnAttack(ServerCard *attCard) {
 }
 
 void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
-    auto stage = zone("stage");
-    for (int i = 0; i < stage->count(); ++i) {
-        auto card = stage->card(i);
-        if (!card)
-            continue;
-
+    auto checkTrigger = [=, this](ServerCard *card, bool alarm) {
         auto &abs = card->abilities();
         for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
             if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
             const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
             if (autoab.trigger.type != asn::TriggerType::OnPhaseEvent)
+                continue;
+            // do not activate alarm if the card is on the stage
+            // (it was showing for a brief moment, but the condition was not met)
+            if (std::any_of(autoab.keywords.begin(), autoab.keywords.end(),
+                            [](asn::Keyword k){ return k == asn::Keyword::Alarm; })
+                && !alarm)
                 continue;
             const auto &trig = std::get<asn::PhaseTrigger>(autoab.trigger.trigger);
             if (trig.phase != phase || trig.state != state ||
@@ -158,7 +159,21 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
 
             queueActivatedAbility(autoab, abs[j], card);
         }
+    };
+
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        checkTrigger(card, false);
     }
+
+    auto clock = zone("clock");
+    auto card = clock->topCard();
+    if (card)
+        checkTrigger(card, true);
 }
 
 void ServerPlayer::checkOnBackup(ServerCard *card) {

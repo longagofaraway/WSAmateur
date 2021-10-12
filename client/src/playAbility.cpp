@@ -461,18 +461,21 @@ bool Player::canPlayCounter(const Card &card) const {
     return false;
 }
 
-void Player::lookOrRevealTopDeck() {
+void Player::interactWithDeck() {
     if (!mAbilityList->count())
         return;
 
-    auto effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
+    zone("deck")->visualItem()->setProperty("mGlow", false);
     if (std::holds_alternative<asn::Look>(effect)) {
-        zone("deck")->visualItem()->setProperty("mGlow", false);
-
         // deactivate buttons until a new card is revealed
         mAbilityList->activateCancel(mAbilityList->activeId(), false);
         mAbilityList->activatePlay(mAbilityList->activeId(), false);
         sendGameCommand(CommandLookTopDeck());
+    } else if (std::holds_alternative<asn::DrawCard>(effect)) {
+        mAbilityList->activateCancel(mAbilityList->activeId(), false);
+        sendGameCommand(CommandPlayEffect());
+        mGame->hideText();
     }
 }
 

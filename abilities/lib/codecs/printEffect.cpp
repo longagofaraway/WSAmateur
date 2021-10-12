@@ -401,7 +401,7 @@ std::string printDrawCard(const DrawCard &e) {
             s += std::to_string(e.value.value) + " cards ";
     } else {
         s += printNumber(e.value);
-        s += " card";
+        s += "card";
         if (e.value.value > 1)
             s += "s";
         s += " ";

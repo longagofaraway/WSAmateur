@@ -51,6 +51,12 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         condition = c;
         break;
     }
+    case asn::ConditionType::DuringTurn: {
+        auto c = asn::ConditionDuringTurn();
+        c.player = asn::Player::Player;
+        condition = c;
+        break;
+    }
     default: break;
     }
 }
@@ -136,6 +142,11 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.equalOrMoreThan)));
         break;
     }
+    case asn::ConditionType::DuringTurn: {
+        const auto &cond = std::get<asn::ConditionDuringTurn>(c);
+        QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)cond.player));
+        break;
+    }
     default:
         break;
     }
@@ -153,6 +164,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         { asn::ConditionType::CardsLocation, "CardsLocation" },
         { asn::ConditionType::CheckMilledCards, "CheckMilledCards" },
         { asn::ConditionType::SumOfLevels, "SumOfLevels" },
+        { asn::ConditionType::DuringTurn, "DuringTurn" },
     };
 
     std::unordered_set<asn::ConditionType> readyComponents {
@@ -204,6 +216,11 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         QMetaObject::invokeMethod(qmlObject, "setSum", Q_ARG(QVariant, QString::number(0)));
 
         connect(qmlObject, SIGNAL(sumChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        break;
+    case asn::ConditionType::DuringTurn:
+        QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)asn::Player::Player));
+
+        connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(onPlayerChanged(int)));
         break;
     default: break;
     }
@@ -315,6 +332,11 @@ void ConditionImplComponent::onPlayerChanged(int value) {
     case asn::ConditionType::HaveCards: {
         auto &c = std::get<asn::ConditionHaveCard>(condition);
         c.who = static_cast<asn::Player>(value);
+        break;
+    }
+    case asn::ConditionType::DuringTurn: {
+        auto &c = std::get<asn::ConditionDuringTurn>(condition);
+        c.player = static_cast<asn::Player>(value);
         break;
     }
     default:

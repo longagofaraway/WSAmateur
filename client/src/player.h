@@ -110,7 +110,7 @@ public:
     Q_INVOKABLE void playActAbility(int index);
     Q_INVOKABLE void sendPlayCounter(int handId);
     Q_INVOKABLE void addCard(int id, QString code, QString zoneName, int targetPos = -1);
-    Q_INVOKABLE void lookOrRevealTopDeck();
+    Q_INVOKABLE void interactWithDeck();
     Q_INVOKABLE void cardInserted(QString startZone, QString targetZone);
 
     void resetChoiceDialog();

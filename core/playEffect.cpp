@@ -258,13 +258,44 @@ std::map<int, ServerCard*> AbilityPlayer::processCommandChooseCard(const Command
 
 Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
     bool confirmed = mandatory();
+    if (e.value.mod == asn::NumModifier::UpTo) {
+        std::vector<uint8_t> buf;
+        encodeDrawCard(e, buf);
+
+        EventDrawChoice ev;
+        ev.set_effect(buf.data(), buf.size());
+        ev.set_mandatory(mandatory());
+        mPlayer->sendToBoth(ev);
+
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
+        mPlayer->addExpectedCommand(CommandPlayEffect::descriptor()->name());
+
+        int cardsDrawn = 0;
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandPlayEffect>()) {
+                mPlayer->moveTopDeck("hand");
+                cardsDrawn++;
+
+                if (cardsDrawn >= e.value.value)
+                    break;
+
+                mPlayer->sendToBoth(ev);
+            } else if (cmd.command().Is<CommandCancelEffect>()) {
+                break;
+            }
+        }
+        mPlayer->clearExpectedComands();
+        co_return;
+    }
     if (!mandatory()) {
         std::vector<uint8_t> buf;
         encodeDrawCard(e, buf);
 
         EventDrawChoice ev;
         ev.set_effect(buf.data(), buf.size());
-        ev.set_mandatory(false);
+        ev.set_mandatory(mandatory());
         mPlayer->sendToBoth(ev);
 
         mPlayer->clearExpectedComands();
@@ -284,7 +315,8 @@ Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
     }
     if (!confirmed)
         co_return;
-    mPlayer->moveTopDeck("hand");
+    for (int i = 0; i < e.value.value; ++i)
+        mPlayer->moveTopDeck("hand");
 }
 
 void AbilityPlayer::playRevealCard(const asn::RevealCard &e) {

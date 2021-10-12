@@ -156,7 +156,7 @@ void Player::processMoveTargetChoice(const EventMoveTargetChoice &event) {
     mGame->showText(QString::fromStdString(effectText));
     int eligibleCount = highlightCardsForChoice(effect.target, effect.from);
     if (eligibleCount)
-        mAbilityList->ability(mAbilityList->activeId()).effect = effect;
+        activeAbility().effect = effect;
     processChooseCardInternal(eligibleCount, effect.from, event.mandatory(), effect.executor);
 }
 
@@ -168,8 +168,13 @@ void Player::processDrawChoice(const EventDrawChoice &event) {
 
     auto header = printDrawCard(effect);
     header[0] = std::toupper(header[0]);
-    header.push_back('?');
-    if (!event.mandatory()) {
+    if (effect.value.mod == asn::NumModifier::UpTo) {
+        mGame->showText(QString::fromStdString(header));
+        activeAbility().effect = effect;
+        zone("deck")->visualItem()->setProperty("mGlow", true);
+        mAbilityList->activateCancel(mAbilityList->activeId(), true);
+    } else if (!event.mandatory()) {
+        header.push_back('?');
         std::vector<QString> data { "Yes", "No" };
 
         auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);

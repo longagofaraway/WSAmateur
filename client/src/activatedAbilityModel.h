@@ -42,7 +42,8 @@ struct ActivatedAbility {
                  asn::AbilityGain,
                  asn::MoveCard,
                  asn::Look,
-                 asn::ChangeState> effect;
+                 asn::ChangeState,
+                 asn::DrawCard> effect;
     std::variant<std::monostate,
                  asn::MoveCard,
                  asn::ChooseCard> nextEffect;

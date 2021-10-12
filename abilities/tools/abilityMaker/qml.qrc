@@ -59,6 +59,7 @@
         <file>qml/conditions/CardsLocation.qml</file>
         <file>qml/conditions/CheckMilledCards.qml</file>
         <file>qml/conditions/SumOfLevels.qml</file>
+        <file>qml/conditions/DuringTurn.qml</file>
         <file>qml/Cost.qml</file>
         <file>qml/basicTypes/CostType.qml</file>
         <file>qml/basicTypes/StockCostEffects.qml</file>

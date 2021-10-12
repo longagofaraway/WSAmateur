@@ -291,7 +291,10 @@ std::string printDuration(int duration) {
 }
 
 std::string printPlace(Place place) {
-    std::string s = printPlayer(place.owner);
+    std::string s;
+    if (place.pos == Position::FrontRow ||
+        place.pos == Position::BackRow)
+        s += "in " + printPlayer(place.owner);
 
     switch(place.pos) {
     case Position::FrontRow:
@@ -301,6 +304,12 @@ std::string printPlace(Place place) {
     default:
         break;
     }
-    return "";
+
+    if (place.pos == Position::Top) {
+        s += "the top card of ";
+        s += printPlayer(place.owner);
+        s += printZone(place.zone);
+    }
+    return s;
 }
 

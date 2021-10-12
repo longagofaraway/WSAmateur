@@ -214,7 +214,7 @@ std::string printCardsLocation(const ConditionCardsLocation &c) {
     std::string s = "if ";
 
     s += printTarget(c.target);
-    s += "is in ";
+    s += "is ";
     s += printPlace(c.place) + ", ";
 
     return s;
