@@ -178,6 +178,7 @@ public:
     void triggerBackupAbility(ServerCard *card);
     void triggerRuleAction(RuleAction action, ServerCard *thisCard = nullptr);
     void triggerOnEndOfCardsAttack(ServerCard *card);
+    void triggerOnOppCharPlacedByStandby();
 
     bool canBePlayed(ServerCard *thisCard, const asn::Ability &a);
 

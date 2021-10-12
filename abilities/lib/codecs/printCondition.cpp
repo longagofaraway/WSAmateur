@@ -200,7 +200,7 @@ std::string printConditionDuringTurn(const ConditionDuringTurn &c) {
     return "during " + printPlayer(c.player) + "turn, ";
 }
 
-std::string printConditionCheckOpenedCards(const ConditionCheckOpenedCards &c) {
+std::string printConditionCheckMilledCards(const ConditionCheckMilledCards &c) {
     std::string s = "if there is ";
 
     s += printNumber(c.number);
@@ -242,8 +242,8 @@ std::string printCondition(const Condition &c) {
     case ConditionType::DuringTurn:
         s += printConditionDuringTurn(std::get<ConditionDuringTurn>(c.cond));
         break;
-    case ConditionType::CheckOpenedCards:
-        s += printConditionCheckOpenedCards(std::get<ConditionCheckOpenedCards>(c.cond));
+    case ConditionType::CheckMilledCards:
+        s += printConditionCheckMilledCards(std::get<ConditionCheckMilledCards>(c.cond));
         break;
     case ConditionType::CardsLocation:
         s += printCardsLocation(std::get<ConditionCardsLocation>(c.cond));

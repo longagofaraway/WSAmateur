@@ -24,6 +24,7 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
 
     AbilityPlayer a(this);
     a.setThisCard(CardImprint("res", 0, card));
+    a.setTriggerIcon(trigger);
     co_await a.playAbility(triggerAbility(trigger));
 
     EventAbilityResolved ev2;
@@ -277,6 +278,27 @@ void ServerPlayer::triggerOnEndOfCardsAttack(ServerCard *card) {
         mQueue.push_back(a);
 
         return;
+    }
+}
+
+void ServerPlayer::triggerOnOppCharPlacedByStandby() {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        auto &abs = card->abilities();
+        for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
+            if (abs[j].ability.type != asn::AbilityType::Auto)
+                continue;
+
+            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
+            if (autoab.trigger.type != asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal)
+                continue;
+
+            queueActivatedAbility(autoab, abs[j], card);
+        }
     }
 }
 

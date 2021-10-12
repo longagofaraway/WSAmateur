@@ -39,8 +39,8 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         condition = c;
         break;
     }
-    case asn::ConditionType::CheckOpenedCards: {
-        auto c = asn::ConditionCheckOpenedCards();
+    case asn::ConditionType::CheckMilledCards: {
+        auto c = asn::ConditionCheckMilledCards();
         c.number = defaultNum;
         condition = c;
         break;
@@ -82,8 +82,8 @@ const asn::Card& getCard(ConditionImplComponent::VarCondition &condition, asn::C
         const auto &c = std::get<asn::ConditionHaveCard>(condition);
         return c.whichCards;
     }
-    case asn::ConditionType::CheckOpenedCards: {
-        const auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+    case asn::ConditionType::CheckMilledCards: {
+        const auto &c = std::get<asn::ConditionCheckMilledCards>(condition);
         return c.card;
     }
     default:
@@ -125,8 +125,8 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
         targetSet = true;
         break;
     }
-    case asn::ConditionType::CheckOpenedCards: {
-        const auto &cond = std::get<asn::ConditionCheckOpenedCards>(c);
+    case asn::ConditionType::CheckMilledCards: {
+        const auto &cond = std::get<asn::ConditionCheckMilledCards>(c);
         QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)cond.number.mod));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.number.value)));
         break;
@@ -151,7 +151,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         { asn::ConditionType::IsCard, "IsCard" },
         { asn::ConditionType::HaveCards, "HaveCards" },
         { asn::ConditionType::CardsLocation, "CardsLocation" },
-        { asn::ConditionType::CheckOpenedCards, "CheckOpenedCards" },
+        { asn::ConditionType::CheckMilledCards, "CheckMilledCards" },
         { asn::ConditionType::SumOfLevels, "SumOfLevels" },
     };
 
@@ -192,7 +192,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         break;
-    case asn::ConditionType::CheckOpenedCards:
+    case asn::ConditionType::CheckMilledCards:
         QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
 
@@ -265,8 +265,8 @@ void ConditionImplComponent::cardReady(const asn::Card &card_) {
         c.whichCards = card_;
         break;
     }
-    case asn::ConditionType::CheckOpenedCards: {
-        auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+    case asn::ConditionType::CheckMilledCards: {
+        auto &c = std::get<asn::ConditionCheckMilledCards>(condition);
         c.card = card_;
         break;
     }
@@ -343,8 +343,8 @@ void ConditionImplComponent::onNumModifierChanged(int value) {
         c.howMany.mod = static_cast<asn::NumModifier>(value);
         break;
     }
-    case asn::ConditionType::CheckOpenedCards: {
-        auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+    case asn::ConditionType::CheckMilledCards: {
+        auto &c = std::get<asn::ConditionCheckMilledCards>(condition);
         c.number.mod = static_cast<asn::NumModifier>(value);
         break;
     }
@@ -367,8 +367,8 @@ void ConditionImplComponent::onNumValueChanged(QString value) {
         c.howMany.value = val;
         break;
     }
-    case asn::ConditionType::CheckOpenedCards: {
-        auto &c = std::get<asn::ConditionCheckOpenedCards>(condition);
+    case asn::ConditionType::CheckMilledCards: {
+        auto &c = std::get<asn::ConditionCheckMilledCards>(condition);
         c.number.value = val;
         break;
     }

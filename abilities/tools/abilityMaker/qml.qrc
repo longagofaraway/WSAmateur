@@ -57,7 +57,7 @@
         <file>qml/conditions/IsCard.qml</file>
         <file>qml/conditions/HaveCards.qml</file>
         <file>qml/conditions/CardsLocation.qml</file>
-        <file>qml/conditions/CheckOpenedCards.qml</file>
+        <file>qml/conditions/CheckMilledCards.qml</file>
         <file>qml/conditions/SumOfLevels.qml</file>
         <file>qml/Cost.qml</file>
         <file>qml/basicTypes/CostType.qml</file>

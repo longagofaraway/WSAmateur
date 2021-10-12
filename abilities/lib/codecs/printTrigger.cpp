@@ -97,6 +97,12 @@ std::string printEndOfAttack() {
     return "At the end of this card's attack, ";
 }
 
+std::string printOnOppCharPlacedByStanbyTrigger() {
+    std::string s = "When your opponent puts a character on the stage by the effect of ";
+    s += printTriggerIcon(TriggerIcon::Standby) + " trigger, ";
+    return s;
+}
+
 std::string printOtherTrigger(const OtherTrigger &t) {
     return gOtherTriggers[t.cardCode];
 }
@@ -128,6 +134,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnEndOfThisCardsAttack:
         s += printEndOfAttack();
+        break;
+    case TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
+        s += printOnOppCharPlacedByStanbyTrigger();
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));

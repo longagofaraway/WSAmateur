@@ -31,6 +31,8 @@ class AbilityPlayer {
 
     std::optional<GameCommand> mLastCommand;
 
+    std::optional<asn::TriggerIcon> mTriggerIcon;
+
 public:
     AbilityPlayer(ServerPlayer *player) : mPlayer(player) {}
 
@@ -44,6 +46,8 @@ public:
     // if some card mentioned in the trigger is used in the effect,
     // it needs to be stored
     void setCardFromTrigger(ServerCard *card) { mCardFromTrigger = card; }
+
+    void setTriggerIcon(asn::TriggerIcon icon) { mTriggerIcon = icon; }
 
     bool canBePlayed(const asn::Ability &a);
 
@@ -138,7 +142,7 @@ private:
     bool evaluateConditionInBattleWithThis();
     bool evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c);
     bool evaluateConditionDuringTurn(const asn::ConditionDuringTurn &c);
-    bool evaluateConditionCheckOpenedCards(const asn::ConditionCheckOpenedCards &c);
+    bool evaluateConditionCheckMilledCards(const asn::ConditionCheckMilledCards &c);
     bool evaluateConditionCardsLocation(const asn::ConditionCardsLocation &c);
 
     void sendLookCard(ServerCard *card);

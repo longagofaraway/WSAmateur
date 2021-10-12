@@ -50,8 +50,8 @@ void encodeCondition(const Condition &c, Buf &buf) {
     case ConditionType::DuringTurn:
         buf.push_back(static_cast<uint8_t>(std::get<ConditionDuringTurn>(c.cond).player));
         break;
-    case ConditionType::CheckOpenedCards:
-        encodeNumberCard(std::get<ConditionCheckOpenedCards>(c.cond), buf);
+    case ConditionType::CheckMilledCards:
+        encodeNumberCard(std::get<ConditionCheckMilledCards>(c.cond), buf);
         break;
     case ConditionType::RevealedCard:
         encodeNumberCard(std::get<ConditionRevealCard>(c.cond), buf);

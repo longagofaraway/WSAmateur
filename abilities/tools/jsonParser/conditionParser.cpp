@@ -134,8 +134,8 @@ Condition parseCondition(const QJsonObject &json) {
     case ConditionType::DuringTurn:
         c.cond = parseConditionDuringTurn(json["cond"].toObject());
         break;
-    case ConditionType::CheckOpenedCards:
-        c.cond = parseNumberCard<ConditionCheckOpenedCards>(json["cond"].toObject());
+    case ConditionType::CheckMilledCards:
+        c.cond = parseNumberCard<ConditionCheckMilledCards>(json["cond"].toObject());
         break;
     case ConditionType::RevealedCard:
         c.cond = parseNumberCard<ConditionRevealCard>(json["cond"].toObject());

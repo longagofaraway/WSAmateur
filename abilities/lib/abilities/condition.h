@@ -46,7 +46,7 @@ struct ConditionDuringTurn {
     Player player;
 };
 
-struct ConditionCheckOpenedCards {
+struct ConditionCheckMilledCards {
     Number number;
     Card card;
 };
@@ -70,7 +70,7 @@ enum class ConditionType : uint8_t {
     SumOfLevels,
     CardsLocation,
     DuringTurn,
-    CheckOpenedCards,
+    CheckMilledCards,
     RevealedCard,
     PlayersLevel
 };
@@ -83,7 +83,7 @@ struct Condition {
         ConditionSumOfLevels,
         ConditionCardsLocation,
         ConditionDuringTurn,
-        ConditionCheckOpenedCards,
+        ConditionCheckMilledCards,
         ConditionRevealCard,
         ConditionPlayersLevel,
         ConditionAnd,

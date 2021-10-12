@@ -36,6 +36,7 @@ void ArrayOfEffectsComponent::init() {
     asn::Condition cond;
     cond.type = asn::ConditionType::NoCondition;
     defaultEffect.cond = cond;
+    defaultEffect.type = asn::EffectType::NotSpecified;
 
     qmlObject->setProperty("kOffset", kElemOffset);
     connect(qmlObject, SIGNAL(addEffect()), this, SLOT(addEffect()));
