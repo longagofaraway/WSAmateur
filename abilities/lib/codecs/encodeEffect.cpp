@@ -124,6 +124,9 @@ void encodeReplay(const Replay &e, Buf &buf) {
 void encodeLook(const Look &e, Buf &buf) {
     encodeNumber(e.number, buf);
     encodePlace(e.place, buf);
+    buf.push_back(static_cast<uint8_t>(e.valueType));
+    if (e.valueType == ValueType::Multiplier)
+        encodeMultiplier(e.multiplier.value(), buf);
 }
 
 void encodeDrawCard(const DrawCard &e, Buf &buf) {

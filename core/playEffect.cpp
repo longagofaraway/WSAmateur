@@ -1004,6 +1004,13 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
     if (!deck->count())
         co_return;
 
+    int numCards = e.number.value;
+    if (e.valueType == asn::ValueType::Multiplier && e.multiplier) {
+        if (e.multiplier->type == asn::MultiplierType::ForEach) {
+            numCards *= getForEachMultiplierValue(e.multiplier.value());
+        }
+    }
+
     if (e.number.mod == asn::NumModifier::UpTo || !mandatory()) {
         std::vector<uint8_t> buf;
         encodeLook(e, buf);
@@ -1040,12 +1047,12 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
         while (true) {
             auto cmd = co_await waitForCommand();
             if (cmd.command().Is<CommandCancelEffect>()) {
-                // if we have already looked at at least 1 card, than this cancel refers to the next effect
+                // if we have already looked at at least 1 card, then this cancel refers to the next effect
                 if (mMentionedCards.size())
                     mLastCommand = cmd;
                 break;
             } else if (cmd.command().Is<CommandLookTopDeck>()) {
-                if (e.number.value == static_cast<int>(mMentionedCards.size()))
+                if (numCards == static_cast<int>(mMentionedCards.size()))
                     break;
 
                 auto card = deck->card(deck->count() - 1 - static_cast<int>(mMentionedCards.size()));
@@ -1054,8 +1061,9 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
 
                 sendLookCard(card);
 
+                // TODO: check non mandatory and deck ran out
                 if (mandatory() &&
-                    (static_cast<size_t>(deck->count()) <= mMentionedCards.size() || mMentionedCards.size() == static_cast<size_t>(e.number.value)))
+                    (static_cast<size_t>(deck->count()) <= mMentionedCards.size() || mMentionedCards.size() == static_cast<size_t>(numCards)))
                     break;
             } else if (cmd.command().Is<CommandChooseCard>() ||
                        cmd.command().Is<CommandMoveInOrder>() ||
@@ -1068,7 +1076,7 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
             }
         }
     } else {
-        for (int i = 0; i < e.number.value && i < deck->count(); ++i) {
+        for (int i = 0; i < numCards && i < deck->count(); ++i) {
             auto card = deck->card(deck->count() - 1 - i);
             if (!card)
                 break;

@@ -24,8 +24,8 @@ void encodeForEachMultiplier(const ForEachMultiplier &m, Buf &buf) {
 
 void encodeMultiplier(const Multiplier &m, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(m.type));
-    if (m.type == MultiplierType::ForEach && m.specifier)
-        encodeForEachMultiplier(*m.specifier, buf);
+    if (m.type == MultiplierType::ForEach)
+        encodeForEachMultiplier(m.specifier.value(), buf);
 }
 
 void encodePlace(const Place &c, Buf &buf) {

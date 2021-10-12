@@ -1,7 +1,5 @@
 #pragma once
 
-//#include <vector>
-
 #include "abilities.h"
 #include "abilityUtils.h"
 #include "activatedAbilities.h"
@@ -13,6 +11,7 @@ class CardZone;
 asn::Ability decodeAbility(const std::string &buf);
 void highlightAllCards(CardZone *zone, bool highlight);
 void selectAllCards(CardZone *zone, bool select);
+int getForEachMultiplierValue(Player *player, int thisCardId, const asn::Multiplier &multiplier);
 
 template<typename T>
 int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs,

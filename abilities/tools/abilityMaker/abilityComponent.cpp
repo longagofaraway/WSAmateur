@@ -32,6 +32,7 @@ AbilityComponent::AbilityComponent(const asn::Ability &a, QQuickItem *parent)
 }
 
 void AbilityComponent::init() {
+    trigger.type = asn::TriggerType::NotSpecified;
     connect(qmlObject, SIGNAL(setAbilityType(int)), this, SLOT(setAbilityType(int)));
     connect(qmlObject, SIGNAL(setActivationTimes(int)), this, SLOT(setActivationTimes(int)));
     connect(qmlObject, SIGNAL(setKeywords(QVariant)), this, SLOT(setKeywords(QVariant)));

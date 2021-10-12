@@ -41,6 +41,7 @@ void Card::clear() {
     mCost = 0;
     mSoul = 0;
     mPower = 0;
+    mId = 0;
 
     mGlow = false;
     mSelected = false;

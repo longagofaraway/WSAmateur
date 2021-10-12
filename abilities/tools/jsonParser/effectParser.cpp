@@ -212,10 +212,17 @@ Look parseLook(const QJsonObject &json) {
         throw std::runtime_error("no number in Look");
     if (!json.contains("place") || !json["place"].isObject())
         throw std::runtime_error("no place in Look");
+    if (json.contains("valueType") && !json["valueType"].isDouble())
+        throw std::runtime_error("no valueType in Look");
+    if (json.contains("multiplier") && !json["multiplier"].isObject())
+        throw std::runtime_error("no multiplier in Look");
 
     Look e;
     e.number = parseNumber(json["number"].toObject());
     e.place = parsePlace(json["place"].toObject());
+    e.valueType = static_cast<ValueType>(json["valueType"].toInt());
+    if (e.valueType == ValueType::Multiplier)
+        e.multiplier = parseMultiplier(json["multiplier"].toObject());
 
     return e;
 }

@@ -268,25 +268,29 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
     if (!mAbilityList->count())
         return;
 
-    auto &activeAbility = mAbilityList->ability(mAbilityList->activeId());
-    auto &effect = activeAbility.effect;
+    auto &activeAbility_ = activeAbility();
+    auto &effect = activeAbility_.effect;
     if (std::holds_alternative<asn::Look>(effect)) {
         const auto &look = std::get<asn::Look>(effect);
-        if (view->model().count() + 1 < look.number.value)
+        int cardsToLook = look.number.value;
+        if (look.valueType == asn::ValueType::Multiplier && look.multiplier->type == asn::MultiplierType::ForEach) {
+            cardsToLook = look.number.value * getForEachMultiplierValue(this, activeAbility_.cardId, look.multiplier.value());
+        }
+        if (view->model().count() + 1 < cardsToLook)
             zone("deck")->visualItem()->setProperty("mGlow", true);
         else
             zone("deck")->visualItem()->setProperty("mGlow", false);
 
-        if (std::holds_alternative<asn::MoveCard>(activeAbility.nextEffect)) {
+        if (std::holds_alternative<asn::MoveCard>(activeAbility_.nextEffect)) {
             mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
-        } else if (std::holds_alternative<asn::ChooseCard>(activeAbility.nextEffect)) {
-            const auto &chooseEffect = std::get<asn::ChooseCard>(activeAbility.nextEffect);
+        } else if (std::holds_alternative<asn::ChooseCard>(activeAbility_.nextEffect)) {
+            const auto &chooseEffect = std::get<asn::ChooseCard>(activeAbility_.nextEffect);
             if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
                 const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
                 if (spec.number.mod == asn::NumModifier::UpTo)
                     mAbilityList->activateCancel(mAbilityList->activeId(), true);
             }
-        } else if (std::holds_alternative<std::monostate>(activeAbility.nextEffect)) {
+        } else if (std::holds_alternative<std::monostate>(activeAbility_.nextEffect)) {
             mAbilityList->activatePlay(mAbilityList->activeId(), true, "OK");
             mAbilityList->activateCancel(mAbilityList->activeId(), false);
         }

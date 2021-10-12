@@ -544,11 +544,17 @@ std::string printLook(const Look &e) {
     if (e.number.mod != NumModifier::UpTo)
         s += "the top ";
 
-    if (!(e.number.mod == NumModifier::ExactMatch && e.number.value == 1))
+    if (!(e.number.mod == NumModifier::ExactMatch && e.number.value == 1) &&
+        e.valueType != ValueType::Multiplier)
         s += printNumber(e.number);
+    if (e.valueType == ValueType::Multiplier) {
+        if (e.number.mod == NumModifier::UpTo)
+            s += "up to ";
+        s += "X ";
+    }
 
     s += "card";
-    if (e.number.value > 1)
+    if (e.number.value > 1 || e.valueType == ValueType::Multiplier)
         s += "s";
     s += " ";
 
@@ -559,6 +565,13 @@ std::string printLook(const Look &e) {
 
     s += printPlayer(e.place.owner);
     s += printZone(e.place.zone) + " ";
+
+    if (e.valueType == ValueType::Multiplier && e.multiplier.value().type == MultiplierType::ForEach) {
+        s += "(X is equal to the number of ";
+        s += printForEachMultiplier(e.multiplier.value().specifier.value());
+        s.pop_back();
+        s += ") ";
+    }
 
     return s;
 }

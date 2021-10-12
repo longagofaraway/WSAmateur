@@ -27,8 +27,8 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <comments></comments>
     <main>
         <card number="20" code="KGL/S79-001"/>
-        <card number="20" code="KGL/S79-006"/>
-        <card number="11" code="KGL/S79-022"/>
+        <card number="20" code="KGL/S79-080"/>
+        <card number="1" code="KGL/S79-022"/>
     </main>
 </deck>)delim";
 
@@ -76,8 +76,8 @@ void Game::componentComplete() {
         throw;
     }
 
-    //startLocalGame();
-    startNetworkGame();
+    startLocalGame();
+    //startNetworkGame();
 }
 
 void Game::startNetworkGame() {

@@ -161,6 +161,9 @@ Look decodeLook(Iterator &it, Iterator end) {
     Look e;
     e.number = decodeNumber(it, end);
     e.place = decodePlace(it, end);
+    e.valueType = decodeEnum<ValueType>(it, end);
+    if (e.valueType == ValueType::Multiplier)
+        e.multiplier = decodeMultiplier(it, end);
     return e;
 }
 

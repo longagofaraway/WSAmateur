@@ -65,7 +65,7 @@ void transform() {
     path.cdUp();
     path.cd("WSAmateur");
 
-    DbManager dbManager(path.filePath("cards_backup.db"));
+    DbManager dbManager(path.filePath("cards.db"));
 
     QSqlQuery query;
     query.prepare("SELECT code, abilities FROM cards");

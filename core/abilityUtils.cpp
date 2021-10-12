@@ -203,6 +203,10 @@ bool checkTargetMode(asn::TargetMode mode, const ServerCard *thisCard, const Ser
         return isBackRow(card->pos());
     case asn::TargetMode::FrontRow:
         return isFrontRow(card->pos());
+    case asn::TargetMode::BackRowOther:
+        return isBackRow(card->pos()) && thisCard != card;
+    case asn::TargetMode::FrontRowOther:
+        return isFrontRow(card->pos()) && thisCard != card;
     }
 
     return true;

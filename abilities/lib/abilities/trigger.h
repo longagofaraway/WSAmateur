@@ -6,7 +6,8 @@
 namespace asn {
 
 enum class TriggerType : uint8_t {
-    OnZoneChange = 1,
+    NotSpecified = 0,
+    OnZoneChange,
     OnPlay,
     OnStateChange,
     OnAttack,

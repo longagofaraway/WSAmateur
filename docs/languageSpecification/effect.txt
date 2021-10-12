@@ -124,7 +124,12 @@ PlaceType {
 
 Look {
   number Number,
-  place Place
+  place Place,
+  valueType ValueType,
+  multiplier Choice {
+    Multiplier,
+    Nothing
+  }
 }
 
 

@@ -491,8 +491,13 @@ void Player::cardInserted(QString targetZone) {
                 if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
                     const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
                     if (chooseEffect.targets[0].placeType == asn::PlaceType::Selection) {
+                        auto &look = std::get<asn::Look>(a.effect);
                         auto from = zone("view");
-                        highlightEligibleCards(from, spec.cards.cardSpecifiers, spec.mode, a);
+                        int count = highlightEligibleCards(from, spec.cards.cardSpecifiers, spec.mode, a);
+                        // in case we HAVE to choose a card, but we have a choice of how much to reveal,
+                        // we must have a choice to stop looking
+                        if (look.number.mod == asn::NumModifier::UpTo && !count)
+                            mAbilityList->activateCancel(mAbilityList->activeId(), true);
                     }
                 }
             }

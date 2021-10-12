@@ -62,6 +62,7 @@ Rectangle {
         id: triggerTypeCombo
         anchors { top: delimiterLabel.bottom; topMargin: 10 }
         anchors.horizontalCenter: trigger.horizontalCenter
+        width: 200
         model: ["Zone change", "On play", "On state change", "On attack", "On backup of this",
                 "On trigger reveal", "Phase event", "End of this card's attack",
                 "On standby trigger effect", "End of turn"]

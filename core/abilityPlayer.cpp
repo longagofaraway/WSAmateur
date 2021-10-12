@@ -100,7 +100,7 @@ void AbilityPlayer::removeMentionedCard(int cardId) {
 }
 
 int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
-    auto &specifier = *m.specifier;
+    auto &specifier = m.specifier.value();
     assert(specifier.target->type == asn::TargetType::SpecificCards);
     auto pzone = mPlayer->zone(asnZoneToString(specifier.zone));
     int cardCount = 0;
