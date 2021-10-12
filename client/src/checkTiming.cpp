@@ -32,6 +32,7 @@ void Player::stopUiInteractions() {
     default:
         break;
     }
+    mResolvingAbilities = true;
 }
 
 void Player::restoreUiState() {
@@ -59,6 +60,7 @@ void Player::restoreUiState() {
     default:
         break;
     }
+    mResolvingAbilities = false;
 }
 
 void Player::makeAbilityActive(const EventPlayAbility &event) {

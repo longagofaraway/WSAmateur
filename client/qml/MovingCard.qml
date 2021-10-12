@@ -133,7 +133,7 @@ Card {
 
     function finishMove() {
         insertCard();
-        gGame.getPlayer(opponent).cardInserted(targetZone);
+        gGame.getPlayer(opponent).cardInserted(startZone, targetZone);
         completeAction();
     }
 

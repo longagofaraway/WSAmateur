@@ -476,9 +476,15 @@ void Player::lookOrRevealTopDeck() {
     }
 }
 
-void Player::cardInserted(QString targetZone) {
+void Player::cardInserted(QString startZone, QString targetZone) {
     if (mOpponent)
         return;
+
+    if (startZone == "stock" && targetZone == "wr") {
+        // stock changed, update info
+        if (!mResolvingAbilities && mGame->phase() == asn::Phase::MainPhase)
+            highlightPlayableCards();
+    }
 
     if (targetZone == "view") {
         if (!mAbilityList->count())

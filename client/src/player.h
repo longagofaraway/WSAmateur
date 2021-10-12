@@ -71,6 +71,8 @@ private:
     bool mCannotPlayEvents = false;
     bool mCannotPlayBackups = false;
 
+    bool mResolvingAbilities = false;
+
 public:
     Player(int id, Game *game, bool opponent);
     Player(const Player&) = delete;
@@ -109,7 +111,7 @@ public:
     Q_INVOKABLE void sendPlayCounter(int handId);
     Q_INVOKABLE void addCard(int id, QString code, QString zoneName, int targetPos = -1);
     Q_INVOKABLE void lookOrRevealTopDeck();
-    Q_INVOKABLE void cardInserted(QString targetZone);
+    Q_INVOKABLE void cardInserted(QString startZone, QString targetZone);
 
     void resetChoiceDialog();
 
