@@ -81,4 +81,5 @@ asn::SearchCard decodeSearchCard(Iterator &it, Iterator end);
 asn::AbilityGain decodeAbilityGain(Iterator &it, Iterator end);
 asn::PerformEffect decodePerformEffect(Iterator &it, Iterator end);
 asn::Look decodeLook(Iterator &it, Iterator end);
+asn::RevealCard decodeRevealCard(Iterator &it, Iterator end);
 asn::ChangeState decodeChangeState(Iterator &it, Iterator end);

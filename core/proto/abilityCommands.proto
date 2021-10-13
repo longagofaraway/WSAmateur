@@ -19,7 +19,7 @@ message CommandChoice {
     sint32 choice = 1;
 }
 
-message CommandLookTopDeck {}
+message CommandNextTopDeck {}
 message CommandConfirmMove {}
 message CommandMoveInOrder {
     repeated string codes = 1;

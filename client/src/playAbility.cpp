@@ -138,7 +138,8 @@ void Player::playAbility(int index) {
     if (ab.active) {
         mAbilityList->activatePlay(index, false);
         mAbilityList->activateCancel(index, false);
-        if (std::holds_alternative<asn::Look>(ab.effect)) {
+        if (std::holds_alternative<asn::Look>(ab.effect) ||
+            std::holds_alternative<asn::RevealCard>(ab.effect)) {
             if (std::holds_alternative<asn::MoveCard>(ab.nextEffect)) {
                 const auto &moveEffect = std::get<asn::MoveCard>(ab.nextEffect);
                 if (moveEffect.order == asn::Order::Any) {
@@ -203,7 +204,8 @@ void Player::doneChoosing() {
         dehighlightCards(asn::PlaceType::SpecificPlace, ef.to[0]);
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         mDeckView->hide();
-    } else if (std::holds_alternative<asn::Look>(effect)) {
+    } else if (std::holds_alternative<asn::Look>(effect) ||
+               std::holds_alternative<asn::RevealCard>(effect)) {
         zone("deck")->visualItem()->setProperty("mGlow", false);
         if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
             auto &ef = std::get<asn::ChooseCard>(a.nextEffect);
@@ -270,7 +272,8 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
         a = &getOpponent()->activeAbility();
     auto &effect = a->effect;
     asn::Number number;
-    if (std::holds_alternative<asn::ChooseCard>(effect) || std::holds_alternative<asn::Look>(effect)) {
+    if (std::holds_alternative<asn::ChooseCard>(effect) || std::holds_alternative<asn::Look>(effect)
+            || std::holds_alternative<asn::RevealCard>(effect)) {
         const auto &ef = std::holds_alternative<asn::ChooseCard>(effect) ?
                     std::get<asn::ChooseCard>(effect) :
                     std::get<asn::ChooseCard>(a->nextEffect);
@@ -467,11 +470,12 @@ void Player::interactWithDeck() {
 
     auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
     zone("deck")->visualItem()->setProperty("mGlow", false);
-    if (std::holds_alternative<asn::Look>(effect)) {
+    if (std::holds_alternative<asn::Look>(effect) ||
+        std::holds_alternative<asn::RevealCard>(effect)) {
         // deactivate buttons until a new card is revealed
         mAbilityList->activateCancel(mAbilityList->activeId(), false);
         mAbilityList->activatePlay(mAbilityList->activeId(), false);
-        sendGameCommand(CommandLookTopDeck());
+        sendGameCommand(CommandNextTopDeck());
     } else if (std::holds_alternative<asn::DrawCard>(effect)) {
         mAbilityList->activateCancel(mAbilityList->activeId(), false);
         sendGameCommand(CommandPlayEffect());
@@ -494,18 +498,28 @@ void Player::cardInserted(QString startZone, QString targetZone) {
             return;
 
         auto &a = mAbilityList->ability(mAbilityList->activeId());
-        if (std::holds_alternative<asn::Look>(a.effect)) {
+        if (std::holds_alternative<asn::Look>(a.effect) ||
+            std::holds_alternative<asn::RevealCard>(a.effect)) {
             if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
                 const auto &chooseEffect = std::get<asn::ChooseCard>(a.nextEffect);
                 if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
                     const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
                     if (chooseEffect.targets[0].placeType == asn::PlaceType::Selection) {
-                        auto &look = std::get<asn::Look>(a.effect);
                         auto from = zone("view");
                         int count = highlightEligibleCards(from, spec.cards.cardSpecifiers, spec.mode, a);
+
+                        asn::NumModifier mod;
+                        if (std::holds_alternative<asn::Look>(a.effect)) {
+                            auto &look = std::get<asn::Look>(a.effect);
+                            mod = look.number.mod;
+                        } else if (std::holds_alternative<asn::RevealCard>(a.effect)) {
+                            auto &reveal = std::get<asn::RevealCard>(a.effect);
+                            mod = reveal.number.mod;
+                        }
+
                         // in case we HAVE to choose a card, but we have a choice of how much to reveal,
                         // we must have a choice to stop looking
-                        if (look.number.mod == asn::NumModifier::UpTo && !count)
+                        if (mod == asn::NumModifier::UpTo && !count)
                             mAbilityList->activateCancel(mAbilityList->activeId(), true);
                     }
                 }

@@ -34,6 +34,7 @@ class EventEffectChoice;
 class EventAbilityGain;
 class EventRemoveAbility;
 class EventLook;
+class EventReveal;
 class EventRevealTopDeck;
 class EventLookTopDeck;
 class EventSetCannotPlay;
@@ -183,6 +184,9 @@ private:
     void processAbilityGain(const EventAbilityGain &event);
     void processRemoveAbility(const EventRemoveAbility &event);
     void processLook(const EventLook &event);
+    void processReveal(const EventReveal &event);
+    void processLookRevealCommon(asn::EffectType nextEffectType, const std::string &nextEffectBuf);
+    void processLookRevealNextCard(asn::EffectType type);
     void revealTopDeck(const EventRevealTopDeck &event);
     void lookTopDeck(const EventLookTopDeck &event);
     void doneChoosing();

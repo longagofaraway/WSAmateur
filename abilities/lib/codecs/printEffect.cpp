@@ -211,8 +211,19 @@ std::string printRevealCard(const RevealCard &e) {
     if (e.type == RevealType::TopDeck) {
         gPrintState.mentionedCardsNumber = e.number;
         if (e.number.mod == NumModifier::ExactMatch) {
-            if (e.number.value == 1)
-                s += "the top card of your deck ";
+            s += "the top ";
+            if (e.number.value > 1)
+                s += std::to_string(e.number.value) + " ";
+            s += "card";
+            if (e.number.value > 1)
+                s += "s";
+            s += " of your deck ";
+        } else if (e.number.mod == NumModifier::UpTo) {
+            s += printNumber(e.number);
+            s += "card";
+            if (e.number.value > 1)
+                s += "s";
+            s += " from the top of your deck ";
         }
     } else if (e.type == RevealType::ChosenCards) {
         if (gPrintState.chosenCardsNumber.value == 1)

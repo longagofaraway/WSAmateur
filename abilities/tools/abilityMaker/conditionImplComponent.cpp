@@ -57,6 +57,12 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         condition = c;
         break;
     }
+    case asn::ConditionType::RevealedCard: {
+        auto c = asn::ConditionRevealCard();
+        c.number = defaultNum;
+        condition = c;
+        break;
+    }
     default: break;
     }
 }
@@ -90,6 +96,10 @@ const asn::Card& getCard(ConditionImplComponent::VarCondition &condition, asn::C
     }
     case asn::ConditionType::CheckMilledCards: {
         const auto &c = std::get<asn::ConditionCheckMilledCards>(condition);
+        return c.card;
+    }
+    case asn::ConditionType::RevealedCard: {
+        const auto &c = std::get<asn::ConditionRevealCard>(condition);
         return c.card;
     }
     default:
@@ -137,6 +147,12 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.number.value)));
         break;
     }
+    case asn::ConditionType::RevealedCard: {
+        const auto &cond = std::get<asn::ConditionRevealCard>(c);
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)cond.number.mod));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.number.value)));
+        break;
+    }
     case asn::ConditionType::SumOfLevels: {
         const auto &cond = std::get<asn::ConditionSumOfLevels>(c);
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.equalOrMoreThan)));
@@ -163,6 +179,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         { asn::ConditionType::HaveCards, "HaveCards" },
         { asn::ConditionType::CardsLocation, "CardsLocation" },
         { asn::ConditionType::CheckMilledCards, "CheckMilledCards" },
+        { asn::ConditionType::RevealedCard, "CheckMilledCards" },
         { asn::ConditionType::SumOfLevels, "SumOfLevels" },
         { asn::ConditionType::DuringTurn, "DuringTurn" },
     };
@@ -205,6 +222,14 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         break;
     case asn::ConditionType::CheckMilledCards:
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
+
+        connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
+        connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
+        connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        break;
+    case asn::ConditionType::RevealedCard:
         QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
 
@@ -284,6 +309,11 @@ void ConditionImplComponent::cardReady(const asn::Card &card_) {
     }
     case asn::ConditionType::CheckMilledCards: {
         auto &c = std::get<asn::ConditionCheckMilledCards>(condition);
+        c.card = card_;
+        break;
+    }
+    case asn::ConditionType::RevealedCard: {
+        auto &c = std::get<asn::ConditionRevealCard>(condition);
         c.card = card_;
         break;
     }
@@ -370,6 +400,11 @@ void ConditionImplComponent::onNumModifierChanged(int value) {
         c.number.mod = static_cast<asn::NumModifier>(value);
         break;
     }
+    case asn::ConditionType::RevealedCard: {
+        auto &c = std::get<asn::ConditionRevealCard>(condition);
+        c.number.mod = static_cast<asn::NumModifier>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -391,6 +426,11 @@ void ConditionImplComponent::onNumValueChanged(QString value) {
     }
     case asn::ConditionType::CheckMilledCards: {
         auto &c = std::get<asn::ConditionCheckMilledCards>(condition);
+        c.number.value = val;
+        break;
+    }
+    case asn::ConditionType::RevealedCard: {
+        auto &c = std::get<asn::ConditionRevealCard>(condition);
         c.number.value = val;
         break;
     }

@@ -105,7 +105,7 @@ private:
     Resumable playChooseCard(const asn::ChooseCard &e, bool clearPrevious = true);
     Resumable playMoveCard(const asn::MoveCard &e);
     Resumable playDrawCard(const asn::DrawCard &e);
-    void playRevealCard(const asn::RevealCard &e);
+    Resumable playRevealCard(const asn::RevealCard &e, std::optional<asn::Effect> nextEffect = {});
     void playAttributeGain(const asn::AttributeGain &e);
     Resumable playPayCost(const asn::PayCost &e);
     Resumable payCost();
@@ -120,6 +120,8 @@ private:
     void playBackup(const asn::Backup &e);
     void playTriggerCheckTwice();
     Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {});
+    Resumable playLookRevealCommon(asn::EffectType type, int numCards,
+                                   const std::optional<asn::Effect> &nextEffect);
     void playEarlyPlay();
     void playCannotPlay();
     void playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e);
@@ -144,8 +146,10 @@ private:
     bool evaluateConditionDuringTurn(const asn::ConditionDuringTurn &c);
     bool evaluateConditionCheckMilledCards(const asn::ConditionCheckMilledCards &c);
     bool evaluateConditionCardsLocation(const asn::ConditionCardsLocation &c);
+    bool evaluateConditionRevealedCard(const asn::ConditionRevealCard &c);
 
     void sendLookCard(ServerCard *card);
+    void sendRevealCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
     Resumable getStagePosition(int &position, const asn::MoveCard &e);
     Resumable moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex);

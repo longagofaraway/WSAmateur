@@ -60,6 +60,12 @@ message EventLookTopDeck {
     string code = 2;
 }
 
+message EventReveal {
+    bytes effect = 1;
+    sint32 next_effect_type = 2;
+    bytes next_effect = 3;
+}
+
 message EventRevealTopDeck {
     sint32 card_id = 1;
     string code = 2;

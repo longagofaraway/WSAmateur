@@ -10,6 +10,7 @@ set(coreSources
     condition.cpp
     connectionManager.cpp
     deckList.cpp
+    lookRevealEffects.cpp
     moveCardEffect.cpp
     playAbility.cpp
     playEffect.cpp

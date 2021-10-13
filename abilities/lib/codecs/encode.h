@@ -28,6 +28,7 @@ void encodeSearchCard(const asn::SearchCard &e, Buf &buf);
 void encodeAbilityGain(const asn::AbilityGain &e, Buf &buf);
 void encodePerformEffect(const asn::PerformEffect &e, Buf &buf);
 void encodeLook(const asn::Look &e, Buf &buf);
+void encodeRevealCard(const asn::RevealCard &e, Buf &buf);
 void encodeChangeState(const asn::ChangeState &e, Buf &buf);
 
 template<typename T>

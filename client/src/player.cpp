@@ -262,6 +262,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventLook ev;
         event->event().UnpackTo(&ev);
         processLook(ev);
+    } else if (event->event().Is<EventReveal>()) {
+        EventReveal ev;
+        event->event().UnpackTo(&ev);
+        processReveal(ev);
     } else if (event->event().Is<EventSetCannotPlay>()) {
         EventSetCannotPlay ev;
         event->event().UnpackTo(&ev);

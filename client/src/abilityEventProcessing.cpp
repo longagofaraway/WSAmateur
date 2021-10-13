@@ -238,20 +238,77 @@ void Player::processLook(const EventLook &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodingWrapper(event.effect(), decodeLook);
+    activeAbility().effect = decodingWrapper(event.effect(), decodeLook);
+    processLookRevealCommon(static_cast<asn::EffectType>(event.next_effect_type()), event.next_effect());
+}
 
-    auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
-    activatedAbility.effect = effect;
-    if (static_cast<asn::EffectType>(event.next_effect_type()) == asn::EffectType::MoveCard) {
-        auto effect = decodingWrapper(event.next_effect(), decodeMoveCard);
-        auto &moveEffect = std::get<asn::MoveCard>(activatedAbility.nextEffect);
-        if (moveEffect.order == asn::Order::Any)
+void Player::processReveal(const EventReveal &event) {
+    if (mOpponent)
+        return;
+
+    activeAbility().effect = decodingWrapper(event.effect(), decodeRevealCard);
+    processLookRevealCommon(static_cast<asn::EffectType>(event.next_effect_type()), event.next_effect());
+}
+
+void Player::processLookRevealCommon(asn::EffectType nextEffectType, const std::string &nextEffectBuf) {
+    if (nextEffectType == asn::EffectType::MoveCard) {
+        auto nextEffect = decodingWrapper(nextEffectBuf, decodeMoveCard);
+        if (nextEffect.order == asn::Order::Any)
             zone("view")->visualItem()->setProperty("mDragEnabled", true);
-    } else if (static_cast<asn::EffectType>(event.next_effect_type()) == asn::EffectType::ChooseCard)
-        mAbilityList->ability(mAbilityList->activeId()).nextEffect = decodingWrapper(event.next_effect(), decodeChooseCard);
+        activeAbility().nextEffect = nextEffect;
+    } else if (nextEffectType == asn::EffectType::ChooseCard) {
+        auto choose = decodingWrapper(nextEffectBuf, decodeChooseCard);
+        if (choose.targets[0].placeType == asn::PlaceType::Selection)
+            activeAbility().nextEffect = choose;
+    }
 
     zone("deck")->visualItem()->setProperty("mGlow", true);
     mAbilityList->activateCancel(mAbilityList->activeId(), true);
+}
+
+void Player::processLookRevealNextCard(asn::EffectType type) {
+    if (mOpponent || !mAbilityList->count())
+        return;
+
+    auto view = zone("view");
+
+    auto &activeAbility_ = activeAbility();
+    auto &effect = activeAbility_.effect;
+
+    if (!std::holds_alternative<asn::Look>(effect) &&
+        !std::holds_alternative<asn::RevealCard>(effect))
+        return;
+
+    int numCards = 0;
+    if (std::holds_alternative<asn::Look>(effect)) {
+        const auto &look = std::get<asn::Look>(effect);
+        numCards = look.number.value;
+        if (look.valueType == asn::ValueType::Multiplier && look.multiplier->type == asn::MultiplierType::ForEach) {
+            numCards = look.number.value * getForEachMultiplierValue(this, activeAbility_.cardId, look.multiplier.value());
+        }
+    } else if (std::holds_alternative<asn::RevealCard>(effect)) {
+        const auto &reveal = std::get<asn::RevealCard>(effect);
+        numCards = reveal.number.value;
+    }
+
+    if (view->model().count() + 1 < numCards)
+        zone("deck")->visualItem()->setProperty("mGlow", true);
+    else
+        zone("deck")->visualItem()->setProperty("mGlow", false);
+
+    if (std::holds_alternative<asn::MoveCard>(activeAbility_.nextEffect)) {
+        mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
+    } else if (std::holds_alternative<asn::ChooseCard>(activeAbility_.nextEffect)) {
+        const auto &chooseEffect = std::get<asn::ChooseCard>(activeAbility_.nextEffect);
+        if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
+            const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
+            if (spec.number.mod == asn::NumModifier::UpTo)
+                mAbilityList->activateCancel(mAbilityList->activeId(), true);
+        }
+    } else if (std::holds_alternative<std::monostate>(activeAbility_.nextEffect)) {
+        mAbilityList->activatePlay(mAbilityList->activeId(), true, "OK");
+        mAbilityList->activateCancel(mAbilityList->activeId(), false);
+    }
 }
 
 void Player::revealTopDeck(const EventRevealTopDeck &event) {
@@ -260,6 +317,8 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
     QString code = QString::fromStdString(event.code());
     mGame->pause(600);
     createMovingCard(event.card_id(), code, "deck", 0, "view", 0, false, true, true);
+
+    processLookRevealNextCard(asn::EffectType::RevealCard);
 }
 
 void Player::lookTopDeck(const EventLookTopDeck &event) {
@@ -270,36 +329,7 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
     mGame->pause(400);
     createMovingCard(event.card_id(), code, "deck", 0, "view", 0, false, true, true);
 
-    if (!mAbilityList->count())
-        return;
-
-    auto &activeAbility_ = activeAbility();
-    auto &effect = activeAbility_.effect;
-    if (std::holds_alternative<asn::Look>(effect)) {
-        const auto &look = std::get<asn::Look>(effect);
-        int cardsToLook = look.number.value;
-        if (look.valueType == asn::ValueType::Multiplier && look.multiplier->type == asn::MultiplierType::ForEach) {
-            cardsToLook = look.number.value * getForEachMultiplierValue(this, activeAbility_.cardId, look.multiplier.value());
-        }
-        if (view->model().count() + 1 < cardsToLook)
-            zone("deck")->visualItem()->setProperty("mGlow", true);
-        else
-            zone("deck")->visualItem()->setProperty("mGlow", false);
-
-        if (std::holds_alternative<asn::MoveCard>(activeAbility_.nextEffect)) {
-            mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
-        } else if (std::holds_alternative<asn::ChooseCard>(activeAbility_.nextEffect)) {
-            const auto &chooseEffect = std::get<asn::ChooseCard>(activeAbility_.nextEffect);
-            if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
-                const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
-                if (spec.number.mod == asn::NumModifier::UpTo)
-                    mAbilityList->activateCancel(mAbilityList->activeId(), true);
-            }
-        } else if (std::holds_alternative<std::monostate>(activeAbility_.nextEffect)) {
-            mAbilityList->activatePlay(mAbilityList->activeId(), true, "OK");
-            mAbilityList->activateCancel(mAbilityList->activeId(), false);
-        }
-    }
+    processLookRevealNextCard(asn::EffectType::Look);
 }
 
 void Player::setCannotPlay(const EventSetCannotPlay &event) {
