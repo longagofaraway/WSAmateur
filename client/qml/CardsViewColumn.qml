@@ -146,8 +146,9 @@ ListView {
             thisListView.cardTextFrame = textFrame;
         }
 
-        // ListView is clipping, so root parent here
-        ObjectCreator.createAsync("CardTextFrame", root, cb);
+        if (thisListView.mModel.textModel(index).rowCount() > 0)
+            // ListView is clipping, so root parent here
+            ObjectCreator.createAsync("CardTextFrame", root, cb);
     }
 
     function destroyTextFrame(frameParent) {

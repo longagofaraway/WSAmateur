@@ -210,7 +210,8 @@ Rectangle {
             frameParent.cardTextFrame = textFrame;
         }
 
-        ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
+        if (model.rowCount() > 0)
+            ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
     }
 
     function clear() { clearAnim.start(); }

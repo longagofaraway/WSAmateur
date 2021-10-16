@@ -424,7 +424,8 @@ ListView {
             return;
         }
 
-        ObjectCreator.createAsync("CardTextFrame", cardImgDelegate, cb);
+        if (handView.mModel.textModel(index).rowCount() > 0)
+            ObjectCreator.createAsync("CardTextFrame", cardImgDelegate, cb);
     }
 
     function destroyTextFrame(cardImgDelegate) {

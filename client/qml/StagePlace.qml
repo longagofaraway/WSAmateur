@@ -159,7 +159,8 @@ ListView {
                         mCardInfo.mModel = stage.mModel.textModel(model.index);
                         mCardInfo.visible = true;
                     }
-                    ObjectCreator.createAsync("CardTextFrame", root, cb);
+                    if (stage.mModel.textModel(index).rowCount() > 0)
+                        ObjectCreator.createAsync("CardTextFrame", root, cb);
                 }
 
                 onExited: destroyCardInfo()

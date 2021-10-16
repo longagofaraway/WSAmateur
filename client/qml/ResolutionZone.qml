@@ -99,7 +99,8 @@ ListView {
             frameParent.cardTextFrame = textFrame;
         }
 
-        ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
+        if (zone.mModel.textModel(index).rowCount() > 0)
+            ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
     }
 
     function destroyTextFrame(frameParent) {
