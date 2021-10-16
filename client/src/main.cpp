@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QFontDatabase>
 
 #include "activatedAbilityModel.h"
 #include "cardModel.h"
@@ -14,6 +15,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
+
+    QFontDatabase::addApplicationFont(":/resources/fonts/Futura BK BT.ttf");
+    QFontDatabase::addApplicationFont(":/resources/fonts/Aprikas_black_Demo.otf");
 
     qmlRegisterType<Game>("wsamateur", 1, 0, "Game");
     qmlRegisterUncreatableType<Player>("wsamateur", 1, 0, "Player", "Player cannot be created in QML");

@@ -28,8 +28,6 @@ Image {
         id: borderRect
         property real borderWidth: 2
 
-        //visible: mModel.count > 0
-
         color: "#FFFFFF"
         anchors {
             left: parent.left

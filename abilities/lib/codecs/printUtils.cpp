@@ -1,5 +1,6 @@
 #include "print.h"
 
+#include <algorithm>
 #include <cassert>
 #include <exception>
 

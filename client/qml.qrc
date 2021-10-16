@@ -45,6 +45,8 @@
         <file>resources/images/reverse.png</file>
         <file>resources/images/stand.png</file>
         <file>resources/images/rest.png</file>
+        <file>resources/fonts/Futura BK BT.ttf</file>
+        <file>resources/fonts/Aprikas_black_Demo.otf</file>
         <file>qml/OrderedCardsView.qml</file>
         <file>qml/AttributeChangeAnimation.qml</file>
         <file>qml/Memory.qml</file>
