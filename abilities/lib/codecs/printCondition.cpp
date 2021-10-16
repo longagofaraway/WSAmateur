@@ -232,6 +232,14 @@ std::string printCardsLocation(const ConditionCardsLocation &c) {
     return s;
 }
 
+std::string printConditionPlayersLevel(const ConditionPlayersLevel &c) {
+    std::string s = "if your level is ";
+
+    s += printNumber(c.value, true);
+
+    return s;
+}
+
 std::string printCondition(const Condition &c) {
     std::string s;
 
@@ -262,6 +270,10 @@ std::string printCondition(const Condition &c) {
         break;
     case ConditionType::RevealedCard:
         s += printConditionRevealedCards(std::get<ConditionRevealCard>(c.cond));
+        break;
+    case ConditionType::PlayersLevel:
+        s += printConditionPlayersLevel(std::get<ConditionPlayersLevel>(c.cond));
+        break;
     default:
         break;
     }

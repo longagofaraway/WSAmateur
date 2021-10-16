@@ -44,6 +44,7 @@ enum class Position : uint8_t {
     EmptySlotFrontRow,
     EmptySlotBackRow,
     EmptySlot,
+    SlotThisWasInRested,
     SlotThisWasIn
 };
 

@@ -14,8 +14,16 @@
 #include <QDebug>
 
 namespace {
+std::string gCommand;
+std::string gParam;
+
 std::string help() {
-    return "Usage: dbTool transform\n";
+    std::string h;
+    h = "Usage: dbTool <command>\n";
+    h += "  Commands:\n";
+    h += "    transform - decodes all abilities and encodes them back to db\n";
+    h += "    print <card_id> - print abilities text of a card\n";
+    return h;
 }
 
 std::vector<asn::Ability> parseAbilities(QByteArray buf) {
@@ -59,13 +67,16 @@ void updateAbilities(QString code, std::vector<asn::Ability> &abilities) {
         throw std::runtime_error(insert.lastError().text().toStdString());
 }
 
-void transform() {
+QString getDbPath() {
     QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir path(appData);
     path.cdUp();
     path.cd("WSAmateur");
+    return path.filePath("cards.db");
+}
 
-    DbManager dbManager(path.filePath("cards.db"));
+void transform() {
+    DbManager dbManager(getDbPath());
 
     QSqlQuery query;
     query.prepare("SELECT code, abilities FROM cards");
@@ -89,6 +100,38 @@ void transform() {
     }
     std::cout << "processed " << recordCount << '\n';
 }
+
+void print(std::string cardId) {
+    DbManager dbManager(getDbPath());
+
+    QSqlQuery query;
+    query.prepare("SELECT abilities FROM cards WHERE code = (:code)");
+    query.bindValue(":code", QString::fromStdString(cardId));
+    if (!query.exec())
+        throw std::runtime_error(query.lastError().text().toStdString());
+
+    if (!query.next()) {
+        std::cout << "card not found\n";
+        return;
+    }
+
+    auto var = query.value(0);
+    if (var.isNull()) {
+        std::cout << "no abilities\n";
+        return;
+    }
+
+    auto buf = var.toByteArray();
+    if (buf.isEmpty()) {
+        std::cout << "empty abilities\n";
+        return;
+    }
+
+    auto ab = parseAbilities(buf);
+    for (auto &a: ab) {
+        std::cout << printAbility(a) << "\n\n";
+    }
+}
 }
 
 class Task : public QObject
@@ -101,7 +144,10 @@ public slots:
     void run()
     {
         try {
-            transform();
+            if (gCommand == "transform")
+                transform();
+            else if (gCommand == "print")
+                print(gParam);
         } catch (const std::exception &e) {
             std::cout << e.what() << '\n';
         }
@@ -122,7 +168,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (strcmp(argv[1], "transform")) {
+    if (!strcmp(argv[1], "transform")) {
+        gCommand = "transform";
+    } else if (!strcmp(argv[1], "print") && argc > 2) {
+        gCommand = "print";
+        gParam = argv[2];
+    } else {
         std::cout << help();
         return 1;
     }

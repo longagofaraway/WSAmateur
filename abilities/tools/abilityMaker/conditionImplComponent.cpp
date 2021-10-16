@@ -63,6 +63,12 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         condition = c;
         break;
     }
+    case asn::ConditionType::PlayersLevel: {
+        auto c = asn::ConditionPlayersLevel();
+        c.value = defaultNum;
+        condition = c;
+        break;
+    }
     default: break;
     }
 }
@@ -163,6 +169,12 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
         QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)cond.player));
         break;
     }
+    case asn::ConditionType::PlayersLevel: {
+        const auto &cond = std::get<asn::ConditionPlayersLevel>(c);
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)cond.value.mod));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.value.value)));
+        break;
+    }
     default:
         break;
     }
@@ -182,6 +194,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         { asn::ConditionType::RevealedCard, "CheckMilledCards" },
         { asn::ConditionType::SumOfLevels, "SumOfLevels" },
         { asn::ConditionType::DuringTurn, "DuringTurn" },
+        { asn::ConditionType::PlayersLevel, "PlayersLevel" },
     };
 
     std::unordered_set<asn::ConditionType> readyComponents {
@@ -246,6 +259,13 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)asn::Player::Player));
 
         connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(onPlayerChanged(int)));
+        break;
+    case asn::ConditionType::PlayersLevel:
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
+
+        connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
+        connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
         break;
     default: break;
     }
@@ -405,6 +425,11 @@ void ConditionImplComponent::onNumModifierChanged(int value) {
         c.number.mod = static_cast<asn::NumModifier>(value);
         break;
     }
+    case asn::ConditionType::PlayersLevel: {
+        auto &c = std::get<asn::ConditionPlayersLevel>(condition);
+        c.value.mod = static_cast<asn::NumModifier>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -437,6 +462,11 @@ void ConditionImplComponent::onNumValueChanged(QString value) {
     case asn::ConditionType::SumOfLevels: {
         auto &c = std::get<asn::ConditionSumOfLevels>(condition);
         c.equalOrMoreThan = val;
+        break;
+    }
+    case asn::ConditionType::PlayersLevel: {
+        auto &c = std::get<asn::ConditionPlayersLevel>(condition);
+        c.value.value = val;
         break;
     }
     default:

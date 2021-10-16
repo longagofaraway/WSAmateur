@@ -151,7 +151,8 @@ public:
     Resumable levelUp();
     Resumable encoreStep();
     Resumable encoreCharacter(const CommandEncoreCharacter &cmd);
-    Resumable endPhase();
+    Resumable discardDownTo7();
+    void clearClimaxZone();
     void refresh();
     void moveWrToDeck();
     void sendPhaseEvent(asn::Phase phase);

@@ -36,7 +36,6 @@ void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerTy
     }
     case asn::TriggerType::OnBackupOfThis:
     case asn::TriggerType::OnEndOfThisCardsAttack:
-    case asn::TriggerType::OnEndOfThisTurn:
     case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
     case asn::TriggerType::OtherTrigger:
         trigger = std::monostate();

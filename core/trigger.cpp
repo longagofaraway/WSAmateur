@@ -146,13 +146,13 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
             if (autoab.trigger.type != asn::TriggerType::OnPhaseEvent)
                 continue;
             // do not activate alarm if the card is on the stage
-            // (it was showing for a brief moment, but the condition was not met)
+            // (otherwise it is showing for a brief moment, but the condition is not met)
             if (std::any_of(autoab.keywords.begin(), autoab.keywords.end(),
                             [](asn::Keyword k){ return k == asn::Keyword::Alarm; })
                 && !alarm)
                 continue;
             const auto &trig = std::get<asn::PhaseTrigger>(autoab.trigger.trigger);
-            if (trig.phase != phase || trig.state != state ||
+            if (trig.phase != phase || (trig.state != state && phase != asn::Phase::EndPhase) ||
                 (trig.player == asn::Player::Player && !mActive) ||
                 (trig.player == asn::Player::Opponent && mActive))
                 continue;

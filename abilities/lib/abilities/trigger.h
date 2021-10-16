@@ -16,7 +16,6 @@ enum class TriggerType : uint8_t {
     OnPhaseEvent,
     OnEndOfThisCardsAttack,
     OnOppCharPlacedByStandbyTriggerReveal,
-    OnEndOfThisTurn,
 
     OtherTrigger = 255
 };

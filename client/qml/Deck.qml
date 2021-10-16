@@ -77,7 +77,7 @@ Card {
         glow: mGlow
     }
 
-    function addCard(id, code) { gGame.getPlayer(opponent).addCard(id, code, "deck"); }
+    function addCard(id, code, targetPos) { gGame.getPlayer(opponent).addCard(id, code, "deck", targetPos); }
     function removeCard(index) { deck.mModel.removeCard(index); }
 
     function getXForNewCard() { return deck.x; }

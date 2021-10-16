@@ -250,7 +250,6 @@ Trigger parseTrigger(const QJsonObject &json) {
     case TriggerType::OnBackupOfThis:
     case TriggerType::OnEndOfThisCardsAttack:
     case TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
-    case TriggerType::OnEndOfThisTurn:
          break;
     case TriggerType::OtherTrigger:
         t.trigger = parseOtherTrigger(json["trigger"].toObject());

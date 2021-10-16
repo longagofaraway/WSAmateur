@@ -39,9 +39,10 @@ Rectangle {
     Column {
         Text { text: "Position" }
         ComboBox {
+            width: 160
             id: position
             model: ["Not specified", "Top", "Bottom", "Front row", "Back row", "Empty slot front row",
-                    "Empty slot back row", "Empty slot", "Slot this was in"]
+                    "Empty slot back row", "Empty slot", "Slot this was in rested", "Slot this was in"]
             onCurrentIndexChanged: positionChanged(currentIndex)
         }
     }

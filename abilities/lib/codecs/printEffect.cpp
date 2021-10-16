@@ -288,7 +288,8 @@ std::string printMoveCard(const MoveCard &e) {
     if (e.executor == Player::Opponent && gPrintState.mandatory)
         s += "your opponent ";
 
-    if (e.to[0].pos == Position::SlotThisWasIn)
+    if (e.to[0].pos == Position::SlotThisWasIn ||
+        e.to[0].pos == Position::SlotThisWasInRested)
         s += "return";
     else if (e.from.zone == Zone::Hand)
         s += "discard";
@@ -370,8 +371,17 @@ std::string printMoveCard(const MoveCard &e) {
             return s + "to an empty slot in the center stage ";
         else if (e.to[i].pos == Position::EmptySlot)
             return s + "to an empty slot of " + printPlayer(e.to[i].owner) + "stage ";
-        else if (e.to[i].pos == asn::Position::SlotThisWasIn)
-            return s + "to its previous position as" + printState(asn::State::Rested) + " ";
+        else if (e.to[i].pos == Position::SlotThisWasIn ||
+                 e.to[i].pos == Position::SlotThisWasInRested) {
+            if (e.target.type == asn::TargetType::ThisCard)
+                s += "to its previous position ";
+            else
+                s += "on the stage position that this card was on ";
+            if (e.to[i].pos == Position::SlotThisWasInRested)
+                return s + "as" + printState(State::Rested) + " ";
+            else
+                return s;
+        }
 
         if (e.to[i].zone == Zone::Stage) {
             s += "on ";
@@ -471,8 +481,9 @@ std::string printAbilityGain(const AbilityGain &e) {
     if (!gPrintState.abilityChainingSecond) {
         s += printTarget(e.target, false, true);
         s += "get";
-        if (e.target.type == TargetType::ChosenCards &&
-            gPrintState.chosenCardsNumber.value == 1)
+        if ((e.target.type == TargetType::ChosenCards &&
+            gPrintState.chosenCardsNumber.value == 1) ||
+            e.target.type == TargetType::ThisCard)
             s += "s";
         s += " ";
     } else {
@@ -502,9 +513,9 @@ std::string printAbilityGain(const AbilityGain &e) {
 
 std::string printMoveWrToDeck(const MoveWrToDeck &e) {
     std::string s;
-    if (e.executor == asn::Player::Both)
+    if (e.executor == Player::Both)
         s += "each player returns all cards in the waiting room to their deck, and each player shuffles their deck ";
-    else if (e.executor == asn::Player::Player)
+    else if (e.executor == Player::Player)
         s += "return all cards in your waiting room to your deck, and shuffle your deck ";
 
     return s;
@@ -619,7 +630,7 @@ std::string printPerformEffect(const PerformEffect &e) {
 
     for (const auto &ab: e.effects) {
         s += "<br>\"";
-        s += printSpecificAbility(ab, asn::CardType::Char);
+        s += printSpecificAbility(ab, CardType::Char);
         s += "\"";
     }
 

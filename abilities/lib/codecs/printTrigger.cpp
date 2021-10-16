@@ -67,8 +67,12 @@ std::string printOnReversed() {
 std::string printPhaseTrigger(const PhaseTrigger &t) {
     std::string s;
 
+    if (t.phase == Phase::EndPhase)
+        return "at the end of turn, ";
     if (t.state == PhaseState::Start)
         s += "at the start of ";
+    else
+        s += "at the end of ";
     s += printPlayer(t.player);
     s += printPhase(t.phase) + ", ";
 

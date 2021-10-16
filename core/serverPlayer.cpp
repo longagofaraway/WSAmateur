@@ -686,7 +686,7 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
     if (type == AttackType::DirectAttack) {
         attCard->buffManager()->addAttributeBuff(asn::AttributeType::Soul, 1);
     } else if (type == AttackType::SideAttack) {
-        if (!attCard->sideAttackWithoutPenalty() && battleOpp->level())
+        if (!attCard->sideAttackWithoutPenalty() && battleOpp->level() > 0)
             attCard->buffManager()->addAttributeBuff(asn::AttributeType::Soul, -battleOpp->level());
     }
 
@@ -892,7 +892,7 @@ Resumable ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
     co_await mGame->checkTiming();
 }
 
-Resumable ServerPlayer::endPhase() {
+Resumable ServerPlayer::discardDownTo7() {
     clearExpectedComands();
     if (mActive) {
         auto hand = zone("hand");
@@ -911,14 +911,12 @@ Resumable ServerPlayer::endPhase() {
         }
         clearExpectedComands();
     }
+}
 
+void ServerPlayer::clearClimaxZone() {
     auto climax = zone("climax");
     if (climax->count() > 0)
         moveCard("climax", 0, "wr");
-
-    co_await mGame->checkTiming();
-
-    endOfTurnEffectValidation();
 }
 
 void ServerPlayer::refresh() {

@@ -205,14 +205,30 @@ Resumable ServerGame::encoreStep() {
     co_await turnPlayer->encoreStep();
     co_await opponent->encoreStep();
 
-    co_await turnPlayer->endPhase();
-    co_await opponent->endPhase();
+    co_await endPhase();
     turnPlayer->setActive(false);
     opponent->setActive(true);
 
     resolveAllContAbilities();
 
     co_await opponent->startTurn();
+}
+
+Resumable ServerGame::endPhase() {
+    auto turnPlayer = activePlayer();
+    auto opponent = activePlayer(false);
+
+    checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::EndPhase);
+    co_await checkTiming();
+
+    co_await turnPlayer->discardDownTo7();
+    turnPlayer->clearClimaxZone();
+
+    co_await checkTiming();
+
+    turnPlayer->endOfTurnEffectValidation();
+    opponent->endOfTurnEffectValidation();
+    resolveAllContAbilities();
 }
 
 void ServerGame::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {

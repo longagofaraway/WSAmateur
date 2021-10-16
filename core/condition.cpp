@@ -27,6 +27,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionCardsLocation(std::get<asn::ConditionCardsLocation>(c.cond));
     case asn::ConditionType::RevealedCard:
         return evaluateConditionRevealedCard(std::get<asn::ConditionRevealCard>(c.cond));
+    case asn::ConditionType::PlayersLevel:
+        return evaluateConditionPlayersLevel(std::get<asn::ConditionPlayersLevel>(c.cond));
     default:
         assert(false);
         return false;
@@ -175,4 +177,8 @@ bool AbilityPlayer::evaluateConditionRevealedCard(const asn::ConditionRevealCard
             return true;
     }
     return false;
+}
+
+bool AbilityPlayer::evaluateConditionPlayersLevel(const asn::ConditionPlayersLevel &c) {
+    return checkNumber(c.value, mPlayer->level());
 }

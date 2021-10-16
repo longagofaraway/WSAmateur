@@ -88,7 +88,6 @@ void TriggerComponent::setTriggerType(int index) {
     switch (type) {
     case asn::TriggerType::OnBackupOfThis:
     case asn::TriggerType::OnEndOfThisCardsAttack:
-    case asn::TriggerType::OnEndOfThisTurn:
     case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
     case asn::TriggerType::OtherTrigger:
         needImpl = false;

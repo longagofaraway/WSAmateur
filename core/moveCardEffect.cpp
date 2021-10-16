@@ -262,7 +262,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             } else if (stage->card(3) && stage->card(4)) {
                 co_return;
             }
-        } else if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn) {
+        } else if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn ||
+                   e.to[toZoneIndex].pos == asn::Position::SlotThisWasInRested) {
             positionSet = true;
             toIndex = thisCard().card->prevStagePos();
         }
@@ -286,6 +287,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             }
         }
     }
+    if (e.to[toZoneIndex].pos == asn::Position::Bottom)
+        toIndex = 0;
 
     ServerPlayer *player = mPlayer;
     if (e.target.type == asn::TargetType::ChosenCards) {
@@ -308,7 +311,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         player = owner(e.from.owner);
         auto zone = player->zone(asnZoneToString(e.from.zone));
         const auto &spec = *e.target.targetSpecification;
-        if (e.from.pos == asn::Position::Bottom)
+        if (e.from.pos == asn::Position::Bottom && zone->card(0))
             cardsToMove[0] = zone->card(0);
         else if (spec.mode == asn::TargetMode::All) {
             for (int i = 0; i < zone->count(); ++i) {
@@ -346,7 +349,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         if (!isPayingCost())
             addLastMovedCard(CardImprint(it->second->zone()->name(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
-        if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn)
+        if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasInRested)
             player->setCardState(it->second, asn::State::Rested);
 
         // TODO: refresh and levelup are triggered at the same time, give choice

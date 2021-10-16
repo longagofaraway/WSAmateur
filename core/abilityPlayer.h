@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <vector>
 
@@ -147,6 +147,7 @@ private:
     bool evaluateConditionCheckMilledCards(const asn::ConditionCheckMilledCards &c);
     bool evaluateConditionCardsLocation(const asn::ConditionCardsLocation &c);
     bool evaluateConditionRevealedCard(const asn::ConditionRevealCard &c);
+    bool evaluateConditionPlayersLevel(const asn::ConditionPlayersLevel &c);
 
     void sendLookCard(ServerCard *card);
     void sendRevealCard(ServerCard *card);

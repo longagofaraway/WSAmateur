@@ -57,6 +57,7 @@ public:
     Resumable continueFromDamageStep();
     Resumable battleStep();
     Resumable encoreStep();
+    Resumable endPhase();
 
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
 
