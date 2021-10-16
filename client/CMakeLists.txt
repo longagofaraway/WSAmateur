@@ -46,6 +46,10 @@ set(clientSources
     src/stage.h
     src/utils.h)
 
+if (WIN32)
+    set(clientSources ${clientSources} wsamateur.rc)
+endif()
+
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
 add_executable(WSAmateur ${clientSources} qml.qrc)

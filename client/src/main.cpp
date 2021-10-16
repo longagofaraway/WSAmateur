@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QFontDatabase>
+#include <QIcon>
 
 #include "activatedAbilityModel.h"
 #include "cardModel.h"
@@ -15,6 +16,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/resources/icon.ico"));
 
     QFontDatabase::addApplicationFont(":/resources/fonts/Futura BK BT.ttf");
     QFontDatabase::addApplicationFont(":/resources/fonts/Aprikas_black_Demo.otf");

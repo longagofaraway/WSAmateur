@@ -179,7 +179,7 @@ std::string printConditionAnd(const ConditionAnd &c) {
                 s += " and ";
         }
 
-        firstInHaveCardChain = !haveCardChain(i, c.cond);
+        firstInHaveCardChain = !haveCardChain((int)i, c.cond);
     }
 
     isPartOfAndOr = false;
