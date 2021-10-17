@@ -74,4 +74,5 @@ void RemoteClientConnection::readData() {
 
 void RemoteClientConnection::onError(QAbstractSocket::SocketError) {
     qDebug() << socket->errorString();
+    socket->close();
 }

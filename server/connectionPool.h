@@ -15,6 +15,7 @@ public:
 
 public:
     ConnectionPool() {}
+    ~ConnectionPool();
 
     void startThread() { thread.start(); }
     void addClient(ServerProtocolHandler *client);

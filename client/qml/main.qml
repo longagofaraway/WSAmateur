@@ -17,16 +17,4 @@ Window {
         anchors.fill: parent
         source: "GameWindow.qml"
     }
-
-    GaussianBlur {
-        id: blurEffect
-        anchors.fill: parent
-        source: mainLoader
-
-        radius: 8
-        samples: 16
-        opacity: 0
-
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-    }
 }
