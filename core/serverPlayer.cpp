@@ -537,7 +537,8 @@ Resumable ServerPlayer::playEvent(int handIndex) {
 
     co_await playEventEffects(card);
 
-    moveCard("res", card->pos(), "wr");
+    if (card->zone()->name() == "res")
+        moveCard("res", card->pos(), "wr");
 
     checkOnPlayTrigger(card);
 

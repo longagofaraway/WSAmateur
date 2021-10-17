@@ -9,8 +9,17 @@
 #include "lobbyEvent.pb.h"
 #include "phaseEvent.pb.h"
 
+#include <QDebug>
+
 ServerGame::ServerGame(int id, std::string description)
     : mId(id), mNextPlayerId(0), mDescription(description) {}
+
+void ServerGame::close() {
+    for (auto &playerEntry: mPlayers) {
+        playerEntry.second->sendGameEvent(EventGameClosed());
+    }
+    mPlayers.clear();
+}
 
 void ServerGame::startAsyncTask(Resumable &&task) {
     if (!task.resume())
@@ -75,6 +84,17 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     }
 }
 
+void ServerGame::removePlayer(int id) {
+    mPlayers.erase(id);
+
+    if (mPlayers.empty())
+        return;
+
+    for (const auto &p: mPlayers) {
+        p.second->sendGameEvent(EventPlayerLeft());
+    }
+}
+
 ServerPlayer* ServerGame::opponentOfPlayer(int id) const {
     for (auto &playerEntry: mPlayers) {
         if (playerEntry.first != id)
@@ -127,13 +147,15 @@ ServerPlayer* ServerGame::activePlayer(bool active) {
         if (pEntry.second->active() == active)
             return pEntry.second.get();
     }
-    assert(false);
     return nullptr;
 }
 
 Resumable ServerGame::continueFromDamageStep() {
     auto attPlayer = activePlayer();
     auto defPlayer = activePlayer(false);
+    if (!attPlayer || !defPlayer)
+        co_return;
+
     attPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     defPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     co_await defPlayer->damageStep();
@@ -197,6 +219,9 @@ Resumable ServerGame::battleStep() {
 Resumable ServerGame::encoreStep() {
     auto turnPlayer = activePlayer();
     auto opponent = opponentOfPlayer(turnPlayer->id());
+    if (!turnPlayer || !opponent)
+        co_return;
+
     opponent->clearExpectedComands();
 
     checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::EncoreStep);
@@ -217,6 +242,8 @@ Resumable ServerGame::encoreStep() {
 Resumable ServerGame::endPhase() {
     auto turnPlayer = activePlayer();
     auto opponent = activePlayer(false);
+    if (!turnPlayer || !opponent)
+        co_return;
 
     checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::EndPhase);
     co_await checkTiming();
@@ -232,54 +259,56 @@ Resumable ServerGame::endPhase() {
 }
 
 void ServerGame::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
-    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *turnPlayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);
-    if (!aplayer || !opponent)
+    if (!turnPlayer || !opponent)
         return;
 
-    aplayer->checkPhaseTrigger(state, phase);
+    turnPlayer->checkPhaseTrigger(state, phase);
     opponent->checkPhaseTrigger(state, phase);
 }
 
 Resumable ServerGame::checkTiming() {
-    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *turnPlayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);
-    if (!aplayer || !opponent)
+    if (!turnPlayer || !opponent)
         co_return;
 
     do {
-        co_await aplayer->checkTiming();
+        co_await turnPlayer->checkTiming();
         co_await opponent->checkTiming();
-    } while (aplayer->hasActivatedAbilities() || opponent->hasActivatedAbilities());
+    } while (turnPlayer->hasActivatedAbilities() || opponent->hasActivatedAbilities());
 }
 
 Resumable ServerGame::processRuleActions() {
-    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *turnPlayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);
+    if (!turnPlayer || !opponent)
+        co_return;
 
     // TODO: process rule actions correctly
     do {
-        co_await aplayer->processRuleActions();
+        co_await turnPlayer->processRuleActions();
         co_await opponent->processRuleActions();
-    } while (aplayer->hasTriggeredRuleActions() || opponent->hasTriggeredRuleActions());
+    } while (turnPlayer->hasTriggeredRuleActions() || opponent->hasTriggeredRuleActions());
 }
 
 void ServerGame::resolveAllContAbilities() {
-    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *turnPlayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);
-    if (!aplayer || !opponent)
+    if (!turnPlayer || !opponent)
         return;
 
-    aplayer->resolveAllContAbilities();
+    turnPlayer->resolveAllContAbilities();
     opponent->resolveAllContAbilities();
 }
 
 void ServerGame::removePositionalContBuffsBySource(ServerCard *source) {
-    ServerPlayer *aplayer = activePlayer();
+    ServerPlayer *turnPlayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);
-    if (!aplayer || !opponent)
+    if (!turnPlayer || !opponent)
         return;
 
-    aplayer->removePositionalContBuffsBySource(source);
+    turnPlayer->removePositionalContBuffsBySource(source);
     opponent->removePositionalContBuffsBySource(source);
 }

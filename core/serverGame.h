@@ -32,6 +32,7 @@ public:
     int id() const { return mId; }
     const std::string& description() const { return mDescription; }
 
+    void close();
     void sendPublicEvent(const ::google::protobuf::Message &event, int senderId);
 
     bool taskInProgress() const { return mTask.has_value(); }
@@ -47,6 +48,8 @@ public:
     ServerPlayer* player(int id);
     ServerPlayer* activePlayer(bool active = true);
     void addPlayer(ServerProtocolHandler *client);
+    void removePlayer(int id);
+    int playerCount() const { return static_cast<int>(mPlayers.size()); }
     ServerPlayer* opponentOfPlayer(int id) const;
     void setStartingPlayer();
 

@@ -76,8 +76,8 @@ void Game::componentComplete() {
         throw;
     }
 
-    startLocalGame();
-    //startNetworkGame();
+    //startLocalGame();
+    startNetworkGame();
 }
 
 void Game::startNetworkGame() {

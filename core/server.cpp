@@ -34,7 +34,6 @@ int Server::nextGameId() {
 }
 
 ServerGame* Server::game(int id) {
-    QReadLocker locker(&mGamesLock);
     if (!mGames.count(id))
         return nullptr;
 
@@ -61,11 +60,26 @@ void Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *cli
     auto newGame = mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, cmd.description())).first->second.get();
     locker.unlock();
 
+    QReadLocker readLocker(&mGamesLock);
     newGame->addPlayer(client);
     qDebug() << "game created";
 }
 
+void Server::removeGame(int id) {
+    QWriteLocker locker(&mGamesLock);
+
+    if (!mGames.contains(id))
+        return;
+
+    auto &game = mGames.at(id);
+    QMutexLocker gameLocker(&game->mGameMutex);
+    game->close();
+    gameLocker.unlock();
+    mGames.erase(id);
+}
+
 void Server::processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHandler *client) {
+    QReadLocker locker(&mGamesLock);
     auto g = game(cmd.game_id());
     if (!g)
         return;

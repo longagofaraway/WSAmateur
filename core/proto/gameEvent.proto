@@ -15,6 +15,9 @@ message EventPlayerJoined {
     PlayerInfo player_info = 1;
 }
 
+message EventPlayerLeft {}
+message EventGameClosed {}
+
 message EventGameInfo {
     GameInfo game_info = 1;
 }

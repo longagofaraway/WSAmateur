@@ -37,6 +37,7 @@ public:
     void removeClient(ServerProtocolHandler *client);
 
     void createGame(const CommandCreateGame &cmd, ServerProtocolHandler *client);
+    void removeGame(int id);
     void processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHandler *client);
 
 protected:

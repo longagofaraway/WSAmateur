@@ -60,14 +60,21 @@ void ServerProtocolHandler::onConnectionClosed() {
 
     mServer->removeClient(this);
 
+    QReadLocker locker(&mServer->mGamesLock);
     auto game = mServer->game(mGameId);
     if (game) {
-        auto player = game->player(mPlayerId);
-        if (player)
-            player->disconnectClient();
+        QMutexLocker gameLocker(&game->mGameMutex);
+        game->removePlayer(mPlayerId);
+        int playerCount = game->playerCount();
+        if (playerCount == 0) {
+            gameLocker.unlock();
+            locker.unlock();
+            mServer->removeGame(game->id());
+        }
     }
 
     mConnection = nullptr;
+    locker.unlock();
     deleteLater();
 }
 
@@ -104,8 +111,6 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
     auto game = mServer->game(mGameId);
     if (!game)
         return;
-
-    locker.unlock();
 
     QMutexLocker gameLocker(&game->mGameMutex);
 
