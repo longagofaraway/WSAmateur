@@ -31,9 +31,11 @@ Client::Client(std::unique_ptr<ClientConnection> &&connection) {
     connection->setParent(this);
     mConnection = connection.release();
     connect(this, &Client::queueCommand, this, &Client::sendCommandContainer);
-    connect(mConnection, &ClientConnection::messageReady, this, &Client::processServerMessage);
-
     connect(this, &Client::sigConnectToHost, this, &Client::doConnectToHost);
+
+    connect(mConnection, &ClientConnection::messageReady, this, &Client::processServerMessage);
+    connect(mConnection, &ClientConnection::connectionClosed, this, &Client::connectionClosed);
+
 }
 
 void Client::sendLobbyCommand(const ::google::protobuf::Message &cmd) {

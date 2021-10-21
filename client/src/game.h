@@ -21,8 +21,6 @@ class PlayerInfo;
 class GameInfo;
 class EventDeckSet;
 
-extern std::string gDeck;
-
 class Game : public QQuickItem
 {
     Q_OBJECT
@@ -30,20 +28,26 @@ class Game : public QQuickItem
     Q_PROPERTY(Player *opponent READ opponent CONSTANT FINAL)
 
 private:
+    bool mIsLocal;
     std::unique_ptr<Player> mPlayer;
     std::unique_ptr<Player> mOpponent;
-    std::unique_ptr<Server> mLocalServer;
-    QThread mClientThread;
-    std::vector<std::unique_ptr<Client>> mClients;
+    Client *mClient;
     bool mActionInProgress = false;
     bool mUiActionInProgress = false;
     std::deque<std::shared_ptr<GameEvent>> mEventQueue;
+
+    std::unique_ptr<Server> mLocalServer;
+    QThread mLocalServerThread;
+    std::vector<std::unique_ptr<Client>> mLocalClients;
 
     asn::Phase mCurrentPhase = asn::Phase::NotSpecified;
 
 public:
     Game();
     ~Game();
+
+    void startNetworkGame(Client *client, int playerId);
+    void startLocalGame();
 
     //accessing players from qml
     Player* player() { return mPlayer.get(); }
@@ -106,14 +110,15 @@ public:
     };
     Q_ENUM(ViewMode)
 
+signals:
+    void gameCreated();
+
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);
     void localOpponentJoined(const std::shared_ptr<EventGameJoined> event);
     void processGameEvent(const std::shared_ptr<GameEvent> event);
     void processGameEventFromQueue();
     void processGameEventByOpponent(const std::shared_ptr<GameEvent> event);
-    void gameListReceived(const std::shared_ptr<EventGameList> event);
-    void gameJoined(const std::shared_ptr<EventGameJoined> event);
     void addOpponent(const PlayerInfo &info);
     void processGameInfo(const GameInfo &game_info);
     void setOpponentDeck(const EventDeckSet &event);
@@ -121,8 +126,6 @@ public slots:
     void cardMoveFinished();
 
 private:
-    void startLocalGame();
-    void startNetworkGame();
     void addLocalClient(LocalConnectionManager *connManager);
 
     Client* getClientForPlayer(int playerId);

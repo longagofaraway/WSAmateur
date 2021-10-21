@@ -18,4 +18,5 @@ public:
 
 signals:
     void messageReady(std::shared_ptr<ServerMessage> message);
+    void connectionClosed();
 };

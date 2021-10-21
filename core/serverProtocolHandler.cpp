@@ -114,6 +114,11 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
 
     QMutexLocker gameLocker(&game->mGameMutex);
 
+    if (cmd.command().Is<CommandGetGameInfo>()) {
+        game->sendGameInfo(this, mPlayerId);
+        return;
+    }
+
     auto player = game->player(mPlayerId);
     if (!player)
         return;

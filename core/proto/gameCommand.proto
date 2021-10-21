@@ -7,6 +7,8 @@ message GameCommand {
     google.protobuf.Any command = 1;
 }
 
+message CommandGetGameInfo {}
+
 message CommandSetDeck {
     string deck = 1;
 }

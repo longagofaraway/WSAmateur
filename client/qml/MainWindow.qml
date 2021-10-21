@@ -6,7 +6,7 @@ Item {
     Image {
         id: backgroundImg
         anchors.fill: parent
-        source: "qrc:///resources/background.jpg"
+        source: "qrc:///resources/background_menu"
         fillMode: Image.PreserveAspectCrop
     }
 
@@ -14,7 +14,13 @@ Item {
         id: colorOverlay
         anchors.fill: backgroundImg
         source: backgroundImg
-        color: "#B0000000"
+        color: "#00000000"
+
+        ColorAnimation on color {
+            running: false
+            to: "#B0000000"
+            duration: 1000
+        }
     }
 
     Button {

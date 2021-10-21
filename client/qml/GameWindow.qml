@@ -50,6 +50,10 @@ Item {
         property MulliganHeader mHeader
         property HelpText mHelpText
 
+        onGameCreated: {
+            wsApp.initGame(gGame);
+        }
+
         anchors.fill: parent
 
         MainButton {

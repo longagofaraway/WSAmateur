@@ -4,17 +4,27 @@ import QtQuick.Window 2.15
 import QtGraphicalEffects 1.12
 import QtQuick.Controls 2.15
 
+import wsamateur 1.0
+
 Window {
     id: mainWindow
     visible: true
     visibility: "FullScreen"
     width: 640
     height: 480
-    title: qsTr("Hello World")
+    title: qsTr("WSAmateur")
+
+    WSApplication {
+        id: wsApp
+        onStartGame: {
+            mainLoader.source = "GameWindow.qml";
+        }
+    }
 
     Loader {
         id: mainLoader
         anchors.fill: parent
-        source: "GameWindow.qml"
+        //source: "GameWindow.qml"
+        source: "MainWindow.qml"
     }
 }

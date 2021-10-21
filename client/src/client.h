@@ -39,6 +39,7 @@ signals:
     void gameListReceived(const std::shared_ptr<EventGameList> event);
 
     void sigConnectToHost(const QString &hostname, uint16_t port);
+    void connectionClosed();
 
 private slots:
     void sendCommandContainer(std::shared_ptr<CommandContainer> command);

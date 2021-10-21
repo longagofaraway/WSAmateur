@@ -53,6 +53,8 @@ public:
     ServerPlayer* opponentOfPlayer(int id) const;
     void setStartingPlayer();
 
+    void sendGameInfo(ServerProtocolHandler *client, int recepientId);
+
     void startGame();
     Resumable endMulligan();
     asn::Phase phase() const { return mCurrentPhase; }

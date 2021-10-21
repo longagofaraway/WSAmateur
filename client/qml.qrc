@@ -48,9 +48,9 @@
         <file>qml/OrderedCardsView.qml</file>
         <file>qml/AttributeChangeAnimation.qml</file>
         <file>qml/Memory.qml</file>
-
         <file>resources/fonts/Futura BK BT.ttf</file>
         <file>resources/fonts/Aprikas_black_Demo.otf</file>
         <file>resources/icon.ico</file>
+        <file>resources/background_menu.png</file>
     </qresource>
 </RCC>

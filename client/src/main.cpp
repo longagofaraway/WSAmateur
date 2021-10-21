@@ -4,6 +4,7 @@
 #include <QIcon>
 
 #include "activatedAbilityModel.h"
+#include "application.h"
 #include "cardModel.h"
 #include "choiceDialog.h"
 #include "game.h"
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
     QFontDatabase::addApplicationFont(":/resources/fonts/Futura BK BT.ttf");
     QFontDatabase::addApplicationFont(":/resources/fonts/Aprikas_black_Demo.otf");
 
+    qmlRegisterType<WSApplication>("wsamateur", 1, 0, "WSApplication");
     qmlRegisterType<Game>("wsamateur", 1, 0, "Game");
     qmlRegisterUncreatableType<Player>("wsamateur", 1, 0, "Player", "Player cannot be created in QML");
     qmlRegisterType<CardModel>("wsamateur", 1, 0, "CardModel");

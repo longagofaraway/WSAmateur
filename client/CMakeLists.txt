@@ -3,6 +3,7 @@ set(clientSources
     src/abilityModel.cpp
     src/activatedAbilities.cpp
     src/activatedAbilityModel.cpp
+    src/application.cpp
     src/card.cpp
     src/cardModel.cpp
     src/cardZone.cpp
@@ -27,6 +28,7 @@ set(clientSources
     src/abilityModel.h
     src/activatedAbilities.h
     src/activatedAbilityModel.h
+    src/application.h
     src/card.h
     src/cardModel.h
     src/cardZone.h
