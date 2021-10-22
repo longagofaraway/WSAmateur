@@ -3,8 +3,6 @@
 #include <stdexcept>
 #include <QXmlStreamReader>
 
-#include <QDebug>
-
 void DeckList::readCards(QXmlStreamReader &xml) {
     while (!xml.atEnd()) {
         xml.readNext();
@@ -20,6 +18,7 @@ void DeckList::readCards(QXmlStreamReader &xml) {
 }
 
 void DeckList::setDeck(const std::string &deck) {
+    mDeck = deck;
     QXmlStreamReader xml;
 
     xml.addData(deck.c_str());

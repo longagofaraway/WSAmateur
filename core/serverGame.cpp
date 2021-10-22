@@ -62,15 +62,13 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
     client->sendLobbyEvent(event);
 
     // send event to the opponent
-    for (const auto &[id, playerIt]: mPlayers) {
+    for (const auto &[id, opponent]: mPlayers) {
         if (id == newId)
             continue;
         EventPlayerJoined evJoined;
         auto playerInfo = evJoined.mutable_player_info();
         playerInfo->set_id(newId);
-        if (playerIt->deck())
-            playerInfo->set_deck(playerIt->deck()->deck());
-        playerIt->sendGameEvent(evJoined);
+        opponent->sendGameEvent(evJoined);
     }
 }
 
@@ -109,9 +107,11 @@ void ServerGame::sendGameInfo(ServerProtocolHandler *client, int recepientId) {
     auto gameInfo = ev.mutable_game_info();
     gameInfo->set_id(mId);
     gameInfo->set_name(mDescription);
-    for (const auto &[id, _]: mPlayers) {
+    for (const auto &[id, playerIt]: mPlayers) {
         auto playerRecord = gameInfo->add_players();
         playerRecord->set_id(id);
+        if (playerIt->deck())
+            playerRecord->set_deck(playerIt->deck()->deck());
     }
     client->sendGameEvent(ev, recepientId);
 }

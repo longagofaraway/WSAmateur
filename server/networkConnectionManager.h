@@ -21,6 +21,7 @@ public:
 
     void initialize(Server *server) override;
     ConnectionPool* findLeastUsedConnectionPool();
+    bool isLocal() const override { return false; };
 
 private slots:
     void handleNewConnection(qintptr socketDescriptor);

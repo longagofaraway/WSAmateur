@@ -35,10 +35,6 @@ Player::Player(int id, Game *game, bool opponent)
     mHand = hand.get();
     mZones.emplace("hand", std::move(hand));
     auto wr = std::make_unique<CommonCardZone>(this, game, "wr");
-    /*wr->model().addCard(std::string("IMC/W43-127"));
-    wr->model().addCard(std::string("IMC/W43-111"));
-    wr->model().addCard(std::string("IMC/W43-046"));
-    wr->model().addCard(std::string("IMC/W43-091"));*/
     mZones.emplace("wr", std::move(wr));
     auto deck = std::make_unique<CommonCardZone>(this, game, "deck");
     mZones.emplace("deck", std::move(deck));

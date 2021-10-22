@@ -19,4 +19,5 @@ private:
 public:
     LocalServerConnection* newConnection();
     void initialize(Server *server) override { mServer = server; }
+    bool isLocal() const override { return true; };
 };

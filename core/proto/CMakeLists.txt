@@ -16,6 +16,8 @@ set(protoSources
     phaseEvent.proto
     playerInfo.proto
     serverMessage.proto
+    sessionCommand.proto
+    sessionEvent.proto
     )
 
 set (Protobuf_IMPORT_DIRS ${Protobuf_INCLUDE_DIR})

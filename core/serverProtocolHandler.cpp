@@ -8,6 +8,8 @@
 #include "lobbyCommand.pb.h"
 #include "lobbyEvent.pb.h"
 #include "serverMessage.pb.h"
+#include "sessionCommand.pb.h"
+#include "sessionEvent.pb.h"
 
 #include "serverPlayer.h"
 #include "server.h"
@@ -23,6 +25,8 @@ ServerProtocolHandler::ServerProtocolHandler(Server *server, std::unique_ptr<Con
             this, SLOT(processCommand(std::shared_ptr<CommandContainer>)));
     connect(mConnection, SIGNAL(connectionClosed()), this, SLOT(onConnectionClosed()));
     connect(this, SIGNAL(outputQueueChanged()), this, SLOT(flushOutputQueue()), Qt::QueuedConnection);
+
+    connect(server, SIGNAL(pingClockTimeout()), this, SLOT(pingClockTimeout()));
 }
 
 ServerProtocolHandler::~ServerProtocolHandler()
@@ -78,9 +82,20 @@ void ServerProtocolHandler::onConnectionClosed() {
     deleteLater();
 }
 
+void ServerProtocolHandler::pingClockTimeout() {
+    if (timeRunning - lastDataReceived > mServer->maxClientInactivityTime())
+        onConnectionClosed();
+    timeRunning++;
+}
+
 void ServerProtocolHandler::processCommand(std::shared_ptr<CommandContainer> cont) {
+    lastDataReceived = timeRunning;
     try {
-    if (cont->command().Is<LobbyCommand>()) {
+    if (cont->command().Is<SessionCommand>()) {
+        SessionCommand sessCmd;
+        cont->command().UnpackTo(&sessCmd);
+        processSessionCommand(sessCmd);
+    } else if (cont->command().Is<LobbyCommand>()) {
         LobbyCommand lobbyCmd;
         cont->command().UnpackTo(&lobbyCmd);
         processLobbyCommand(lobbyCmd);
@@ -126,6 +141,12 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
     player->processGameCommand(cmd);
 }
 
+void ServerProtocolHandler::processSessionCommand(const SessionCommand &cmd) {
+    if (cmd.command().Is<CommandPing>()) {
+        sendSessionEvent(EventPing());
+    }
+}
+
 void ServerProtocolHandler::sendProtocolItem(const ::google::protobuf::Message &event) {
     auto message = std::make_shared<ServerMessage>();
     message->mutable_message()->PackFrom(event);
@@ -136,6 +157,12 @@ void ServerProtocolHandler::sendProtocolItem(const ::google::protobuf::Message &
 
     // working through signals here to use only client's thread
     emit outputQueueChanged();
+}
+
+void ServerProtocolHandler::sendSessionEvent(const ::google::protobuf::Message &event) {
+    SessionEvent sessionEvent;
+    sessionEvent.mutable_event()->PackFrom(event);
+    sendProtocolItem(sessionEvent);
 }
 
 void ServerProtocolHandler::sendLobbyEvent(const ::google::protobuf::Message &event) {

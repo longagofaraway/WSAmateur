@@ -19,7 +19,9 @@ int main(int argc, char *argv[]) {
     int tcpPort = 7474;
     auto connectionManager = std::make_unique<NetworkConnectionManager>(threadNum, tcpPort);
 
-    auto server = std::make_unique<Server>(std::move(connectionManager));
+    auto server = new Server(std::move(connectionManager));
+
+    QObject::connect(server, SIGNAL(destroyed()), &app, SLOT(quit()), Qt::QueuedConnection);
 
     return app.exec();
 }

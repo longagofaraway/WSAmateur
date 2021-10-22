@@ -12,6 +12,7 @@
 #include "serverGame.h"
 #include "serverProtocolHandler.h"
 
+class QTimer;
 class CommandCreateGame;
 class CommandJoinGame;
 
@@ -26,6 +27,9 @@ protected:
     int mNextGameId;
     QReadWriteLock mClientsLock;
 
+    QTimer *mPingClock = nullptr;
+    const int mClientKeepalive = 3;
+
 public:
     Server(std::unique_ptr<ConnectionManager> cm);
 
@@ -39,6 +43,11 @@ public:
     void createGame(const CommandCreateGame &cmd, ServerProtocolHandler *client);
     void removeGame(int id);
     void processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHandler *client);
+
+    int maxClientInactivityTime() const;
+
+signals:
+    void pingClockTimeout();
 
 protected:
     int nextGameId();

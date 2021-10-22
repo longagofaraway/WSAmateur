@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+message SessionCommand {
+    google.protobuf.Any command = 1;
+}
+
+message CommandPing {}

@@ -105,7 +105,7 @@ void Game::processGameInfo(const GameInfo &game_info) {
 }
 
 void Game::setOpponentDeck(const EventDeckSet &event) {
-    if (event.player_id() != mOpponent->id() || mOpponent->deckSet())
+    if (!mOpponent || event.player_id() != mOpponent->id() || mOpponent->deckSet())
         return;
 
     mOpponent->setDeck(event.deck());

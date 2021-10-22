@@ -14,4 +14,5 @@ public:
     virtual ~ConnectionManager() {};
 
     virtual void initialize(Server *server) = 0;
+    virtual bool isLocal() const = 0;
 };

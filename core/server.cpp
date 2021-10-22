@@ -1,5 +1,7 @@
 #include "server.h"
 
+#include <QTimer>
+
 #include "commandContainer.pb.h"
 #include "lobbyCommand.pb.h"
 #include "serverMessage.pb.h"
@@ -16,6 +18,12 @@ Server::Server(std::unique_ptr<ConnectionManager> cm)
     decodeGlobalAbilities();
 
     mConnectionManager->initialize(this);
+
+    if (!mConnectionManager->isLocal()) {
+        mPingClock = new QTimer(this);
+        connect(mPingClock, SIGNAL(timeout()), this, SIGNAL(pingClockTimeout()));
+        mPingClock->start(mClientKeepalive  * 1000);
+    }
 }
 
 EventGameList Server::gameList() {
@@ -84,4 +92,8 @@ void Server::processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHa
     if (!g)
         return;
     g->addPlayer(client);
+}
+
+int Server::maxClientInactivityTime() const {
+    return mConnectionManager->isLocal() ? 999999 : 15;
 }
