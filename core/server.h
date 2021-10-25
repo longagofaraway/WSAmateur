@@ -45,6 +45,8 @@ public:
     void processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHandler *client);
 
     int maxClientInactivityTime() const;
+    void sendServerIdentification(ServerProtocolHandler *client);
+    void sendDatabase(ServerProtocolHandler *client);
 
 signals:
     void pingClockTimeout();

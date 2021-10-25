@@ -46,7 +46,8 @@ set(clientSources
     src/player.h
     src/remoteClientConnection.h
     src/stage.h
-    src/utils.h)
+    src/utils.h
+    ${VERSION_STRING_CPP})
 
 if (WIN32)
     set(clientSources ${clientSources} wsamateur.rc)

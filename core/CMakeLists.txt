@@ -46,6 +46,7 @@ set(coreSources
     serverStage.h
     globalAbilities/globalAbilities.h
     globalAbilities/globalAbilities.cpp
+    ${VERSION_STRING_CPP}
     )
 
 find_package(Qt5 COMPONENTS Quick Sql REQUIRED)

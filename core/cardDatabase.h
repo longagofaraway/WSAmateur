@@ -12,6 +12,9 @@ class CardDatabase
 {
     QSqlDatabase db;
     std::unordered_map<std::string, std::shared_ptr<CardInfo>> cards;
+    bool versionCached = false;
+    int version_;
+    bool initialized_;
 
     CardDatabase();
     CardDatabase(const CardDatabase&) = delete;
@@ -19,8 +22,14 @@ class CardDatabase
 public:
     static CardDatabase& get();
 
+    void init();
+    bool initialized() const { return initialized_; }
     std::shared_ptr<CardInfo> getCard(const std::string &code);
+    int version() const;
+    bool update(const std::string &newDb);
+    std::string fileData() const;
 
 private:
     void fillCache();
+    void readVersion();
 };

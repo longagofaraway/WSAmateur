@@ -22,7 +22,7 @@ cur = con.cursor()
 #   1 byte length of array | 2 bytes size of the next ability LE | n bytes ability | 2 bytes size ...
 # counter - 1 - card can be played during counter phase (backup/counter), else 0 or NULL. Filled by hand
 # card_references - comma-separated list of card codes, whose names are mentioned in the effects text.
-#   This is used to show the pictures of those cards, because their names are in english. Filled by hand
+#   This is used to show the pictures of those cards, because their names are in jp. Filled by hand
 
 cur.execute('''
 CREATE TABLE cards (
@@ -40,7 +40,6 @@ CREATE TABLE cards (
     card_references TEXT)''')
 
 # card_trait and traits TABLE
-# created as a separate table to easily change translations
 
 cur.execute('''
 CREATE TABLE card_trait (

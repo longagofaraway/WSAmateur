@@ -2,11 +2,15 @@
 
 #include <QTimer>
 
+#include <version_string.h>
+
 #include "commandContainer.pb.h"
 #include "lobbyCommand.pb.h"
 #include "serverMessage.pb.h"
+#include "sessionEvent.pb.h"
 
 #include "globalAbilities/globalAbilities.h"
+#include "cardDatabase.h"
 
 #include <QDebug>
 
@@ -96,4 +100,18 @@ void Server::processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHa
 
 int Server::maxClientInactivityTime() const {
     return mConnectionManager->isLocal() ? 999999 : 15;
+}
+
+void Server::sendServerIdentification(ServerProtocolHandler *client) {
+    EventServerHandshake event;
+    event.set_version(VERSION_STRING);
+    event.set_database_version(CardDatabase::get().version());
+    client->sendSessionEvent(event);
+}
+
+void Server::sendDatabase(ServerProtocolHandler *client) {
+    auto data = CardDatabase::get().fileData();
+    EventDatabase event;
+    event.set_database(data);
+    client->sendSessionEvent(event);
 }

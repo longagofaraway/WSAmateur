@@ -6,23 +6,17 @@
 #include "lobbyEvent.pb.h"
 #include "moveEvents.pb.h"
 #include "serverMessage.pb.h"
+#include "sessionEvent.pb.h"
+#include "sessionCommand.pb.h"
 
 namespace {
-std::shared_ptr<CommandContainer> prepareLobbyCommand(const ::google::protobuf::Message &cmd) {
-    LobbyCommand lobbyCmd;
-    lobbyCmd.mutable_command()->PackFrom(cmd);
+template<typename T>
+std::shared_ptr<CommandContainer> prepareCommand(const ::google::protobuf::Message &cmd) {
+    T typeCmd;
+    typeCmd.mutable_command()->PackFrom(cmd);
 
     auto cont = std::make_shared<CommandContainer>();
-    cont->mutable_command()->PackFrom(lobbyCmd);
-    return cont;
-}
-
-std::shared_ptr<CommandContainer> prepareGameCommand(const ::google::protobuf::Message &cmd) {
-    GameCommand gameCmd;
-    gameCmd.mutable_command()->PackFrom(cmd);
-
-    auto cont = std::make_shared<CommandContainer>();
-    cont->mutable_command()->PackFrom(gameCmd);
+    cont->mutable_command()->PackFrom(typeCmd);
     return cont;
 }
 }
@@ -35,15 +29,18 @@ Client::Client(std::unique_ptr<ClientConnection> &&connection) {
 
     connect(mConnection, &ClientConnection::messageReady, this, &Client::processServerMessage);
     connect(mConnection, &ClientConnection::connectionClosed, this, &Client::connectionClosed);
+}
 
+void Client::sendSessionCommand(const google::protobuf::Message &cmd) {
+    sendCommand(prepareCommand<SessionCommand>(cmd));
 }
 
 void Client::sendLobbyCommand(const ::google::protobuf::Message &cmd) {
-    sendCommand(prepareLobbyCommand(cmd));
+    sendCommand(prepareCommand<LobbyCommand>(cmd));
 }
 
 void Client::sendGameCommand(const ::google::protobuf::Message &cmd) {
-    sendCommand(prepareGameCommand(cmd));
+    sendCommand(prepareCommand<GameCommand>(cmd));
 }
 
 void Client::connectToHost(const std::string &hostname, uint16_t port) {
@@ -69,6 +66,10 @@ void Client::processServerMessage(std::shared_ptr<ServerMessage> message) {
         auto event = std::make_shared<GameEvent>();
         message->message().UnpackTo(event.get());
         emit gameEventReceived(event);
+    } else if (message->message().Is<SessionEvent>()) {
+        auto event = std::make_shared<SessionEvent>();
+        message->message().UnpackTo(event.get());
+        emit sessionEventReceived(event);
     }
     } catch(const std::exception &) {}
 }

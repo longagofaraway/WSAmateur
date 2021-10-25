@@ -7,3 +7,5 @@ message SessionCommand {
 }
 
 message CommandPing {}
+
+message CommandGetDatabase {}

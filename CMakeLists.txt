@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(WSAmateur LANGUAGES CXX)
+project(WSAmateur VERSION 0.0.1)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -9,6 +9,10 @@ set(CMAKE_AUTORCC ON)
 if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996 /wd4251")
 endif()
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+include(create-version-file)
 
 find_package(Qt5 COMPONENTS Core REQUIRED)
 

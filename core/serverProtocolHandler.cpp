@@ -29,33 +29,41 @@ ServerProtocolHandler::ServerProtocolHandler(Server *server, std::unique_ptr<Con
     connect(server, SIGNAL(pingClockTimeout()), this, SLOT(pingClockTimeout()));
 }
 
-ServerProtocolHandler::~ServerProtocolHandler()
-{
+ServerProtocolHandler::~ServerProtocolHandler() {
     flushOutputQueue();
 }
 
 void ServerProtocolHandler::initConnection() {
-    mConnection->init();
+    try {
+        mConnection->init();
 
-    auto event = mServer->gameList();
-    sendLobbyEvent(event);
+        mServer->sendServerIdentification(this);
+        auto event = mServer->gameList();
+        sendLobbyEvent(event);
+    } catch (const std::exception &e) {
+        qDebug() << QString::fromStdString(e.what());
+    }
 }
 
 void ServerProtocolHandler::flushOutputQueue() {
-    QMutexLocker locker(&mOutputQueueMutex);
-    if (mOutputQueue.empty() || !mConnection)
-        return;
+    try {
+        QMutexLocker locker(&mOutputQueueMutex);
+        if (mOutputQueue.empty() || !mConnection)
+            return;
 
-    while (!mOutputQueue.empty()) {
-        auto message = mOutputQueue.front();
-        mOutputQueue.pop();
-        locker.unlock();
+        while (!mOutputQueue.empty()) {
+            auto message = mOutputQueue.front();
+            mOutputQueue.pop();
+            locker.unlock();
 
-        mConnection->sendMessage(message);
+            mConnection->sendMessage(message);
 
-        locker.relock();
+            locker.relock();
+        }
+        mConnection->flush();
+    } catch (const std::exception &e) {
+        qDebug() << QString::fromStdString(e.what());
     }
-    mConnection->flush();
 }
 
 void ServerProtocolHandler::onConnectionClosed() {
@@ -104,7 +112,9 @@ void ServerProtocolHandler::processCommand(std::shared_ptr<CommandContainer> con
         cont->command().UnpackTo(&gameCmd);
         processGameCommand(gameCmd);
     }
-    } catch (const std::exception &) {}
+    } catch (const std::exception &e) {
+        qDebug() << QString::fromStdString(e.what());
+    }
 }
 
 
@@ -144,6 +154,8 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
 void ServerProtocolHandler::processSessionCommand(const SessionCommand &cmd) {
     if (cmd.command().Is<CommandPing>()) {
         sendSessionEvent(EventPing());
+    } else if (cmd.command().Is<CommandGetDatabase>()) {
+        mServer->sendDatabase(this);
     }
 }
 

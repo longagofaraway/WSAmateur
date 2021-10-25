@@ -1,6 +1,9 @@
 #include "cardDatabase.h"
 
+#include <fstream>
+
 #include <QDir>
+#include <QFile>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStandardPaths>
@@ -164,18 +167,25 @@ CardDatabase::CardDatabase() {
     db = QSqlDatabase::addDatabase("QSQLITE");
 
     db.setDatabaseName(getDbPath());
+}
 
+CardDatabase& CardDatabase::get() {
+    // we can only use the actual db from the same thread
+    // when we need to use db from different threads,
+    // we need to implement one connection to db per thread
+    static CardDatabase instance;
+    return instance;
+}
+
+void CardDatabase::init() {
     if (!db.open()) {
         auto msg = "failed to open database at " + getDbPath();
         throw std::runtime_error(msg.toStdString());
     }
 
     fillCache();
-}
-
-CardDatabase& CardDatabase::get() {
-    static CardDatabase instance;
-    return instance;
+    readVersion();
+    initialized_ = true;
 }
 
 std::shared_ptr<CardInfo> CardDatabase::getCard(const std::string &code) {
@@ -183,6 +193,38 @@ std::shared_ptr<CardInfo> CardDatabase::getCard(const std::string &code) {
         return {};
 
     return cards.at(code);
+}
+
+int CardDatabase::version() const {
+    return version_;
+}
+
+bool CardDatabase::update(const std::string &newDb) {
+    db.close();
+    cards.clear();
+    versionCached = false;
+
+    std::ofstream file(getDbPath().toStdString(), std::ios::out|std::ios::binary|std::ios::trunc);
+    if (!file.is_open())
+        return false;
+
+    file.write(newDb.data(), newDb.size());
+    file.close();
+    return true;
+}
+
+std::string CardDatabase::fileData() const {
+    std::ifstream file (getDbPath().toStdString(), std::ios::in|std::ios::binary|std::ios::ate);
+    if (!file.is_open())
+        return {};
+
+    auto size = file.tellg();
+    std::string buf(size, '\0');
+    file.seekg(0, std::ios::beg);
+    file.read(buf.data(), size);
+    file.close();
+
+    return buf;
 }
 
 void CardDatabase::fillCache() {
@@ -214,4 +256,16 @@ void CardDatabase::fillCache() {
         cards[cardInfo->code()] = cardInfo;
     }
 
+}
+
+void CardDatabase::readVersion() {
+    QSqlQuery query;
+    query.prepare("PRAGMA user_version");
+    if (!query.exec())
+        throw std::runtime_error(query.lastError().text().toStdString());
+
+    if (!query.next())
+        throw std::runtime_error("version not found");
+
+    version_ = query.value(0).toInt();
 }

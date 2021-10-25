@@ -10,6 +10,7 @@
 
 class GameEvent;
 class LobbyEvent;
+class SessionEvent;
 class EventGameJoined;
 class EventGameList;
 
@@ -27,6 +28,7 @@ public:
         emit queueCommand(command);
     }
 
+    void sendSessionCommand(const ::google::protobuf::Message &cmd);
     void sendLobbyCommand(const ::google::protobuf::Message &cmd);
     void sendGameCommand(const ::google::protobuf::Message &cmd);
 
@@ -36,6 +38,7 @@ signals:
     void queueCommand(std::shared_ptr<CommandContainer> command);
     void gameJoinedEventReceived(const std::shared_ptr<EventGameJoined> event);
     void gameEventReceived(const std::shared_ptr<GameEvent> event);
+    void sessionEventReceived(const std::shared_ptr<SessionEvent> event);
     void gameListReceived(const std::shared_ptr<EventGameList> event);
 
     void sigConnectToHost(const QString &hostname, uint16_t port);

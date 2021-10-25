@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
 
     try {
         // init db
-        CardDatabase::get();
+        CardDatabase::get().init();
     } catch (const std::exception &e) {
         qDebug() << e.what();
         throw;
