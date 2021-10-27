@@ -55,6 +55,13 @@ void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> even
 }
 
 void WSApplication::gameListReceived(const std::shared_ptr<EventGameList> event) {
+
+    // for testing purposes
+    static bool gameStarted = false;
+    if (gameStarted)
+        return;
+    gameStarted = true;
+
     if (!event->games_size()) {
         CommandCreateGame cmd;
         cmd.set_description("lol");
@@ -105,7 +112,7 @@ std::vector<int> parseVersion(const std::string &version) {
     }
 
     if (res.size() != 3)
-        throw std::runtime_error("");
+        throw std::runtime_error("wrong version format");
 
     return res;
 }
@@ -118,25 +125,37 @@ void WSApplication::processHandshake(const EventServerHandshake &event) {
 
     // check major and minor
     if (clientVersion[1] != serverVersion[1] ||
-        clientVersion[0] != serverVersion[0])
+        clientVersion[0] != serverVersion[0]) {
         emit needUpdate();
+        return;
+    }
 
     auto &cardDb = CardDatabase::get();
     if (!cardDb.initialized() || cardDb.version() != event.database_version())
         sendDatabaseRequest();
     else
-        ;// TODO enter lobby
-    } catch (const std::exception&) {
+        subscribeForGameList();
+    } catch (const std::exception &e) {
+        qDebug() << e.what();
         // TODO do something
     }
 }
 
 void WSApplication::updateDatabase(const EventDatabase &event) {
     auto db = event.database();
-    if (!CardDatabase::get().update(db))
+    try {
+        CardDatabase::get().update(db);
+        CardDatabase::get().init();
+    } catch (const std::exception &e) {
         emit error();
+    }
+    subscribeForGameList();
 }
 
 void WSApplication::sendDatabaseRequest() {
     client->sendSessionCommand(CommandGetDatabase());
+}
+
+void WSApplication::subscribeForGameList() {
+    client->sendLobbyCommand(CommandSubscribeForGameList());
 }

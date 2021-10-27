@@ -26,7 +26,7 @@ public:
     bool initialized() const { return initialized_; }
     std::shared_ptr<CardInfo> getCard(const std::string &code);
     int version() const;
-    bool update(const std::string &newDb);
+    void update(const std::string &newDb);
     std::string fileData() const;
 
 private:

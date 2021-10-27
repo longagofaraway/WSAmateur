@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include <QDir>
+#include <QDebug>
 #include <QFile>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -199,18 +200,19 @@ int CardDatabase::version() const {
     return version_;
 }
 
-bool CardDatabase::update(const std::string &newDb) {
+void CardDatabase::update(const std::string &newDb) {
     db.close();
     cards.clear();
     versionCached = false;
 
     std::ofstream file(getDbPath().toStdString(), std::ios::out|std::ios::binary|std::ios::trunc);
     if (!file.is_open())
-        return false;
+        throw std::runtime_error("failed to open db file");
 
     file.write(newDb.data(), newDb.size());
     file.close();
-    return true;
+    if (!db.open())
+        throw std::runtime_error("failed to open database at " + getDbPath().toStdString());
 }
 
 std::string CardDatabase::fileData() const {

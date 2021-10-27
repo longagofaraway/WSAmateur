@@ -44,6 +44,6 @@ private:
     void processHandshake(const EventServerHandshake &event);
     void updateDatabase(const EventDatabase &event);
     void sendDatabaseRequest();
-
+    void subscribeForGameList();
 };
 

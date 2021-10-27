@@ -127,6 +127,10 @@ void ServerProtocolHandler::processLobbyCommand(LobbyCommand &cmd) {
         CommandJoinGame joinCmd;
         cmd.command().UnpackTo(&joinCmd);
         mServer->processGameJoinRequest(joinCmd, this);
+    } else if (cmd.command().Is<CommandSubscribeForGameList>()) {
+        CommandSubscribeForGameList subscribeEvent;
+        cmd.command().UnpackTo(&subscribeEvent);
+        mServer->addGameListSubscriber(this);
     }
 }
 

@@ -23,11 +23,16 @@ Server::Server(std::unique_ptr<ConnectionManager> cm)
 
     mConnectionManager->initialize(this);
 
-    if (!mConnectionManager->isLocal()) {
-        mPingClock = new QTimer(this);
-        connect(mPingClock, SIGNAL(timeout()), this, SIGNAL(pingClockTimeout()));
-        mPingClock->start(mClientKeepalive  * 1000);
-    }
+    if (mConnectionManager->isLocal())
+        return;
+
+    mPingClock = new QTimer(this);
+    connect(mPingClock, SIGNAL(timeout()), this, SIGNAL(pingClockTimeout()));
+    mPingClock->start(mClientKeepalive  * 1000);
+
+    mNotifyClock = new QTimer(this);
+    connect(mNotifyClock, SIGNAL(timeout()), this, SLOT(sendGameList()));
+    mNotifyClock->start(mSubscribersNotifyInterval * 1000);
 }
 
 EventGameList Server::gameList() {
@@ -45,6 +50,13 @@ int Server::nextGameId() {
     return ++mNextGameId;
 }
 
+void Server::sendGameList() {
+    QReadLocker locker(&mSubscribersLock);
+    for (auto client: mGameListSubscribers) {
+        client->sendLobbyEvent(gameList());
+    }
+}
+
 ServerGame* Server::game(int id) {
     if (!mGames.count(id))
         return nullptr;
@@ -58,6 +70,7 @@ ServerProtocolHandler* Server::addClient(std::unique_ptr<ServerProtocolHandler> 
 }
 
 void Server::removeClient(ServerProtocolHandler *client) {
+    removeGameListSubscriber(client);
     QWriteLocker locker(&mClientsLock);
     auto it = std::find_if(mClients.begin(), mClients.end(), [client](auto &elem) { return elem.get() == client; });
     if (it == mClients.end())
@@ -74,7 +87,6 @@ void Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *cli
 
     QReadLocker readLocker(&mGamesLock);
     newGame->addPlayer(client);
-    qDebug() << "game created";
 }
 
 void Server::removeGame(int id) {
@@ -114,4 +126,14 @@ void Server::sendDatabase(ServerProtocolHandler *client) {
     EventDatabase event;
     event.set_database(data);
     client->sendSessionEvent(event);
+}
+
+void Server::addGameListSubscriber(ServerProtocolHandler *client) {
+    QWriteLocker locker(&mSubscribersLock);
+    mGameListSubscribers.emplace(client);
+}
+
+void Server::removeGameListSubscriber(ServerProtocolHandler *client) {
+    QWriteLocker locker(&mSubscribersLock);
+    mGameListSubscribers.erase(client);
 }

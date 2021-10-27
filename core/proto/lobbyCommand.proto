@@ -13,3 +13,5 @@ message CommandCreateGame {
 message CommandJoinGame {
 	sint32 game_id = 1;
 }
+
+message CommandSubscribeForGameList {}

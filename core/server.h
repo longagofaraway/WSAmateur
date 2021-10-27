@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include <QObject>
 #include <QMutex>
@@ -30,6 +31,11 @@ protected:
     QTimer *mPingClock = nullptr;
     const int mClientKeepalive = 3;
 
+    std::unordered_set<ServerProtocolHandler*> mGameListSubscribers;
+    QReadWriteLock mSubscribersLock;
+    QTimer *mNotifyClock = nullptr;
+    int mSubscribersNotifyInterval = 2;
+
 public:
     Server(std::unique_ptr<ConnectionManager> cm);
 
@@ -47,10 +53,15 @@ public:
     int maxClientInactivityTime() const;
     void sendServerIdentification(ServerProtocolHandler *client);
     void sendDatabase(ServerProtocolHandler *client);
+    void addGameListSubscriber(ServerProtocolHandler *client);
+    void removeGameListSubscriber(ServerProtocolHandler *client);
 
 signals:
     void pingClockTimeout();
 
 protected:
     int nextGameId();
+
+private slots:
+    void sendGameList();
 };
