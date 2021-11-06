@@ -23,6 +23,22 @@ Item {
         }
     }
 
+    Rectangle {
+        width: parent.width / 5
+        height: parent.height / 6
+        anchors.centerIn: parent
+        radius: 5
+        color: "#B0000000"
+
+        Text {
+            anchors.centerIn: parent
+
+            text: "Loading"
+            font.pointSize: 30
+            color: "white"
+        }
+    }
+
     Button {
         text: "start"
         onClicked: {

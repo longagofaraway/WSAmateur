@@ -14,8 +14,10 @@ set(clientSources
     src/commonCardZone.cpp
     src/deckView.cpp
     src/game.cpp
+    src/gameListModel.cpp
     src/hand.cpp
     src/imageProvider.cpp
+    src/lobby.cpp
     src/localClientConnection.cpp
     src/localConnectionManager.cpp
     src/localServerConnection.cpp
@@ -38,8 +40,10 @@ set(clientSources
     src/commonCardZone.h
     src/deckView.h
     src/game.h
+    src/gameListModel.h
     src/hand.h
     src/imageProvider.h
+    src/lobby.h
     src/localClientConnection.h
     src/localConnectionManager.h
     src/localServerConnection.h

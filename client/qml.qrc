@@ -52,5 +52,6 @@
         <file>resources/fonts/Aprikas_black_Demo.otf</file>
         <file>resources/icon.ico</file>
         <file>resources/background_menu.png</file>
+        <file>qml/LobbyWindow.qml</file>
     </qresource>
 </RCC>

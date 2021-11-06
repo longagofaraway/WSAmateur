@@ -19,12 +19,12 @@ Window {
         onStartGame: {
             mainLoader.source = "GameWindow.qml";
         }
+        onShowGameList: mainLoader.source = "Lobby.qml"
     }
 
     Loader {
         id: mainLoader
         anchors.fill: parent
-        //source: "GameWindow.qml"
-        source: "MainWindow.qml"
+        source: "LobbyWindow.qml"
     }
 }

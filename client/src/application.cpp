@@ -55,7 +55,8 @@ void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> even
 }
 
 void WSApplication::gameListReceived(const std::shared_ptr<EventGameList> event) {
-
+    emit showGameList();
+    return;
     // for testing purposes
     static bool gameStarted = false;
     if (gameStarted)
@@ -77,12 +78,12 @@ void WSApplication::gameListReceived(const std::shared_ptr<EventGameList> event)
 
 void WSApplication::gameJoined(const std::shared_ptr<EventGameJoined> event) {
     playerId = event->player_id();
-    emit startGame();
+    //emit startGame();
 }
 
 void WSApplication::onConnectionClosed() {
     connectionFailed = true;
-    emit startGame();
+    //emit startGame();
 }
 
 void WSApplication::componentComplete() {
