@@ -18,7 +18,7 @@
 #include <QDebug>
 
 ServerProtocolHandler::ServerProtocolHandler(Server *server, std::unique_ptr<Connection> &&connection)
-    : mServer(server), mGameId(0), mPlayerId(0) {
+    : mServer(server) {
     connection->setParent(this);
     mConnection = connection.release();
     connect(mConnection, SIGNAL(messageReady(std::shared_ptr<CommandContainer>)),
@@ -33,13 +33,73 @@ ServerProtocolHandler::~ServerProtocolHandler() {
     flushOutputQueue();
 }
 
+void ServerProtocolHandler::setOutcomingInvite(bool value, int inviteeId) {
+    mHasOutcomingInvite = value;
+    if (mHasOutcomingInvite)
+        mInviteeId = inviteeId;
+}
+
+bool ServerProtocolHandler::invited() const {
+    QMutexLocker locker(&mInvitesMutex);
+    return !mReceivedInvites.empty();
+}
+
+void ServerProtocolHandler::sendInvite(ServerProtocolHandler *sender) {
+    QMutexLocker locker(&mInvitesMutex);
+    mReceivedInvites.emplace(sender->id());
+
+    EventInviteToPlay event;
+    auto userInfo = event.mutable_user_info();
+    userInfo->set_id(sender->id());
+    userInfo->set_name(sender->name());
+    sendLobbyEvent(event);
+}
+
+void ServerProtocolHandler::refuseAllInvites() {
+    QMutexLocker locker(&mInvitesMutex);
+    for (int sender_id: mReceivedInvites) {
+        mServer->refuseInviteUnsafe(sender_id, InviteRefusalReason::LeftQueue);
+    }
+    mReceivedInvites.clear();
+}
+
+void ServerProtocolHandler::inviteDeclined(const CommandDeclineInvite &cmd) {
+    if (!hasOutcomingInvite())
+        return;
+    setOutcomingInvite(false);
+
+    EventInviteDeclined event;
+    event.set_reason(cmd.reason());
+    sendLobbyEvent(event);
+}
+
+void ServerProtocolHandler::inviteAccepted() {
+    mHasOutcomingInvite = false;
+    mInQueue = false;
+}
+
+void ServerProtocolHandler::inviteWithdrawn(ServerProtocolHandler *sender) {
+    QMutexLocker locker(&mInvitesMutex);
+    mReceivedInvites.erase(sender->id());
+
+    EventInviteWithdrawn event;
+    auto userInfo = event.mutable_user_info();
+    userInfo->set_id(sender->id());
+    userInfo->set_name(sender->name());
+    sendLobbyEvent(event);
+}
+
+bool ServerProtocolHandler::removeInvite(int inviterId) {
+    QMutexLocker locker(&mInvitesMutex);
+    return mReceivedInvites.erase(inviterId);
+}
+
 void ServerProtocolHandler::initConnection() {
     try {
         mConnection->init();
 
         mServer->sendServerIdentification(this);
-        auto event = mServer->gameList();
-        sendLobbyEvent(event);
+        sendLobbyEvent(mServer->lobbyInfo());
     } catch (const std::exception &e) {
         qDebug() << QString::fromStdString(e.what());
     }
@@ -117,7 +177,6 @@ void ServerProtocolHandler::processCommand(std::shared_ptr<CommandContainer> con
     }
 }
 
-
 void ServerProtocolHandler::processLobbyCommand(LobbyCommand &cmd) {
     if (cmd.command().Is<CommandCreateGame>()) {
         CommandCreateGame createCmd;
@@ -127,10 +186,27 @@ void ServerProtocolHandler::processLobbyCommand(LobbyCommand &cmd) {
         CommandJoinGame joinCmd;
         cmd.command().UnpackTo(&joinCmd);
         mServer->processGameJoinRequest(joinCmd, this);
-    } else if (cmd.command().Is<CommandSubscribeForGameList>()) {
-        CommandSubscribeForGameList subscribeEvent;
-        cmd.command().UnpackTo(&subscribeEvent);
-        mServer->addGameListSubscriber(this);
+    } else if (cmd.command().Is<CommandEnterLobby>()) {
+        mServer->addLobbySubscriber(this);
+    } else if (cmd.command().Is<CommandEnterQueue>()) {
+        mServer->addClientToPlayQueue(this);
+    } else if (cmd.command().Is<CommandLeaveQueue>()) {
+        mServer->removeClientFromPlayQueue(this);
+    } else if (cmd.command().Is<CommandInviteToPlay>()) {
+        CommandInviteToPlay inviteCmd;
+        cmd.command().UnpackTo(&inviteCmd);
+        mServer->inviteToPlay(this, inviteCmd);
+    } else if (cmd.command().Is<CommandDeclineInvite>()) {
+        CommandDeclineInvite declineCmd;
+        cmd.command().UnpackTo(&declineCmd);
+        mServer->declineInvite(this, declineCmd);
+    } else if (cmd.command().Is<CommandCancelInvite>()) {
+        mServer->cancelInvite(this);
+    } else if (cmd.command().Is<CommandAcceptInvite>()) {
+        CommandAcceptInvite acceptCmd;
+        cmd.command().UnpackTo(&acceptCmd);
+        mServer->acceptInvite(this, acceptCmd);
+        //acceptInvite(acceptCmd);
     }
 }
 

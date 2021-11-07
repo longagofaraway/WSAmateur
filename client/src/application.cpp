@@ -16,10 +16,9 @@
 #include <QDebug>
 
 WSApplication::WSApplication() {
-    qRegisterMetaType<std::shared_ptr<EventGameJoined>>("std::shared_ptr<EventGameJoined>");
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
     qRegisterMetaType<std::shared_ptr<SessionEvent>>("std::shared_ptr<SessionEvent>");
-    qRegisterMetaType<std::shared_ptr<EventGameList>>("std::shared_ptr<EventGameList>");
+    qRegisterMetaType<std::shared_ptr<LobbyEvent>>("std::shared_ptr<LobbyEvent>");
     qRegisterMetaType<std::shared_ptr<CommandContainer>>("std::shared_ptr<CommandContainer>");
 
     try {
@@ -54,7 +53,19 @@ void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> even
     }
 }
 
-void WSApplication::gameListReceived(const std::shared_ptr<EventGameList> event) {
+void WSApplication::processLobbyEvent(const std::shared_ptr<LobbyEvent> event) {
+    if (event->event().Is<EventGameJoined>()) {
+        EventGameJoined ev;
+        event->event().UnpackTo(&ev);
+        gameJoined(ev);
+    } else if (event->event().Is<EventLobbyInfo>()) {
+        EventLobbyInfo ev;
+        event->event().UnpackTo(&ev);
+        lobbyInfoReceived(ev);
+    }
+}
+
+void WSApplication::lobbyInfoReceived(const EventLobbyInfo &event) {
     emit showGameList();
     return;
     // for testing purposes
@@ -63,7 +74,15 @@ void WSApplication::gameListReceived(const std::shared_ptr<EventGameList> event)
         return;
     gameStarted = true;
 
-    if (!event->games_size()) {
+    if (!event.user_info_size()) {
+        client->sendLobbyCommand(CommandEnterLobby());
+        return;
+    }
+
+    CommandInviteToPlay cmd;
+    cmd.set_user_id(event.user_info(0).id());
+    client->sendLobbyCommand(cmd);
+    /*if (!event->games_size()) {
         CommandCreateGame cmd;
         cmd.set_description("lol");
         client->sendLobbyCommand(cmd);
@@ -73,11 +92,11 @@ void WSApplication::gameListReceived(const std::shared_ptr<EventGameList> event)
     const auto &game = event->games(0);
     CommandJoinGame cmd;
     cmd.set_game_id(game.id());
-    client->sendLobbyCommand(cmd);
+    client->sendLobbyCommand(cmd);*/
 }
 
-void WSApplication::gameJoined(const std::shared_ptr<EventGameJoined> event) {
-    playerId = event->player_id();
+void WSApplication::gameJoined(const EventGameJoined &event) {
+    playerId = event.player_id();
     //emit startGame();
 }
 
@@ -94,8 +113,7 @@ void WSApplication::componentComplete() {
     client = std::make_unique<Client>(std::move(conn));
     client->moveToThread(&clientThread);
     connect(client.get(), &Client::sessionEventReceived, this, &WSApplication::processSessionEvent);
-    connect(client.get(), &Client::gameJoinedEventReceived, this, &WSApplication::gameJoined);
-    connect(client.get(), &Client::gameListReceived, this, &WSApplication::gameListReceived);
+    connect(client.get(), &Client::lobbyEventReceived, this, &WSApplication::processLobbyEvent);
     connect(client.get(), &Client::connectionClosed, this, &WSApplication::onConnectionClosed);
 
     clientThread.start();
@@ -135,7 +153,7 @@ void WSApplication::processHandshake(const EventServerHandshake &event) {
     if (!cardDb.initialized() || cardDb.version() != event.database_version())
         sendDatabaseRequest();
     else
-        subscribeForGameList();
+        enterLobby();
     } catch (const std::exception &e) {
         qDebug() << e.what();
         // TODO do something
@@ -150,13 +168,13 @@ void WSApplication::updateDatabase(const EventDatabase &event) {
     } catch (const std::exception &e) {
         emit error();
     }
-    subscribeForGameList();
+    enterLobby();
 }
 
 void WSApplication::sendDatabaseRequest() {
     client->sendSessionCommand(CommandGetDatabase());
 }
 
-void WSApplication::subscribeForGameList() {
-    client->sendLobbyCommand(CommandSubscribeForGameList());
+void WSApplication::enterLobby() {
+    client->sendLobbyCommand(CommandEnterLobby());
 }

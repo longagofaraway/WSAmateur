@@ -35,25 +35,32 @@ Server::Server(std::unique_ptr<ConnectionManager> cm)
     mNotifyClock->start(mSubscribersNotifyInterval * 1000);
 }
 
-EventGameList Server::gameList() {
-    QReadLocker locker(&mGamesLock);
-    EventGameList gamesInfo;
-    for (const auto &game: mGames) {
-        auto newGame = gamesInfo.add_games();
-        newGame->set_id(game.second->id());
-        newGame->set_name(game.second->description());
+EventLobbyInfo Server::lobbyInfo() {
+    int userCount = connectedUsersCount();
+    QReadLocker locker(&mPlayQueueLock);
+    EventLobbyInfo info;
+    info.set_user_count(userCount);
+    for (const auto& [_, user]: mPlayQueue) {
+        auto userInfo = info.add_user_info();
+        userInfo->set_id(user->id());
+        userInfo->set_name(user->name());
     }
-    return gamesInfo;
+    return info;
+}
+
+int Server::connectedUsersCount() {
+    QReadLocker locker(&mClientsLock);
+    return static_cast<int>(mClients.size());
 }
 
 int Server::nextGameId() {
     return ++mNextGameId;
 }
 
-void Server::sendGameList() {
+void Server::sendLobbyInfo() {
     QReadLocker locker(&mSubscribersLock);
-    for (auto client: mGameListSubscribers) {
-        client->sendLobbyEvent(gameList());
+    for (auto client: mLobbySubscribers) {
+        client->sendLobbyEvent(lobbyInfo());
     }
 }
 
@@ -66,20 +73,25 @@ ServerGame* Server::game(int id) {
 
 ServerProtocolHandler* Server::addClient(std::unique_ptr<ServerProtocolHandler> client) {
     QWriteLocker locker(&mClientsLock);
-    return mClients.emplace_back(std::move(client)).get();
+    static int clientId = 0;
+    int newId = ++clientId;
+    client->setId(newId);
+    return mClients.emplace(newId, std::move(client)).first->second.get();
 }
 
 void Server::removeClient(ServerProtocolHandler *client) {
-    removeGameListSubscriber(client);
     QWriteLocker locker(&mClientsLock);
-    auto it = std::find_if(mClients.begin(), mClients.end(), [client](auto &elem) { return elem.get() == client; });
-    if (it == mClients.end())
+    removeClientFromPlayQueue(client);
+    removeLobbySubscriber(client);
+    client->refuseAllInvites();
+    if (!mClients.contains(client->id()))
         return;
-    it->release();
-    mClients.erase(it);
+
+    mClients.at(client->id()).release();
+    mClients.erase(client->id());
 }
 
-void Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *client) {
+ServerGame* Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *client) {
     QWriteLocker locker(&mGamesLock);
     int newGameId = nextGameId();
     auto newGame = mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, cmd.description())).first->second.get();
@@ -87,6 +99,18 @@ void Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *cli
 
     QReadLocker readLocker(&mGamesLock);
     newGame->addPlayer(client);
+    return newGame;
+}
+
+void Server::createGame(ServerProtocolHandler *client1, ServerProtocolHandler *client2) {
+    QWriteLocker locker(&mGamesLock);
+    int newGameId = nextGameId();
+    auto newGame = mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, "")).first->second.get();
+    locker.unlock();
+
+    QReadLocker readLocker(&mGamesLock);
+    newGame->addPlayer(client1);
+    newGame->addPlayer(client2);
 }
 
 void Server::removeGame(int id) {
@@ -128,12 +152,109 @@ void Server::sendDatabase(ServerProtocolHandler *client) {
     client->sendSessionEvent(event);
 }
 
-void Server::addGameListSubscriber(ServerProtocolHandler *client) {
+void Server::addLobbySubscriber(ServerProtocolHandler *client) {
     QWriteLocker locker(&mSubscribersLock);
-    mGameListSubscribers.emplace(client);
+    mLobbySubscribers.emplace(client);
 }
 
-void Server::removeGameListSubscriber(ServerProtocolHandler *client) {
+void Server::removeLobbySubscriber(ServerProtocolHandler *client) {
     QWriteLocker locker(&mSubscribersLock);
-    mGameListSubscribers.erase(client);
+    mLobbySubscribers.erase(client);
+}
+
+void Server::inviteToPlay(ServerProtocolHandler *client, const CommandInviteToPlay &cmd) {
+    QWriteLocker locker(&mPlayQueueLock);
+    if (client->hasOutcomingInvite() || client->invited())
+        return;
+
+    if (!mPlayQueue.contains(cmd.user_id())) {
+        locker.unlock();
+        EventInviteDeclined event;
+        event.set_reason(InviteRefusalReason::LeftQueue);
+        client->sendLobbyEvent(event);
+        client->sendLobbyEvent(lobbyInfo());
+        return;
+    }
+    mPlayQueue.erase(client->id());
+    mPlayQueue.at(cmd.user_id())->sendInvite(client);
+    client->setOutcomingInvite(true, cmd.user_id());
+    client->sendLobbyEvent(EventInviteSent());
+}
+
+void Server::refuseInviteUnsafe(int inviterId, InviteRefusalReason reason) {
+    if (!mClients.contains(inviterId))
+        return;
+
+    EventInviteDeclined event;
+    event.set_reason(reason);
+    mClients.at(inviterId)->sendLobbyEvent(event);
+}
+
+void Server::refuseInvite(int inviterId, InviteRefusalReason reason) {
+    QReadLocker locker(&mClientsLock);
+    refuseInviteUnsafe(inviterId, reason);
+}
+
+void Server::cancelInvite(ServerProtocolHandler *client) {
+    QReadLocker clientsLocker(&mClientsLock);
+    QWriteLocker locker(&mPlayQueueLock);
+    if (!client->hasOutcomingInvite())
+        return;
+
+    int inviteeId = client->inviteeId();
+    client->setOutcomingInvite(false);
+    if (!mClients.contains(inviteeId))
+        return;
+    mClients.at(inviteeId)->inviteWithdrawn(client);
+
+    if (client->inQueue())
+        mPlayQueue.emplace(client->id(), client);
+}
+
+void Server::declineInvite(ServerProtocolHandler *client, const CommandDeclineInvite &cmd) {
+    QReadLocker clientsLocker(&mClientsLock);
+    QWriteLocker locker(&mPlayQueueLock);
+    if (!client->removeInvite(cmd.inviter_id()))
+        return;
+    if (!mClients.contains(cmd.inviter_id()))
+        return;
+    auto inviter = mClients.at(cmd.inviter_id()).get();
+    inviter->inviteDeclined(cmd);
+    if (inviter->inQueue())
+        mPlayQueue.emplace(inviter->id(), inviter);
+}
+
+void Server::acceptInvite(ServerProtocolHandler *invitee, const CommandAcceptInvite &cmd) {
+    QReadLocker clientsLocker(&mClientsLock);
+    QWriteLocker locker(&mPlayQueueLock);
+
+    if (!invitee->removeInvite(cmd.inviter_id()))
+        return;
+    if (!mClients.contains(cmd.inviter_id()))
+        return;
+    auto inviter = mClients.at(cmd.inviter_id()).get();
+    if (!inviter->hasOutcomingInvite() || inviter->inviteeId() != invitee->id()) {
+        return;
+    }
+    inviter->inviteAccepted();
+    invitee->refuseAllInvites();
+    invitee->setInQueue(false);
+    mPlayQueue.erase(invitee->id());
+    locker.unlock();
+
+    createGame(inviter, invitee);
+}
+
+void Server::addClientToPlayQueue(ServerProtocolHandler *client) {
+    QWriteLocker locker(&mPlayQueueLock);
+    mPlayQueue.emplace(client->id(), client);
+    client->setInQueue(true);
+    locker.unlock();
+    client->sendLobbyEvent(lobbyInfo());
+}
+
+void Server::removeClientFromPlayQueue(ServerProtocolHandler *client) {
+    QWriteLocker locker(&mPlayQueueLock);
+    client->setInQueue(false);
+    mPlayQueue.erase(client->id());
 }

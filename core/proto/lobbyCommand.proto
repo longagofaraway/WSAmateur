@@ -2,6 +2,8 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 
+import "inviteRefusalReason.proto";
+
 message LobbyCommand {
 	google.protobuf.Any command = 1;
 }
@@ -14,4 +16,20 @@ message CommandJoinGame {
 	sint32 game_id = 1;
 }
 
-message CommandSubscribeForGameList {}
+message CommandEnterLobby {}
+message CommandEnterQueue {}
+message CommandLeaveQueue {}
+
+message CommandInviteToPlay {
+    sint32 user_id = 1;
+}
+
+message CommandCancelInvite {}
+message CommandDeclineInvite {
+    sint32 inviter_id = 1;
+    InviteRefusalReason reason = 2;
+}
+
+message CommandAcceptInvite {
+    sint32 inviter_id = 1;
+}

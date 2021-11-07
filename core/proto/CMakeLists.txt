@@ -8,6 +8,7 @@ set(protoSources
     gameCommand.proto
     gameEvent.proto
     gameInfo.proto
+    inviteRefusalReason.proto
     moveCommands.proto
     moveEvents.proto
     lobbyCommand.proto
@@ -18,6 +19,7 @@ set(protoSources
     serverMessage.proto
     sessionCommand.proto
     sessionEvent.proto
+    userInfo.proto
     )
 
 set (Protobuf_IMPORT_DIRS ${Protobuf_INCLUDE_DIR})

@@ -34,8 +34,7 @@ signals:
 
 private slots:
     void processSessionEvent(const std::shared_ptr<SessionEvent> event);
-    void gameListReceived(const std::shared_ptr<EventGameList> event);
-    void gameJoined(const std::shared_ptr<EventGameJoined> event);
+    void processLobbyEvent(const std::shared_ptr<LobbyEvent> event);
     void onConnectionClosed();
 
 protected:
@@ -45,6 +44,8 @@ private:
     void processHandshake(const EventServerHandshake &event);
     void updateDatabase(const EventDatabase &event);
     void sendDatabaseRequest();
-    void subscribeForGameList();
+    void enterLobby();
+    void gameJoined(const EventGameJoined &event);
+    void lobbyInfoReceived(const EventLobbyInfo &event);
 };
 

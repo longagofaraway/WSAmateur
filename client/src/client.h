@@ -12,7 +12,7 @@ class GameEvent;
 class LobbyEvent;
 class SessionEvent;
 class EventGameJoined;
-class EventGameList;
+class EventLobbyInfo;
 
 class Client : public QObject
 {
@@ -36,10 +36,9 @@ public:
 
 signals:
     void queueCommand(std::shared_ptr<CommandContainer> command);
-    void gameJoinedEventReceived(const std::shared_ptr<EventGameJoined> event);
     void gameEventReceived(const std::shared_ptr<GameEvent> event);
     void sessionEventReceived(const std::shared_ptr<SessionEvent> event);
-    void gameListReceived(const std::shared_ptr<EventGameList> event);
+    void lobbyEventReceived(const std::shared_ptr<LobbyEvent> event);
 
     void sigConnectToHost(const QString &hostname, uint16_t port);
     void connectionClosed();
@@ -49,9 +48,4 @@ private slots:
     void doConnectToHost(const QString &hostname, uint16_t port);
 
     void processServerMessage(std::shared_ptr<ServerMessage> message);
-
-private:
-    void processLobbyEvent(const LobbyEvent &event);
-
-protected:
 };

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 import "gameInfo.proto";
+import "userInfo.proto";
+import "inviteRefusalReason.proto";
 
 message LobbyEvent {
 	google.protobuf.Any event = 1;
@@ -12,6 +14,18 @@ message EventGameJoined {
 	sint32 game_id = 2;
 }
 
-message EventGameList {
-	repeated GameInfo games = 1;
+message EventLobbyInfo {
+    sint32 user_count = 1;
+    repeated UserInfo user_info = 2;
+}
+
+message EventInviteSent {}
+message EventInviteWithdrawn {
+    UserInfo user_info = 1;
+}
+message EventInviteDeclined {
+    InviteRefusalReason reason = 1;
+}
+message EventInviteToPlay {
+    UserInfo user_info = 1;
 }

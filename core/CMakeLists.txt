@@ -22,6 +22,7 @@ set(coreSources
     serverPlayer.cpp
     serverProtocolHandler.cpp
     serverStage.cpp
+    serverUser.cpp
     trigger.cpp
     abilityPlayer.h
     abilityUtils.h
@@ -44,6 +45,7 @@ set(coreSources
     serverPlayer.h
     serverProtocolHandler.h
     serverStage.h
+    serverUser.h
     globalAbilities/globalAbilities.h
     globalAbilities/globalAbilities.cpp
     ${VERSION_STRING_CPP}

@@ -59,9 +59,9 @@ void Client::doConnectToHost(const QString &hostname, uint16_t port) {
 void Client::processServerMessage(std::shared_ptr<ServerMessage> message) {
     try {
     if (message->message().Is<LobbyEvent>()) {
-        LobbyEvent event;
-        message->message().UnpackTo(&event);
-        processLobbyEvent(event);
+        auto event = std::make_shared<LobbyEvent>();
+        message->message().UnpackTo(event.get());
+        emit lobbyEventReceived(event);
     } else if (message->message().Is<GameEvent>()) {
         auto event = std::make_shared<GameEvent>();
         message->message().UnpackTo(event.get());
@@ -72,16 +72,4 @@ void Client::processServerMessage(std::shared_ptr<ServerMessage> message) {
         emit sessionEventReceived(event);
     }
     } catch(const std::exception &) {}
-}
-
-void Client::processLobbyEvent(const LobbyEvent &event) {
-    if (event.event().Is<EventGameJoined>()) {
-        auto ev = std::make_shared<EventGameJoined>();
-        event.event().UnpackTo(ev.get());
-        emit gameJoinedEventReceived(ev);
-    } else if (event.event().Is<EventGameList>()) {
-        auto ev = std::make_shared<EventGameList>();
-        event.event().UnpackTo(ev.get());
-        emit gameListReceived(ev);
-    }
 }

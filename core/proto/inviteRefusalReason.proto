@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+enum InviteRefusalReason {
+    TimedOut = 0;
+    Declined = 1;
+    LeftQueue = 2;
+}
