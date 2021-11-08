@@ -34,6 +34,9 @@
         <file>resources/images/cardback.png</file>
         <file>resources/images/btn_pressed.png</file>
         <file>resources/images/btn_state.png</file>
+        <file>resources/images/btn_menu_pressed.png</file>
+        <file>resources/images/btn_menu_hover.png</file>
+        <file>resources/images/btn_menu_base.png</file>
         <file>resources/images/hourglass.png</file>
         <file>resources/images/soul.png</file>
         <file>resources/images/deckCount.png</file>
@@ -52,6 +55,8 @@
         <file>resources/fonts/Aprikas_black_Demo.otf</file>
         <file>resources/icon.ico</file>
         <file>resources/background_menu.png</file>
+        <file>resources/background_menu_side.png</file>
         <file>qml/LobbyWindow.qml</file>
+        <file>qml/MenuButton.qml</file>
     </qresource>
 </RCC>

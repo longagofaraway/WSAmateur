@@ -13,7 +13,7 @@ Lobby {
     Image {
         id: backgroundImg
         anchors.fill: parent
-        source: "qrc:///resources/background_menu"
+        source: "qrc:///resources/background_menu_side"
         fillMode: Image.PreserveAspectCrop
     }
 
@@ -25,32 +25,75 @@ Lobby {
 
         ColorAnimation on color {
             running: true
-            to: "#B0000000"
+            to: "#90000000"
             duration: 1000
         }
     }
 
-    HorizontalHeaderView {
-        id: horizontalHeader
-        width: contentWidth
-        syncView: tableView
+    Rectangle {
+        id: sideMenu
 
-        anchors {
-            bottom: tableRectangle.top
-            left: tableRectangle.left
-            right: tableRectangle.right
+        property var activeGradient: Gradient {
+            GradientStop { position: 0.0; color: "#60000000" }
+            GradientStop { position: 0.3; color: "#50333333" }
+            GradientStop { position: 0.5; color: "#50888888" }
+            GradientStop { position: 0.7; color: "#50333333" }
+            GradientStop { position: 1.0; color: "#60000000" }
+        }
+        property var inactiveGradient: Gradient {
+            GradientStop { position: 0.0; color: "#50000000" }
+            GradientStop { position: 1.0; color: "#50000000" }
+        }
+        property var hoverGradient: Gradient {
+            GradientStop { position: 0.0; color: "#50000000" }
+            GradientStop { position: 0.42; color: "#50000000" }
+            GradientStop { position: 0.5; color: "#50777777" }
+            GradientStop { position: 0.58; color: "#50000000" }
+            GradientStop { position: 1.0; color: "#50000000" }
         }
 
-        delegate: Rectangle {
-            implicitWidth: tableCellWidth
-            implicitHeight: tableCellHeight
-            color: "#D0333333"
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+        }
+        width: parent.width * 0.09
+
+        color: "#50000000"
+
+        Rectangle {
+            id: topMenu
+            anchors { left: parent.left; right: parent.right }
+            y: parent.height * 0.1
+            height: parent.height * 0.15
+            gradient: sideMenu.activeGradient
+
             Text {
-                anchors.fill: parent
-                text: display
+                anchors.centerIn: parent
+                text: "Lobby"
                 color: "white"
-                font.pointSize: 18
-                verticalAlignment: Text.AlignVCenter
+                font.pointSize: 36
+            }
+        }
+
+        Rectangle {
+            id: decksMenu
+            anchors { left: parent.left; right: parent.right; top: topMenu.bottom }
+            height: parent.height * 0.15
+            gradient: sideMenu.inactiveGradient
+
+            Text {
+                anchors.centerIn: parent
+                text: "Decks"
+                color: "white"
+                font.pointSize: 36
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: decksMenu.gradient = sideMenu.hoverGradient
+                onExited: decksMenu.gradient = sideMenu.inactiveGradient
             }
         }
     }
@@ -58,40 +101,133 @@ Lobby {
     Rectangle {
         id: tableRectangle
 
-        anchors.centerIn: parent
-        color: "#B0000000"
-        width: 1000
-        height: 500
-    TableView {
-        id: tableView
+        property real margin: 30
 
-        anchors.fill: parent
-        clip: true
+        anchors.verticalCenter: parent.verticalCenter
+        x: lobby.width / 4
+        color: "#50000000"
+        width: tableCellWidth * lobby.gameListModel.columnCount()
+        height: 500 + tableCellHeight + margin * 2
 
-        ScrollBar.vertical: ScrollBar {}
+        HorizontalHeaderView {
+            id: horizontalHeader
+            width: contentWidth
+            syncView: tableView
 
-        model: lobby.gameListModel
-
-        delegate: Rectangle {
-            implicitWidth: tableCellWidth
-            implicitHeight: tableCellHeight
-            color: "#00000000"
-            Text {
-                anchors.fill: parent
-                text: tableData
-                color: "white"
-                font.pointSize: 18
-                verticalAlignment: Text.AlignVCenter
+            anchors {
+                bottom: tableView.top
+                left: tableView.left
+                right: tableView.right
             }
 
-            MouseArea {
-              anchors.fill: parent
-              onClicked: {
-                // print value from clicked cell
-                console.log("Clicked cell: ", model.tableData);
-              }
+            delegate: Rectangle {
+                implicitWidth: tableCellWidth
+                implicitHeight: tableCellHeight
+                color: "#D0333333"
+                Text {
+                    anchors.fill: parent
+                    text: display
+                    color: "white"
+                    font.pointSize: 18
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+        }
+
+        TableView {
+            id: tableView
+
+            anchors.fill: parent
+            clip: true
+
+            ScrollBar.vertical: ScrollBar {}
+
+            model: lobby.gameListModel
+
+            delegate: Rectangle {
+                id: cell
+                implicitWidth: tableCellWidth
+                implicitHeight: tableCellHeight
+                border.width: 1
+                border.color: "#00000000"
+                color: "#00000000"
+
+                Text {
+                    anchors.fill: parent
+                    text: tableData
+                    color: "white"
+                    font.pointSize: 18
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                MouseArea {
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  onEntered: cell.border.color = "white";
+                  onExited: cell.border.color = "#00000000"
+                  onClicked: {
+                    // print value from clicked cell
+                    console.log("Clicked cell: ", model.tableData);
+                  }
+
+                  /*Item {
+                      id: btn
+
+                      anchors { right: parent.right; rightMargin: 15 }
+                      anchors.verticalCenter: parent.verticalCenter
+                      width: 89//231
+                      height: 28//72
+                      visible: false
+
+                      Image {
+                          id: btnNormal
+                          anchors.fill: parent
+                          source: "qrc:///resources/images/btn_menu_base"
+                      }
+
+                      MouseArea {
+                          id: mouse
+                          anchors.fill: parent
+                          hoverEnabled: true
+                          onPressed: btnNormal.source = "qrc:///resources/images/btn_menu_pressed"
+                          onReleased: btnNormal.source = "qrc:///resources/images/btn_menu_hover"
+                          onEntered: btnNormal.source = "qrc:///resources/images/btn_menu_hover"
+                          onExited: btnNormal.source = "qrc:///resources/images/btn_menu_base"
+                      }
+
+                      Text {
+                          anchors.centerIn: parent
+                          text: "Invite"
+                          color: "white"
+                          font.pointSize: 18
+                      }
+                  }*/
+                }
             }
         }
     }
+
+    MenuButton {
+        mText: "Join lobby"
+        anchors {
+            top: tableRectangle.bottom
+            topMargin: 15
+            left: tableRectangle.left
+            leftMargin: 20
+        }
+    }
+
+    MenuButton {
+        mText: "Invite"
+        anchors {
+            top: tableRectangle.bottom
+            topMargin: 15
+            right: tableRectangle.right
+            rightMargin: 20
+        }
+        Component.onCompleted: {
+            setInactive();
+        }
     }
 }

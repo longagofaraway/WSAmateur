@@ -28,9 +28,9 @@ public:
 
 signals:
     void startGame();
-    void showGameList();
     void needUpdate();
     void error();
+    void loadLobby();
 
 private slots:
     void processSessionEvent(const std::shared_ptr<SessionEvent> event);

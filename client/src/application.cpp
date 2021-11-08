@@ -66,7 +66,6 @@ void WSApplication::processLobbyEvent(const std::shared_ptr<LobbyEvent> event) {
 }
 
 void WSApplication::lobbyInfoReceived(const EventLobbyInfo &event) {
-    emit showGameList();
     return;
     // for testing purposes
     static bool gameStarted = false;
@@ -75,24 +74,13 @@ void WSApplication::lobbyInfoReceived(const EventLobbyInfo &event) {
     gameStarted = true;
 
     if (!event.user_info_size()) {
-        client->sendLobbyCommand(CommandEnterLobby());
+        client->sendLobbyCommand(CommandEnterQueue());
         return;
     }
 
     CommandInviteToPlay cmd;
     cmd.set_user_id(event.user_info(0).id());
     client->sendLobbyCommand(cmd);
-    /*if (!event->games_size()) {
-        CommandCreateGame cmd;
-        cmd.set_description("lol");
-        client->sendLobbyCommand(cmd);
-        return;
-    }
-
-    const auto &game = event->games(0);
-    CommandJoinGame cmd;
-    cmd.set_game_id(game.id());
-    client->sendLobbyCommand(cmd);*/
 }
 
 void WSApplication::gameJoined(const EventGameJoined &event) {
@@ -176,5 +164,6 @@ void WSApplication::sendDatabaseRequest() {
 }
 
 void WSApplication::enterLobby() {
-    client->sendLobbyCommand(CommandEnterLobby());
+    emit loadLobby();
+    //client->sendLobbyCommand(CommandEnterLobby());
 }

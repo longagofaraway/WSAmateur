@@ -3,13 +3,13 @@
 #include <QAbstractTableModel>
 #include <QQuickItem>
 
-#include <gameInfo.pb.h>
+#include <userInfo.pb.h>
 
 class GameListModel : public QAbstractTableModel
 {
     Q_OBJECT
 private:
-    std::vector<GameInfo> gameList;
+    std::vector<UserInfo> userList;
 
 public:
     enum TableRoles {

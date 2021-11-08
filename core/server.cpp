@@ -31,7 +31,7 @@ Server::Server(std::unique_ptr<ConnectionManager> cm)
     mPingClock->start(mClientKeepalive  * 1000);
 
     mNotifyClock = new QTimer(this);
-    connect(mNotifyClock, SIGNAL(timeout()), this, SLOT(sendGameList()));
+    connect(mNotifyClock, SIGNAL(timeout()), this, SLOT(sendLobbyInfo()));
     mNotifyClock->start(mSubscribersNotifyInterval * 1000);
 }
 
@@ -155,6 +155,9 @@ void Server::sendDatabase(ServerProtocolHandler *client) {
 void Server::addLobbySubscriber(ServerProtocolHandler *client) {
     QWriteLocker locker(&mSubscribersLock);
     mLobbySubscribers.emplace(client);
+    locker.unlock();
+
+    client->sendLobbyEvent(lobbyInfo());
 }
 
 void Server::removeLobbySubscriber(ServerProtocolHandler *client) {

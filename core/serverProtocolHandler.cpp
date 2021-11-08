@@ -99,7 +99,6 @@ void ServerProtocolHandler::initConnection() {
         mConnection->init();
 
         mServer->sendServerIdentification(this);
-        sendLobbyEvent(mServer->lobbyInfo());
     } catch (const std::exception &e) {
         qDebug() << QString::fromStdString(e.what());
     }
@@ -206,7 +205,6 @@ void ServerProtocolHandler::processLobbyCommand(LobbyCommand &cmd) {
         CommandAcceptInvite acceptCmd;
         cmd.command().UnpackTo(&acceptCmd);
         mServer->acceptInvite(this, acceptCmd);
-        //acceptInvite(acceptCmd);
     }
 }
 
