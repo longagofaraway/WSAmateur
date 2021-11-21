@@ -2,18 +2,18 @@
 
 #include <QQuickItem>
 
-#include "gameListModel.h"
+#include "userListModel.h"
 
 class Lobby : public QQuickItem
 {
     Q_OBJECT
-    Q_PROPERTY(GameListModel *gameListModel READ gameListModel CONSTANT FINAL)
+    Q_PROPERTY(UserListModel *userListModel READ userListModel CONSTANT FINAL)
 private:
-    GameListModel model;
+    UserListModel model;
 
 public:
     Lobby();
 
-    GameListModel* gameListModel() { return &model; }
+    UserListModel* userListModel() { return &model; }
 };
 

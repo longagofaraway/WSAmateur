@@ -56,7 +56,9 @@
         <file>resources/icon.ico</file>
         <file>resources/background_menu.png</file>
         <file>resources/background_menu_side.png</file>
-        <file>qml/LobbyWindow.qml</file>
-        <file>qml/MenuButton.qml</file>
+        <file>qml/menu/MenuButton.qml</file>
+        <file>qml/menu/SideMenu.qml</file>
+        <file>qml/menu/LobbyWindow.qml</file>
+        <file>qml/menu/SideMenuItem.qml</file>
     </qresource>
 </RCC>

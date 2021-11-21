@@ -19,7 +19,7 @@ Window {
         onStartGame: {
             mainLoader.source = "GameWindow.qml";
         }
-        onLoadLobby: mainLoader.source = "LobbyWindow.qml"
+        onLoadLobby: mainLoader.source = "menu/LobbyWindow.qml"
     }
 
     Loader {

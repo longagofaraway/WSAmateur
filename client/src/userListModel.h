@@ -5,19 +5,24 @@
 
 #include <userInfo.pb.h>
 
-class GameListModel : public QAbstractTableModel
+class UserListModel : public QAbstractTableModel
 {
     Q_OBJECT
 private:
     std::vector<UserInfo> userList;
+    int selectedRow = -1;
+    int selectedPlayerId = -1;
 
 public:
     enum TableRoles {
-        TableDataRole = Qt::UserRole + 1
+        TableDataRole = Qt::UserRole + 1,
+        SelectedRole
     };
     Q_ENUM(TableRoles)
 
-    GameListModel();
+    UserListModel();
+
+    Q_INVOKABLE void select(int row);
 
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     int columnCount(const QModelIndex & = QModelIndex()) const override;

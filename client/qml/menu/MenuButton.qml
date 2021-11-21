@@ -15,6 +15,7 @@ Rectangle {
         State {
             name: "active"
             when: btn.active
+            PropertyChanges { target: btn; color: "#22162A" }
             PropertyChanges { target: mouse; enabled: true }
         },
         State {
@@ -42,10 +43,12 @@ Rectangle {
     }
 
     function setInactive() {
-        btn.state = "inactive";
+        if (btn.state != "inactive")
+            btn.state = "inactive";
     }
 
     function setActive() {
-        btn.state = "active";
+        if (btn.state != "active")
+            btn.state = "active";
     }
 }

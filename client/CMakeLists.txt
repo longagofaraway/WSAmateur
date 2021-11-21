@@ -14,7 +14,6 @@ set(clientSources
     src/commonCardZone.cpp
     src/deckView.cpp
     src/game.cpp
-    src/gameListModel.cpp
     src/hand.cpp
     src/imageProvider.cpp
     src/lobby.cpp
@@ -26,6 +25,7 @@ set(clientSources
     src/player.cpp
     src/remoteClientConnection.cpp
     src/stage.cpp
+    src/userListModel.cpp
     src/utils.cpp
     src/abilityModel.h
     src/activatedAbilities.h
@@ -40,7 +40,6 @@ set(clientSources
     src/commonCardZone.h
     src/deckView.h
     src/game.h
-    src/gameListModel.h
     src/hand.h
     src/imageProvider.h
     src/lobby.h
@@ -50,6 +49,7 @@ set(clientSources
     src/player.h
     src/remoteClientConnection.h
     src/stage.h
+    src/userListModel.h
     src/utils.h
     ${VERSION_STRING_CPP})
 
