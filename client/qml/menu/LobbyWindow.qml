@@ -9,6 +9,14 @@ Lobby {
 
     property real tableCellWidth: 500
     property real tableCellHeight: 40
+    property int onlineCount: 0
+
+    onLobbyCreated: {
+        wsApp.initLobby(lobby);
+    }
+    onUserCountChanged: {
+        onlineCount = userCount;
+    }
 
     Image {
         id: backgroundImg
@@ -53,7 +61,10 @@ Lobby {
         HorizontalHeaderView {
             id: horizontalHeader
             width: contentWidth
-            syncView: tableView
+            model: lobby.userListModel
+            // https://bugreports.qt.io/browse/QTBUG-88555
+            // syncView: tableView
+            z:100
 
             anchors {
                 bottom: tableView.top
@@ -109,7 +120,10 @@ Lobby {
                     onExited: cell.border.color = "#00000000"
                     onClicked: {
                         lobby.userListModel.select(row);
-                        inviteButton.setActive();
+                        if (lobby.canInvite(row))
+                            inviteButton.setActive();
+                        else
+                            inviteButton.setInactive();
                     }
                 }
             }
@@ -117,19 +131,22 @@ Lobby {
     }
 
     MenuButton {
-        mText: "Join lobby"
+        text: "Join lobby"
         anchors {
             top: tableRectangle.bottom
             topMargin: 15
             left: tableRectangle.left
             leftMargin: 20
         }
+        onPressed: {
+            lobby.joinQueue()
+        }
     }
 
     MenuButton {
         id: inviteButton
 
-        mText: "Invite"
+        text: "Invite"
         anchors {
             top: tableRectangle.bottom
             topMargin: 15
@@ -138,6 +155,25 @@ Lobby {
         }
         Component.onCompleted: {
             setInactive();
+        }
+    }
+
+    Row {
+        anchors {
+            left: tableRectangle.right;
+            leftMargin: 15;
+            top: tableRectangle.top;
+        }
+        Text {
+            text: "Users online: "
+            font.pointSize: 24
+            color: "white"
+        }
+
+        Text {
+            text: onlineCount.toString()
+            font.pointSize: 24
+            color: "white"
         }
     }
 }

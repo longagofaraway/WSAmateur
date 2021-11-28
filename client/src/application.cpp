@@ -11,6 +11,7 @@
 
 #include "cardDatabase.h"
 #include "game.h"
+#include "lobby.h"
 #include "remoteClientConnection.h"
 
 #include <QDebug>
@@ -40,6 +41,9 @@ void WSApplication::initGame(Game *game) {
         game->startLocalGame();
 }
 
+void WSApplication::initLobby(Lobby *lobby) {
+    lobby->init(client.get());
+}
 
 void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> event) {
     if (event->event().Is<EventServerHandshake>()) {
@@ -58,34 +62,18 @@ void WSApplication::processLobbyEvent(const std::shared_ptr<LobbyEvent> event) {
         EventGameJoined ev;
         event->event().UnpackTo(&ev);
         gameJoined(ev);
-    } else if (event->event().Is<EventLobbyInfo>()) {
-        EventLobbyInfo ev;
-        event->event().UnpackTo(&ev);
-        lobbyInfoReceived(ev);
     }
-}
-
-void WSApplication::lobbyInfoReceived(const EventLobbyInfo &event) {
-    return;
-    // for testing purposes
-    static bool gameStarted = false;
-    if (gameStarted)
-        return;
-    gameStarted = true;
-
-    if (!event.user_info_size()) {
-        client->sendLobbyCommand(CommandEnterQueue());
-        return;
-    }
-
-    CommandInviteToPlay cmd;
-    cmd.set_user_id(event.user_info(0).id());
-    client->sendLobbyCommand(cmd);
 }
 
 void WSApplication::gameJoined(const EventGameJoined &event) {
     playerId = event.player_id();
     //emit startGame();
+}
+
+void WSApplication::userIdenditification() {
+    CommandUserIdentification cmd;
+    cmd.set_name("Ivan");
+    client->sendSessionCommand(cmd);
 }
 
 void WSApplication::onConnectionClosed() {
@@ -101,7 +89,6 @@ void WSApplication::componentComplete() {
     client = std::make_unique<Client>(std::move(conn));
     client->moveToThread(&clientThread);
     connect(client.get(), &Client::sessionEventReceived, this, &WSApplication::processSessionEvent);
-    connect(client.get(), &Client::lobbyEventReceived, this, &WSApplication::processLobbyEvent);
     connect(client.get(), &Client::connectionClosed, this, &WSApplication::onConnectionClosed);
 
     clientThread.start();
@@ -127,21 +114,25 @@ std::vector<int> parseVersion(const std::string &version) {
 
 void WSApplication::processHandshake(const EventServerHandshake &event) {
     try {
-    auto clientVersion = parseVersion(VERSION_STRING);
-    auto serverVersion = parseVersion(event.version());
+        client->setId(event.client_id());
 
-    // check major and minor
-    if (clientVersion[1] != serverVersion[1] ||
-        clientVersion[0] != serverVersion[0]) {
-        emit needUpdate();
-        return;
-    }
+        auto clientVersion = parseVersion(VERSION_STRING);
+        auto serverVersion = parseVersion(event.version());
 
-    auto &cardDb = CardDatabase::get();
-    if (!cardDb.initialized() || cardDb.version() != event.database_version())
-        sendDatabaseRequest();
-    else
-        enterLobby();
+        // check major and minor
+        if (clientVersion[1] != serverVersion[1] ||
+            clientVersion[0] != serverVersion[0]) {
+            emit needUpdate();
+            return;
+        }
+
+        auto &cardDb = CardDatabase::get();
+        if (!cardDb.initialized() || cardDb.version() != event.database_version()) {
+            sendDatabaseRequest();
+        } else {
+            userIdenditification();
+            enterLobby();
+        }
     } catch (const std::exception &e) {
         qDebug() << e.what();
         // TODO do something
@@ -156,6 +147,7 @@ void WSApplication::updateDatabase(const EventDatabase &event) {
     } catch (const std::exception &e) {
         emit error();
     }
+    userIdenditification();
     enterLobby();
 }
 
@@ -165,5 +157,4 @@ void WSApplication::sendDatabaseRequest() {
 
 void WSApplication::enterLobby() {
     emit loadLobby();
-    //client->sendLobbyCommand(CommandEnterLobby());
 }

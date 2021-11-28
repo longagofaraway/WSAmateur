@@ -8,6 +8,7 @@
 #include "client.h"
 
 class Game;
+class Lobby;
 class EventServerHandshake;
 class EventDatabase;
 
@@ -25,6 +26,7 @@ public:
     ~WSApplication();
 
     Q_INVOKABLE void initGame(Game *game);
+    Q_INVOKABLE void initLobby(Lobby *lobby);
 
 signals:
     void startGame();
@@ -46,6 +48,6 @@ private:
     void sendDatabaseRequest();
     void enterLobby();
     void gameJoined(const EventGameJoined &event);
-    void lobbyInfoReceived(const EventLobbyInfo &event);
+    void userIdenditification();
 };
 

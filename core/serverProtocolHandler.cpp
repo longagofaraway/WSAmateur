@@ -234,6 +234,10 @@ void ServerProtocolHandler::processSessionCommand(const SessionCommand &cmd) {
         sendSessionEvent(EventPing());
     } else if (cmd.command().Is<CommandGetDatabase>()) {
         mServer->sendDatabase(this);
+    } else if (cmd.command().Is<CommandUserIdentification>()) {
+        CommandUserIdentification userCmd;
+        cmd.command().UnpackTo(&userCmd);
+        mName = userCmd.name();
     }
 }
 

@@ -142,6 +142,7 @@ void Server::sendServerIdentification(ServerProtocolHandler *client) {
     EventServerHandshake event;
     event.set_version(VERSION_STRING);
     event.set_database_version(CardDatabase::get().version());
+    event.set_client_id(client->id());
     client->sendSessionEvent(event);
 }
 
@@ -250,6 +251,8 @@ void Server::acceptInvite(ServerProtocolHandler *invitee, const CommandAcceptInv
 
 void Server::addClientToPlayQueue(ServerProtocolHandler *client) {
     QWriteLocker locker(&mPlayQueueLock);
+    if (mPlayQueue.contains(client->id()))
+        return;
     mPlayQueue.emplace(client->id(), client);
     client->setInQueue(true);
     locker.unlock();

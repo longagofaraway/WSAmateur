@@ -24,6 +24,10 @@ public:
 
     Q_INVOKABLE void select(int row);
 
+    int idByRow(int row);
+
+    void update(std::vector<UserInfo>&& newUserList);
+
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     int columnCount(const QModelIndex & = QModelIndex()) const override;
 

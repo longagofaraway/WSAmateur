@@ -6,12 +6,12 @@ import "userInfo.proto";
 import "inviteRefusalReason.proto";
 
 message LobbyEvent {
-	google.protobuf.Any event = 1;
+    google.protobuf.Any event = 1;
 }
 
 message EventGameJoined {
-	sint32 player_id = 1;
-	sint32 game_id = 2;
+    sint32 player_id = 1;
+    sint32 game_id = 2;
 }
 
 message EventLobbyInfo {

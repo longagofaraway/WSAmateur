@@ -2,15 +2,7 @@
 
 #include "playerInfo.pb.h"
 
-UserListModel::UserListModel() {
-    UserInfo userInfo;
-    userInfo.set_name("petr");
-    userList.push_back(userInfo);
-    userInfo.set_name("vasilisa");
-    userList.push_back(userInfo);
-    for (int i = 0; i < 20; i++)
-        userList.push_back(userInfo);
-}
+UserListModel::UserListModel() {}
 
 void UserListModel::select(int row) {
     if (static_cast<size_t>(row) >= userList.size())
@@ -28,6 +20,30 @@ void UserListModel::select(int row) {
 
     auto modelIndex = index(row, 0);
     emit dataChanged(modelIndex, modelIndex, { SelectedRole });
+}
+
+int UserListModel::idByRow(int row) {
+    return userList.at(row).id();
+}
+
+void UserListModel::update(std::vector<UserInfo> &&newUserList) {
+    beginResetModel();
+    userList.swap(newUserList);
+    endResetModel();
+
+    bool userFound = false;
+    for (size_t i = 0; i < userList.size(); ++i) {
+        if (userList[i].id() != selectedPlayerId)
+            continue;
+        selectedRow = i;
+        userFound = true;
+        break;
+    }
+
+    if (!userFound) {
+        selectedRow = -1;
+        selectedPlayerId = -1;
+    }
 }
 
 int UserListModel::rowCount(const QModelIndex &) const {
@@ -48,6 +64,7 @@ QVariant UserListModel::data(const QModelIndex &index, int role) const {
         case 0:
             return QString::fromStdString(userInfo.name());
         }
+        break;
     }
     case SelectedRole:
         return index.row() == selectedRow;

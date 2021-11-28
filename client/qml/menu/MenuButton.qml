@@ -4,7 +4,8 @@ Rectangle {
     id: btn
 
     property bool active: true
-    property alias mText: buttonText.text
+    property alias text: buttonText.text
+    signal pressed()
 
     width: 158//231
     height: 50//72
@@ -29,9 +30,9 @@ Rectangle {
     MouseArea {
         id: mouse
         anchors.fill: parent
-        hoverEnabled: true
         onPressed: btn.color = "red"
         onReleased: btn.color = "#22162A"
+        onClicked: btn.pressed()
     }
 
     Text {

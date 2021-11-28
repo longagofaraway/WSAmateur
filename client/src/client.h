@@ -19,6 +19,7 @@ class Client : public QObject
     Q_OBJECT
 private:
     ClientConnection *mConnection;
+    int id_;
 
 public:
     Client(std::unique_ptr<ClientConnection> &&connection);
@@ -27,6 +28,9 @@ public:
         // this should go to a different thread
         emit queueCommand(command);
     }
+
+    int id() const { return id_; }
+    void setId(int _id) { id_ = _id; }
 
     void sendSessionCommand(const ::google::protobuf::Message &cmd);
     void sendLobbyCommand(const ::google::protobuf::Message &cmd);

@@ -11,6 +11,7 @@ message EventPing {}
 message EventServerHandshake {
     string version = 1;
     sint32 database_version = 2;
+    sint32 client_id = 3;
 }
 
 message EventDatabase {

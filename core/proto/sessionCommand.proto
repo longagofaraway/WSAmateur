@@ -9,3 +9,7 @@ message SessionCommand {
 message CommandPing {}
 
 message CommandGetDatabase {}
+
+message CommandUserIdentification {
+    string name = 1;
+}
