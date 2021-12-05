@@ -48,7 +48,7 @@ void ServerProtocolHandler::sendInvite(ServerProtocolHandler *sender) {
     QMutexLocker locker(&mInvitesMutex);
     mReceivedInvites.emplace(sender->id());
 
-    EventInviteToPlay event;
+    EventInvitedToPlay event;
     auto userInfo = event.mutable_user_info();
     userInfo->set_id(sender->id());
     userInfo->set_name(sender->name());

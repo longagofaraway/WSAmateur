@@ -67,7 +67,7 @@ void WSApplication::processLobbyEvent(const std::shared_ptr<LobbyEvent> event) {
 
 void WSApplication::gameJoined(const EventGameJoined &event) {
     playerId = event.player_id();
-    //emit startGame();
+    emit startGame();
 }
 
 void WSApplication::userIdenditification() {
@@ -89,6 +89,7 @@ void WSApplication::componentComplete() {
     client = std::make_unique<Client>(std::move(conn));
     client->moveToThread(&clientThread);
     connect(client.get(), &Client::sessionEventReceived, this, &WSApplication::processSessionEvent);
+    connect(client.get(), &Client::lobbyEventReceived, this, &WSApplication::processLobbyEvent);
     connect(client.get(), &Client::connectionClosed, this, &WSApplication::onConnectionClosed);
 
     clientThread.start();

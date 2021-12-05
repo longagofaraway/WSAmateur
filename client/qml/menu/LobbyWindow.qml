@@ -11,13 +11,6 @@ Lobby {
     property real tableCellHeight: 40
     property int onlineCount: 0
 
-    onLobbyCreated: {
-        wsApp.initLobby(lobby);
-    }
-    onUserCountChanged: {
-        onlineCount = userCount;
-    }
-
     Image {
         id: backgroundImg
         anchors.fill: parent
@@ -156,6 +149,10 @@ Lobby {
         Component.onCompleted: {
             setInactive();
         }
+
+        onPressed: {
+            lobby.sendInvite();
+        }
     }
 
     Row {
@@ -175,5 +172,37 @@ Lobby {
             font.pointSize: 24
             color: "white"
         }
+    }
+
+    InviterWindow {
+        id: inviterWindow
+        anchors.fill: parent
+        onCancelInvite: lobby.cancelInvite()
+    }
+
+    InviteeWindow {
+        id: inviteeWindow
+        anchors.fill: parent
+        onRefuseInvite: lobby.refuseInvite()
+        onAcceptInvite: lobby.acceptInvite()
+    }
+
+    onLobbyCreated: {
+        wsApp.initLobby(lobby);
+    }
+    onUserCountChanged: {
+        onlineCount = userCount;
+    }
+    onInviteSent: {
+        inviterWindow.startCountdown();
+    }
+    onInviteReceived: {
+        inviteeWindow.show(userName);
+    }
+    onInviteWithdrawn: {
+        inviteeWindow.hide();
+    }
+    onInviteDeclined: {
+        inviterWindow.hide();
     }
 }

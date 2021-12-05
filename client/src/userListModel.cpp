@@ -26,6 +26,12 @@ int UserListModel::idByRow(int row) {
     return userList.at(row).id();
 }
 
+std::optional<int> UserListModel::selectedId() const {
+    if (selectedPlayerId == -1)
+        return std::nullopt;
+    return selectedPlayerId;
+}
+
 void UserListModel::update(std::vector<UserInfo> &&newUserList) {
     beginResetModel();
     userList.swap(newUserList);

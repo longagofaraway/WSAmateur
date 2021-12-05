@@ -16,9 +16,7 @@ Window {
 
     WSApplication {
         id: wsApp
-        onStartGame: {
-            mainLoader.source = "GameWindow.qml";
-        }
+        onStartGame: mainLoader.source = "GameWindow.qml"
         onLoadLobby: mainLoader.source = "menu/LobbyWindow.qml"
     }
 

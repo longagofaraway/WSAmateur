@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include <QAbstractTableModel>
 #include <QQuickItem>
 
@@ -25,6 +27,7 @@ public:
     Q_INVOKABLE void select(int row);
 
     int idByRow(int row);
+    std::optional<int> selectedId() const;
 
     void update(std::vector<UserInfo>&& newUserList);
 

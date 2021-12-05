@@ -26,6 +26,6 @@ message EventInviteWithdrawn {
 message EventInviteDeclined {
     InviteRefusalReason reason = 1;
 }
-message EventInviteToPlay {
+message EventInvitedToPlay {
     UserInfo user_info = 1;
 }

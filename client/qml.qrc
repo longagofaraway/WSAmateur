@@ -60,5 +60,7 @@
         <file>qml/menu/SideMenu.qml</file>
         <file>qml/menu/LobbyWindow.qml</file>
         <file>qml/menu/SideMenuItem.qml</file>
+        <file>qml/menu/InviterWindow.qml</file>
+        <file>qml/menu/InviteeWindow.qml</file>
     </qresource>
 </RCC>
