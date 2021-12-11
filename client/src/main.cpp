@@ -7,6 +7,8 @@
 #include "application.h"
 #include "cardModel.h"
 #include "choiceDialog.h"
+#include "deckMenu.h"
+#include "deckMenuModel.h"
 #include "game.h"
 #include "userListModel.h"
 #include "lobby.h"
@@ -32,7 +34,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<ChoiceDialogModel>("wsamateur", 1, 0, "ChoiceDialogModel");
     qmlRegisterType<AbilityModel>("wsamateur", 1, 0, "AbilityModel");
     qmlRegisterType<Lobby>("wsamateur", 1, 0, "Lobby");
+    qmlRegisterType<DeckMenu>("wsamateur", 1, 0, "DeckMenu");
     qmlRegisterType<UserListModel>("wsamateur", 1, 0, "UserListModel");
+    qmlRegisterType<DeckMenuModel>("wsamateur", 1, 0, "DeckMenuModel");
 
     qRegisterMetaType<uint16_t>("uint16_t");
 

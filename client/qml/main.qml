@@ -18,6 +18,13 @@ Window {
         id: wsApp
         onStartGame: mainLoader.source = "GameWindow.qml"
         onLoadLobby: mainLoader.source = "menu/LobbyWindow.qml"
+
+        function switchToDeckMenu() {
+            mainLoader.source = "menu/DecksWindow.qml"
+        }
+        function switchToLobby() {
+            mainLoader.source = "menu/LobbyWindow.qml"
+        }
     }
 
     Loader {

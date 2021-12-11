@@ -90,8 +90,7 @@ QVariant UserListModel::headerData(int section, Qt::Orientation orientation, int
     return QVariant();
 }
 
-QHash<int, QByteArray> UserListModel::roleNames() const
-{
+QHash<int, QByteArray> UserListModel::roleNames() const {
     static QHash<int, QByteArray> *roles;
     if (!roles) {
         roles = new QHash<int, QByteArray>;

@@ -1,13 +1,12 @@
 import QtQuick 2.0
 
 Item {
-    id: inviteeWindow
+    id: modalUrl
 
-    property string name: ""
-    signal acceptInvite()
-    signal refuseInvite()
+    signal add(string url)
+    signal cancel()
 
-    visible: false
+    visible: true
 
     MouseArea {
         anchors.fill: parent
@@ -16,6 +15,8 @@ Item {
     }
 
     Rectangle {
+        id: mainRectangle
+
         anchors.centerIn: parent
 
         width: mainWindow.width / 3
@@ -33,17 +34,19 @@ Item {
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                 }
-                text: "User " + name
+                text: "Paste EncoreDecks link:"
                 color: "white"
                 font.pointSize: 24
             }
-            Text {
+
+            BasicTextInput {
+                id: urlInput
+
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                 }
-                text: "is inviting you to play"
-                color: "white"
-                font.pointSize: 24
+
+                width: mainRectangle.width * 0.7
             }
 
             Row {
@@ -57,29 +60,25 @@ Item {
 
                     text: "Cancel"
                     onPressed: {
-                        inviteeWindow.visible = false;
-                        refuseInvite();
+                        modalUrl.visible = false;
+                        modalUrl.cancel();
                     }
                 }
                 MenuButton {
                     width: 220
 
-                    text: "Accept"
+                    text: "Add"
                     onPressed: {
-                        acceptInvite();
-                        inviteeWindow.visible = false;
+                        modalUrl.add(urlInput.text);
+                        modalUrl.visible = false;
                     }
                 }
             }
         }
     }
 
-    function show(userName) {
-        inviteeWindow.name = userName;
-        inviteeWindow.visible = true;
-    }
-
-    function hide() {
-        inviteeWindow.visible = false;
+    function show() {
+        urlInput.clear();
+        modalUrl.visible = true;
     }
 }

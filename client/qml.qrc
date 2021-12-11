@@ -62,5 +62,8 @@
         <file>qml/menu/SideMenuItem.qml</file>
         <file>qml/menu/InviterWindow.qml</file>
         <file>qml/menu/InviteeWindow.qml</file>
+        <file>qml/menu/DecksWindow.qml</file>
+        <file>qml/menu/UrlInput.qml</file>
+        <file>qml/menu/BasicTextInput.qml</file>
     </qresource>
 </RCC>

@@ -3,6 +3,7 @@ import QtQuick 2.0
 Rectangle {
     id: menuItem
 
+    signal menuClicked()
     property string text: ""
     property bool active: false
     property var activeGradient: Gradient {
@@ -42,5 +43,6 @@ Rectangle {
         hoverEnabled: true
         onEntered: menuItem.gradient = menuItem.hoverGradient
         onExited: menuItem.gradient = menuItem.inactiveGradient
+        onClicked: menuItem.menuClicked()
     }
 }

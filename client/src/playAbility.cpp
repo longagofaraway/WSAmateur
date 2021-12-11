@@ -18,7 +18,6 @@ auto decodingWrapper(const std::string &buf, F &decodeFunction) {
     auto it = binbuf.cbegin();
     return decodeFunction(it, binbuf.end());
 }
-
 }
 
 int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place &place) {

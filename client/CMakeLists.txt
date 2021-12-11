@@ -12,6 +12,8 @@ set(clientSources
     src/client.cpp
     src/clientConnection.cpp
     src/commonCardZone.cpp
+    src/deckMenu.cpp
+    src/deckMenuModel.cpp
     src/deckView.cpp
     src/game.cpp
     src/hand.cpp
@@ -38,6 +40,8 @@ set(clientSources
     src/client.h
     src/clientConnection.h
     src/commonCardZone.h
+    src/deckMenu.h
+    src/deckMenuModel.h
     src/deckView.h
     src/game.h
     src/hand.h

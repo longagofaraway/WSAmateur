@@ -57,7 +57,7 @@ Lobby {
             model: lobby.userListModel
             // https://bugreports.qt.io/browse/QTBUG-88555
             // syncView: tableView
-            z:100
+            z: 100
 
             anchors {
                 bottom: tableView.top
