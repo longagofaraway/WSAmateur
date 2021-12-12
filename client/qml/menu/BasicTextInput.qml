@@ -1,6 +1,8 @@
 import QtQuick 2.12
 
 Rectangle {
+    id: basicTextInput
+
     property string text: textInput.text
 
     width: 100
@@ -14,6 +16,7 @@ Rectangle {
         anchors.margins: 4
         verticalAlignment: TextInput.AlignVCenter
         selectByMouse: true
+        focus: true
 
         property string placeholderText: "Enter value"
 
@@ -27,5 +30,10 @@ Rectangle {
 
     function clear() {
         textInput.text = "";
+        basicTextInput.border.color = "grey";
+    }
+
+    function setError() {
+        basicTextInput.border.color = "red";
     }
 }

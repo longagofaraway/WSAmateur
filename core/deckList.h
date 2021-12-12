@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 
+#include <QString>
+
+class QString;
+class QByteArray;
 class QXmlStreamReader;
 
 struct DeckCard {
@@ -14,19 +18,25 @@ struct DeckCard {
 
 class DeckList
 {
-    std::string mName;
-    std::string mComments;
-    std::vector<DeckCard> mCards;
-    std::string mDeck;
+    std::string name_;
+    std::string comments_;
+    std::vector<DeckCard> cards_;
+    std::string deck_;
 public:
     DeckList() {}
 
-    void setDeck(const std::string &deck);
+    bool fromXml(const std::string &deck_string);
+    bool fromXml(const QString &deck_string);
+    bool fromEncoreDecksResponse(const QByteArray &data);
 
-    const std::vector<DeckCard>& cards() const { return mCards; }
-    const std::string& deck() const { return mDeck; }
+    QString toXml() const;
+
+    const std::vector<DeckCard>& cards() const { return cards_; }
+    const std::string& deck() const { return deck_; }
+    const std::string& name() const { return name_; }
+    const QString qname() const { return QString::fromStdString(name_); }
 
 private:
     void readCards(QXmlStreamReader &xml);
-    void readElement(QXmlStreamReader &xml);
+    bool parseXml(QXmlStreamReader &xml);
 };

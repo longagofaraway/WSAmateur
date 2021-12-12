@@ -112,7 +112,7 @@ void ServerPlayer::sendToBoth(const google::protobuf::Message &event) {
 
 void ServerPlayer::addDeck(const std::string &deck) {
     mDeck = std::make_unique<DeckList>();
-    mDeck->setDeck(deck);
+    mDeck->fromXml(deck);
 
     mExpectedCommands.push_back(CommandReadyToStart::descriptor()->name());
 

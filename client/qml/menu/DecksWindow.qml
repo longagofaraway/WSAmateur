@@ -5,11 +5,13 @@ import QtQuick.Controls 2.15
 import wsamateur 1.0
 import ".."
 
+
 DeckMenu {
     id: deckMenu
 
     property real tableCellWidth: 400
     property real tableCellHeight: 300
+    anchors.fill: parent
 
     Image {
         id: backgroundImg
@@ -112,7 +114,9 @@ DeckMenu {
                     id: addDeckArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    onClicked: urlInput.show()
+                    onClicked: {
+                        urlInput.show();
+                    }
                 }
             }
         }
@@ -122,6 +126,19 @@ DeckMenu {
         id: urlInput
 
         anchors.fill: parent
-        onAdd: deckMenu.addDeck(url);
+        onAdd: {
+            if (!deckMenu.addDeck(url))
+                urlInput.setError();
+        }
+        onCancel: deckMenu.cancelRequest()
+    }
+
+    onDeckDownloadError: {
+        urlInput.activateAddButton();
+        urlInput.setError();
+    }
+    onDeckDownloadSuccess: {
+        urlInput.activateAddButton();
+        urlInput.visible = false;
     }
 }

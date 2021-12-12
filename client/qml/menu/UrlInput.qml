@@ -6,7 +6,7 @@ Item {
     signal add(string url)
     signal cancel()
 
-    visible: true
+    visible: false
 
     MouseArea {
         anchors.fill: parent
@@ -65,12 +65,13 @@ Item {
                     }
                 }
                 MenuButton {
+                    id: addButton
                     width: 220
 
                     text: "Add"
                     onPressed: {
+                        addButton.active = false;
                         modalUrl.add(urlInput.text);
-                        modalUrl.visible = false;
                     }
                 }
             }
@@ -80,5 +81,14 @@ Item {
     function show() {
         urlInput.clear();
         modalUrl.visible = true;
+    }
+
+    function setError() {
+        addButton.active = true;
+        urlInput.setError();
+    }
+
+    function activateAddButton() {
+        addButton.active = true;
     }
 }

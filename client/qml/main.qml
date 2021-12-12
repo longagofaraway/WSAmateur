@@ -20,7 +20,7 @@ Window {
         onLoadLobby: mainLoader.source = "menu/LobbyWindow.qml"
 
         function switchToDeckMenu() {
-            mainLoader.source = "menu/DecksWindow.qml"
+            mainLoader.source = "menu/DecksWindow.qml";
         }
         function switchToLobby() {
             mainLoader.source = "menu/LobbyWindow.qml"
@@ -31,5 +31,6 @@ Window {
         id: mainLoader
         anchors.fill: parent
         source: "MainWindow.qml"
+        focus: true
     }
 }

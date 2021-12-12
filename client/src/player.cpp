@@ -68,7 +68,7 @@ void Player::setDeck(const std::string &deck) {
     if (deck.empty())
         return;
 
-    mDeckList.setDeck(deck);
+    mDeckList.fromXml(deck);
     int cardCount = 0;
     for (const auto &card: mDeckList.cards())
         cardCount += card.count;
