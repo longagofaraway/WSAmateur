@@ -141,4 +141,12 @@ DeckMenu {
         urlInput.activateAddButton();
         urlInput.visible = false;
     }
+    onUnsupportedCardMet: {
+        onDeckDownloadError();
+
+        let comp = Qt.createComponent("UnsupportedCardsError.qml");
+        var errorWindow = comp.createObject(deckMenu);
+        errorWindow.cards = unsupportedCards;
+        errorWindow.anchors.fill = deckMenu;
+    }
 }

@@ -7,6 +7,7 @@
 #include <QNetworkAccessManager>
 #include <QStandardPaths>
 
+#include <cardDatabase.h>
 #include <deckList.h>
 
 namespace {
@@ -35,6 +36,18 @@ bool saveDeckToFile(const DeckList &deck) {
     file.close();
 
     return true;
+}
+
+QStringList checkDeckCardsSupported(const DeckList& deck) {
+    const auto &cardDb = CardDatabase::get();
+    QStringList unsupportedCards;
+    for (const auto &card: deck.cards()) {
+        auto cardInfo = cardDb.getCard(card.code);
+        if (cardInfo)
+            continue;
+        unsupportedCards.append(QString::fromStdString(card.code));
+    }
+    return unsupportedCards;
 }
 }
 
@@ -86,6 +99,12 @@ void DeckMenu::deckDownloaded() {
         return;
     }
 
+    auto unsupportedCards = checkDeckCardsSupported(deck);
+    if (!unsupportedCards.empty()) {
+        emit unsupportedCardMet(unsupportedCards);
+        return;
+    }
+
     if (!saveDeckToFile(deck)) {
         emit deckDownloadError();
         return;
@@ -117,6 +136,9 @@ void DeckMenu::loadDecksFromFs() {
         auto deck = deckFile.readAll();
         DeckList deckList;
         if (!deckList.fromXml(deck))
+            continue;
+        auto unsupportedCards = checkDeckCardsSupported(deckList);
+        if (!unsupportedCards.empty())
             continue;
         items.emplace_back(DeckMenuItem{
                                QString::fromStdString(deckList.name()),

@@ -189,7 +189,7 @@ void CardDatabase::init() {
     initialized_ = true;
 }
 
-std::shared_ptr<CardInfo> CardDatabase::getCard(const std::string &code) {
+std::shared_ptr<CardInfo> CardDatabase::getCard(const std::string &code) const {
     if (!cards.count(code))
         return {};
 

@@ -65,5 +65,6 @@
         <file>qml/menu/DecksWindow.qml</file>
         <file>qml/menu/UrlInput.qml</file>
         <file>qml/menu/BasicTextInput.qml</file>
+        <file>qml/menu/UnsupportedCardsError.qml</file>
     </qresource>
 </RCC>

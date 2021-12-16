@@ -30,6 +30,7 @@ public:
 signals:
     void deckDownloadError();
     void deckDownloadSuccess();
+    void unsupportedCardMet(QStringList unsupportedCards);
 
 private slots:
     void deckDownloaded();
