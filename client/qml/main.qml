@@ -18,6 +18,9 @@ Window {
         id: wsApp
         onStartGame: mainLoader.source = "GameWindow.qml"
         onLoadLobby: mainLoader.source = "menu/LobbyWindow.qml"
+        onImageLinksFileNotFound: mainLoader.item.chooseImageLinksFile()
+        onImageFileParsed: mainLoader.item.parseSuccess()
+        onImageFileParseError: mainLoader.item.parseError()
 
         function switchToDeckMenu() {
             mainLoader.source = "menu/DecksWindow.qml";

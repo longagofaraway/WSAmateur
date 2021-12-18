@@ -2,10 +2,6 @@
 
 
 DeckMenuModel::DeckMenuModel() {
-    decks.push_back(DeckMenuItem{"deck1"});
-    decks.push_back(DeckMenuItem{"deck2"});
-    decks.push_back(DeckMenuItem{"deck3"});
-    decks.push_back(DeckMenuItem{"deck4"});
     decks.push_back(DeckMenuItem{"last element"});
 }
 
@@ -39,7 +35,6 @@ QVariant DeckMenuModel::data(const QModelIndex &index, int role) const {
     if (static_cast<size_t>(vectorIndex) >= decks.size())
         indexValid = false;
 
-    const auto &deck = decks[vectorIndex];
     switch (role) {
     case NameRole:
         return indexValid ? decks[vectorIndex].name : "";

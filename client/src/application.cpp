@@ -10,7 +10,9 @@
 #include <version_string.h>
 
 #include "cardDatabase.h"
+#include "filesystemPaths.h"
 #include "game.h"
+#include "imageLinks.h"
 #include "lobby.h"
 #include "remoteClientConnection.h"
 
@@ -25,7 +27,7 @@ WSApplication::WSApplication() {
     try {
         // init db
         CardDatabase::get().init();
-    } catch (const std::exception &e) {
+    } catch (const std::exception &) {
     }
 }
 
@@ -43,6 +45,17 @@ void WSApplication::initGame(Game *game) {
 
 void WSApplication::initLobby(Lobby *lobby) {
     lobby->init(client.get());
+}
+
+void WSApplication::imageLinksFileChosen(QString path) {
+    if (!ImageLinks::get().setData(path)) {
+        emit imageFileParseError();
+        return;
+    }
+
+    emit imageFileParsed();
+
+    connectToServer();
 }
 
 void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> event) {
@@ -76,14 +89,7 @@ void WSApplication::userIdenditification() {
     client->sendSessionCommand(cmd);
 }
 
-void WSApplication::onConnectionClosed() {
-    connectionFailed = true;
-    //emit startGame();
-}
-
-void WSApplication::componentComplete() {
-    QQuickItem::componentComplete();
-
+void WSApplication::connectToServer() {
     auto conn = std::make_unique<RemoteClientConnection>();
 
     client = std::make_unique<Client>(std::move(conn));
@@ -94,6 +100,29 @@ void WSApplication::componentComplete() {
 
     clientThread.start();
     client->connectToHost("127.0.0.1", 7474);
+}
+
+bool WSApplication::checkImageLinksFile() {
+    QFile imageLinksFile(paths::imageLinksPath());
+    if (!imageLinksFile.exists()) {
+        emit imageLinksFileNotFound();
+        return false;
+    }
+    return true;
+}
+
+void WSApplication::onConnectionClosed() {
+    connectionFailed = true;
+    //emit startGame();
+}
+
+void WSApplication::componentComplete() {
+    QQuickItem::componentComplete();
+
+    if (!checkImageLinksFile())
+        return;
+
+    connectToServer();
 }
 
 namespace {
@@ -145,7 +174,7 @@ void WSApplication::updateDatabase(const EventDatabase &event) {
     try {
         CardDatabase::get().update(db);
         CardDatabase::get().init();
-    } catch (const std::exception &e) {
+    } catch (const std::exception &) {
         emit error();
     }
     userIdenditification();

@@ -22,13 +22,7 @@ Lobby {
         id: colorOverlay
         anchors.fill: backgroundImg
         source: backgroundImg
-        color: "#00000000"
-
-        ColorAnimation on color {
-            running: true
-            to: "#90000000"
-            duration: 1000
-        }
+        color: "#90000000"
     }
 
     SideMenu {

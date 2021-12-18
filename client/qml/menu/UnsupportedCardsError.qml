@@ -17,13 +17,14 @@ Item {
         anchors.centerIn: parent
 
         width: mainWindow.width / 2.7
-        height: childrenRect.height * 1.2//mainWindow.height / 4.6
+        height: mainColumn.implicitHeight * 1.2
         border.width: 2
         border.color: "white"
         color: "#E0000000"
         radius: 10
 
         Column {
+            id: mainColumn
             anchors.centerIn: parent
             spacing: 20
 

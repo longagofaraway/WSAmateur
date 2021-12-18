@@ -15,8 +15,10 @@ set(clientSources
     src/deckMenu.cpp
     src/deckMenuModel.cpp
     src/deckView.cpp
+    src/filesystemPaths.cpp
     src/game.cpp
     src/hand.cpp
+    src/imageLinks.cpp
     src/imageProvider.cpp
     src/lobby.cpp
     src/localClientConnection.cpp
@@ -43,8 +45,10 @@ set(clientSources
     src/deckMenu.h
     src/deckMenuModel.h
     src/deckView.h
+    src/filesystemPaths.h
     src/game.h
     src/hand.h
+    src/imageLinks.h
     src/imageProvider.h
     src/lobby.h
     src/localClientConnection.h

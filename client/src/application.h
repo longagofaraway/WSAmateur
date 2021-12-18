@@ -27,12 +27,17 @@ public:
 
     Q_INVOKABLE void initGame(Game *game);
     Q_INVOKABLE void initLobby(Lobby *lobby);
+    Q_INVOKABLE void imageLinksFileChosen(QString path);
 
 signals:
     void startGame();
     void needUpdate();
-    void error();
     void loadLobby();
+    void imageFileParsed();
+
+    void error();
+    void imageLinksFileNotFound();
+    void imageFileParseError();
 
 private slots:
     void processSessionEvent(const std::shared_ptr<SessionEvent> event);
@@ -49,5 +54,7 @@ private:
     void enterLobby();
     void gameJoined(const EventGameJoined &event);
     void userIdenditification();
+    void connectToServer();
+    bool checkImageLinksFile();
 };
 

@@ -41,7 +41,7 @@ void UserListModel::update(std::vector<UserInfo> &&newUserList) {
     for (size_t i = 0; i < userList.size(); ++i) {
         if (userList[i].id() != selectedPlayerId)
             continue;
-        selectedRow = i;
+        selectedRow = static_cast<int>(i);
         userFound = true;
         break;
     }

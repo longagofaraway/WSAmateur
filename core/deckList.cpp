@@ -131,7 +131,7 @@ QString DeckList::toXml() const {
     for (const auto &card: cards_){
         xml.writeEmptyElement("card");
         xml.writeAttribute("number", QString::number(card.count));
-        xml.writeAttribute("name", QString::fromStdString(card.code));
+        xml.writeAttribute("code", QString::fromStdString(card.code));
     }
     xml.writeEndElement();
 
