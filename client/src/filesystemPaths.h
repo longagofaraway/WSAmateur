@@ -4,4 +4,5 @@
 
 namespace paths {
 QString imageLinksPath();
+QString settingsPath();
 }

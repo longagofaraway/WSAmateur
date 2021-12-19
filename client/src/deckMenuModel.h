@@ -28,6 +28,7 @@ public:
 
     void setDecks(std::vector<DeckMenuItem> &&newData);
     void addDeck(DeckMenuItem &&deck);
+    const std::vector<DeckMenuItem>& items() const;
 
     int rowCount(const QModelIndex & = QModelIndex()) const override;
     int columnCount(const QModelIndex & = QModelIndex()) const override;

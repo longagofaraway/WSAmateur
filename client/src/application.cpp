@@ -15,6 +15,7 @@
 #include "imageLinks.h"
 #include "lobby.h"
 #include "remoteClientConnection.h"
+#include "settingsManager.h"
 
 #include <QDebug>
 
@@ -36,6 +37,28 @@ WSApplication::~WSApplication() {
     clientThread.wait();
 }
 
+void WSApplication::componentComplete() {
+    QQuickItem::componentComplete();
+
+    initialization();
+}
+
+void WSApplication::initialization() {
+    if (initPhase == InitPhase::ImageFileLinks) {
+        if (!checkImageLinksFile())
+            return;
+        initPhase = InitPhase::Username;
+    }
+
+    if (initPhase == InitPhase::Username) {
+        if (!checkUsername())
+            return;
+        initPhase = InitPhase::Done;
+    }
+
+    connectToServer();
+}
+
 void WSApplication::initGame(Game *game) {
     if (!connectionFailed)
         game->startNetworkGame(client.get(), playerId);
@@ -55,7 +78,32 @@ void WSApplication::imageLinksFileChosen(QString path) {
 
     emit imageFileParsed();
 
-    connectToServer();
+    initialization();
+}
+
+void WSApplication::setUsername(QString name) {
+    SettingsManager::get().setUsername(name);
+    emit usernameSet();
+
+    initialization();
+}
+
+bool WSApplication::checkImageLinksFile() {
+    QFile imageLinksFile(paths::imageLinksPath());
+    if (!imageLinksFile.exists()) {
+        emit imageLinksFileNotFound();
+        return false;
+    }
+    return true;
+}
+
+bool WSApplication::checkUsername() {
+    auto &settingsManager = SettingsManager::get();
+    if (!settingsManager.hasUsername()) {
+        emit usernameNotFound();
+        return false;
+    }
+    return true;
 }
 
 void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> event) {
@@ -85,7 +133,7 @@ void WSApplication::gameJoined(const EventGameJoined &event) {
 
 void WSApplication::userIdenditification() {
     CommandUserIdentification cmd;
-    cmd.set_name("Ivan");
+    cmd.set_name(SettingsManager::get().getUsername().toStdString());
     client->sendSessionCommand(cmd);
 }
 
@@ -102,27 +150,9 @@ void WSApplication::connectToServer() {
     client->connectToHost("127.0.0.1", 7474);
 }
 
-bool WSApplication::checkImageLinksFile() {
-    QFile imageLinksFile(paths::imageLinksPath());
-    if (!imageLinksFile.exists()) {
-        emit imageLinksFileNotFound();
-        return false;
-    }
-    return true;
-}
-
 void WSApplication::onConnectionClosed() {
     connectionFailed = true;
     //emit startGame();
-}
-
-void WSApplication::componentComplete() {
-    QQuickItem::componentComplete();
-
-    if (!checkImageLinksFile())
-        return;
-
-    connectToServer();
 }
 
 namespace {

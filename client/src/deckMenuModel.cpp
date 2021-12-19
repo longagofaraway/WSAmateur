@@ -21,6 +21,10 @@ void DeckMenuModel::addDeck(DeckMenuItem &&deck) {
     endInsertRows();
 }
 
+const std::vector<DeckMenuItem>& DeckMenuModel::items() const {
+    return decks;
+}
+
 int DeckMenuModel::rowCount(const QModelIndex &) const {
     return static_cast<int>(decks.size() / kColumnCount) + 1;
 }

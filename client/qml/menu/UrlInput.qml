@@ -31,6 +31,17 @@ Item {
             spacing: 20
 
             Text {
+                id: errorReason
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                }
+                text: ""
+                color: "red"
+                font.pointSize: 18
+                visible: false
+            }
+
+            Text {
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                 }
@@ -80,12 +91,15 @@ Item {
 
     function show() {
         urlInput.clear();
+        errorReason.visible = false;
         modalUrl.visible = true;
     }
 
-    function setError() {
+    function setError(reason) {
         addButton.active = true;
+        errorReason.text = reason;
         urlInput.setError();
+        errorReason.visible = true;
     }
 
     function activateAddButton() {

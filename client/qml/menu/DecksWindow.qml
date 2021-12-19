@@ -135,7 +135,7 @@ DeckMenu {
 
     onDeckDownloadError: {
         urlInput.activateAddButton();
-        urlInput.setError();
+        urlInput.setError(reason);
     }
     onDeckDownloadSuccess: {
         urlInput.activateAddButton();

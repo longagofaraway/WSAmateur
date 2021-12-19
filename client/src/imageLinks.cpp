@@ -45,10 +45,6 @@ bool ImageLinks::setData(QString filePath) {
                                object["url"].toString());
     }
 
-    auto pp = paths::imageLinksPath();
-    qDebug() << pp;
-    auto pp1 = paths::imageLinksPath();
-    qDebug() << pp1;
     QFile localImageFile(paths::imageLinksPath());
     if (!localImageFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return false;

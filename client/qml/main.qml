@@ -21,6 +21,8 @@ Window {
         onImageLinksFileNotFound: mainLoader.item.chooseImageLinksFile()
         onImageFileParsed: mainLoader.item.parseSuccess()
         onImageFileParseError: mainLoader.item.parseError()
+        onUsernameNotFound: mainLoader.item.enterUsername()
+        onUsernameSet: mainLoader.item.usernameSet()
 
         function switchToDeckMenu() {
             mainLoader.source = "menu/DecksWindow.qml";

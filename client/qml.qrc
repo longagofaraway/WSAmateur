@@ -67,5 +67,6 @@
         <file>qml/menu/BasicTextInput.qml</file>
         <file>qml/menu/UnsupportedCardsError.qml</file>
         <file>qml/menu/ChooseFileWindow.qml</file>
+        <file>qml/menu/ChooseUsername.qml</file>
     </qresource>
 </RCC>

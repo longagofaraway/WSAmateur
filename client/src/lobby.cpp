@@ -111,6 +111,10 @@ void Lobby::joinQueue() {
     client->sendLobbyCommand(CommandEnterQueue());
 }
 
+void Lobby::leaveQueue() {
+    client->sendLobbyCommand(CommandLeaveQueue());
+}
+
 bool Lobby::canInvite(int row) {
     return client->id() != model.idByRow(row);
 }

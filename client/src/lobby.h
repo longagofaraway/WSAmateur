@@ -29,6 +29,7 @@ public:
     UserListModel* userListModel() { return &model; }
 
     Q_INVOKABLE void joinQueue();
+    Q_INVOKABLE void leaveQueue();
     Q_INVOKABLE bool canInvite(int row);
     Q_INVOKABLE void sendInvite();
     Q_INVOKABLE void cancelInvite();

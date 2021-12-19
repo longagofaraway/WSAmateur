@@ -8,6 +8,7 @@ Item {
     id: startWindow
 
     property var imageLinksFileDialog
+    property var usernameChoiceDialog
 
     Image {
         id: backgroundImg
@@ -71,6 +72,21 @@ Item {
 
     function parseSuccess() {
         imageLinksFileDialog.destroy();
+        loading.visible = true;
+    }
+
+    function enterUsername() {
+        let comp = Qt.createComponent("menu/ChooseUsername.qml");
+        usernameChoiceDialog = comp.createObject(startWindow);
+        usernameChoiceDialog.anchors.centerIn = startWindow;
+        loading.visible = false;
+        usernameChoiceDialog.usernameChosen.connect(startWindow.usernameChosen);
+    }
+    function usernameChosen(path) {
+        wsApp.setUsername(path);
+    }
+    function usernameSet() {
+        usernameChoiceDialog.destroy();
         loading.visible = true;
     }
 }

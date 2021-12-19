@@ -86,7 +86,7 @@ void DeckMenu::deckDownloaded() {
     QNetworkReply::NetworkError errorCode = reply->error();
     if (errorCode != QNetworkReply::NoError) {
         reply->deleteLater();
-        emit deckDownloadError();
+        emit deckDownloadError("Network error");
         return;
     }
 
@@ -95,7 +95,7 @@ void DeckMenu::deckDownloaded() {
 
     DeckList deck;
     if (!deck.fromEncoreDecksResponse(data)) {
-        emit deckDownloadError();
+        emit deckDownloadError("Parsing error");
         return;
     }
 
@@ -106,7 +106,12 @@ void DeckMenu::deckDownloaded() {
     }
 
     if (!saveDeckToFile(deck)) {
-        emit deckDownloadError();
+        emit deckDownloadError("Error saving to disk");
+        return;
+    }
+
+    if (deckWithSameNameExists(deck)) {
+        emit deckDownloadError("Deck with the same name exists");
         return;
     }
 
@@ -147,6 +152,14 @@ void DeckMenu::loadDecksFromFs() {
     }
 
     model.setDecks(std::move(items));
+}
+
+bool DeckMenu::deckWithSameNameExists(const DeckList &deck) {
+    for (const auto &deckIt: model.items()) {
+        if (deckIt.name == deck.qname())
+            return true;
+    }
+    return false;
 }
 
 void DeckMenu::componentComplete() {

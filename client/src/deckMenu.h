@@ -9,6 +9,8 @@
 class QNetworkReply;
 class QNetworkAccessManager;
 
+class DeckList;
+
 class DeckMenu : public QQuickItem
 {
     Q_OBJECT
@@ -28,13 +30,16 @@ public:
     Q_INVOKABLE void cancelRequest();
 
 signals:
-    void deckDownloadError();
+    void deckDownloadError(QString reason);
     void deckDownloadSuccess();
     void unsupportedCardMet(QStringList unsupportedCards);
 
 private slots:
     void deckDownloaded();
     void loadDecksFromFs();
+
+private:
+    bool deckWithSameNameExists(const DeckList& deck);
 
 protected:
     void componentComplete() override;

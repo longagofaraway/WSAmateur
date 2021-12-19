@@ -118,6 +118,7 @@ Lobby {
     }
 
     MenuButton {
+        property bool joined: false
         text: "Join lobby"
         anchors {
             top: tableRectangle.bottom
@@ -126,7 +127,15 @@ Lobby {
             leftMargin: 20
         }
         onPressed: {
-            lobby.joinQueue()
+            if (!joined) {
+                lobby.joinQueue()
+                joined = true;
+                text = "Leave lobby";
+            } else {
+                lobby.leaveQueue()
+                joined = false;
+                text = "Join lobby";
+            }
         }
     }
 
