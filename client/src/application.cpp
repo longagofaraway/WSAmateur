@@ -94,6 +94,11 @@ bool WSApplication::checkImageLinksFile() {
         emit imageLinksFileNotFound();
         return false;
     }
+
+    if (!ImageLinks::get().setData(paths::imageLinksPath())) {
+        emit imageLinksFileNotFound();
+        return false;
+    }
     return true;
 }
 

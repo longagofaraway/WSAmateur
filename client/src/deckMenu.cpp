@@ -10,15 +10,9 @@
 #include <cardDatabase.h>
 #include <deckList.h>
 
+#include "filesystemPaths.h"
+
 namespace {
-QString getThumbnail(const DeckList &deck) {
-    auto& cards = deck.cards();
-    if (cards.empty())
-        return "cardback";
-
-    return QString::fromStdString(cards.front().code);
-}
-
 bool saveDeckToFile(const DeckList &deck) {
     QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir dir(appData);
@@ -49,10 +43,22 @@ QStringList checkDeckCardsSupported(const DeckList& deck) {
     }
     return unsupportedCards;
 }
+
+bool allImagesDownloaded(const DeckList& deck) {
+    for (const auto &card: deck.cards()) {
+        if (!paths::cardImageExists(card.code))
+            return false;
+    }
+    return true;
+}
 }
 
 DeckMenu::DeckMenu() {
     networkManager = new QNetworkAccessManager(this);
+    imageLoader = new ImageLoader(this);
+    connect(imageLoader, &ImageLoader::markProgress, this, &DeckMenu::markProgress);
+    connect(imageLoader, &ImageLoader::deckDownloaded, this, &DeckMenu::imagesDownloaded);
+    connect(imageLoader, &ImageLoader::downloadError, this, &DeckMenu::imagesDownloadError);
 }
 
 bool DeckMenu::addDeck(QString url) {
@@ -78,6 +84,15 @@ void DeckMenu::cancelRequest() {
         encoreDecksReply.value()->abort();
         encoreDecksReply.reset();
     }
+}
+
+void DeckMenu::downloadImages(int row, int column) {
+    model.setDowloadStarted(row, column);
+
+    auto deck = model.getDeck(row, column);
+    if (!deck)
+        return;
+    imageLoader->downloadDeckImages(*deck);
 }
 
 void DeckMenu::deckDownloaded() {
@@ -115,7 +130,10 @@ void DeckMenu::deckDownloaded() {
         return;
     }
 
-    model.addDeck(DeckMenuItem{QString::fromStdString(deck.name()), getThumbnail(deck)});
+    bool hasAllImages = allImagesDownloaded(deck);
+    model.addDeck(deck, hasAllImages, true);
+    if (!hasAllImages)
+        imageLoader->downloadDeckImages(deck);
     emit deckDownloadSuccess();
 }
 
@@ -142,16 +160,27 @@ void DeckMenu::loadDecksFromFs() {
         DeckList deckList;
         if (!deckList.fromXml(deck))
             continue;
+
         auto unsupportedCards = checkDeckCardsSupported(deckList);
         if (!unsupportedCards.empty())
             continue;
-        items.emplace_back(DeckMenuItem{
-                               QString::fromStdString(deckList.name()),
-                               getThumbnail(deckList)
-                           });
+
+        items.emplace_back(deckList, allImagesDownloaded(deckList));
     }
 
     model.setDecks(std::move(items));
+}
+
+void DeckMenu::markProgress(int percent, QString deckName) {
+    model.updatePercent(deckName, percent);
+}
+
+void DeckMenu::imagesDownloaded(QString deckName) {
+    model.dowloadFinished(deckName);
+}
+
+void DeckMenu::imagesDownloadError(QString message, QString deckName) {
+    model.setErrorMessage(deckName, message);
 }
 
 bool DeckMenu::deckWithSameNameExists(const DeckList &deck) {

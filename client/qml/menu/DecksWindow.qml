@@ -72,6 +72,49 @@ DeckMenu {
                 height: deckMenu.height * 0.1685
 
                 visible: !model.lastElement && !model.invalidElement
+
+                Rectangle {
+                    visible: !model.hasAllImages
+                    anchors.centerIn: parent
+                    width: parent.width * 0.92
+                    height: 20
+                    color: "white"
+                    border.width: 1
+                    border.color: "black"
+
+                    Rectangle {
+                        id: progressBar
+                        visible: model.downloadInProgress
+                        anchors {
+                            left: parent.left
+                            top: parent.top
+                            bottom: parent.bottom
+                        }
+                        width: parent.width * model.percent / 100
+                        color: "green"
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: {
+                            if (model.downloadInProgress)
+                                return model.percent.toString() + "%";
+                            if (model.errorMessage)
+                                return model.errorMessage;
+                            return "download images";
+                        }
+                        font.pointSize: 11
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            if (!model.downloadInProgress) {
+                                deckMenu.downloadImages(model.row, model.column);
+                            }
+                        }
+                    }
+                }
             }
 
             Text {
@@ -142,7 +185,7 @@ DeckMenu {
         urlInput.visible = false;
     }
     onUnsupportedCardMet: {
-        onDeckDownloadError();
+        onDeckDownloadError("Deck has unsupported cards");
 
         let comp = Qt.createComponent("UnsupportedCardsError.qml");
         var errorWindow = comp.createObject(deckMenu);

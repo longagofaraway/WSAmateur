@@ -3,15 +3,17 @@
 #include <QImageReader>
 #include <QStandardPaths>
 
+#include "filesystemPaths.h"
+
 
 AsyncImageResponse::AsyncImageResponse(const QString &id, const QSize &requestedSize)
- : mId(id), mRequestedSize(requestedSize) {
+ : id(id), requestedSize(requestedSize) {
     setAutoDelete(false);
 }
 
 void AsyncImageResponse::run() {
-    if (mId == "cardback") {
-        mImage = QImage(":/resources/images/cardback");
+    if (id == "cardback") {
+        image = QImage(":/resources/images/cardback");
         emit finished();
         return;
     }
@@ -21,33 +23,24 @@ void AsyncImageResponse::run() {
         return;
     }
 
-    mImage = QImage(50, 50, QImage::Format_RGB32);
-    mImage.fill(Qt::blue);
-    if (mRequestedSize.isValid())
-        mImage = mImage.scaled(mRequestedSize);
+    image = QImage(50, 50, QImage::Format_RGB32);
+    image.fill(Qt::blue);
+    if (requestedSize.isValid())
+        image = image.scaled(requestedSize);
 
     emit finished();
 }
 
 bool AsyncImageResponse::loadFromDisk() {
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    appData += "/downloadedPics";
-
-    auto start = mId.indexOf('/');
-    auto end = mId.indexOf('-');
-    QString set = mId.mid(start, end - start);
-    appData += "/" + set;
-
-    mId.remove('/');
-    appData += "/" + mId;
+    auto fileName = paths::cardImagePath(id);
 
     QImageReader imgReader;
     imgReader.setDecideFormatFromContent(true);
-    imgReader.setFileName(appData);
-    if (!imgReader.read(&mImage))
+    imgReader.setFileName(fileName);
+    if (!imgReader.read(&image))
         return false;
-    if (mRequestedSize.isValid())
-        mImage = mImage.scaled(mRequestedSize);
+    if (requestedSize.isValid())
+        image = image.scaled(requestedSize);
 
     return true;
 }

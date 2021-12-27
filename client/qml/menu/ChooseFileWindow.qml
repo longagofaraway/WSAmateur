@@ -27,7 +27,7 @@ Item {
 
         anchors.centerIn: parent
 
-        width: mainWindow.width / 3.2
+        width: mainWindow.width / 2.7
         height: mainWindow.height / 4.8
         border.width: 2
         border.color: "white"
@@ -51,7 +51,7 @@ Item {
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                 }
-                text: "Specify a file with card image links:"
+                text: "Specify a path to the file with card image links:"
                 color: "white"
                 font.pointSize: 24
             }

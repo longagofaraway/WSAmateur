@@ -5,15 +5,15 @@
 
 class AsyncImageResponse : public QQuickImageResponse, public QRunnable
 {
-    QString mId;
-    QSize mRequestedSize;
-    QImage mImage;
+    QString id;
+    QSize requestedSize;
+    QImage image;
 
     public:
         AsyncImageResponse(const QString &id, const QSize &requestedSize);
 
         QQuickTextureFactory *textureFactory() const override {
-            return QQuickTextureFactory::textureFactoryForImage(mImage);
+            return QQuickTextureFactory::textureFactoryForImage(image);
         }
 
         void run() override;
@@ -24,13 +24,13 @@ class AsyncImageResponse : public QQuickImageResponse, public QRunnable
 
 class AsyncImageProvider : public QQuickAsyncImageProvider
 {
-    QThreadPool mPool;
+    QThreadPool pool;
 
 public:
     QQuickImageResponse *requestImageResponse(const QString &id, const QSize &requestedSize) override
     {
         AsyncImageResponse *response = new AsyncImageResponse(id, requestedSize);
-        mPool.start(response);
+        pool.start(response);
         return response;
     }
 

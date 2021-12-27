@@ -19,6 +19,7 @@ set(clientSources
     src/game.cpp
     src/hand.cpp
     src/imageLinks.cpp
+    src/imageLoader.cpp
     src/imageProvider.cpp
     src/lobby.cpp
     src/localClientConnection.cpp
@@ -50,6 +51,7 @@ set(clientSources
     src/game.h
     src/hand.h
     src/imageLinks.h
+    src/imageLoader.h
     src/imageProvider.h
     src/lobby.h
     src/localClientConnection.h

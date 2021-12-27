@@ -5,6 +5,7 @@
 #include <QQuickItem>
 
 #include "deckMenuModel.h"
+#include "imageLoader.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -18,6 +19,7 @@ class DeckMenu : public QQuickItem
 private:
     DeckMenuModel model;
     QNetworkAccessManager *networkManager;
+    ImageLoader *imageLoader;
     std::optional<QNetworkReply*> encoreDecksReply;
 
 public:
@@ -28,6 +30,7 @@ public:
 
     Q_INVOKABLE bool addDeck(QString url);
     Q_INVOKABLE void cancelRequest();
+    Q_INVOKABLE void downloadImages(int row, int column);
 
 signals:
     void deckDownloadError(QString reason);
@@ -37,6 +40,9 @@ signals:
 private slots:
     void deckDownloaded();
     void loadDecksFromFs();
+    void markProgress(int percent, QString deckName);
+    void imagesDownloaded(QString deckName);
+    void imagesDownloadError(QString message, QString deckName);
 
 private:
     bool deckWithSameNameExists(const DeckList& deck);

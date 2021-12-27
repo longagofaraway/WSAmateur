@@ -37,7 +37,7 @@ Item {
                 }
                 text: ""
                 color: "red"
-                font.pointSize: 18
+                font.pointSize: 16
                 visible: false
             }
 
