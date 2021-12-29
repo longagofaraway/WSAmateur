@@ -124,6 +124,7 @@ void ServerGame::startGame() {
     }
 
     setStartingPlayer();
+    mFirstTurn = true;
     for (auto &playerEntry: mPlayers) {
         playerEntry.second->setupZones();
         playerEntry.second->startGame();
@@ -238,6 +239,7 @@ Resumable ServerGame::encoreStep() {
 
     resolveAllContAbilities();
 
+    mFirstTurn = false;
     co_await opponent->startTurn();
 }
 

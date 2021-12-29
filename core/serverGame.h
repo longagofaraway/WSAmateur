@@ -16,6 +16,7 @@ class ServerProtocolHandler;
 class ServerGame
 {
     int mId;
+    bool mFirstTurn = false;
     bool mGameEnded = false;
     int mNextPlayerId;
     std::string mDescription;
@@ -40,6 +41,7 @@ public:
     void passCmdToTask(const GameCommand &cmd);
     void deleteTask() { mTask.reset(); }
 
+    bool firstTurn() const { return mFirstTurn; }
     bool ended() const { return mGameEnded; }
     void setEnded() { mGameEnded = true; }
     std::unordered_map<int, std::unique_ptr<ServerPlayer>>& players() {

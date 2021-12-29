@@ -76,7 +76,7 @@ void ImageLoader::downloadNextDeck() {
         return;
     const auto &deck = decks.front();
     auto queueCards = getCardsToDownload(deck);
-    currentProgress = static_cast<int>(queueCards.size());
+    currentProgress = static_cast<int>(deck.cards().size() - queueCards.size());
     emit markProgress(getProgress(), deck.qname());
     worker->enqueueImageLoad(std::move(queueCards));
 }

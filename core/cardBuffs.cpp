@@ -19,6 +19,7 @@ void ServerPlayer::endOfTurnEffectValidation() {
 
         card->buffManager()->endOfTurnEffectValidation();
     }
+    mAttacksThisTurn = 0;
 }
 
 void ServerPlayer::removePositionalContBuffsBySource(ServerCard *source) {

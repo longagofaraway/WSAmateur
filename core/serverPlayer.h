@@ -55,6 +55,7 @@ class ServerPlayer
     bool mReady = false;
     bool mMulliganFinished = false;
     bool mActive = false;
+    int mAttacksThisTurn = 0;
     std::unique_ptr<DeckList> mDeck;
     std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>> mZones;
     std::vector<ExpectedCommand> mExpectedCommands;

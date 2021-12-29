@@ -62,7 +62,7 @@ Item {
             y: root.height * 0.85
         }
 
-        MainButton {
+        /*MainButton {
             id: testButton
             x: root.width * 0.2
             y: root.height * 0.8
@@ -71,7 +71,7 @@ Item {
             onClicked: {
                 gGame.testAction();
             }
-        }
+        }*/
         SequentialAnimation {
             id: waitAnim
             PauseAnimation { id: waitAnimPause; }

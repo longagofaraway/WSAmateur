@@ -17,7 +17,7 @@ class WSApplication : public QQuickItem
     Q_OBJECT
 private:
     QThread clientThread;
-    std::unique_ptr<Client> client;
+    Client* client = nullptr;
     int playerId;
     bool connectionFailed = false;
 

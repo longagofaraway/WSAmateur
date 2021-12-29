@@ -624,6 +624,8 @@ Resumable ServerPlayer::climaxPhase() {
 }
 
 bool ServerPlayer::canAttack() {
+    if (mGame->firstTurn() && mAttacksThisTurn)
+        return false;
     auto stage = zone("stage");
     for (int i = 0; i < 3; ++i) {
         if (stage->card(i) && stage->card(i)->state() == asn::State::Standing) {
@@ -677,6 +679,7 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
 
     attCard->setState(asn::State::Rested);
     setAttackingCard(attCard);
+    mAttacksThisTurn++;
 
     setAttackType(type);
     EventDeclareAttack event;

@@ -35,6 +35,7 @@ WSApplication::WSApplication() {
 WSApplication::~WSApplication() {
     clientThread.quit();
     clientThread.wait();
+    client->deleteLater();
 }
 
 void WSApplication::componentComplete() {
@@ -61,13 +62,13 @@ void WSApplication::initialization() {
 
 void WSApplication::initGame(Game *game) {
     if (!connectionFailed)
-        game->startNetworkGame(client.get(), playerId);
+        game->startNetworkGame(client, playerId);
     else
         game->startLocalGame();
 }
 
 void WSApplication::initLobby(Lobby *lobby) {
-    lobby->init(client.get());
+    lobby->init(client);
 }
 
 void WSApplication::imageLinksFileChosen(QString path) {
@@ -145,11 +146,11 @@ void WSApplication::userIdenditification() {
 void WSApplication::connectToServer() {
     auto conn = std::make_unique<RemoteClientConnection>();
 
-    client = std::make_unique<Client>(std::move(conn));
+    client = new Client(std::move(conn));
     client->moveToThread(&clientThread);
-    connect(client.get(), &Client::sessionEventReceived, this, &WSApplication::processSessionEvent);
-    connect(client.get(), &Client::lobbyEventReceived, this, &WSApplication::processLobbyEvent);
-    connect(client.get(), &Client::connectionClosed, this, &WSApplication::onConnectionClosed);
+    connect(client, &Client::sessionEventReceived, this, &WSApplication::processSessionEvent);
+    connect(client, &Client::lobbyEventReceived, this, &WSApplication::processLobbyEvent);
+    connect(client, &Client::connectionClosed, this, &WSApplication::onConnectionClosed);
 
     clientThread.start();
     client->connectToHost("127.0.0.1", 7474);
