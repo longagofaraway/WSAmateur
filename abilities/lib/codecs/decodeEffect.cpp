@@ -147,6 +147,7 @@ AddMarker decodeAddMarker(Iterator &it, Iterator end) {
     AddMarker e;
     e.target = decodeTarget(it, end);
     e.destination = decodeTarget(it, end);
+    e.orientation = decodeEnum<FaceOrientation>(it, end);
     return e;
 }
 
@@ -213,6 +214,14 @@ PutOnStageRested decodePutOnStageRested(Iterator &it, Iterator end) {
     e.target = decodeTarget(it, end);
     e.from = decodePlace(it, end);
     e.to = decodeEnum<Position>(it, end);
+    return e;
+}
+
+RemoveMarker decodeRemoveMarker(Iterator &it, Iterator end) {
+    RemoveMarker e;
+    e.targetMarker = decodeTarget(it, end);
+    e.markerBearer = decodeTarget(it, end);
+    e.place = decodePlace(it, end);
     return e;
 }
 
@@ -318,6 +327,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::PutOnStageRested:
         e.effect = decodePutOnStageRested(it, end);
+        break;
+    case EffectType::RemoveMarker:
+        e.effect = decodeRemoveMarker(it, end);
         break;
     default:
         break;

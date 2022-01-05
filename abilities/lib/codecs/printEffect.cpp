@@ -766,6 +766,39 @@ std::string printPutOnStageRested(const PutOnStageRested &e) {
     return s;
 }
 
+std::string printAddMarker(const AddMarker &e) {
+    std::string s = "put ";
+
+    s += printTarget(e.target);
+    s += printFaceOrientation(e.orientation) + " underneath ";
+    s += printTarget(e.destination);
+    if (e.target.type == TargetType::ChosenCards) {
+        if (gPrintState.chosenCardsNumber.value > 1) {
+            s += " as markers ";
+            return s;
+        }
+    }
+    if (e.target.type == TargetType::MentionedCards) {
+        if (gPrintState.mentionedCardsNumber.value > 1) {
+            s += " as markers ";
+            return s;
+        }
+    }
+    s += " as a marker ";
+    return s;
+}
+
+std::string printRemoveMarker(const RemoveMarker &e) {
+    std::string s = "put ";
+
+    s += printTarget(e.targetMarker);
+    s += "from underneath ";
+    s += printTarget(e.markerBearer);
+    s += "into " + printPlace(e.place) + " ";
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -864,6 +897,12 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::PutOnStageRested:
         s += printPutOnStageRested(std::get<PutOnStageRested>(e.effect));
+        break;
+    case EffectType::AddMarker:
+        s += printAddMarker(std::get<AddMarker>(e.effect));
+        break;
+    case EffectType::RemoveMarker:
+        s += printRemoveMarker(std::get<RemoveMarker>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

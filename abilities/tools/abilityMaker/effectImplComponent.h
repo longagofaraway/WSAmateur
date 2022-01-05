@@ -23,8 +23,6 @@ private:
     VarEffect effect;
 
     std::unique_ptr<TargetComponent> qmlTarget;
-    asn::Target target;
-    bool targetSet = false;
 
     std::unique_ptr<PlaceComponent> qmlPlace;
     std::unique_ptr<CardComponent> qmlCard;
@@ -40,9 +38,12 @@ signals:
     void componentChanged(const VarEffect &e);
 
 private slots:
-    void editTarget();
+    void editTarget(std::optional<asn::Target> target_ = {});
     void destroyTarget();
     void targetReady(const asn::Target &t);
+    void secondTargetReady(const asn::Target &t);
+    void editMarkerBearer();
+    void editDestination();
 
     void onAttrTypeChanged(int value);
     void onAttrChanged(QString value);
@@ -88,6 +89,7 @@ private slots:
     void onBackupLevelChanged(QString value);
 
     void onAttackTypeChanged(int value);
+    void onFaceOrientationChanged(int value);
 
 private:
     void init(QQuickItem *parent);

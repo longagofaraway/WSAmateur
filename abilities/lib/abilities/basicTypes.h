@@ -60,4 +60,9 @@ enum class PlaceType : uint8_t {
     LastMovedCards
 };
 
+enum class FaceOrientation : uint8_t {
+    FaceUp = 1,
+    FaceDown
+};
+
 }

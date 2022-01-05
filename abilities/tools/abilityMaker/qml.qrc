@@ -66,5 +66,8 @@
         <file>qml/basicTypes/StockCostEffects.qml</file>
         <file>qml/DbControls.qml</file>
         <file>qml/basicTypes/State.qml</file>
+        <file>qml/effects/AddMarker.qml</file>
+        <file>qml/effects/RemoveMarker.qml</file>
+        <file>qml/basicTypes/FaceOrientation.qml</file>
     </qresource>
 </RCC>

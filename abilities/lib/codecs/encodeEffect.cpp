@@ -114,6 +114,7 @@ void encodeCannotAttack(const CannotAttack &e, Buf &buf) {
 void encodeAddMarker(const AddMarker &e, Buf &buf) {
     encodeTarget(e.target, buf);
     encodeTarget(e.destination, buf);
+    buf.push_back(static_cast<uint8_t>(e.orientation));
 }
 
 void encodeReplay(const Replay &e, Buf &buf) {
@@ -167,6 +168,12 @@ void encodePutOnStageRested(const PutOnStageRested &e, Buf &buf) {
     encodeTarget(e.target, buf);
     encodePlace(e.from, buf);
     buf.push_back(static_cast<uint8_t>(e.to));
+}
+
+void encodeRemoveMarker(const RemoveMarker &e, Buf &buf) {
+    encodeTarget(e.targetMarker, buf);
+    encodeTarget(e.markerBearer, buf);
+    encodePlace(e.place, buf);
 }
 
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
@@ -265,6 +272,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::PutOnStageRested:
         encodePutOnStageRested(std::get<PutOnStageRested>(e.effect), buf);
+        break;
+    case EffectType::RemoveMarker:
+        encodeRemoveMarker(std::get<RemoveMarker>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

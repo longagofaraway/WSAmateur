@@ -307,11 +307,16 @@ AddMarker parseAddMarker(const QJsonObject &json) {
         throw std::runtime_error("no target in AddMarker");
     if (!json.contains("destination") || !json["destination"].isObject())
         throw std::runtime_error("no destination in AddMarker");
+    if (json.contains("orientation") && !json["orientation"].isDouble())
+        throw std::runtime_error("wrong orientation in DrawCard");
 
     AddMarker e;
     e.target = parseTarget(json["target"].toObject());
     e.destination = parseTarget(json["destination"].toObject());
-
+    if (json.contains("orientation"))
+        e.orientation = static_cast<FaceOrientation>(json["orientation"].toInt());
+    else
+        e.orientation = FaceOrientation::FaceDown;
     return e;
 }
 
@@ -468,6 +473,21 @@ PutOnStageRested parsePutOnStageRested(const QJsonObject &json) {
     return e;
 }
 
+RemoveMarker parseRemoveMarker(const QJsonObject &json) {
+    if (!json.contains("targetMarker") || !json["targetMarker"].isObject())
+        throw std::runtime_error("no targetMarker in RemoveMarker");
+    if (!json.contains("markerBearer") || !json["markerBearer"].isObject())
+        throw std::runtime_error("no markerBearer in RemoveMarker");
+    if (!json.contains("place") || !json["place"].isObject())
+        throw std::runtime_error("no place in RemoveMarker");
+
+    RemoveMarker e;
+    e.targetMarker = parseTarget(json["targetMarker"].toObject());
+    e.markerBearer = parseTarget(json["markerBearer"].toObject());
+    e.place = parsePlace(json["place"].toObject());
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -567,6 +587,9 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::PutOnStageRested:
         e.effect = parsePutOnStageRested(json["effect"].toObject());
+        break;
+    case EffectType::RemoveMarker:
+        e.effect = parseRemoveMarker(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

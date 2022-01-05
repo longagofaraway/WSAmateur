@@ -124,6 +124,11 @@ enum State {
   reversed = 3
 }
 
+enum FaceOrientation {
+  faceUp = 1,
+  faceDown = 2
+}
+
 Array Of X {
   size UInt8,
   x1 X,

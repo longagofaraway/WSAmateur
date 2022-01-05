@@ -79,6 +79,11 @@ std::string printTarget(const Target &t, bool plural, bool nominative, std::opti
             s += "it ";
         else
             s += nominative ? "they " : "them ";
+    } else if (t.type == TargetType::MentionedCards) {
+        if (gPrintState.mentionedCardsNumber.value == 1)
+            s += "it ";
+        else
+            s += nominative ? "they " : "them ";
     } else if (t.type == TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
         bool article = true;
@@ -297,7 +302,7 @@ std::string printPlace(Place place) {
         place.pos == Position::BackRow)
         s += "in " + printPlayer(place.owner);
 
-    switch(place.pos) {
+    switch (place.pos) {
     case Position::FrontRow:
         return s + "center stage";
     case Position::BackRow:
@@ -306,11 +311,23 @@ std::string printPlace(Place place) {
         break;
     }
 
-    if (place.pos == Position::Top) {
+    if (place.pos == Position::Top)
         s += "the top card of ";
-        s += printPlayer(place.owner);
-        s += printZone(place.zone);
-    }
+
+    s += printPlayer(place.owner);
+    s += printZone(place.zone);
+
     return s;
 }
 
+std::string printFaceOrientation(asn::FaceOrientation orientation) {
+    std::string s;
+
+    switch (orientation) {
+    case FaceOrientation::FaceUp:
+        return "face up";
+    case FaceOrientation::FaceDown:
+        return "face down";
+    }
+    return "";
+}

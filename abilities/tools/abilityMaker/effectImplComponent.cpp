@@ -19,6 +19,9 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     defaultPlace.pos = asn::Position::NotSpecified;
     defaultPlace.zone = asn::Zone::Stage;
 
+    auto defaultTarget = asn::Target();
+    defaultTarget.type = asn::TargetType::ThisCard;
+
     switch (type) {
     case asn::EffectType::AttributeGain: {
         auto e = asn::AttributeGain();
@@ -26,6 +29,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         e.gainType = asn::ValueType::Raw;
         e.value = 0;
         e.duration = 1;
+        e.target = defaultTarget;
         effect = e;
         break;
     }
@@ -34,7 +38,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         auto tp = asn::TargetAndPlace();
         tp.placeType = asn::PlaceType::SpecificPlace;
         tp.place = defaultPlace;
-        tp.target = asn::Target();
+        tp.target = defaultTarget;
         e.executor = asn::Player::Player;
         e.targets.push_back(tp);
         effect = e;
@@ -60,6 +64,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         e.from = defaultPlace;
         e.to.push_back(defaultPlace);
         e.order = asn::Order::NotSpecified;
+        e.target = defaultTarget;
         effect = e;
         break;
     }
@@ -81,6 +86,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         auto e = asn::AbilityGain();
         e.duration = 1;
         e.number = 1;
+        e.target = defaultTarget;
         effect = e;
         break;
     }
@@ -111,7 +117,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     }
     case asn::EffectType::ChangeState: {
         auto e = asn::ChangeState();
-        e.target = asn::Target();
+        e.target = defaultTarget;
         e.state = asn::State::Rested;
         effect = e;
         break;
@@ -142,12 +148,30 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         auto e = asn::CannotAttack();
         e.type = asn::AttackType::Any;
         e.duration = 0;
+        e.target = defaultTarget;
         effect = e;
         break;
     }
     case asn::EffectType::SideAttackWithoutPenalty: {
         auto e = asn::SideAttackWithoutPenalty();
         e.duration = 0;
+        e.target = defaultTarget;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::AddMarker: {
+        auto e = asn::AddMarker();
+        e.target = defaultTarget;
+        e.destination = defaultTarget;
+        e.orientation = asn::FaceOrientation::FaceDown;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::RemoveMarker: {
+        auto e = asn::RemoveMarker();
+        e.targetMarker = defaultTarget;
+        e.markerBearer = defaultTarget;
+        e.place = defaultPlace;
         effect = e;
         break;
     }
@@ -181,11 +205,59 @@ const asn::Place& getPlace(EffectImplComponent::VarEffect &effect, asn::EffectTy
         const auto &e = std::get<asn::SearchCard>(effect);
         return e.place;
     }
+    case asn::EffectType::RemoveMarker: {
+        const auto &e = std::get<asn::RemoveMarker>(effect);
+        return e.place;
+    }
     default:
         assert(false);
     }
     static auto p = asn::Place();
     return p;
+}
+const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
+    switch (type) {
+    case asn::EffectType::AttributeGain: {
+        const auto &e = std::get<asn::AttributeGain>(effect);
+        return e.target;
+    }
+    case asn::EffectType::ChooseCard: {
+        const auto &e = std::get<asn::ChooseCard>(effect);
+        return e.targets[0].target;
+    }
+    case asn::EffectType::AbilityGain: {
+        const auto &e = std::get<asn::AbilityGain>(effect);
+        return e.target;
+    }
+    case asn::EffectType::MoveCard: {
+        const auto &e = std::get<asn::MoveCard>(effect);
+        return e.target;
+    }
+    case asn::EffectType::ChangeState: {
+        const auto &e = std::get<asn::ChangeState>(effect);
+        return e.target;
+    }
+    case asn::EffectType::CannotAttack: {
+        const auto &e = std::get<asn::CannotAttack>(effect);
+        return e.target;
+    }
+    case asn::EffectType::SideAttackWithoutPenalty: {
+        const auto &e = std::get<asn::SideAttackWithoutPenalty>(effect);
+        return e.target;
+    }
+    case asn::EffectType::AddMarker: {
+        const auto &e = std::get<asn::AddMarker>(effect);
+        return e.target;
+    }
+    case asn::EffectType::RemoveMarker: {
+        const auto &e = std::get<asn::RemoveMarker>(effect);
+        return e.targetMarker;
+    }
+    default:
+        assert(false);
+    }
+    static auto t = asn::Target();
+    return t;
 }
 const asn::Card& getCard(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
     switch (type) {
@@ -222,8 +294,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     switch (type) {
     case asn::EffectType::AttributeGain: {
         const auto &ef = std::get<asn::AttributeGain>(e);
-        target = ef.target;
-        targetSet = true;
+
         QMetaObject::invokeMethod(qmlObject, "setAttrType", Q_ARG(QVariant, (int)ef.type));
         QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString::number(ef.value)));
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, ef.duration));
@@ -231,16 +302,14 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     }
     case asn::EffectType::ChooseCard: {
         const auto &ef = std::get<asn::ChooseCard>(e);
-        target = ef.targets[0].target;
-        targetSet = true;
+
         QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, (int)ef.targets[0].placeType));
         QMetaObject::invokeMethod(qmlObject, "setExecutor", Q_ARG(QVariant, (int)ef.executor));
         break;
     }
     case asn::EffectType::MoveCard: {
         const auto &ef = std::get<asn::MoveCard>(e);
-        target = ef.target;
-        targetSet = true;
+
         QMetaObject::invokeMethod(qmlObject, "setOrder", Q_ARG(QVariant, (int)ef.order));
         QMetaObject::invokeMethod(qmlObject, "setExecutor", Q_ARG(QVariant, (int)ef.executor));
         break;
@@ -259,8 +328,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     }
     case asn::EffectType::AbilityGain: {
         const auto &ef = std::get<asn::AbilityGain>(e);
-        target = ef.target;
-        targetSet = true;
+
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         QMetaObject::invokeMethod(qmlObject, "setNumber", Q_ARG(QVariant, QString::number(ef.number)));
         break;
@@ -278,8 +346,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     }
     case asn::EffectType::ChangeState: {
         const auto &ef = std::get<asn::ChangeState>(e);
-        target = ef.target;
-        targetSet = true;
+
         QMetaObject::invokeMethod(qmlObject, "setCardState", Q_ARG(QVariant, (int)ef.state));
         break;
     }
@@ -304,17 +371,21 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     }
     case asn::EffectType::CannotAttack: {
         const auto &ef = std::get<asn::CannotAttack>(e);
-        target = ef.target;
-        targetSet = true;
+
         QMetaObject::invokeMethod(qmlObject, "setAttackType", Q_ARG(QVariant, (int)ef.type));
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
     case asn::EffectType::SideAttackWithoutPenalty: {
         const auto &ef = std::get<asn::SideAttackWithoutPenalty>(e);
-        target = ef.target;
-        targetSet = true;
+
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
+    case asn::EffectType::AddMarker: {
+        const auto &ef = std::get<asn::AddMarker>(e);
+
+        QMetaObject::invokeMethod(qmlObject, "setFaceOrientation", Q_ARG(QVariant, (int)ef.orientation));
         break;
     }
     default:
@@ -346,6 +417,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::DrawCard, "DrawCard" },
         { asn::EffectType::CannotAttack, "CannotAttack" },
         { asn::EffectType::SideAttackWithoutPenalty, "TargetDurationEffect" },
+        { asn::EffectType::AddMarker, "AddMarker" },
+        { asn::EffectType::RemoveMarker, "RemoveMarker" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -488,18 +561,32 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
         break;
+    case asn::EffectType::AddMarker:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(editDestination()), this, SLOT(editDestination()));
+        connect(qmlObject, SIGNAL(faceOrientationChanged(int)), this, SLOT(onFaceOrientationChanged(int)));
+
+        QMetaObject::invokeMethod(qmlObject, "setFaceOrientation", Q_ARG(QVariant, QString("2")));
+        break;
+    case asn::EffectType::RemoveMarker:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(editMarkerBearer()), this, SLOT(editMarkerBearer()));
+        connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
+        break;
     default:
         break;
     }
 }
 
-void EffectImplComponent::editTarget() {
-    if (targetSet)
-        qmlTarget = std::make_unique<TargetComponent>(target, qmlObject);
-    else
-        qmlTarget = std::make_unique<TargetComponent>(qmlObject);
+void EffectImplComponent::editTarget(std::optional<asn::Target> target_) {
+    auto &t = target_.has_value() ? *target_ : getTarget(effect, type);
+    qmlTarget = std::make_unique<TargetComponent>(t, qmlObject);
 
-    connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &EffectImplComponent::targetReady);
+    if (target_.has_value())
+        connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &EffectImplComponent::secondTargetReady);
+    else
+        connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &EffectImplComponent::targetReady);
+
     connect(qmlTarget.get(), &TargetComponent::close, this, &EffectImplComponent::destroyTarget);
 }
 
@@ -508,43 +595,50 @@ void EffectImplComponent::destroyTarget() {
 }
 
 void EffectImplComponent::targetReady(const asn::Target &t) {
-    targetSet = true;
-    target = t;
-
     switch (type) {
     case asn::EffectType::AttributeGain: {
         auto &e = std::get<asn::AttributeGain>(effect);
-        e.target = target;
+        e.target = t;
         break;
     }
     case asn::EffectType::ChooseCard: {
         auto &e = std::get<asn::ChooseCard>(effect);
-        e.targets[0].target = target;
+        e.targets[0].target = t;
         break;
     }
     case asn::EffectType::MoveCard: {
         auto &e = std::get<asn::MoveCard>(effect);
-        e.target = target;
+        e.target = t;
         break;
     }
     case asn::EffectType::AbilityGain: {
         auto &e = std::get<asn::AbilityGain>(effect);
-        e.target = target;
+        e.target = t;
         break;
     }
     case asn::EffectType::ChangeState: {
         auto &e = std::get<asn::ChangeState>(effect);
-        e.target = target;
+        e.target = t;
         break;
     }
     case asn::EffectType::CannotAttack: {
         auto &e = std::get<asn::CannotAttack>(effect);
-        e.target = target;
+        e.target = t;
         break;
     }
     case asn::EffectType::SideAttackWithoutPenalty: {
         auto &e = std::get<asn::SideAttackWithoutPenalty>(effect);
-        e.target = target;
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::AddMarker: {
+        auto &e = std::get<asn::AddMarker>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::RemoveMarker: {
+        auto &e = std::get<asn::RemoveMarker>(effect);
+        e.targetMarker = t;
         break;
     }
     default:
@@ -552,6 +646,34 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     }
 
     emit componentChanged(effect);
+}
+
+void EffectImplComponent::secondTargetReady(const asn::Target &t) {
+    switch (type) {
+    case asn::EffectType::AddMarker: {
+        auto &e = std::get<asn::AddMarker>(effect);
+        e.destination = t;
+        break;
+    }
+    case asn::EffectType::RemoveMarker: {
+        auto &e = std::get<asn::RemoveMarker>(effect);
+        e.markerBearer = t;
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::editMarkerBearer() {
+    auto &e = std::get<asn::RemoveMarker>(effect);
+    editTarget(e.markerBearer);
+}
+
+void EffectImplComponent::editDestination() {
+    auto &e = std::get<asn::AddMarker>(effect);
+    editTarget(e.destination);
 }
 
 void EffectImplComponent::onAttrTypeChanged(int value) {
@@ -609,6 +731,19 @@ void EffectImplComponent::onAttackTypeChanged(int value) {
     case asn::EffectType::CannotAttack: {
         auto &e = std::get<asn::CannotAttack>(effect);
         e.type = static_cast<asn::AttackType>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onFaceOrientationChanged(int value) {
+    switch (type) {
+    case asn::EffectType::AddMarker: {
+        auto &e = std::get<asn::AddMarker>(effect);
+        e.orientation = static_cast<asn::FaceOrientation>(value);
         break;
     }
     default:
@@ -684,6 +819,11 @@ void EffectImplComponent::placeReady(const asn::Place &p) {
     }
     case asn::EffectType::SearchCard: {
         auto &e = std::get<asn::SearchCard>(effect);
+        e.place = p;
+        break;
+    }
+    case asn::EffectType::RemoveMarker: {
+        auto &e = std::get<asn::RemoveMarker>(effect);
         e.place = p;
         break;
     }

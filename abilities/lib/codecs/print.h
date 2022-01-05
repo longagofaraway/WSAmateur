@@ -26,6 +26,7 @@ std::string printForEachMultiplier(const asn::ForEachMultiplier &m, bool addOf =
 std::string printAttackType(asn::AttackType t);
 std::string printDuration(int duration);
 std::string printPlace(asn::Place place);
+std::string printFaceOrientation(asn::FaceOrientation orientation);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
 std::string printKeywords(const std::vector<asn::Keyword> &keywords);

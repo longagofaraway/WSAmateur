@@ -29,6 +29,7 @@ Effect {
     CannotMove,
     SideAttackWithoutPenalty,
     PutOnStageRested,
+    RemoveMarker,
     OtherEffect,
     Nothing
   }
@@ -70,6 +71,7 @@ enum EffectType {
   standby = 33,
   shuffle = 34,
   putOnStageRested = 35,
+  removeMarker = 36,
   
   otherEffect = 255
 }
@@ -261,8 +263,15 @@ enum AttackType {
 }
 
 AddMarker {
-  target Target
-  destination Target
+  target Target,
+  destination Target,
+  orientation FaceOrientation
+}
+
+RemoveMarker {
+  targetMarker Target,
+  markerBearer Target,
+  place Place
 }
 
 Bond {

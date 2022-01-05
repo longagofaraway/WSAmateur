@@ -171,6 +171,7 @@ struct CannotAttack {
 struct AddMarker {
     Target target;
     Target destination;
+    FaceOrientation orientation;
 };
 
 struct Bond {
@@ -221,6 +222,12 @@ struct PutOnStageRested {
     Position to;
 };
 
+struct RemoveMarker {
+    Target targetMarker;
+    Target markerBearer;
+    Place place;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -264,6 +271,7 @@ enum class EffectType : uint8_t {
     Standby,
     Shuffle,
     PutOnStageRested,
+    RemoveMarker,
 
     OtherEffect = 255
 };
@@ -302,6 +310,7 @@ struct Effect {
         CannotMove,
         SideAttackWithoutPenalty,
         PutOnStageRested,
+        RemoveMarker,
         OtherEffect
     > effect;
 };

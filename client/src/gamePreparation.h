@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QQuickItem>
 
 #include "deckList.h"
