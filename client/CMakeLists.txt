@@ -77,6 +77,8 @@ find_package(Qt5 COMPONENTS Quick REQUIRED)
 
 add_executable(WSAmateur ${clientSources} qml.qrc)
 
+add_definitions(-DTEST_MODE)
+
 target_compile_features(WSAmateur PRIVATE cxx_std_20)
 target_compile_definitions(WSAmateur
     PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)

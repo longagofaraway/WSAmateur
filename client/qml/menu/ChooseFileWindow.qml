@@ -28,7 +28,7 @@ Item {
         anchors.centerIn: parent
 
         width: mainWindow.width / 2.7
-        height: mainWindow.height / 4.8
+        height: mainWindow.height / 4.0
         border.width: 2
         border.color: "white"
         color: "#A0000000"
@@ -39,35 +39,35 @@ Item {
             spacing: 20
             Text {
                 id: parseErrorLabel
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                }
+                anchors.horizontalCenter: parent.horizontalCenter
                 text: "Error parsing file"
                 color: "red"
                 font.pointSize: 16
                 visible: false
             }
             Text {
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                }
+                anchors.horizontalCenter: parent.horizontalCenter
                 text: "Specify a path to the file with card image links:"
                 color: "white"
-                font.pointSize: 24
+                font.pointSize: 20
             }
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "Visit <a href='https://discord.gg/K5jE8bmP'>discord</a> for details"
+                color: "white"
+                font.pointSize: 16
+                onLinkActivated: Qt.openUrlExternally(link)
+            }
+
             BasicTextInput {
                 id: urlInput
 
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                }
+                anchors.horizontalCenter: parent.horizontalCenter
 
                 width: mainRectangle.width * 0.7
             }
             MenuButton {
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                }
+                anchors.horizontalCenter: parent.horizontalCenter
 
                 text: "OK"
                 onPressed: {
