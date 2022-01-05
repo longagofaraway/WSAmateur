@@ -1,4 +1,4 @@
-#include "deckMenu.h"
+#include "decksListWindow.h"
 
 #include <optional>
 
@@ -11,6 +11,7 @@
 #include <deckList.h>
 
 #include "filesystemPaths.h"
+#include "deckUtils.h"
 
 namespace {
 bool saveDeckToFile(const DeckList &deck) {
@@ -43,25 +44,17 @@ QStringList checkDeckCardsSupported(const DeckList& deck) {
     }
     return unsupportedCards;
 }
-
-bool allImagesDownloaded(const DeckList& deck) {
-    for (const auto &card: deck.cards()) {
-        if (!paths::cardImageExists(card.code))
-            return false;
-    }
-    return true;
-}
 }
 
-DeckMenu::DeckMenu() {
+DecksListWindow::DecksListWindow() {
     networkManager = new QNetworkAccessManager(this);
     imageLoader = new ImageLoader(this);
-    connect(imageLoader, &ImageLoader::markProgress, this, &DeckMenu::markProgress);
-    connect(imageLoader, &ImageLoader::deckDownloaded, this, &DeckMenu::imagesDownloaded);
-    connect(imageLoader, &ImageLoader::downloadError, this, &DeckMenu::imagesDownloadError);
+    connect(imageLoader, &ImageLoader::markProgress, this, &DecksListWindow::markProgress);
+    connect(imageLoader, &ImageLoader::deckDownloaded, this, &DecksListWindow::imagesDownloaded);
+    connect(imageLoader, &ImageLoader::downloadError, this, &DecksListWindow::imagesDownloadError);
 }
 
-bool DeckMenu::addDeck(QString url) {
+bool DecksListWindow::addDeckFromEncoreDecks(QString url) {
     int pos = url.lastIndexOf("/");
     if (pos == -1)
         return false;
@@ -79,14 +72,31 @@ bool DeckMenu::addDeck(QString url) {
     return true;
 }
 
-void DeckMenu::cancelRequest() {
+bool DecksListWindow::addDeckToModel(QString xmlDeck) {
+    DeckList deck;
+    if (!deck.fromXml(xmlDeck)) {
+        emit deckDownloadError("Parsing error");
+        return false;
+    }
+
+    bool hasAllImages = allImagesDownloaded(deck);
+    model.addDeck(deck, hasAllImages, true);
+    if (!hasAllImages)
+        imageLoader->downloadDeckImages(deck);
+    else
+        emit deckImagesDownloaded();
+
+    return true;
+}
+
+void DecksListWindow::cancelRequest() {
     if (encoreDecksReply) {
         encoreDecksReply.value()->abort();
         encoreDecksReply.reset();
     }
 }
 
-void DeckMenu::downloadImages(int row, int column) {
+void DecksListWindow::downloadImages(int row, int column) {
     model.setDowloadStarted(row, column);
 
     auto deck = model.getDeck(row, column);
@@ -95,7 +105,7 @@ void DeckMenu::downloadImages(int row, int column) {
     imageLoader->downloadDeckImages(*deck);
 }
 
-void DeckMenu::deckDownloaded() {
+void DecksListWindow::deckDownloaded() {
     encoreDecksReply.reset();
     auto *reply = dynamic_cast<QNetworkReply*>(sender());
     QNetworkReply::NetworkError errorCode = reply->error();
@@ -137,15 +147,8 @@ void DeckMenu::deckDownloaded() {
         imageLoader->downloadDeckImages(deck);
 }
 
-void DeckMenu::loadDecksFromFs() {
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir dir(appData);
-    if (!dir.cd("decks")) {
-        if (!dir.mkdir("decks"))
-            return;
-        dir.cd("decks");
-    }
-
+void DecksListWindow::loadDecksFromFs() {
+    QDir dir = paths::decksDir();
     dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     QStringList fileList = dir.entryList();
 
@@ -171,19 +174,20 @@ void DeckMenu::loadDecksFromFs() {
     model.setDecks(std::move(items));
 }
 
-void DeckMenu::markProgress(int percent, QString deckName) {
+void DecksListWindow::markProgress(int percent, QString deckName) {
     model.updatePercent(deckName, percent);
 }
 
-void DeckMenu::imagesDownloaded(QString deckName) {
+void DecksListWindow::imagesDownloaded(QString deckName) {
     model.dowloadFinished(deckName);
+    emit deckImagesDownloaded();
 }
 
-void DeckMenu::imagesDownloadError(QString message, QString deckName) {
+void DecksListWindow::imagesDownloadError(QString message, QString deckName) {
     model.setErrorMessage(deckName, message);
 }
 
-bool DeckMenu::deckWithSameNameExists(const DeckList &deck) {
+bool DecksListWindow::deckWithSameNameExists(const DeckList &deck) {
     for (const auto &deckIt: model.items()) {
         if (deckIt.name == deck.qname())
             return true;
@@ -191,7 +195,11 @@ bool DeckMenu::deckWithSameNameExists(const DeckList &deck) {
     return false;
 }
 
-void DeckMenu::componentComplete() {
+void DecksListWindow::componentComplete() {
     QQuickItem::componentComplete();
-    loadDecksFromFs();
+    bool isLocal = property("local").toBool();
+    if (isLocal)
+        loadDecksFromFs();
+    else
+        setProperty("visible", false);
 }

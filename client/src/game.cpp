@@ -71,7 +71,11 @@ void Game::startNetworkGame(Client *client, int playerId) {
     mClient = client;
     mPlayer = std::make_unique<Player>(playerId, this, false);
 
-    connect(client, &Client::gameEventReceived, this, &Game::processGameEvent);
+    emit startGamePreparation();
+}
+
+void Game::preGameLoaded() {
+    connect(mClient, &Client::gameEventReceived, this, &Game::processGameEvent);
     //ask for game info
     mClient->sendGameCommand(CommandGetGameInfo());
 }
@@ -97,16 +101,17 @@ void Game::addOpponent(const PlayerInfo &info) {
         return;
     mOpponent = std::make_unique<Player>(info.id(), this, true);
     mOpponent->setDeck(info.deck());
+    emit opponentDeckSet(info.deck());
 
     // for testing
-    mPlayer->setDeck(gDeck);
+    /*mPlayer->setDeck(gDeck);
     CommandSetDeck cmd;
     cmd.set_deck(gDeck);
     mClient->sendGameCommand(cmd);
 
     CommandReadyToStart readyCmd;
     readyCmd.set_ready(true);
-    mClient->sendGameCommand(readyCmd);
+    mClient->sendGameCommand(readyCmd);*/
 }
 
 void Game::processGameInfo(const GameInfo &game_info) {
@@ -123,6 +128,7 @@ void Game::setOpponentDeck(const EventDeckSet &event) {
         return;
 
     mOpponent->setDeck(event.deck());
+    emit opponentDeckSet(event.deck());
 }
 
 void Game::startLocalGame() {
@@ -160,6 +166,7 @@ void Game::addLocalClient(LocalConnectionManager *connManager) {
     client->moveToThread(&mLocalServerThread);
     mLocalClients.emplace_back(std::move(client));
 }
+
 
 void Game::localGameCreated(const std::shared_ptr<EventGameJoined> event) {
     mPlayer = std::make_unique<Player>(event->player_id(), this, false);

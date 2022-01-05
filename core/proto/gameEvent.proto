@@ -27,6 +27,10 @@ message EventDeckSet {
     string deck = 2;
 }
 
+message EventPlayerReady {
+    sint32 player_id = 1;
+}
+
 message EventStartTurn {}
 message EventLevelUp {}
 message EventRefresh {}

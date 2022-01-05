@@ -112,7 +112,10 @@ void ServerPlayer::sendToBoth(const google::protobuf::Message &event) {
 
 void ServerPlayer::addDeck(const std::string &deck) {
     mDeck = std::make_unique<DeckList>();
-    mDeck->fromXml(deck);
+    if (!mDeck->fromXml(deck)) {
+        mDeck.reset();
+        return;
+    }
 
     mExpectedCommands.push_back(CommandReadyToStart::descriptor()->name());
 
@@ -158,6 +161,13 @@ void ServerPlayer::setupZones() {
 
 void ServerPlayer::createStage() {
     mZones.emplace("stage", std::make_unique<ServerStage>(this));
+}
+
+void ServerPlayer::setReady(bool ready) {
+    mReady = ready;
+    EventPlayerReady event;
+    event.set_player_id(mId);
+    sendToBoth(event);
 }
 
 void ServerPlayer::startGame() {
@@ -233,7 +243,7 @@ void ServerPlayer::dealStartingHand() {
     for (int i = 0; i < 5; ++i) {
         auto card = deck->takeTopCard();
         if (!card)
-            continue;
+            break;
         auto code = eventPrivate.add_cards();
         code->set_code(card->code());
         code->set_id(card->id());

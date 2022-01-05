@@ -12,11 +12,13 @@ set(clientSources
     src/client.cpp
     src/clientConnection.cpp
     src/commonCardZone.cpp
-    src/deckMenu.cpp
     src/deckMenuModel.cpp
     src/deckView.cpp
+    src/decksListWindow.cpp
+    src/deckUtils.cpp
     src/filesystemPaths.cpp
     src/game.cpp
+    src/gamePreparation.cpp
     src/hand.cpp
     src/imageLinks.cpp
     src/imageLoader.cpp
@@ -44,11 +46,13 @@ set(clientSources
     src/client.h
     src/clientConnection.h
     src/commonCardZone.h
-    src/deckMenu.h
     src/deckMenuModel.h
     src/deckView.h
+    src/decksListWindow.h
     src/filesystemPaths.h
     src/game.h
+    src/gamePreparation.h
+    src/deckUtils.h
     src/hand.h
     src/imageLinks.h
     src/imageLoader.h

@@ -48,6 +48,7 @@ public:
 
     void startNetworkGame(Client *client, int playerId);
     void startLocalGame();
+    void preGameLoaded();
 
     //accessing players from qml
     Player* player() { return mPlayer.get(); }
@@ -80,6 +81,7 @@ public:
 
     QQmlEngine* engine() const;
     QQmlContext* context() const;
+    Client* client() { return mClient; }
 
     void pause(int ms);
     void showText(QString mainText, QString subText = "");
@@ -112,6 +114,8 @@ public:
 
 signals:
     void gameCreated();
+    void startGamePreparation();
+    void opponentDeckSet(const std::string &xmlDeck);
 
 public slots:
     void localGameCreated(const std::shared_ptr<EventGameJoined> event);

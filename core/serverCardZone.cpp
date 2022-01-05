@@ -59,10 +59,8 @@ std::unique_ptr<ServerCard> ServerCardZone::takeCard(int index) {
 }
 
 std::unique_ptr<ServerCard> ServerCardZone::takeTopCard() {
-    if (!mCards.size()) {
-        assert(false);
+    if (!mCards.size())
         return {};
-    }
 
     auto card = std::move(mCards[mCards.size() - 1]);
     mCards.pop_back();

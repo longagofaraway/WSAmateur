@@ -27,6 +27,10 @@ std::vector<std::string> getCardsToDownload(const DeckList &deck) {
 ImageLoader::ImageLoader(QObject *parent)
     : QObject(parent) {
     worker = new ImageLoaderWorker();
+    thread = new QThread(this);
+    thread->start();
+    worker->moveToThread(thread);
+
     connect(worker, &ImageLoaderWorker::error, this, &ImageLoader::handleError, Qt::QueuedConnection);
     connect(worker, &ImageLoaderWorker::downloadFinished, this, &ImageLoader::onDownloadFinished, Qt::QueuedConnection);
     connect(worker, &ImageLoaderWorker::cardImageLoaded, this, &ImageLoader::onCardImageLoaded, Qt::QueuedConnection);
@@ -34,6 +38,8 @@ ImageLoader::ImageLoader(QObject *parent)
 
 ImageLoader::~ImageLoader() {
     worker->deleteLater();
+    thread->quit();
+    thread->wait();
 }
 
 void ImageLoader::downloadDeckImages(const DeckList &deck) {
@@ -87,6 +93,9 @@ int ImageLoader::getProgress() const {
 }
 
 void ImageLoaderWorker::imageDownloadFinished(QNetworkReply *reply) {
+    if (reply->error()) {
+        qDebug() << "Download failed:" << reply->errorString();
+    }
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if (statusCode == 301 || statusCode == 302) {
         QUrl redirectUrl = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
@@ -175,10 +184,7 @@ ImageLoaderWorker::ImageLoaderWorker() {
 
     networkManager = new QNetworkAccessManager(this);
     connect(networkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(imageDownloadFinished(QNetworkReply*)));
-
-    thread = new QThread;
-    thread->start();
-    moveToThread(thread);
+    networkManager->setTransferTimeout(kTransferTimeout);
 }
 
 void ImageLoaderWorker::enqueueImageLoad(std::vector<std::string> &&cards) {

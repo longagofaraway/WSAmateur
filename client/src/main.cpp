@@ -7,13 +7,14 @@
 #include "application.h"
 #include "cardModel.h"
 #include "choiceDialog.h"
-#include "deckMenu.h"
+#include "decksListWindow.h"
 #include "deckMenuModel.h"
 #include "game.h"
-#include "userListModel.h"
 #include "lobby.h"
 #include "player.h"
 #include "imageProvider.h"
+#include "userListModel.h"
+#include "gamePreparation.h"
 
 int main(int argc, char *argv[])
 {
@@ -33,10 +34,12 @@ int main(int argc, char *argv[])
     qmlRegisterType<ActivatedAbilityModel>("wsamateur", 1, 0, "ActivatedAbilityModel");
     qmlRegisterType<ChoiceDialogModel>("wsamateur", 1, 0, "ChoiceDialogModel");
     qmlRegisterType<AbilityModel>("wsamateur", 1, 0, "AbilityModel");
+
     qmlRegisterType<Lobby>("wsamateur", 1, 0, "Lobby");
-    qmlRegisterType<DeckMenu>("wsamateur", 1, 0, "DeckMenu");
+    qmlRegisterType<DecksListWindow>("wsamateur", 1, 0, "DecksListWindow");
     qmlRegisterType<UserListModel>("wsamateur", 1, 0, "UserListModel");
     qmlRegisterType<DeckMenuModel>("wsamateur", 1, 0, "DeckMenuModel");
+    qmlRegisterType<GamePreparation>("wsamateur", 1, 0, "GamePreparation");
 
     qRegisterMetaType<uint16_t>("uint16_t");
 

@@ -77,4 +77,10 @@ bool cardImageExists(const std::string &code) {
     return false;
 }
 
+QDir decksDir() {
+    auto dir = getAppDir();
+    cd(dir, "decks");
+    return dir;
+}
+
 }

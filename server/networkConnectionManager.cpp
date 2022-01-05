@@ -18,7 +18,7 @@ void NetworkConnectionManager::initialize(Server *server) {
     for (int i = 0; i < threadNumber; ++i)
         threadPool.emplace_back(std::make_unique<ConnectionPool>())->startThread();
 
-    if (!tcpServer.listen(QHostAddress::LocalHost, tcpPort)) {
+    if (!tcpServer.listen(QHostAddress::AnyIPv4, tcpPort)) {
         std::cerr << tcpServer.errorString().toStdString() << '\n';
         throw std::runtime_error("");
     }

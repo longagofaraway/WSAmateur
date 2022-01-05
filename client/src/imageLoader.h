@@ -14,11 +14,11 @@ class ImageLoaderWorker : public QObject
 {
     Q_OBJECT
 private:
-    QThread *thread;
     QNetworkAccessManager *networkManager;
     QMutex mutex;
     std::vector<std::string> cardCodes;
     bool loadInProgress = false;
+    const int kTransferTimeout = 15000;
 
 public:
     explicit ImageLoaderWorker();
@@ -45,6 +45,7 @@ class ImageLoader : public QObject
 {
     Q_OBJECT
 private:
+    QThread *thread;
     ImageLoaderWorker *worker;
     std::deque<DeckList> decks;
     int currentProgress = 0;

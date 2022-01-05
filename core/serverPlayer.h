@@ -81,7 +81,7 @@ public:
     ServerGame* game() { return mGame; }
     int id() const { return mId; }
     bool ready() const { return mReady; }
-    void setReady(bool ready) { mReady = ready; }
+    void setReady(bool ready);
     bool mulliganFinished() const { return mMulliganFinished; }
     bool active() const { return mActive; }
     void setActive(bool active) { mActive = active; }

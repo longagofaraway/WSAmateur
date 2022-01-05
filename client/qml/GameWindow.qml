@@ -49,10 +49,10 @@ Item {
         id: gGame
         property MulliganHeader mHeader
         property HelpText mHelpText
+        property GamePreparationWindow preGame
 
-        onGameCreated: {
-            wsApp.initGame(gGame);
-        }
+        onGameCreated: wsApp.initGame(gGame)
+        onStartGamePreparation: createGamePreparationWindow()
 
         anchors.fill: parent
 
@@ -271,6 +271,14 @@ Item {
 
         function clearHelpText() {
             startHelpTextDestruction();
+        }
+
+        function createGamePreparationWindow() {
+            let comp = Qt.createComponent("GamePreparationWindow.qml");
+            preGame = comp.createObject(gGame);
+            preGame.anchors.fill = gGame;
+            preGame.z = 1000;
+            preGame.init(gGame);
         }
     }
 

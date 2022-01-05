@@ -48,9 +48,11 @@
         <file>resources/images/reverse.png</file>
         <file>resources/images/stand.png</file>
         <file>resources/images/rest.png</file>
+        <file>resources/images/checkMark.png</file>
         <file>qml/OrderedCardsView.qml</file>
         <file>qml/AttributeChangeAnimation.qml</file>
         <file>qml/Memory.qml</file>
+        <file>qml/GamePreparationWindow.qml</file>
         <file>resources/fonts/Futura BK BT.ttf</file>
         <file>resources/fonts/Aprikas_black_Demo.otf</file>
         <file>resources/icon.ico</file>
@@ -68,5 +70,6 @@
         <file>qml/menu/UnsupportedCardsError.qml</file>
         <file>qml/menu/ChooseFileWindow.qml</file>
         <file>qml/menu/ChooseUsername.qml</file>
+        <file>qml/menu/DeckList.qml</file>
     </qresource>
 </RCC>

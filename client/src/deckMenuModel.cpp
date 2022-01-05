@@ -1,17 +1,10 @@
 #include "deckMenuModel.h"
 
+#include "deckUtils.h"
 
 namespace {
 int indexFromCoord(int row, int column, int columnCount) {
     return row * columnCount + column;
-}
-
-QString getThumbnail(const DeckList &deck) {
-    auto& cards = deck.cards();
-    if (cards.empty())
-        return "cardback";
-
-    return QString::fromStdString(cards.front().code);
 }
 }
 
@@ -38,23 +31,16 @@ void DeckMenuModel::addDeck(const DeckList &deck, bool hasAllImages, bool startI
     DeckMenuItem item(deck, hasAllImages);
     if (startImageDownload && !hasAllImages)
         item.downloadInProgress = true;
-    bool rowInsert = false;
     int nextRowCount = rowFromIndex(decks.size() + 1);
     int currentRowCount = rowFromIndex(decks.size());
-    if (nextRowCount > currentRowCount) {
-        rowInsert = true;
-        beginInsertRows(QModelIndex(), currentRowCount, currentRowCount);
-    }
+    beginInsertRows(QModelIndex(), currentRowCount, currentRowCount);
 
     if (decks.empty())
         decks.emplace_back(std::move(item));
     else
         decks.emplace(std::prev(decks.end()), std::move(item));
 
-    if (rowInsert)
-        endInsertRows();
-
-    emit dataChanged(index(currentRowCount, 0), index(nextRowCount, kColumnCount));
+    endInsertRows();
 }
 
 const DeckList* DeckMenuModel::getDeck(int row, int column) {
