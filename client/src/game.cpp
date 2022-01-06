@@ -147,8 +147,8 @@ void Game::startLocalGame() {
 
     connect(mLocalClients.front().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
             this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
-    connect(mLocalClients.front().get(), SIGNAL(gameJoinedEventReceived(const std::shared_ptr<EventGameJoined>)),
-            this, SLOT(localGameCreated(const std::shared_ptr<EventGameJoined>)));
+    connect(mLocalClients.front().get(), SIGNAL(lobbyEventReceived(const std::shared_ptr<LobbyEvent>)),
+            this, SLOT(processLobbyEventLocal(const std::shared_ptr<LobbyEvent>)));
 
     connect(mLocalClients.back().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
             this, SLOT(processGameEventByOpponent(const std::shared_ptr<GameEvent>)));
@@ -168,19 +168,19 @@ void Game::addLocalClient(LocalConnectionManager *connManager) {
 }
 
 
-void Game::localGameCreated(const std::shared_ptr<EventGameJoined> event) {
-    mPlayer = std::make_unique<Player>(event->player_id(), this, false);
+void Game::localGameCreated(const EventGameJoined &event) {
+    mPlayer = std::make_unique<Player>(event.player_id(), this, false);
 
-    connect(mLocalClients.back().get(), SIGNAL(gameJoinedEventReceived(const std::shared_ptr<EventGameJoined>)),
-            this, SLOT(localOpponentJoined(const std::shared_ptr<EventGameJoined>)));
+    connect(mLocalClients.back().get(), SIGNAL(lobbyEventReceived(const std::shared_ptr<LobbyEvent>)),
+            this, SLOT(processLobbyEventLocal2ndPlayer(const std::shared_ptr<LobbyEvent>)));
 
     CommandJoinGame command;
-    command.set_game_id(event->game_id());
+    command.set_game_id(event.game_id());
     mLocalClients.back()->sendLobbyCommand(command);
 }
 
-void Game::localOpponentJoined(const std::shared_ptr<EventGameJoined> event) {
-    mOpponent = std::make_unique<Player>(event->player_id(), this, true);
+void Game::localOpponentJoined(const EventGameJoined &event) {
+    mOpponent = std::make_unique<Player>(event.player_id(), this, true);
 
     mPlayer->setDeck(gDeck);
     mOpponent->setDeck(gOppDeck);
@@ -222,6 +222,22 @@ void Game::processGameEventFromQueue() {
 
 void Game::cardMoveFinished() {
     sender()->deleteLater();
+}
+
+void Game::processLobbyEventLocal(const std::shared_ptr<LobbyEvent> event) {
+    if (event->event().Is<EventGameJoined>()) {
+        EventGameJoined ev;
+        event->event().UnpackTo(&ev);
+        localGameCreated(ev);
+    }
+}
+
+void Game::processLobbyEventLocal2ndPlayer(const std::shared_ptr<LobbyEvent> event) {
+    if (event->event().Is<EventGameJoined>()) {
+        EventGameJoined ev;
+        event->event().UnpackTo(&ev);
+        localOpponentJoined(ev);
+    }
 }
 
 void Game::sendMulliganFinished() {

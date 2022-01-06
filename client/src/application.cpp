@@ -158,7 +158,7 @@ void WSApplication::connectToServer() {
 
 void WSApplication::onConnectionClosed() {
     connectionFailed = true;
-    //emit startGame();
+    emit startGame();
 }
 
 namespace {

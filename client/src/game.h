@@ -118,8 +118,8 @@ signals:
     void opponentDeckSet(const std::string &xmlDeck);
 
 public slots:
-    void localGameCreated(const std::shared_ptr<EventGameJoined> event);
-    void localOpponentJoined(const std::shared_ptr<EventGameJoined> event);
+    void localGameCreated(const EventGameJoined &event);
+    void localOpponentJoined(const EventGameJoined &event);
     void processGameEvent(const std::shared_ptr<GameEvent> event);
     void processGameEventFromQueue();
     void processGameEventByOpponent(const std::shared_ptr<GameEvent> event);
@@ -128,6 +128,10 @@ public slots:
     void setOpponentDeck(const EventDeckSet &event);
 
     void cardMoveFinished();
+
+private slots:
+    void processLobbyEventLocal(const std::shared_ptr<LobbyEvent> event);
+    void processLobbyEventLocal2ndPlayer(const std::shared_ptr<LobbyEvent> event);
 
 private:
     void addLocalClient(LocalConnectionManager *connManager);

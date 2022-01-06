@@ -184,7 +184,9 @@ ImageLoaderWorker::ImageLoaderWorker() {
 
     networkManager = new QNetworkAccessManager(this);
     connect(networkManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(imageDownloadFinished(QNetworkReply*)));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     networkManager->setTransferTimeout(kTransferTimeout);
+#endif
 }
 
 void ImageLoaderWorker::enqueueImageLoad(std::vector<std::string> &&cards) {
