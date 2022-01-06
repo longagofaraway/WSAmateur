@@ -162,6 +162,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     case asn::EffectType::AddMarker: {
         auto e = asn::AddMarker();
         e.target = defaultTarget;
+        e.from = defaultPlace;
         e.destination = defaultTarget;
         e.orientation = asn::FaceOrientation::FaceDown;
         effect = e;
@@ -204,6 +205,10 @@ const asn::Place& getPlace(EffectImplComponent::VarEffect &effect, asn::EffectTy
     case asn::EffectType::SearchCard: {
         const auto &e = std::get<asn::SearchCard>(effect);
         return e.place;
+    }
+    case asn::EffectType::AddMarker: {
+        const auto &e = std::get<asn::AddMarker>(effect);
+        return e.from;
     }
     case asn::EffectType::RemoveMarker: {
         const auto &e = std::get<asn::RemoveMarker>(effect);
@@ -563,6 +568,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         break;
     case asn::EffectType::AddMarker:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         connect(qmlObject, SIGNAL(editDestination()), this, SLOT(editDestination()));
         connect(qmlObject, SIGNAL(faceOrientationChanged(int)), this, SLOT(onFaceOrientationChanged(int)));
 
@@ -820,6 +826,11 @@ void EffectImplComponent::placeReady(const asn::Place &p) {
     case asn::EffectType::SearchCard: {
         auto &e = std::get<asn::SearchCard>(effect);
         e.place = p;
+        break;
+    }
+    case asn::EffectType::AddMarker: {
+        auto &e = std::get<asn::AddMarker>(effect);
+        e.from = p;
         break;
     }
     case asn::EffectType::RemoveMarker: {

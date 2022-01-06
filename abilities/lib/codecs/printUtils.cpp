@@ -331,3 +331,43 @@ std::string printFaceOrientation(asn::FaceOrientation orientation) {
     }
     return "";
 }
+
+std::string printTargetAndPlace(const asn::Target &t, const asn::Place &p) {
+    std::string s;
+
+    if(t.type == TargetType::SpecificCards) {
+        bool plural = false;
+        const auto &spec = *t.targetSpecification;
+        // 'of' case
+        if ((p.pos == Position::Top ||p.pos == Position::Bottom)
+                && spec.number.mod == NumModifier::ExactMatch) {
+            if (p.pos == Position::Top)
+                s += "the top ";
+            else if (p.pos == Position::Bottom)
+                s += "the bottom ";
+            if (spec.number.value > 1) {
+                plural = true;
+                s += std::to_string(spec.number.value) + " ";
+            }
+            s += printCard(spec.cards, plural, false) + " of ";
+        } else {
+            // 'from' case
+            bool plural = false;
+            if (spec.mode == TargetMode::All) {
+                plural = true;
+                s += "all ";
+            } else if (spec.number.value > 1 || spec.number.mod == NumModifier::UpTo) {
+                if (spec.number.value > 1)
+                    plural = true;
+                s += printNumber(spec.number);
+            }
+            s += printCard(spec.cards, plural) + " from ";
+        }
+        s += printPlayer(p.owner);
+        s += printZone(p.zone) + " ";
+    } else {
+        s += printTarget(t);
+    }
+
+    return s;
+}

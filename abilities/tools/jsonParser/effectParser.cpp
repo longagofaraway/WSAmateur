@@ -305,6 +305,8 @@ SwapCards parseSwapCards(const QJsonObject &json) {
 AddMarker parseAddMarker(const QJsonObject &json) {
     if (!json.contains("target") || !json["target"].isObject())
         throw std::runtime_error("no target in AddMarker");
+    if (!json.contains("from") || !json["from"].isObject())
+        throw std::runtime_error("no from in AddMarker");
     if (!json.contains("destination") || !json["destination"].isObject())
         throw std::runtime_error("no destination in AddMarker");
     if (json.contains("orientation") && !json["orientation"].isDouble())
@@ -312,6 +314,7 @@ AddMarker parseAddMarker(const QJsonObject &json) {
 
     AddMarker e;
     e.target = parseTarget(json["target"].toObject());
+    e.from = parsePlace(json["from"].toObject());
     e.destination = parseTarget(json["destination"].toObject());
     if (json.contains("orientation"))
         e.orientation = static_cast<FaceOrientation>(json["orientation"].toInt());

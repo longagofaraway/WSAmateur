@@ -113,6 +113,7 @@ void encodeCannotAttack(const CannotAttack &e, Buf &buf) {
 
 void encodeAddMarker(const AddMarker &e, Buf &buf) {
     encodeTarget(e.target, buf);
+    encodePlace(e.from, buf);
     encodeTarget(e.destination, buf);
     buf.push_back(static_cast<uint8_t>(e.orientation));
 }

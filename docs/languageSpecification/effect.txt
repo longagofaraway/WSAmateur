@@ -264,6 +264,7 @@ enum AttackType {
 
 AddMarker {
   target Target,
+  from Place,
   destination Target,
   orientation FaceOrientation
 }

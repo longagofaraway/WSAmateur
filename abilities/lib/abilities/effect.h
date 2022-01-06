@@ -170,6 +170,7 @@ struct CannotAttack {
 
 struct AddMarker {
     Target target;
+    Place from;
     Target destination;
     FaceOrientation orientation;
 };

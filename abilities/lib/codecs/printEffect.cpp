@@ -769,22 +769,22 @@ std::string printPutOnStageRested(const PutOnStageRested &e) {
 std::string printAddMarker(const AddMarker &e) {
     std::string s = "put ";
 
-    s += printTarget(e.target);
+    s += printTargetAndPlace(e.target, e.from);
     s += printFaceOrientation(e.orientation) + " underneath ";
     s += printTarget(e.destination);
     if (e.target.type == TargetType::ChosenCards) {
         if (gPrintState.chosenCardsNumber.value > 1) {
-            s += " as markers ";
+            s += "as markers ";
             return s;
         }
     }
     if (e.target.type == TargetType::MentionedCards) {
         if (gPrintState.mentionedCardsNumber.value > 1) {
-            s += " as markers ";
+            s += "as markers ";
             return s;
         }
     }
-    s += " as a marker ";
+    s += "as a marker ";
     return s;
 }
 

@@ -37,6 +37,7 @@ std::string printEffects(const std::vector<asn::Effect> &effects);
 std::string printTrigger(const asn::Trigger &t);
 std::string printTarget(const asn::Target &t, bool plural = false, bool nominative = false,
                         std::optional<bool> optArticle = {});
+std::string printTargetAndPlace(const asn::Target &t, const asn::Place &p);
 
 // effects
 std::string printMoveCard(const asn::MoveCard &e);

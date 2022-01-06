@@ -146,6 +146,7 @@ CannotAttack decodeCannotAttack(Iterator &it, Iterator end) {
 AddMarker decodeAddMarker(Iterator &it, Iterator end) {
     AddMarker e;
     e.target = decodeTarget(it, end);
+    e.from = decodePlace(it, end);
     e.destination = decodeTarget(it, end);
     e.orientation = decodeEnum<FaceOrientation>(it, end);
     return e;
