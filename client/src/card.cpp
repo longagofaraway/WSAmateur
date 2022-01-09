@@ -8,13 +8,14 @@
 #include "player.h"
 
 Card::Card(int id, const std::string &code, CardZone *zone) : mCode(code), mZone(zone) {
-    if (mCode.empty())
+    if (code.empty() || code == "cardback")
         return;
 
-    init(id, mCode);
+    init(id, code);
 }
 
 void Card::init(int id, const std::string &code) {
+    clear();
     mInfo = CardDatabase::get().getCard(code);
     mId = id;
     mCode = code;
@@ -47,7 +48,15 @@ void Card::clear() {
     mSelected = false;
     mHighlightedByAbility = false;
     mState = asn::State::Standing;
+    mMarkers.clear();
+
     mAbilityModel.reset();
+
+    mCannotPlay = false;
+    mCannotFrontAttack = false;
+    mCannotSideAttack = false;
+    mCannotBecomeReversed = false;
+    mCannotMove = false;
 }
 
 QString Card::qstate() const {
@@ -81,6 +90,16 @@ QString Card::qtype() const {
 
 int Card::playersLevel() const {
     return mZone->player()->level();
+}
+
+QString Card::topMarker() const {
+    if (mMarkers.empty())
+        return "";
+    return mMarkers.back().qcode();
+}
+
+void Card::addMarker(int id, const std::string &code) {
+    mMarkers.emplace_back(Card(id, code, mZone));
 }
 
 void Card::addAbility(const asn::Ability &a, int id) {

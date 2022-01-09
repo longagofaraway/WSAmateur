@@ -34,6 +34,8 @@ class Card : public CardBase {
     std::shared_ptr<CardInfo> mInfo;
     CardZone *mZone;
 
+    std::vector<Card> mMarkers;
+
     bool mCannotPlay = false;
     bool mCannotFrontAttack = false;
     bool mCannotSideAttack = false;
@@ -90,6 +92,11 @@ public:
     void setCannotMove(bool p) { mCannotMove = p; }
     bool highlightedByAbility() const { return mHighlightedByAbility; }
     void setHighlightedByAbility(bool p) { mHighlightedByAbility = p; }
+
+    QString topMarker() const;
+    std::vector<Card>& markers() { return mMarkers; }
+    const std::vector<Card>& markers() const { return mMarkers; }
+    void addMarker(int id, const std::string &code);
 
     QString textById(int abilityId) const { return mAbilityModel->textById(abilityId); }
     QString textByIndex(int index) const { return mAbilityModel->textByIndex(index); }

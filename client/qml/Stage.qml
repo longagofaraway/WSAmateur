@@ -65,6 +65,8 @@ Item {
         mStagePlaces[pos].setCard(id, code);
     }
     function swapCards(from, to) { mStagePlaces[from].startSwappingCards(to); }
+    function addMarker(id, code, pos) { mModel.addMarker(pos, id, code); }
 
     function removeCard(pos) { mStagePlaces[pos].removeCard(pos); }
+    function removeMarker(pos) { mModel.removeMarker(pos); }
 }

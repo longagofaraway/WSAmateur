@@ -127,3 +127,10 @@ void Stage::deactivateEncoreStep() {
 void Stage::swapCards(int from, int to) {
     QMetaObject::invokeMethod(mQmlObject, "swapCards", Q_ARG(QVariant, from), Q_ARG(QVariant, to));
 }
+
+std::tuple<qreal, qreal> Stage::coords(int pos) {
+    QVariant qx, qy;
+    QMetaObject::invokeMethod(mQmlObject, "getXForNewCard", Q_RETURN_ARG(QVariant, qx), Q_ARG(QVariant, pos));
+    QMetaObject::invokeMethod(mQmlObject, "getYForNewCard", Q_RETURN_ARG(QVariant, qy), Q_ARG(QVariant, pos));
+    return {qx.toReal(), qy.toReal()};
+}

@@ -96,6 +96,12 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::PutOnStageRested:
         co_await playPutOnStageRested(std::get<asn::PutOnStageRested>(e.effect));
         break;
+    case asn::EffectType::AddMarker:
+        playAddMarker(std::get<asn::AddMarker>(e.effect));
+        break;
+    case asn::EffectType::RemoveMarker:
+        playRemoveMarker(std::get<asn::RemoveMarker>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -859,6 +865,72 @@ Resumable AbilityPlayer::playPutOnStageRested(const asn::PutOnStageRested &e) {
         target.card->player()->setCardState(target.card, asn::State::Rested);
 
     co_return;
+}
+
+void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
+    if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
+        ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
+            mentionedCards().empty()) ||
+        (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
+        return;
+
+    if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified
+        && e.target.targetSpecification->mode != asn::TargetMode::All) {
+        // todo: implement choice of marker
+        assert(false);
+    }
+
+    // TODO: add choice of target stage cards
+    auto targetStageCards = getTargets(e.destination);
+    if (targetStageCards.empty())
+        return;
+    auto targetStageCard = targetStageCards.front();
+
+    auto player = owner(e.from.owner);
+    auto pzone = player->zone(asnZoneToString(e.from.zone));
+    if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::Top &&
+        e.from.zone == asn::Zone::Deck) {
+        const auto &spec = *e.target.targetSpecification;
+        assert(spec.number.mod == asn::NumModifier::ExactMatch);
+
+        for (int i = 0; i < spec.number.value; ++i) {
+            auto card = pzone->topCard();
+            if (!card)
+                break;
+
+            player->addMarker(pzone, pzone->count() - 1, targetStageCard->pos(), e.orientation);
+            if (pzone->count() == 0)
+                player->refresh();
+        }
+        return;
+    }
+
+    auto targets = getTargets(e.target);
+    std::sort(targets.begin(), targets.end(), [](const ServerCard *card1, const ServerCard * card2) {
+        return card1->pos() > card2->pos();
+    });
+    for (auto target: targets) {
+        player->addMarker(pzone, target->pos(), targetStageCard->pos(), e.orientation);
+
+        if (e.from.zone == asn::Zone::Deck && pzone->count() == 0)
+            player->refresh();
+    }
+}
+
+void AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
+    auto targetStageCards = getTargets(e.markerBearer);
+    if (targetStageCards.empty())
+        return;
+
+    // no choice for now
+    assert(targetStageCards.size() == 1);
+    auto markerBearer = targetStageCards.front();
+
+    if (e.targetMarker.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *e.targetMarker.targetSpecification;
+        for (int i = 0; i < spec.number.value; ++i)
+            mPlayer->removeTopMarker(markerBearer, e.place);
+    }
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

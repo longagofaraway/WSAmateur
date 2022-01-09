@@ -33,7 +33,10 @@ Card {
 
     function removeCard() {
         let szone = gGame.getZone(startZone, opponent);
-        szone.removeCard(startPos);
+        if (startZone == "marker")
+            szone.removeMarker(startPos);
+        else
+            szone.removeCard(startPos);
     }
 
     function setupMoveFromZone() {
@@ -112,7 +115,10 @@ Card {
 
     function insertCard() {
         var zone = gGame.getZone(targetZone, opponent);
-        zone.addCard(uniqueId, code, targetPos, startZone, startPos);
+        if (targetZone == "marker")
+            zone.addMarker(uniqueId, code, targetPos, startZone, startPos);
+        else
+            zone.addCard(uniqueId, code, targetPos, startZone, startPos);
         movingCard.visible = false;
     }
 

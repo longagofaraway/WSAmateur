@@ -305,18 +305,23 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
         checkZoneChangeTrigger(card, startZoneName, targetZoneName);
         // revert effects of cont abilities
         playContAbilities(card, true/*revert*/);
-        card->reset();
     }
+    auto markers = std::move(card->markers());
+    card->reset();
 
     auto cardPtr = startZone->takeCard(startPos);
 
-    targetZone->addCard(std::move(cardPtr), targetPos);
+    auto addedCard = targetZone->addCard(std::move(cardPtr), targetPos);
 
     EventMoveCard eventPublic;
     eventPublic.set_start_zone(startZone->name());
     eventPublic.set_target_zone(targetZone->name());
     eventPublic.set_start_pos(startPos);
     eventPublic.set_target_pos(targetPos);
+    if (startZoneName == "stage" && markers.size()) {
+        auto movedMarkers = moveMarkersToWr(markers);
+        *eventPublic.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
+    }
 
     if ((startZone->type() == ZoneType::HiddenZone || startZone->type() == ZoneType::PrivateZone)
         && targetZone->type() == ZoneType::PublicZone) {
@@ -394,6 +399,100 @@ void ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
 
     if (deck->count() == 0)
         refresh();
+}
+
+std::vector<ProtoTypeCard> ServerPlayer::moveMarkersToWr(std::vector<std::unique_ptr<ServerCard>> &markers) {
+    auto wr = zone("wr");
+    std::vector<ProtoTypeCard> movedMarkers;
+    for (auto &&marker: markers) {
+        ProtoTypeCard movedMarker;
+        movedMarker.set_code(marker->code());
+        movedMarker.set_id(marker->id());
+        movedMarkers.push_back(movedMarker);
+
+        wr->addCard(std::move(marker));
+    }
+    markers.clear();
+    return movedMarkers;
+}
+
+void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
+                              int targetPos, asn::FaceOrientation faceOrientation) {
+    ServerCard *card = startZone->card(startPos);
+    if (!card)
+        return;
+
+    auto stage = zone("stage");
+    auto markerBearer = stage->card(targetPos);
+    if (!markerBearer)
+        return;
+
+    if (startZone->name() == "stage" || startZone->name() == "climax" || startZone->name() == "hand") {
+        // revert effects of cont abilities
+        playContAbilities(card, true/*revert*/);
+    }
+
+    auto markers = std::move(card->markers());
+    auto cardPtr = startZone->takeCard(startPos);
+    if (!cardPtr)
+        return;
+
+    cardPtr->reset();
+
+    card = markerBearer->addMarker(std::move(cardPtr));
+
+    EventMoveCard event;
+    event.set_start_zone(startZone->name());
+    event.set_start_pos(startPos);
+    event.set_target_zone("marker");
+    event.set_target_pos(targetPos);
+    if (startZone->name() == "stage" && markers.size()) {
+        auto movedMarkers = moveMarkersToWr(markers);
+        *event.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
+    }
+
+    if ((startZone->type() == ZoneType::HiddenZone || startZone->type() == ZoneType::PrivateZone)
+        && faceOrientation == asn::FaceOrientation::FaceUp) {
+        event.set_code(card->code());
+        event.set_card_id(card->id());
+    }
+
+    sendToBoth(event);
+
+    mGame->resolveAllContAbilities();
+}
+
+void ServerPlayer::removeTopMarker(ServerCard *markerBearer, const asn::Place &place) {
+    auto marker = markerBearer->takeTopMarker();
+    if (!marker)
+        return;
+    auto faceOrientation = marker->faceOrientation();
+    marker->reset();
+    std::string targetZoneName = std::string(asnZoneToString(place.zone));
+    auto pzone = zone(targetZoneName);
+    auto card = pzone->addCard(std::move(marker));
+
+    EventMoveCard eventPublic;
+    eventPublic.set_start_zone("marker");
+    eventPublic.set_start_pos(markerBearer->pos());
+    eventPublic.set_target_zone(targetZoneName);
+    eventPublic.set_target_pos(-1);
+
+    if (!(faceOrientation == asn::FaceOrientation::FaceDown && pzone->type() == ZoneType::HiddenZone)) {
+        eventPublic.set_card_id(card->id());
+        eventPublic.set_code(card->code());
+    }
+
+    EventMoveCard eventPrivate(eventPublic);
+    if (faceOrientation == asn::FaceOrientation::FaceDown && pzone->type() == ZoneType::PrivateZone) {
+        eventPublic.set_card_id(card->id());
+        eventPublic.set_code(card->code());
+    }
+
+    sendGameEvent(eventPrivate);
+    mGame->sendPublicEvent(eventPublic, mId);
+
+    mGame->resolveAllContAbilities();
 }
 
 Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {

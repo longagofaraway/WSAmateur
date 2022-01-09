@@ -53,6 +53,7 @@ Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, in
     auto player = owner(e.from.owner);
     auto pzone = player->zone(asnZoneToString(e.from.zone));
     const auto &spec = *e.target.targetSpecification;
+    assert(spec.number.mod == asn::NumModifier::ExactMatch);
 
     if (!isPayingCost())
         clearLastMovedCards();
@@ -311,6 +312,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         player = owner(e.from.owner);
         auto zone = player->zone(asnZoneToString(e.from.zone));
         const auto &spec = *e.target.targetSpecification;
+        // TODO move n bottom cards
         if (e.from.pos == asn::Position::Bottom && zone->card(0))
             cardsToMove[0] = zone->card(0);
         else if (spec.mode == asn::TargetMode::All) {
@@ -352,7 +354,6 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasInRested)
             player->setCardState(it->second, asn::State::Rested);
 
-        // TODO: refresh and levelup are triggered at the same time, give choice
         if (e.from.zone == asn::Zone::Deck || e.to[toZoneIndex].zone == asn::Zone::Clock)
             co_await player->checkRefreshAndLevelUp();
     }

@@ -13,6 +13,9 @@ Rectangle {
     property bool hidden: opponent && mViewMode === Game.LookMode
     property CardModel mModel: innerModel
     property bool mDragEnabled: false
+    property int markerStagePos
+
+    signal deleteMarkerView(int pos)
 
     Connections {
         target: mModel
@@ -40,10 +43,40 @@ Rectangle {
     Text {
         id: header
         anchors.horizontalCenter: parent.horizontalCenter
-        text: mViewMode === Game.RevealMode ? "Revealing" : "Looking"
+        text: {
+            switch (mViewMode) {
+            case Game.RevealMode:
+                return "Revealing";
+            case Game.LookMode:
+                return "Looking";
+            case Game.MarkerMode:
+                return "Markers";
+            }
+        }
         font.family: "Futura Bk BT"
         font.pointSize: 20
         color: "white"
+    }
+
+    Image {
+        id: closeBtn
+
+        visible: mViewMode == Game.MarkerMode
+        anchors {
+            right: cardsView.right
+            rightMargin: 5
+            top: cardsView.top
+            topMargin: 5
+        }
+        source: "qrc:///resources/images/closeButton"
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: closeBtn.source = "qrc:///resources/images/closeButtonHighlighted"
+            onExited: closeBtn.source = "qrc:///resources/images/closeButton"
+            onClicked: deleteMarkerView(markerStagePos)
+        }
     }
 
     ListView {
@@ -210,8 +243,16 @@ Rectangle {
             frameParent.cardTextFrame = textFrame;
         }
 
-        if (model.rowCount() > 0)
+        if (model !== null && model.rowCount() > 0)
             ObjectCreator.createAsync("CardTextFrame", frameParent, cb);
+    }
+
+    function positionMarkerView(xCoord, yCoord) {
+        cardsView.x = xCoord - cardsView.width / 3;
+        if (!opponent)
+            cardsView.y = yCoord - cardsView.height - 20;
+        else
+            cardsView.y = yCoord + cardImg.height + 20
     }
 
     function clear() { clearAnim.start(); }

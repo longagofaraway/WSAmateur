@@ -419,6 +419,16 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
                     return true;
 
             return false;
+        } else if (item.type == asn::EffectType::RemoveMarker) {
+            const auto &e = std::get<asn::RemoveMarker>(item.effect);
+            assert(e.targetMarker.type == asn::TargetType::SpecificCards);
+            assert(e.markerBearer.type == asn::TargetType::ThisCard);
+            const auto &spec = *e.targetMarker.targetSpecification;
+            auto &markers = thisCard.markers();
+            if (markers.size() < spec.number.value)
+                return false;
+
+            return true;
         }
         return true;
     }

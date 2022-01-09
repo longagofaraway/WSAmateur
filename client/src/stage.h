@@ -27,4 +27,5 @@ public:
     void encoreStep();
     void deactivateEncoreStep();
     void swapCards(int from, int to);
+    std::tuple<qreal, qreal> coords(int pos);
 };

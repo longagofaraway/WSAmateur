@@ -39,7 +39,6 @@ ListView {
         filterOnGroup: "stageCard"
 
         items.onChanged: {
-            let cur = 0;
             for (let i = 0; i < items.count; i++) {
                 let item = items.get(i);
                 if (mIndex === item.model.index) {
@@ -107,6 +106,7 @@ ListView {
 
                 anchors.fill: parent
                 hoverEnabled: true
+                z: 2
                 rotation: (model.state === "Rested") ? 90 : 0
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 drag.target: (stage.opponent || !stage.mDragEnabled || model.cannotMove) ? undefined : mStageCard;
@@ -178,6 +178,41 @@ ListView {
                     } else if (!opponent && mStageCard !== null) {
                         gGame.getPlayer().playActAbility(mIndex);
                     }
+                }
+            }
+
+            MouseArea {
+                id: markerArea
+
+                anchors {
+                    top: parent.top
+                    left: parent.left
+                    topMargin: marker.height * 0.05
+                    leftMargin: -marker.width * 0.1
+                }
+                width: parent.width
+                height: parent.height
+                visible: mStageCard !== null && model.topMarker
+                hoverEnabled: mStageCard !== null
+
+                states: State {
+                    name: "hovered"; when: markerArea.containsMouse
+                    PropertyChanges { target: markerArea; anchors.leftMargin: -marker.width * 0.2 }
+                }
+
+                Behavior on anchors.leftMargin {
+                    NumberAnimation { duration: 200 }
+                }
+
+                Card {
+                    id: marker
+
+                    anchors.fill: parent
+                    mSource: model.topMarker
+                }
+
+                onClicked: {
+                    gGame.getPlayer(stage.opponent).createMarkerView(mIndex);
                 }
             }
         }
@@ -278,6 +313,7 @@ ListView {
         createStageCard(code);
         stage.mModel.setCard(mIndex, cardId, code);
     }
+
     function removeCard(pos) {
         destroyCardInfo();
         mStageRect.color = "#30FFFFFF";

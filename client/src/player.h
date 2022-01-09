@@ -42,6 +42,8 @@ class EventSetCardStateTargetChoice;
 class EventSetCardBoolAttr;
 class EventSetPlayerAttr;
 class EventRevealFromHand;
+class EventAddMarker;
+class ProtoTypeCard;
 
 class Game;
 class GameEvent;
@@ -65,6 +67,7 @@ private:
     std::unordered_map<std::string_view, std::unique_ptr<CardZone>> mZones;
     std::unique_ptr<ActivatedAbilities> mAbilityList;
     std::unique_ptr<ChoiceDialogBase> mChoiceDialog;
+    std::unordered_map<int, std::unique_ptr<CardZone>> mMarkerViews;
 
     int mLevel = 0;
     int mAttackingPos = 0;
@@ -113,6 +116,7 @@ public:
     Q_INVOKABLE void addCard(int id, QString code, QString zoneName, int targetPos = -1);
     Q_INVOKABLE void interactWithDeck();
     Q_INVOKABLE void cardInserted(QString startZone, QString targetZone);
+    Q_INVOKABLE void createMarkerView(int index);
 
     void resetChoiceDialog();
 
@@ -130,6 +134,10 @@ private:
     void createMovingCard(int id, const QString &code, const std::string &startZone, int startPos,
                           const std::string &targetZone, int targetPos = 0, bool isUiAction = false,
                           bool dontFinishAction = false, bool noDelete = false);
+    void moveCard(int id, const std::string &code,
+                  const std::string &startZoneName, int startPos,
+                  const std::string &targetZoneName, int targetPos,
+                  const std::vector<ProtoTypeCard> markers);
 
     void setInitialHand(const EventInitialHand &event);
     void moveCard(const EventMoveCard &event);
@@ -199,6 +207,7 @@ private:
     void processSetCardBoolAttr(const EventSetCardBoolAttr &event);
     void processRevealFromHand(const EventRevealFromHand &event);
     void processRuleActionChoice();
+    void processAddMarker(const EventAddMarker &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t) const;
@@ -211,6 +220,10 @@ public slots:
     void sendEncore(int pos);
     void sendDiscardCard(int id);
     void sendPlayActAbility(int cardPos, int abilityId);
+    void deleteMarkerView(int index);
+
+signals:
+    void unrecoverableError(QString message);
 
 private:
     bool mPlayingClimax = false;

@@ -36,6 +36,8 @@ class CommandEncoreCharacter;
 class CommandPlayAct;
 class CommandMoveInOrder;
 
+class ProtoTypeCard;
+
 struct TriggeredAbility {
     CardImprint card;
     ProtoAbilityType type;
@@ -129,6 +131,9 @@ public:
                   bool reveal = false, bool enableGlobEncore = true);
     bool moveCardToStage(ServerCardZone *startZone, int startPos, ServerCardZone *targetZone, int targetPos);
     void moveTopDeck(std::string_view targetZoneName);
+    void addMarker(ServerCardZone *startZone, int startPos,
+                                  int targetPos, asn::FaceOrientation faceOrientation);
+    void removeTopMarker(ServerCard *markerBearer, const asn::Place &place);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard &cmd);
     Resumable playCounter(const CommandPlayCounter &cmd);
@@ -200,6 +205,7 @@ private:
                                ServerCard *card,
                                std::string_view cardZone = "",
                                ServerCard *cardFromTrigger = nullptr);
+    std::vector<ProtoTypeCard> moveMarkersToWr(std::vector<std::unique_ptr<ServerCard>> &markers);
 
     Resumable testAction();
 };

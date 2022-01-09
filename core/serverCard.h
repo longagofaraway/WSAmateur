@@ -49,6 +49,8 @@ class ServerCard : public CardBase
     std::string mCode;
     std::vector<AbilityState> mAbilities;
 
+    std::vector<std::unique_ptr<ServerCard>> mMarkers;
+
     StageRow mRow;
     int mPosition;
     int mPreviousStagePosition = 0;
@@ -57,6 +59,7 @@ class ServerCard : public CardBase
     int mSoul;
     int mLevel;
     asn::State mState = asn::State::Standing;
+    asn::FaceOrientation mFaceOrientation = asn::FaceOrientation::FaceUp;
 
     bool mInBattle = false;
 
@@ -98,6 +101,12 @@ public:
     const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
     int playersLevel() const override;
+    asn::FaceOrientation faceOrientation() const { return mFaceOrientation; }
+
+    bool hasMarkers() const { return mMarkers.size(); }
+    std::vector<std::unique_ptr<ServerCard>>& markers() { return mMarkers; }
+    ServerCard* addMarker(std::unique_ptr<ServerCard> &&card);
+    std::unique_ptr<ServerCard> takeTopMarker();
 
     bool cannotPlay() const { return mCannotPlay; }
     void setCannotPlay(bool val) { mCannotPlay = val; }

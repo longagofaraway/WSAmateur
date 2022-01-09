@@ -210,6 +210,16 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
                     return true;
 
             return false;
+        } else if (item.type == asn::EffectType::RemoveMarker) {
+            const auto &e = std::get<asn::RemoveMarker>(item.effect);
+            assert(e.targetMarker.type == asn::TargetType::SpecificCards);
+            assert(e.markerBearer.type == asn::TargetType::ThisCard);
+            const auto &spec = *e.targetMarker.targetSpecification;
+            const auto &markers = thisCard().card->markers();
+            if (markers.size() < spec.number.value)
+                return false;
+
+            return true;
         } else {
             assert(false);
         }

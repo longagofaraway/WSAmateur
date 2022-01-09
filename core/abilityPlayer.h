@@ -134,6 +134,8 @@ private:
     void playCannotMove(const asn::CannotMove &e);
     void playSideAttackWithoutPenalty(const asn::SideAttackWithoutPenalty &e);
     Resumable playPutOnStageRested(const asn::PutOnStageRested &e);
+    void playAddMarker(const asn::AddMarker &e);
+    void playRemoveMarker(const asn::RemoveMarker &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

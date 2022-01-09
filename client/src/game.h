@@ -70,6 +70,8 @@ public:
     Q_INVOKABLE bool isCounterStep() { return mCurrentPhase == asn::Phase::CounterStep; }
     Q_INVOKABLE QQuickItem* getZone(QString name, bool opponent) {
         auto zoneName = name.toStdString();
+        if (zoneName == "marker")
+            zoneName = "stage";
         if (!opponent) {
             return mPlayer->zone(zoneName)->visualItem();
         }
@@ -108,7 +110,8 @@ public:
 
     enum ViewMode {
         RevealMode,
-        LookMode
+        LookMode,
+        MarkerMode
     };
     Q_ENUM(ViewMode)
 

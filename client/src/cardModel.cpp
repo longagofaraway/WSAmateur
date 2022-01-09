@@ -6,7 +6,7 @@
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
     mRoles = QVector<int>() << CodeRole << CardIdRole << GlowRole << SelectedRole << TypeRole
                             << StateRole << PowerRole << SoulRole << LevelRole << CannotMoveRole
-                            << HighlightedByAbilityRole;
+                            << HighlightedByAbilityRole << TopMarkerRole;
 }
 
 void CardModel::clear() {
@@ -73,6 +73,30 @@ void CardModel::removeCard(int row) {
     mCards.erase(mCards.begin() + row);
     endRemoveRows();
     emit countChanged();
+}
+
+void CardModel::removeMarker(int row) {
+    if (static_cast<size_t>(row) >= mCards.size())
+        return;
+
+    auto &card = mCards.at(row);
+    auto &markers = card.markers();
+    if (!markers.empty())
+        markers.pop_back();
+
+    auto modelIndex = index(row);
+    emit dataChanged(modelIndex, modelIndex, { TopMarkerRole });
+}
+
+void CardModel::addMarker(int row, int cardId, QString code) {
+    if (static_cast<size_t>(row) >= mCards.size())
+        return;
+
+    auto &card = mCards.at(row);
+    card.addMarker(cardId, code.toStdString());
+
+    auto modelIndex = index(row);
+    emit dataChanged(modelIndex, modelIndex, { TopMarkerRole });
 }
 
 void CardModel::clearCard(int row) {
@@ -216,6 +240,8 @@ QVariant CardModel::data(const QModelIndex &index, int role) const {
         return card.cannotMove();
     case HighlightedByAbilityRole:
         return card.highlightedByAbility();
+    case TopMarkerRole:
+        return card.topMarker();
     default:
         return QVariant();
     }
@@ -244,6 +270,7 @@ QHash<int, QByteArray> CardModel::roleNames() const {
         (*roles)[LevelRole] = "level";
         (*roles)[CannotMoveRole] = "cannotMove";
         (*roles)[HighlightedByAbilityRole] = "highlightedByAbility";
+        (*roles)[TopMarkerRole] = "topMarker";
     }
     return *roles;
 }

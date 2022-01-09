@@ -29,7 +29,8 @@ public:
         LevelRole,
         TextModelRole,
         CannotMoveRole,
-        HighlightedByAbilityRole
+        HighlightedByAbilityRole,
+        TopMarkerRole
     };
     Q_ENUM(CardRoles)
     static QVector<int> mRoles;
@@ -46,6 +47,8 @@ public:
     Q_INVOKABLE void setCard(int row, int cardId, QString code);
     Q_INVOKABLE void swapCards(int from, int to);
     Q_INVOKABLE void removeCard(int row);
+    Q_INVOKABLE void removeMarker(int row);
+    Q_INVOKABLE void addMarker(int row, int cardId, QString code);
     Q_INVOKABLE void clearCard(int row);
     Q_INVOKABLE void clear();
     Q_INVOKABLE int climaxCount();

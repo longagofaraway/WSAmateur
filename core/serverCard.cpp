@@ -25,7 +25,9 @@ void ServerCard::reset() {
         ab.activationTimes = 0;
         ab.active = false;
     });
+    mMarkers.clear();
     mState = asn::State::Standing;
+    mFaceOrientation = asn::FaceOrientation::FaceUp;
 
     mPower = mCardInfo->power();
     mSoul = mCardInfo->soul();
@@ -58,6 +60,20 @@ ServerPlayer* ServerCard::player() const {
 
 int ServerCard::playersLevel() const {
     return mZone->player()->level();
+}
+
+ServerCard* ServerCard::addMarker(std::unique_ptr<ServerCard> &&card) {
+    card->setPos(mPosition);
+    return mMarkers.emplace_back(std::move(card)).get();
+}
+
+std::unique_ptr<ServerCard> ServerCard::takeTopMarker() {
+    if (mMarkers.empty())
+        return {};
+
+    auto card = std::move(mMarkers.back());
+    mMarkers.pop_back();
+    return card;
 }
 
 int ServerCard::addAbility(const asn::Ability &a) {

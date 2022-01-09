@@ -436,7 +436,7 @@ void Player::createMovingCard(int id, const QString &code, const std::string &st
     QQuickItem *obj = qobject_cast<QQuickItem*>(component.create(mGame->context()));
     obj->setParentItem(mGame->parentItem());
     obj->setProperty("uniqueId", id);
-    obj->setProperty("code", code);
+    obj->setProperty("code", source);
     obj->setProperty("opponent", mOpponent);
     obj->setProperty("isUiAction", isUiAction);
     obj->setProperty("dontFinishAction", dontFinishAction);
@@ -451,11 +451,14 @@ void Player::createMovingCard(int id, const QString &code, const std::string &st
 }
 
 void Player::moveCard(const EventMoveCard &event) {
-    CardZone *startZone = zone(event.start_zone());
+    auto startZoneName = event.start_zone() == "marker" ? "stage" : event.start_zone();
+    auto targetZoneName = event.target_zone() == "marker" ? "stage" : event.target_zone();
+
+    CardZone *startZone = zone(startZoneName);
     if (!startZone)
         return;
 
-    CardZone *targetZone = zone(event.target_zone());
+    CardZone *targetZone = zone(targetZoneName);
     if (!targetZone)
         return;
 
@@ -464,8 +467,15 @@ void Player::moveCard(const EventMoveCard &event) {
         return;
 
     QString code = QString::fromStdString(event.code());
-    if (code.isEmpty())
-        code = cards[event.start_pos()].qcode();
+    if (code.isEmpty()) {
+        if (event.start_zone() == "marker") {
+            auto &markers = cards[event.start_pos()].markers();
+            if (!markers.empty())
+                code = markers.back().qcode();
+        } else {
+            code = cards[event.start_pos()].qcode();
+        }
+    }
 
     bool dontFinishAction = false;
     if (event.target_zone() == "res") {
@@ -775,6 +785,37 @@ void Player::addCard(int id, QString code, QString zoneName, int targetPos) {
     pzone->model().addCard(id, code.toStdString(), pzone, targetPos);
 }
 
+void Player::createMarkerView(int index) {
+    if (mMarkerViews.contains(index))
+        return;
+    auto &cards = mStage->cards();
+    if (static_cast<size_t>(index) > cards.size()) {
+        qDebug() << "Wrong index during marker view creation";
+        return;
+    }
+    if (cards[index].markers().empty())
+        return;
+
+    auto markerView = std::make_unique<CommonCardZone>(this, mGame, "view");
+    for (const auto &marker: cards[index].markers())
+        markerView->model().addCard(marker.id(), marker.code(), mStage);
+    connect(markerView->visualItem(), SIGNAL(deleteMarkerView(int)), this, SLOT(deleteMarkerView(int)));
+
+    auto [x, y] = mStage->coords(index);
+    QMetaObject::invokeMethod(markerView->visualItem(), "positionMarkerView", Q_ARG(QVariant, x), Q_ARG(QVariant, y));
+    markerView->visualItem()->setProperty("mViewMode", Game::MarkerMode);
+    markerView->visualItem()->setProperty("markerStagePos", index);
+    mMarkerViews.emplace(index, std::move(markerView));
+}
+
+void Player::deleteMarkerView(int index) {
+    if (!mMarkerViews.contains(index))
+        return;
+    auto &markerView = mMarkerViews.at(index);
+    markerView->visualItem()->deleteLater();
+    mMarkerViews.erase(index);
+}
+
 void Player::testAction()
 {
     sendGameCommand(CommandTest());
@@ -817,5 +858,4 @@ void Player::attackWithAll() {
             return;
         }
     }
-
 }
