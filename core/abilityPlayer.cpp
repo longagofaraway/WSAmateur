@@ -179,9 +179,15 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
-            if (e.from.zone == asn::Zone::Hand && e.target.type == asn::TargetType::SpecificCards &&
-                e.target.targetSpecification->number.value > mPlayer->zone("hand")->count())
+            auto targets = getTargets(e.target);
+            if (targets.empty())
                 return false;
+
+            if (e.target.type == asn::TargetType::SpecificCards) {
+                const auto &spec = *e.target.targetSpecification;
+                if (spec.number.value > static_cast<int>(targets.size()))
+                    return false;
+            }
         } else if (item.type == asn::EffectType::ChangeState) {
             const auto &e = std::get<asn::ChangeState>(item.effect);
             if (e.target.type == asn::TargetType::ThisCard) {
