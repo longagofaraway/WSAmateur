@@ -168,7 +168,7 @@ Card {
 
     function getGlowColor() {
         if (highlightedByAbility)
-            return "red";
+            return "green";
         return cardOverGlow ? "#FFFFFF" : (selected ? "#FCDE01" : "#2BFDFF");
     }
     function onCardEntered() { cardOverGlow = true; }

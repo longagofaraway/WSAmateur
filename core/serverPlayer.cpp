@@ -25,6 +25,8 @@
 ServerPlayer::ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id)
     : mGame(game), mClient(client), mId(id), mBuffManager(this) {}
 
+ServerPlayer::~ServerPlayer() {}
+
 void ServerPlayer::disconnectClient() {
     QMutexLocker locker(&mPlayerMutex);
     mClient = nullptr;
@@ -909,7 +911,7 @@ Resumable ServerPlayer::endOfAttack() {
 Resumable ServerPlayer::levelUp() {
     clearExpectedComands();
 
-    if (zone("level")->count() == 3) {
+    if (zone("level")->count() == 0) {
         sendEndGame(false);
         co_await std::suspend_always();
     }
@@ -942,6 +944,9 @@ Resumable ServerPlayer::levelUp() {
     }
 
     sendToBoth(EventClockToWr());
+
+    if (clock->count() > 6)
+        co_await levelUp();
 }
 
 Resumable ServerPlayer::encoreStep() {

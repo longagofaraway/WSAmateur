@@ -77,6 +77,7 @@ class ServerPlayer
 
 public:
     ServerPlayer(ServerGame *game, ServerProtocolHandler *client, int id);
+    ~ServerPlayer();
 
     void disconnectClient();
 

@@ -10,10 +10,13 @@
 
 GamePreparation::GamePreparation() {}
 
+GamePreparation::~GamePreparation() {
+    disconnect(game, &Game::opponentDeckSet, this, &GamePreparation::setOpponentDeck);
+}
+
 void GamePreparation::init(Game *game_) {
     game = game_;
     client = game->client();
-    connect(client, &Client::gameEventReceived, this, &GamePreparation::processGameEvent);
     connect(game, &Game::opponentDeckSet, this, &GamePreparation::setOpponentDeck);
 
     game->preGameLoaded();
@@ -21,6 +24,10 @@ void GamePreparation::init(Game *game_) {
 
 void GamePreparation::sendDeck(QString deckName) {
     auto deck = getDeckByName(deckName);
+    if (!deck)
+        return;
+    game->setPlayerDeck(deck.value());
+
     CommandSetDeck command;
     command.set_deck(deck->toXml().toStdString());
     client->sendGameCommand(command);
@@ -40,10 +47,6 @@ void GamePreparation::oppDeckImagesDownloaded() {
         sendReady();
         deleteLater();
     }
-}
-
-void GamePreparation::processGameEvent(const std::shared_ptr<GameEvent> event) {
-
 }
 
 void GamePreparation::setOpponentDeck(const std::string &xmlDeck) {

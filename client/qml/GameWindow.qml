@@ -53,6 +53,7 @@ Item {
 
         onGameCreated: wsApp.initGame(gGame)
         onStartGamePreparation: createGamePreparationWindow()
+        onGameEnded: wsApp.loadLobby()
 
         anchors.fill: parent
 
@@ -160,6 +161,10 @@ Item {
             let indicator = comp.createObject(gGame);
             indicator.victory = victory;
             indicator.startAnimation();
+        }
+
+        function quitGameQml() {
+            Qt.quit();
         }
 
         function clockPhase() {

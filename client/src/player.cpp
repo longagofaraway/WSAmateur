@@ -69,16 +69,12 @@ void Player::setDeck(const std::string &deck) {
         return;
 
     mDeckList.fromXml(deck);
-    int cardCount = 0;
-    for (const auto &card: mDeckList.cards())
-        cardCount += card.count;
+    setDeckInternal();
+}
 
-    auto deckZone = zone("deck");
-    deckZone->model().addCards(cardCount, deckZone);
-    mDeckSet = true;
-
-    std::unordered_multimap<std::string, std::string> finalCache;
-    fillReferenceCache();
+void Player::setDeck(const DeckList &deck) {
+    mDeckList = deck;
+    setDeckInternal();
 }
 
 void Player::fillReferenceCache() {
@@ -97,6 +93,19 @@ void Player::fillReferenceCache() {
             }
         }
     }
+}
+
+void Player::setDeckInternal() {
+    int cardCount = 0;
+    for (const auto &card: mDeckList.cards())
+        cardCount += card.count;
+
+    auto deckZone = zone("deck");
+    deckZone->model().addCards(cardCount, deckZone);
+    mDeckSet = true;
+
+    std::unordered_multimap<std::string, std::string> finalCache;
+    fillReferenceCache();
 }
 
 Player* Player::getOpponent() const {

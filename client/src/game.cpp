@@ -249,6 +249,15 @@ void Game::sendEndTurn() {
     mPlayer->sendEndTurnCommand();
 }
 
+void Game::quitGame() {
+    if (mIsLocal) {
+        QMetaObject::invokeMethod(this, "quitGameQml");
+    } else {
+        mClient->sendGameCommand(CommandLeaveGame());
+        emit gameEnded();
+    }
+}
+
 QQmlEngine* Game::engine() const { return qmlEngine(parentItem()); }
 QQmlContext* Game::context() const { return qmlContext(parentItem()); }
 
@@ -332,12 +341,19 @@ void Game::clearHelpText() {
 void Game::endGame(bool victory) {
     QMetaObject::invokeMethod(this, "endGame", Q_ARG(QVariant, victory));
 
-    // TODO: fix for network play
-    disconnect(mLocalClients.front().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
-               this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
-    disconnect(mLocalClients.back().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
-               this, SLOT(processGameEventByOpponent(const std::shared_ptr<GameEvent>)));
+    if (mIsLocal) {
+        disconnect(mLocalClients.front().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
+                   this, SLOT(processGameEvent(const std::shared_ptr<GameEvent>)));
+        disconnect(mLocalClients.back().get(), SIGNAL(gameEventReceived(const std::shared_ptr<GameEvent>)),
+                   this, SLOT(processGameEventByOpponent(const std::shared_ptr<GameEvent>)));
+    } else {
+        disconnect(mClient, &Client::gameEventReceived, this, &Game::processGameEvent);
+    }
     mEventQueue.clear();
+}
+
+void Game::setPlayerDeck(const DeckList &deck) {
+    mPlayer->setDeck(deck);
 }
 
 

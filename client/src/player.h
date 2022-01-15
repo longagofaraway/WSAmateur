@@ -86,6 +86,7 @@ public:
     bool activePlayer() const { return mActivePlayer; }
     void setActivePlayer(bool active) { mActivePlayer = active; }
     void setDeck(const std::string &deck);
+    void setDeck(const DeckList &deck);
     Player* getOpponent() const;
     bool deckSet() const { return mDeckSet; }
 
@@ -212,6 +213,7 @@ private:
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t) const;
     void fillReferenceCache();
+    void setDeckInternal();
 
 public slots:
     void sendSwitchPositions(int from, int to);

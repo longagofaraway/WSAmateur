@@ -136,8 +136,7 @@ void ServerProtocolHandler::onConnectionClosed() {
     if (game) {
         QMutexLocker gameLocker(&game->mGameMutex);
         game->removePlayer(mPlayerId);
-        int playerCount = game->playerCount();
-        if (playerCount == 0) {
+        if (game->playerCount() == 0) {
             gameLocker.unlock();
             locker.unlock();
             mServer->removeGame(game->id());
@@ -219,6 +218,16 @@ void ServerProtocolHandler::processGameCommand(GameCommand &cmd) {
 
     if (cmd.command().Is<CommandGetGameInfo>()) {
         game->sendGameInfo(this, mPlayerId);
+        return;
+    } else if (cmd.command().Is<CommandLeaveGame>()) {
+        game->removePlayer(mPlayerId);
+        if (game->playerCount() == 0) {
+            gameLocker.unlock();
+            locker.unlock();
+            mServer->removeGame(game->id());
+        }
+        mPlayerId = 0;
+        mGameId = 0;
         return;
     }
 

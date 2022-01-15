@@ -31,3 +31,4 @@ message CommandEncoreCharacter {
 }
 
 message CommandEndTurn {}
+message CommandLeaveGame {}

@@ -11,10 +11,12 @@
 #include "commands.h"
 #include "serverPlayer.h"
 
+class Server;
 class ServerProtocolHandler;
 
 class ServerGame
 {
+    Server *mServer;
     int mId;
     bool mFirstTurn = false;
     bool mGameEnded = false;
@@ -26,7 +28,8 @@ class ServerGame
     std::optional<Resumable> mTask;
 
 public:
-    ServerGame(int id, std::string description);
+    ServerGame(Server *server, int id, std::string description);
+    ~ServerGame();
 
     QMutex mGameMutex;
 

@@ -9,10 +9,14 @@
 #include "lobbyEvent.pb.h"
 #include "phaseEvent.pb.h"
 
+#include "server.h"
+
 #include <QDebug>
 
-ServerGame::ServerGame(int id, std::string description)
-    : mId(id), mNextPlayerId(0), mDescription(description) {}
+ServerGame::ServerGame(Server *server, int id, std::string description)
+    : mServer(server), mId(id), mNextPlayerId(0), mDescription(description) {}
+
+ServerGame::~ServerGame() {}
 
 void ServerGame::close() {
     for (auto &playerEntry: mPlayers) {
@@ -74,9 +78,6 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
 
 void ServerGame::removePlayer(int id) {
     mPlayers.erase(id);
-
-    if (mPlayers.empty())
-        return;
 
     for (const auto &p: mPlayers) {
         p.second->sendGameEvent(EventPlayerLeft());

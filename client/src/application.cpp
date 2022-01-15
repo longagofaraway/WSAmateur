@@ -89,6 +89,10 @@ void WSApplication::setUsername(QString name) {
     initialization();
 }
 
+void WSApplication::gameEnded() {
+    emit loadLobby();
+}
+
 bool WSApplication::checkImageLinksFile() {
     QFile imageLinksFile(paths::imageLinksPath());
     if (!imageLinksFile.exists()) {

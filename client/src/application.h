@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE void initLobby(Lobby *lobby);
     Q_INVOKABLE void imageLinksFileChosen(QString path);
     Q_INVOKABLE void setUsername(QString name);
+    Q_INVOKABLE void gameEnded();
 
 signals:
     void startGame();

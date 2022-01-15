@@ -10,8 +10,6 @@ class Game;
 class Client;
 class ImageLoader;
 
-class GameEvent;
-
 class GamePreparation : public QQuickItem
 {
     Q_OBJECT
@@ -25,6 +23,7 @@ private:
 
 public:
     GamePreparation();
+    ~GamePreparation();
 
     Q_INVOKABLE void init(Game *game_);
     Q_INVOKABLE void sendDeck(QString deckName);
@@ -35,7 +34,6 @@ signals:
     void sigSetOpponentDeck(QString xmlDeck);
 
 private slots:
-    void processGameEvent(const std::shared_ptr<GameEvent> event);
     void setOpponentDeck(const std::string &xmlDeck);
 
 private:

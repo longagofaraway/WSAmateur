@@ -68,6 +68,7 @@ public:
     Q_INVOKABLE void sendEncoreCommand();
     Q_INVOKABLE void sendEndTurn();
     Q_INVOKABLE bool isCounterStep() { return mCurrentPhase == asn::Phase::CounterStep; }
+    Q_INVOKABLE void quitGame();
     Q_INVOKABLE QQuickItem* getZone(QString name, bool opponent) {
         auto zoneName = name.toStdString();
         if (zoneName == "marker")
@@ -107,6 +108,7 @@ public:
     void clearHelpText();
     void endGame(bool victory);
 
+    void setPlayerDeck(const DeckList& deck);
 
     enum ViewMode {
         RevealMode,
@@ -119,6 +121,7 @@ signals:
     void gameCreated();
     void startGamePreparation();
     void opponentDeckSet(const std::string &xmlDeck);
+    void gameEnded();
 
 public slots:
     void localGameCreated(const EventGameJoined &event);

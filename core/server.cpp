@@ -65,7 +65,7 @@ void Server::sendLobbyInfo() {
 }
 
 ServerGame* Server::game(int id) {
-    if (!mGames.count(id))
+    if (!mGames.contains(id))
         return nullptr;
 
     return mGames.at(id).get();
@@ -94,7 +94,7 @@ void Server::removeClient(ServerProtocolHandler *client) {
 ServerGame* Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandler *client) {
     QWriteLocker locker(&mGamesLock);
     int newGameId = nextGameId();
-    auto newGame = mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, cmd.description())).first->second.get();
+    auto newGame = mGames.emplace(newGameId, std::make_unique<ServerGame>(this, newGameId, cmd.description())).first->second.get();
     locker.unlock();
 
     QReadLocker readLocker(&mGamesLock);
@@ -105,7 +105,7 @@ ServerGame* Server::createGame(const CommandCreateGame &cmd, ServerProtocolHandl
 void Server::createGame(ServerProtocolHandler *client1, ServerProtocolHandler *client2) {
     QWriteLocker locker(&mGamesLock);
     int newGameId = nextGameId();
-    auto newGame = mGames.emplace(newGameId, std::make_unique<ServerGame>(newGameId, "")).first->second.get();
+    auto newGame = mGames.emplace(newGameId, std::make_unique<ServerGame>(this, newGameId, "")).first->second.get();
     locker.unlock();
 
     QReadLocker readLocker(&mGamesLock);
