@@ -10,6 +10,11 @@ Item {
     property var imageLinksFileDialog
     property var usernameChoiceDialog
 
+    Component.onCompleted: {
+        wsApp.startInitialization();
+        wsApp.error.connect(onAppError);
+    }
+
     Image {
         id: backgroundImg
         anchors.fill: parent
@@ -47,13 +52,6 @@ Item {
         }
     }
 
-    Button {
-        text: "start"
-        onClicked: {
-            mainLoader.source = "GameWindow.qml";
-        }
-    }
-
     function chooseImageLinksFile() {
         let comp = Qt.createComponent("menu/ChooseFileWindow.qml");
         imageLinksFileDialog = comp.createObject(startWindow);
@@ -88,5 +86,13 @@ Item {
     function usernameSet() {
         usernameChoiceDialog.destroy();
         loading.visible = true;
+    }
+
+    function onAppError(message) {
+        loading.visible = false;
+        let comp = Qt.createComponent("menu/ErrorMessage.qml");
+        let errWindow = comp.createObject(startWindow);
+        errWindow.anchors.centerIn = startWindow;
+        errWindow.message = message;
     }
 }

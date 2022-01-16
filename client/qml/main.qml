@@ -28,14 +28,17 @@ Window {
             mainLoader.source = "menu/DecksWindow.qml";
         }
         function switchToLobby() {
-            mainLoader.source = "menu/LobbyWindow.qml"
+            mainLoader.source = "menu/LobbyWindow.qml";
+        }
+        function startWindow() {
+            mainLoader.source = "StartWindow.qml";
         }
     }
 
     Loader {
         id: mainLoader
         anchors.fill: parent
-        source: "MainWindow.qml"
+        source: "StartWindow.qml"
         focus: true
     }
 }

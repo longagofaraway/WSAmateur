@@ -11,7 +11,7 @@
         <file>qml/CardsViewColumn.qml</file>
         <file>qml/Clock.qml</file>
         <file>qml/GameWindow.qml</file>
-        <file>qml/MainWindow.qml</file>
+        <file>qml/StartWindow.qml</file>
         <file>qml/MainButton.qml</file>
         <file>qml/MulliganHeader.qml</file>
         <file>qml/MovingCard.qml</file>
@@ -25,7 +25,7 @@
         <file>qml/Climax.qml</file>
         <file>qml/ResolutionZone.qml</file>
         <file>qml/CardGlow.qml</file>
-        <file>qml/EndOfGame.qml</file>
+        <file>qml/EndOfGameNotice.qml</file>
         <file>qml/ActivatedAbility.qml</file>
         <file>qml/ActivatedAbilityList.qml</file>
         <file>qml/AbilityButton.qml</file>
@@ -71,5 +71,7 @@
         <file>qml/menu/ChooseFileWindow.qml</file>
         <file>qml/menu/ChooseUsername.qml</file>
         <file>qml/menu/DeckList.qml</file>
+        <file>qml/GameStopNotice.qml</file>
+        <file>qml/menu/ErrorMessage.qml</file>
     </qresource>
 </RCC>

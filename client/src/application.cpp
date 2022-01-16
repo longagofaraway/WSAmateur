@@ -19,6 +19,8 @@
 
 #include <QDebug>
 
+//#define LOCAL_GAME_ENABLED
+
 WSApplication::WSApplication() {
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
     qRegisterMetaType<std::shared_ptr<SessionEvent>>("std::shared_ptr<SessionEvent>");
@@ -35,12 +37,11 @@ WSApplication::WSApplication() {
 WSApplication::~WSApplication() {
     clientThread.quit();
     clientThread.wait();
-    client->deleteLater();
+    if (client)
+        client->deleteLater();
 }
 
-void WSApplication::componentComplete() {
-    QQuickItem::componentComplete();
-
+void WSApplication::startInitialization() {
     initialization();
 }
 
@@ -148,21 +149,28 @@ void WSApplication::userIdenditification() {
 }
 
 void WSApplication::connectToServer() {
-    auto conn = std::make_unique<RemoteClientConnection>();
-
-    client = new Client(std::move(conn));
+    if (client)
+        client->deleteLater();
+    client = new Client(new RemoteClientConnection());
     client->moveToThread(&clientThread);
     connect(client, &Client::sessionEventReceived, this, &WSApplication::processSessionEvent);
     connect(client, &Client::lobbyEventReceived, this, &WSApplication::processLobbyEvent);
     connect(client, &Client::connectionClosed, this, &WSApplication::onConnectionClosed);
 
-    clientThread.start();
+    if (!clientThread.isRunning())
+        clientThread.start();
     client->connectToHost("127.0.0.1", 7474);
 }
 
 void WSApplication::onConnectionClosed() {
     connectionFailed = true;
+    client->deleteLater();
+    client = nullptr;
+#ifdef LOCAL_GAME_ENABLED
     emit startGame();
+#else
+    emit error("Connection error");
+#endif
 }
 
 namespace {
@@ -205,7 +213,7 @@ void WSApplication::processHandshake(const EventServerHandshake &event) {
         }
     } catch (const std::exception &e) {
         qDebug() << e.what();
-        // TODO do something
+        emit error(QString::fromStdString(e.what()));
     }
 }
 
@@ -215,7 +223,7 @@ void WSApplication::updateDatabase(const EventDatabase &event) {
         CardDatabase::get().update(db);
         CardDatabase::get().init();
     } catch (const std::exception &) {
-        emit error();
+        emit error("Database update error");
     }
     userIdenditification();
     enterLobby();

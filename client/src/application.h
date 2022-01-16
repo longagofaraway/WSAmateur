@@ -32,6 +32,7 @@ public:
     WSApplication();
     ~WSApplication();
 
+    Q_INVOKABLE void startInitialization();
     Q_INVOKABLE void initGame(Game *game);
     Q_INVOKABLE void initLobby(Lobby *lobby);
     Q_INVOKABLE void imageLinksFileChosen(QString path);
@@ -45,7 +46,7 @@ signals:
     void imageFileParsed();
     void usernameSet();
 
-    void error();
+    void error(QString message);
     void imageLinksFileNotFound();
     void usernameNotFound();
     void imageFileParseError();
@@ -54,9 +55,6 @@ private slots:
     void processSessionEvent(const std::shared_ptr<SessionEvent> event);
     void processLobbyEvent(const std::shared_ptr<LobbyEvent> event);
     void onConnectionClosed();
-
-protected:
-    void componentComplete() override;
 
 private:
     void initialization();

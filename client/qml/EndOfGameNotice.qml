@@ -8,7 +8,7 @@ MouseArea {
 
     width: gGame.width
     height: gGame.height
-    z: 200
+    z: 400
 
     onClicked: gGame.quitGame()
 

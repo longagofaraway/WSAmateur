@@ -21,14 +21,14 @@ std::shared_ptr<CommandContainer> prepareCommand(const ::google::protobuf::Messa
 }
 }
 
-Client::Client(std::unique_ptr<ClientConnection> &&connection) {
+Client::Client(ClientConnection *connection)
+    : connection(connection) {
     connection->setParent(this);
-    mConnection = connection.release();
     connect(this, &Client::queueCommand, this, &Client::sendCommandContainer);
     connect(this, &Client::sigConnectToHost, this, &Client::doConnectToHost);
 
-    connect(mConnection, &ClientConnection::messageReady, this, &Client::processServerMessage);
-    connect(mConnection, &ClientConnection::connectionClosed, this, &Client::connectionClosed);
+    connect(connection, &ClientConnection::messageReady, this, &Client::processServerMessage);
+    connect(connection, &ClientConnection::connectionClosed, this, &Client::connectionClosed);
 }
 
 void Client::sendSessionCommand(const google::protobuf::Message &cmd) {
@@ -49,11 +49,11 @@ void Client::connectToHost(const std::string &hostname, uint16_t port) {
 }
 
 void Client::sendCommandContainer(std::shared_ptr<CommandContainer> command) {
-    mConnection->sendMessage(command);
+    connection->sendMessage(command);
 }
 
 void Client::doConnectToHost(const QString &hostname, uint16_t port) {
-    mConnection->connectToHost(hostname, port);
+    connection->connectToHost(hostname, port);
 }
 
 void Client::processServerMessage(std::shared_ptr<ServerMessage> message) {

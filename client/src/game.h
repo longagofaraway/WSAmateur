@@ -107,6 +107,7 @@ public:
     void discardTo7();
     void clearHelpText();
     void endGame(bool victory);
+    void playerLeft();
 
     void setPlayerDeck(const DeckList& deck);
 
@@ -122,6 +123,7 @@ signals:
     void startGamePreparation();
     void opponentDeckSet(const std::string &xmlDeck);
     void gameEnded();
+    void endGamePrematurely(QString reason, QString destination);
 
 public slots:
     void localGameCreated(const EventGameJoined &event);
@@ -132,6 +134,7 @@ public slots:
     void addOpponent(const PlayerInfo &info);
     void processGameInfo(const GameInfo &game_info);
     void setOpponentDeck(const EventDeckSet &event);
+    void onConnectionClosed();
 
     void cardMoveFinished();
 

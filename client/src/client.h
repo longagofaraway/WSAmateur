@@ -18,11 +18,11 @@ class Client : public QObject
 {
     Q_OBJECT
 private:
-    ClientConnection *mConnection;
+    ClientConnection *connection;
     int id_;
 
 public:
-    Client(std::unique_ptr<ClientConnection> &&connection);
+    Client(ClientConnection *connection);
 
     void sendCommand(std::shared_ptr<CommandContainer> command) {
         // this should go to a different thread

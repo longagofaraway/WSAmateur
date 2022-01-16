@@ -157,7 +157,7 @@ Item {
 
         function endGame(victory) {
             mainButton.state = "waiting";
-            let comp = Qt.createComponent("EndOfGame.qml");
+            let comp = Qt.createComponent("EndOfGameNotice.qml");
             let indicator = comp.createObject(gGame);
             indicator.victory = victory;
             indicator.startAnimation();
@@ -282,8 +282,17 @@ Item {
             let comp = Qt.createComponent("GamePreparationWindow.qml");
             preGame = comp.createObject(gGame);
             preGame.anchors.fill = gGame;
-            preGame.z = 1000;
+            preGame.z = 300;
             preGame.init(gGame);
+        }
+
+        onEndGamePrematurely: {
+            mainButton.state = "waiting";
+            let comp = Qt.createComponent("GameStopNotice.qml");
+            let indicator = comp.createObject(gGame);
+            indicator.reason = reason;
+            indicator.exitDestination = destination;
+            indicator.startAnimation();
         }
     }
 

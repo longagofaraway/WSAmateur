@@ -43,6 +43,8 @@ Game::Game() {
 }
 
 Game::~Game() {
+    if (mIsLocal)
+        disconnect(mClient, &Client::connectionClosed, this, &Game::onConnectionClosed);
     for (auto &client: mLocalClients)
         client.release()->deleteLater();
     if (mLocalServerThread.isRunning()) {
@@ -54,6 +56,8 @@ Game::~Game() {
 void Game::startNetworkGame(Client *client, int playerId) {
     mIsLocal = false;
     mClient = client;
+    connect(mClient, &Client::connectionClosed, this, &Game::onConnectionClosed);
+
     mPlayer = std::make_unique<Player>(playerId, this, false);
 
     emit startGamePreparation();
@@ -61,7 +65,6 @@ void Game::startNetworkGame(Client *client, int playerId) {
 
 void Game::preGameLoaded() {
     connect(mClient, &Client::gameEventReceived, this, &Game::processGameEvent);
-    //ask for game info
     mClient->sendGameCommand(CommandGetGameInfo());
 }
 
@@ -116,6 +119,10 @@ void Game::setOpponentDeck(const EventDeckSet &event) {
     emit opponentDeckSet(event.deck());
 }
 
+void Game::onConnectionClosed() {
+    emit endGamePrematurely("Connection error", "start");
+}
+
 void Game::startLocalGame() {
     mIsLocal = true;
     auto connManagerPtr = std::make_unique<LocalConnectionManager>();
@@ -145,9 +152,9 @@ void Game::startLocalGame() {
 
 void Game::addLocalClient(LocalConnectionManager *connManager) {
     auto serverConnection = connManager->newConnection();
-    auto localConnection = std::make_unique<LocalClientConnection>(serverConnection);
+    auto localConnection = new LocalClientConnection(serverConnection);
 
-    auto client = std::make_unique<Client>(std::move(localConnection));
+    auto client = std::make_unique<Client>(localConnection);
     client->moveToThread(&mLocalServerThread);
     mLocalClients.emplace_back(std::move(client));
 }
@@ -350,6 +357,10 @@ void Game::endGame(bool victory) {
         disconnect(mClient, &Client::gameEventReceived, this, &Game::processGameEvent);
     }
     mEventQueue.clear();
+}
+
+void Game::playerLeft() {
+    emit endGamePrematurely("Opponent left the game", "lobby");
 }
 
 void Game::setPlayerDeck(const DeckList &deck) {

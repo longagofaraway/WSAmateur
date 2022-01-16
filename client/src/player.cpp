@@ -297,6 +297,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         processRevealFromHand(ev);
     } else if (event->event().Is<EventRuleActionChoice>()) {
         processRuleActionChoice();
+    } else if (event->event().Is<EventPlayerLeft>()) {
+        mGame->playerLeft();
     }
 }
 
