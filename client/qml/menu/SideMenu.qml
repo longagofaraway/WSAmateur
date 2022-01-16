@@ -22,11 +22,23 @@ Rectangle {
         active: activeSlot == 2
         text: "Decks"
         anchors {
-            left: parent.left;
-            right: parent.right;
+            left: parent.left
+            right: parent.right
             top: topMenu.bottom
         }
         height: parent.height * 0.15
         onMenuClicked: wsApp.switchToDeckMenu()
+    }
+
+    SideMenuItem {
+        active: false
+        text: "Exit"
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+        }
+        height: parent.height * 0.15
+        onMenuClicked: Qt.quit()
     }
 }

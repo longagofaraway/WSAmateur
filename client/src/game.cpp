@@ -43,7 +43,7 @@ Game::Game() {
 }
 
 Game::~Game() {
-    if (mIsLocal)
+    if (!mIsLocal)
         disconnect(mClient, &Client::connectionClosed, this, &Game::onConnectionClosed);
     for (auto &client: mLocalClients)
         client.release()->deleteLater();

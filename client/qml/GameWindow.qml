@@ -6,6 +6,8 @@ import QtQuick.Controls 1.1
 
 import wsamateur 1.0
 
+import 'menu'
+
 Item {
     id: root
 
@@ -296,22 +298,8 @@ Item {
         }
     }
 
-    Button {
-        id: exit
-        text: "exit"
-        onClicked: Qt.quit()
+    GameMenu {
+        anchors.fill: parent
     }
-    Button {
-        id: minimize
-        anchors.top: exit.bottom
-        text: "exit fullscreen" + root.height
-        onClicked: mainWindow.visibility = "Windowed"
-    }
-    Button {
-        id: maximize
-        anchors.top: minimize.bottom
-        text: "enter fullscreen" + root.width
-        onClicked: mainWindow.visibility = "FullScreen"
-    }
-    }
+    } // blur item
 }

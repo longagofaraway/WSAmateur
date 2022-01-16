@@ -5,6 +5,7 @@ Rectangle {
 
     signal menuClicked()
     property string text: ""
+    property int fontSize: 36
     property bool active: false
     property var activeGradient: Gradient {
         GradientStop { position: 0.0; color: "#60000000" }
@@ -34,7 +35,7 @@ Rectangle {
         anchors.centerIn: parent
         text: menuItem.text
         color: "white"
-        font.pointSize: 36
+        font.pointSize: menuItem.fontSize
     }
 
     MouseArea {
