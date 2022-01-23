@@ -3,14 +3,16 @@ This is a WS card game implementation with automated execution of card abilities
 ## State of the project
 The game is in development. The goal of the first release is a playable online game with support for only one set (KGL).  
 Current state:
-- [ ] Game logic of server and client (in progress)
-- [ ] Network part and server
-- [ ] Main menu
-- [ ] Deck management
-  - [ ] Loading from Encore Decks and saving the deck
-  - [ ] Loading user provided card images
-  - [ ] Choosing a deck before the game
-- [ ] Lobby (e.g. creating and finding a game)
+- [x] Game logic of server and client
+- [x] Network part and server
+- [x] Main menu
+- [x] Deck management
+  - [x] Loading from Encore Decks and saving the deck
+  - [x] Loading user provided card images
+  - [x] Choosing a deck before the game
+- [x] Lobby (e.g. creating and finding a game)
+- [ ] Installer and updater (in progress)
+- [ ] A lot of testing
 
 ## Compiling
 
