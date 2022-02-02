@@ -53,7 +53,7 @@ Item {
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Visit <a href='https://discord.gg/K5jE8bmP'>discord</a> for details"
+                text: "Visit <a href='https://discord.gg/6hRd2VZ3vG'>discord</a> for details"
                 color: "white"
                 font.pointSize: 16
                 onLinkActivated: Qt.openUrlExternally(link)

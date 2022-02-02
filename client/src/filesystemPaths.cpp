@@ -83,4 +83,10 @@ QDir decksDir() {
     return dir;
 }
 
+void setUpRootDirectory() {
+    auto dir = getAppDir();
+    if (!dir.exists())
+        dir.mkpath(dir.absolutePath());
+}
+
 }

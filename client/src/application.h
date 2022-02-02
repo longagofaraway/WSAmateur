@@ -55,9 +55,9 @@ private slots:
     void processSessionEvent(const std::shared_ptr<SessionEvent> event);
     void processLobbyEvent(const std::shared_ptr<LobbyEvent> event);
     void onConnectionClosed();
+    void initialization();
 
 private:
-    void initialization();
     void processHandshake(const EventServerHandshake &event);
     void updateDatabase(const EventDatabase &event);
     void sendDatabaseRequest();

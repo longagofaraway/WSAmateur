@@ -14,4 +14,3 @@ execute_process(
 execute_process(
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECT_BINARY_DIR}/version_string.cpp.txt ${VERSION_STRING_CPP}
 )
-

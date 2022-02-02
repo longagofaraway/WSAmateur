@@ -27,6 +27,7 @@ WSApplication::WSApplication() {
     qRegisterMetaType<std::shared_ptr<LobbyEvent>>("std::shared_ptr<LobbyEvent>");
     qRegisterMetaType<std::shared_ptr<CommandContainer>>("std::shared_ptr<CommandContainer>");
 
+    paths::setUpRootDirectory();
     try {
         // init db
         CardDatabase::get().init();
@@ -42,7 +43,8 @@ WSApplication::~WSApplication() {
 }
 
 void WSApplication::startInitialization() {
-    initialization();
+    // invoke here because we need to let StartWindow to load
+    QMetaObject::invokeMethod(this, "initialization", Qt::QueuedConnection);
 }
 
 void WSApplication::initialization() {
