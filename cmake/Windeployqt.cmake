@@ -97,7 +97,6 @@ function(windeployqt target directory)
                 copy_if_different "${lib}" \"$<TARGET_FILE_DIR:${target}>\"
         )
     endforeach()
-    install(FILES "$<TARGET_FILE_DIR:${target}>/libprotobuf.dll" DESTINATION "${directory}")
 
 endfunction()
 

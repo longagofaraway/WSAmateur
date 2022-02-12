@@ -25,6 +25,12 @@ if(WIN32)
     set(CPACK_GENERATOR NSIS ${CPACK_GENERATOR})
     set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
     include(InstallRequiredSystemLibraries)
+
+    # Configure file with custom definitions for NSIS.
+    configure_file(
+        ${CMAKE_MODULE_PATH}/NSIS.definitions.nsh.in
+        ${PROJECT_BINARY_DIR}/NSIS.definitions.nsh
+    )
 endif()
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_NAME})
@@ -38,3 +44,5 @@ add_subdirectory(client)
 add_subdirectory(core)
 add_subdirectory(abilities)
 add_subdirectory(server)
+
+install(FILES ${PROJECT_SOURCE_DIR}/cmake/update.cmd DESTINATION ./)

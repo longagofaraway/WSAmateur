@@ -1,0 +1,212 @@
+!include ..\..\..\NSIS.definitions.nsh
+Name "@CPACK_PACKAGE_NAME@"
+BrandingText "@CPACK_PACKAGE_FILE_NAME@"
+OutFile "@CPACK_TOPLEVEL_DIRECTORY@/@CPACK_OUTPUT_FILE_NAME@"
+
+!define INST_DIR "@CPACK_TEMPORARY_DIRECTORY@"
+
+RequestExecutionlevel highest
+SetCompressor LZMA
+
+Var NormalDestDir
+
+!include LogicLib.nsh
+!include FileFunc.nsh
+!include MUI2.nsh
+!include x64.nsh
+
+!define MUI_ABORTWARNING
+!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of WSAmateur.$\r$\n$\r$\nClick Next to continue."
+!define MUI_FINISHPAGE_RUN "$INSTDIR/WSAmateur.exe"
+!define MUI_FINISHPAGE_RUN_TEXT "Run 'WSAmateur' now"
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "${NSIS_SOURCE_PATH}\LICENSE"
+!define MUI_PAGE_CUSTOMFUNCTION_PRE componentsPagePre
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_COMPONENTS
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
+!insertmacro MUI_LANGUAGE English
+
+Function .onInit
+
+StrCpy $NormalDestDir "$ProgramFiles64\WSAmateur"
+SetRegView 64
+
+${GetParameters} $9
+
+ClearErrors
+${GetOptions} $9 "/?" $8
+${IfNot} ${Errors}
+    MessageBox MB_ICONINFORMATION|MB_SETFOREGROUND "\
+      /S : Silent install$\n\
+      /D=%directory% : Specify destination directory$\n"
+    Quit
+${EndIf}
+
+ClearErrors
+StrCpy $0 $NormalDestDir
+${If} ${Silent}
+    Call RequireAdmin
+${EndIf}
+
+${If} $InstDir == ""
+    ; User did not use /D to specify a directory,
+    ; we need to set a default
+
+	ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "InstallLocation"
+	StrCmp $R0 "" 0 +3
+    StrCpy $InstDir $0
+	Goto +2
+	StrCpy $InstDir $R0
+${EndIf}
+Call RequireAdmin
+
+FunctionEnd
+
+Function un.onInit
+
+SetRegView 64
+
+FunctionEnd
+
+Function RequireAdmin
+UserInfo::GetAccountType
+Pop $8
+${If} $8 != "admin"
+    MessageBox MB_ICONSTOP "You need administrator rights to install WSAmateur"
+    SetErrorLevel 740 ;ERROR_ELEVATION_REQUIRED
+    Abort
+${EndIf}
+FunctionEnd
+
+Function componentsPagePre
+SetShellVarContext all
+
+SetRegView 64
+
+ReadRegStr $R0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "UninstallString"
+StrCmp $R0 "" done64
+
+MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "A previous version of WSAmateur must be uninstalled before installing the new one." /SD IDOK IDOK uninst64
+Abort
+
+uninst64:
+ClearErrors
+ExecWait "$R0"
+
+done64:
+
+FunctionEnd
+
+Section "Application" SecApplication
+
+SetShellVarContext all
+SetOutPath "$INSTDIR"
+
+@CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS@
+@CPACK_NSIS_FULL_INSTALL@
+
+WriteUninstaller "$INSTDIR\uninstall.exe"
+${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+IntFmt $0 "0x%08X" $0
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "DisplayIcon" "$INSTDIR\WSAmateur.exe"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "DisplayName" "WSAmateur"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "DisplayVersion" "@CPACK_PACKAGE_VERSION_MAJOR@.@CPACK_PACKAGE_VERSION_MINOR@.@CPACK_PACKAGE_VERSION_PATCH@"
+WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "EstimatedSize" "$0"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "InstallLocation" "$INSTDIR"
+WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "NoModify" "1"
+WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "NoRepair" "1"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "Publisher" "longagofaraway"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "QuietUninstallString" "$\"$INSTDIR\uninstall.exe$\" /S"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "VersionMajor" "@CPACK_PACKAGE_VERSION_MAJOR@"
+WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur" "VersionMinor" "@CPACK_PACKAGE_VERSION_MINOR@"
+
+IfFileExists "$INSTDIR\vcredist_x86.exe" VcRedist86Exists PastVcRedist86Check
+VcRedist86Exists:
+	ExecWait '"$INSTDIR\vcredist_x86.exe" /passive /norestart'
+	DetailPrint "Wait to ensure unlock of vc_redist file after installation..."
+	Sleep 3000
+	Delete "$INSTDIR\vcredist_x86.exe"
+PastVcRedist86Check:
+
+IfFileExists "$INSTDIR\vcredist_x64.exe" VcRedist64Exists PastVcRedist64Check
+VcRedist64Exists:
+	ExecWait '"$INSTDIR\vcredist_x64.exe" /passive /norestart'
+	DetailPrint "Sleep to ensure unlock of vc_redist file after installation..."
+	Sleep 3000
+	Delete "$INSTDIR\vcredist_x64.exe"
+PastVcRedist64Check:
+
+SectionEnd
+
+Section "Start menu item" SecStartMenu
+
+SetShellVarContext all
+createDirectory "$SMPROGRAMS\WSAmateur"
+createShortCut "$SMPROGRAMS\WSAmateur\WSAmateur.lnk" "$INSTDIR\WSAmateur.exe"
+createShortCut "$SMPROGRAMS\WSAmateur\wsamateurServer.lnk" "$INSTDIR\wsamateurServer.exe"
+
+SetShellVarContext current
+createDirectory "$APPDATA\WSAmateur\update"
+CopyFiles "$INSTDIR\update.cmd" "$APPDATA\WSAmateur\update\update.cmd"
+
+SectionEnd
+
+Section "un.Application" UnSecApplication
+	SetRegView 64
+	SetShellVarContext all
+	RMDir /r "$INSTDIR\bearer"
+	RMDir /r "$INSTDIR\bin"
+	RMDir /r "$INSTDIR\iconengines"
+	RMDir /r "$INSTDIR\imageformats"
+	RMDir /r "$INSTDIR\platforms"
+	RMDir /r "$INSTDIR\qmltooling"
+	RMDir /r "$INSTDIR\QtGraphicalEffects"
+	RMDir /r "$INSTDIR\QtQml"
+	RMDir /r "$INSTDIR\QtQuick"
+	RMDir /r "$INSTDIR\QtQuick.2"
+	RMDir /r "$INSTDIR\scenegraph"
+	RMDir /r "$INSTDIR\sqldrivers"
+	RMDir /r "$INSTDIR\styles"
+	RMDir /r "$INSTDIR\translations"
+	Delete "$INSTDIR\*.exe"
+	Delete "$INSTDIR\*.dll"
+	Delete "$INSTDIR\*.cmd"
+	RMDir "$INSTDIR"
+
+	RMDir "$SMPROGRAMS\WSAmateur"
+
+	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\WSAmateur"
+SectionEnd
+
+; unselected because it is /o
+Section /o "un.Configurations, decks, cards, pics" UnSecConfiguration
+	SetShellVarContext current
+	DeleteRegKey HKCU "Software\WSAmateur"
+
+	RMDir /r "$APPDATA\WSAmateur"
+SectionEnd
+
+LangString DESC_SecApplication ${LANG_ENGLISH} "WSAmateur program files"
+LangString DESC_SecStartMenu ${LANG_ENGLISH} "Create start menu items for WSAmateur."
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecApplication} $(DESC_SecApplication)
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecStartMenu} $(DESC_SecStartMenu)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+LangString DESC_UnSecApplication ${LANG_ENGLISH} "WSAmateur program files and start menu items"
+LangString DESC_UnSecConfiguration ${LANG_ENGLISH} "Configurations, decks, card database, pictures"
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_BEGIN
+	!insertmacro MUI_DESCRIPTION_TEXT ${UnSecApplication} $(DESC_UnSecApplication)
+	!insertmacro MUI_DESCRIPTION_TEXT ${UnSecConfiguration} $(DESC_UnSecConfiguration)
+!insertmacro MUI_UNFUNCTION_DESCRIPTION_END
+

@@ -49,3 +49,11 @@ target_link_libraries(AbilityMaker
   PRIVATE Qt5::Core Qt5::Quick dbManager)
 
 target_link_libraries(AbilityMaker PUBLIC wsamateurAbilities)
+
+install(TARGETS AbilityMaker RUNTIME DESTINATION ./)
+
+# Ensure the Qt runtime libraries are installed
+if(WIN32)
+    include(Windeployqt)
+    windeployqt(AbilityMaker ./)
+endif()

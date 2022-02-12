@@ -41,7 +41,7 @@ public:
 
 signals:
     void startGame();
-    void needUpdate();
+    void needUpdate(QString neededVersion);
     void loadLobby();
     void imageFileParsed();
     void usernameSet();

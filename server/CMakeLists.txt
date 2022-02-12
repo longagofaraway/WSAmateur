@@ -22,3 +22,12 @@ endif (UNIX)
 
 target_link_libraries(wsamateurServer PRIVATE wsamateurCore
     PRIVATE Qt5::Core Qt5::Network)
+
+install(TARGETS wsamateurServer RUNTIME DESTINATION ./)
+
+# Ensure the Qt runtime libraries are installed
+if(WIN32)
+    include(Windeployqt)
+    windeployqt(wsamateurServer ./)
+    install(FILES "$<TARGET_FILE_DIR:wsamateurServer>/libprotobuf.dll" DESTINATION ./)
+endif()

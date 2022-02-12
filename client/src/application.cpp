@@ -202,7 +202,7 @@ void WSApplication::processHandshake(const EventServerHandshake &event) {
         // check major and minor
         if (clientVersion[1] != serverVersion[1] ||
             clientVersion[0] != serverVersion[0]) {
-            emit needUpdate();
+            emit needUpdate(QString::fromStdString(event.version()));
             return;
         }
 
