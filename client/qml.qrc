@@ -75,5 +75,6 @@
         <file>qml/menu/ErrorMessage.qml</file>
         <file>qml/menu/GameMenu.qml</file>
         <file>qml/menu/UpdateWindow.qml</file>
+        <file>qml/menu/StartWindowMenu.qml</file>
     </qresource>
 </RCC>

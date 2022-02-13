@@ -60,6 +60,15 @@ Item {
         }
     }
 
+    StartWindowMenu {
+        anchors {
+            left: parent.left
+            top: parent.top
+            bottom: parent.bottom
+        }
+        width: parent.width * 0.09
+    }
+
     function chooseImageLinksFile() {
         let comp = Qt.createComponent("menu/ChooseFileWindow.qml");
         imageLinksFileDialog = comp.createObject(startWindow);
