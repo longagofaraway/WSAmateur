@@ -19,6 +19,14 @@ QString getDbPath() {
     return path.filePath("cards.db");
 }
 
+bool dbExists() {
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir path(appData);
+    path.cdUp();
+    path.cd("WSAmateur");
+    return path.exists("cards.db");
+}
+
 asn::CardType convertType(int type) {
     switch (type) {
     case 0:
@@ -179,6 +187,10 @@ CardDatabase& CardDatabase::get() {
 }
 
 void CardDatabase::init() {
+    if (!dbExists()) {
+        auto msg = "database file not found at " + getDbPath();
+        throw std::runtime_error(msg.toStdString());
+    }
     if (!db.open()) {
         auto msg = "failed to open database at " + getDbPath();
         throw std::runtime_error(msg.toStdString());
