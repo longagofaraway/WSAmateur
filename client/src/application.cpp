@@ -16,6 +16,8 @@
 #include "lobby.h"
 #include "remoteClientConnection.h"
 #include "settingsManager.h"
+#include "updater.h"
+#include "versionParser.h"
 
 #include <QDebug>
 
@@ -175,34 +177,17 @@ void WSApplication::onConnectionClosed() {
 #endif
 }
 
-namespace {
-std::vector<int> parseVersion(const std::string &version) {
-    std::stringstream versionStream(version);
-    std::vector<int> res;
-
-    std::string tmp;
-    while(getline(versionStream, tmp, '.')){
-        res.push_back(std::stoi(tmp));
-    }
-
-    if (res.size() != 3)
-        throw std::runtime_error("wrong version format");
-
-    return res;
-}
-}
-
 void WSApplication::processHandshake(const EventServerHandshake &event) {
     try {
         client->setId(event.client_id());
 
-        auto clientVersion = parseVersion(VERSION_STRING);
+        auto clientVersion = parseVersion(std::string(VERSION_STRING));
         auto serverVersion = parseVersion(event.version());
 
         // check major and minor
         if (clientVersion[1] != serverVersion[1] ||
             clientVersion[0] != serverVersion[0]) {
-            emit needUpdate(QString::fromStdString(event.version()));
+            startUpdater(event.version());
             return;
         }
 
@@ -237,4 +222,15 @@ void WSApplication::sendDatabaseRequest() {
 
 void WSApplication::enterLobby() {
     emit loadLobby();
+}
+
+void WSApplication::startUpdater(const std::string& neededVersion) {
+    updater = new Updater(this, neededVersion);
+
+    connect(this, &WSApplication::startUpdate, updater, &Updater::startUpdate);
+    connect(updater, &Updater::error, this, &WSApplication::error);
+    connect(updater, &Updater::progressMade, this, &WSApplication::progressMade);
+    updater->moveToThread(&clientThread);
+
+    emit needUpdate();
 }

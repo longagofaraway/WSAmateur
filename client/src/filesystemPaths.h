@@ -11,4 +11,7 @@ QString cardImagePath(QString code);
 bool cardImageExists(const std::string &code);
 QDir decksDir();
 void setUpRootDirectory();
+QDir tempUpdaterPath();
+QString updateScriptFullPath();
+QDir updateDirPath();
 }

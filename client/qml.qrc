@@ -74,5 +74,6 @@
         <file>qml/GameStopNotice.qml</file>
         <file>qml/menu/ErrorMessage.qml</file>
         <file>qml/menu/GameMenu.qml</file>
+        <file>qml/menu/UpdateWindow.qml</file>
     </qresource>
 </RCC>

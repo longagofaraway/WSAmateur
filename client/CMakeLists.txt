@@ -33,8 +33,10 @@ set(clientSources
     src/remoteClientConnection.cpp
     src/settingsManager.cpp
     src/stage.cpp
+    src/updater.cpp
     src/userListModel.cpp
     src/utils.cpp
+    src/versionParser.cpp
     src/abilityModel.h
     src/activatedAbilities.h
     src/activatedAbilityModel.h
@@ -65,8 +67,10 @@ set(clientSources
     src/remoteClientConnection.h
     src/settingsManager.h
     src/stage.h
+    src/updater.h
     src/userListModel.h
     src/utils.h
+    src/versionParser.h
     ${VERSION_STRING_CPP})
 
 if (WIN32)

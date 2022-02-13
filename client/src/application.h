@@ -11,6 +11,7 @@ class Game;
 class Lobby;
 class EventServerHandshake;
 class EventDatabase;
+class Updater;
 
 class WSApplication : public QQuickItem
 {
@@ -20,6 +21,7 @@ private:
     Client* client = nullptr;
     int playerId;
     bool connectionFailed = false;
+    Updater *updater = nullptr;
 
     enum class InitPhase {
         ImageFileLinks,
@@ -41,7 +43,7 @@ public:
 
 signals:
     void startGame();
-    void needUpdate(QString neededVersion);
+    void needUpdate();
     void loadLobby();
     void imageFileParsed();
     void usernameSet();
@@ -50,6 +52,9 @@ signals:
     void imageLinksFileNotFound();
     void usernameNotFound();
     void imageFileParseError();
+
+    void progressMade(qint64 bytesRead, qint64 totalBytes);
+    void startUpdate();
 
 private slots:
     void processSessionEvent(const std::shared_ptr<SessionEvent> event);
@@ -67,5 +72,7 @@ private:
     void connectToServer();
     bool checkImageLinksFile();
     bool checkUsername();
+
+    void startUpdater(const std::string& neededVersion);
 };
 

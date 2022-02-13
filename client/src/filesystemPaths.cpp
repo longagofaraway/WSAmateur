@@ -89,4 +89,23 @@ void setUpRootDirectory() {
         dir.mkpath(dir.absolutePath());
 }
 
+QDir tempUpdaterPath() {
+    auto dir = getAppDir();
+    cd(dir, "update");
+    cd(dir, "tmp");
+    return dir;
+}
+
+QString updateScriptFullPath() {
+    auto dir = getAppDir();
+    cd(dir, "update");
+    return dir.filePath("update.cmd");
+}
+
+QDir updateDirPath() {
+    auto dir = getAppDir();
+    cd(dir, "update");
+    return dir;
+}
+
 }

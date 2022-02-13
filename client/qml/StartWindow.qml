@@ -9,10 +9,18 @@ Item {
 
     property var imageLinksFileDialog
     property var usernameChoiceDialog
+    property var updateWindow
 
     Component.onCompleted: {
-        wsApp.startInitialization();
         wsApp.error.connect(onAppError);
+        wsApp.imageLinksFileNotFound.connect(chooseImageLinksFile);
+        wsApp.imageFileParsed.connect(parseSuccess);
+        wsApp.imageFileParseError.connect(parseError);
+        wsApp.usernameNotFound.connect(enterUsername);
+        wsApp.usernameSet.connect(usernameSet);
+        wsApp.needUpdate.connect(initiateUpdate);
+        wsApp.progressMade.connect(progressMade);
+        wsApp.startInitialization();
     }
 
     Image {
@@ -94,5 +102,17 @@ Item {
         let errWindow = comp.createObject(startWindow);
         errWindow.anchors.centerIn = startWindow;
         errWindow.message = message;
+    }
+
+    function initiateUpdate() {
+        loading.visible = false;
+        let comp = Qt.createComponent("menu/UpdateWindow.qml");
+        updateWindow = comp.createObject(startWindow);
+        updateWindow.anchors.centerIn = startWindow;
+        updateWindow.startUpdate.connect(wsApp.startUpdate);
+    }
+
+    function progressMade(bytesRead, totalBytes) {
+        updateWindow.setProgress(bytesRead, totalBytes);
     }
 }

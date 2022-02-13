@@ -18,10 +18,6 @@ Window {
         id: wsApp
         onStartGame: mainLoader.source = "GameWindow.qml"
         onLoadLobby: mainLoader.source = "menu/LobbyWindow.qml"
-        onImageLinksFileNotFound: mainLoader.item.chooseImageLinksFile()
-        onImageFileParsed: mainLoader.item.parseSuccess()
-        onImageFileParseError: mainLoader.item.parseError()
-        onUsernameNotFound: mainLoader.item.enterUsername()
         onUsernameSet: mainLoader.item.usernameSet()
 
         function switchToDeckMenu() {
