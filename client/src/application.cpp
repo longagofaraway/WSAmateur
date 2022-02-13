@@ -225,7 +225,7 @@ void WSApplication::enterLobby() {
 }
 
 void WSApplication::startUpdater(const std::string& neededVersion) {
-    updater = new Updater(this, neededVersion);
+    updater = new Updater(neededVersion);
 
     connect(this, &WSApplication::startUpdate, updater, &Updater::startUpdate);
     connect(updater, &Updater::error, this, &WSApplication::error);

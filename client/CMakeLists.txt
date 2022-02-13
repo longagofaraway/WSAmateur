@@ -96,4 +96,9 @@ if(WIN32)
     include(Windeployqt)
     windeployqt(WSAmateur ./)
     install(FILES "$<TARGET_FILE_DIR:WSAmateur>/libprotobuf.dll" DESTINATION ./)
+
+    if(WIN32SSLRUNTIME_FOUND)
+        install(FILES ${WIN32SSLRUNTIME_LIBRARIES} DESTINATION ./)
+    endif()
+
 endif()

@@ -15,8 +15,7 @@ namespace {
 const QString kReleaseUrl = "https://api.github.com/repos/longagofaraway/WSAmateur/releases";
 }
 
-Updater::Updater(QObject *parent, const std::string &neededVersion_)
-    : QObject(parent) {
+Updater::Updater(const std::string &neededVersion_) {
     neededVersion = QString::fromStdString(neededVersion_);
     networkManager = new QNetworkAccessManager(this);
 }

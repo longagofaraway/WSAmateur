@@ -14,7 +14,7 @@ private:
     QString downloadUrl;
 
 public:
-    Updater(QObject *parent, const std::string &neededVersion_);
+    Updater(const std::string &neededVersion_);
 
 signals:
     void error(QString msg);

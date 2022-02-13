@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(WSAmateur VERSION 0.1.0)
+project(WSAmateur VERSION 0.0.1)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -19,6 +19,17 @@ find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(Protobuf REQUIRED)
 if(NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
     message(FATAL_ERROR "No protoc command found!")
+endif()
+
+if(WIN32)
+    find_package(OpenSSL)
+    if(NOT ${OPENSSL_FOUND})
+        message(FATAL_ERROR "No openssl found!")
+    endif()
+
+    if(WIN32)
+        find_package(Win32SslRuntime)
+    endif()
 endif()
 
 if(WIN32)
