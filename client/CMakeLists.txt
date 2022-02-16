@@ -30,6 +30,7 @@ set(clientSources
     src/main.cpp
     src/playAbility.cpp
     src/player.cpp
+    src/publicServers.cpp
     src/remoteClientConnection.cpp
     src/settingsManager.cpp
     src/stage.cpp
@@ -64,6 +65,7 @@ set(clientSources
     src/localConnectionManager.h
     src/localServerConnection.h
     src/player.h
+    src/publicServers.h
     src/remoteClientConnection.h
     src/settingsManager.h
     src/stage.h

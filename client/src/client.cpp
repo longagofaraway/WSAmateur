@@ -43,9 +43,8 @@ void Client::sendGameCommand(const ::google::protobuf::Message &cmd) {
     sendCommand(prepareCommand<GameCommand>(cmd));
 }
 
-void Client::connectToHost(const std::string &hostname, uint16_t port) {
-    auto host = QString::fromStdString(hostname);
-    emit sigConnectToHost(host, port);
+void Client::connectToHost(const QString &hostname, uint16_t port) {
+    emit sigConnectToHost(hostname, port);
 }
 
 void Client::sendCommandContainer(std::shared_ptr<CommandContainer> command) {

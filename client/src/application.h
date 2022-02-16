@@ -12,6 +12,7 @@ class Lobby;
 class EventServerHandshake;
 class EventDatabase;
 class Updater;
+class PublicServers;
 
 class WSApplication : public QQuickItem
 {
@@ -21,6 +22,7 @@ private:
     Client* client = nullptr;
     int playerId;
     bool connectionFailed = false;
+    PublicServers *publicServers = nullptr;
     Updater *updater = nullptr;
 
     enum class InitPhase {
@@ -61,6 +63,7 @@ private slots:
     void processLobbyEvent(const std::shared_ptr<LobbyEvent> event);
     void onConnectionClosed();
     void initialization();
+    void connectToHost(QString address, QString port);
 
 private:
     void processHandshake(const EventServerHandshake &event);

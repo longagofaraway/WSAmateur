@@ -36,7 +36,7 @@ public:
     void sendLobbyCommand(const ::google::protobuf::Message &cmd);
     void sendGameCommand(const ::google::protobuf::Message &cmd);
 
-    void connectToHost(const std::string &hostname, uint16_t port);
+    void connectToHost(const QString &hostname, uint16_t port);
 
 signals:
     void queueCommand(std::shared_ptr<CommandContainer> command);

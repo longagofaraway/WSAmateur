@@ -8,16 +8,18 @@ if len(sys.argv) < 3:
 
 get_wsm_cards = '''
     SELECT
-        Serial,
-        Name_JP,
-        Type,
-        Color,
-        Level,
-        Cost,
-        Soul,
-        Power,
-        Triggers
-    FROM WeissSchwarzCards
+        card.Serial,
+        names.JP,
+        card.Type,
+        card.Color,
+        card.Level,
+        card.Cost,
+        card.Soul,
+        card.Power,
+        card.Triggers
+    FROM WeissSchwarzCards as card
+    INNER JOIN WeissSchwarzCards_Names as names
+    ON card.Serial = names.WeissSchwarzCardSerial
 '''
 insert_into_wsa = '''
     INSERT INTO 

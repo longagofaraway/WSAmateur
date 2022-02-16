@@ -14,6 +14,7 @@
 #include "game.h"
 #include "imageLinks.h"
 #include "lobby.h"
+#include "publicServers.h"
 #include "remoteClientConnection.h"
 #include "settingsManager.h"
 #include "updater.h"
@@ -28,6 +29,9 @@ WSApplication::WSApplication() {
     qRegisterMetaType<std::shared_ptr<SessionEvent>>("std::shared_ptr<SessionEvent>");
     qRegisterMetaType<std::shared_ptr<LobbyEvent>>("std::shared_ptr<LobbyEvent>");
     qRegisterMetaType<std::shared_ptr<CommandContainer>>("std::shared_ptr<CommandContainer>");
+
+    publicServers = new PublicServers();
+    connect(publicServers, &PublicServers::serversReady, this, &WSApplication::connectToHost);
 
     paths::setUpRootDirectory();
     try {
@@ -63,6 +67,10 @@ void WSApplication::initialization() {
     }
 
     connectToServer();
+}
+
+void WSApplication::connectToHost(QString address, QString port) {
+    client->connectToHost(address, port.toInt());
 }
 
 void WSApplication::initGame(Game *game) {
@@ -163,7 +171,7 @@ void WSApplication::connectToServer() {
 
     if (!clientThread.isRunning())
         clientThread.start();
-    client->connectToHost("127.0.0.1", 7474);
+    publicServers->getServers();
 }
 
 void WSApplication::onConnectionClosed() {
