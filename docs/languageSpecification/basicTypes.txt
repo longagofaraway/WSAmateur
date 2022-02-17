@@ -115,7 +115,8 @@ enum Position {
   emptySlotFrontRow = 5,
   emptySlotBackRow = 6,
   emptySlot = 7,
-  slotThisWasIn = 8
+  slotThisWasInRested = 8,
+  slotThisWasIn = 9
 }
 
 enum State {

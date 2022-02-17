@@ -72,6 +72,7 @@ enum EffectType {
   shuffle = 34,
   putOnStageRested = 35,
   removeMarker = 36,
+  cannotStand = 37,
   
   otherEffect = 255
 }

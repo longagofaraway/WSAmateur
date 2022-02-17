@@ -799,6 +799,18 @@ std::string printRemoveMarker(const RemoveMarker &e) {
     return s;
 }
 
+std::string printCannotStand(const CannotStand &e) {
+    std::string s;
+
+    s += printTarget(e.target);
+    s += "cannot" + printState(State::Standing) + "during your ";
+    if (e.duration == 2)
+        s += "opponent's ";
+    s += "next stand phase ";
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -903,6 +915,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::RemoveMarker:
         s += printRemoveMarker(std::get<RemoveMarker>(e.effect));
+        break;
+    case EffectType::CannotStand:
+        s += printCannotStand(std::get<CannotStand>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

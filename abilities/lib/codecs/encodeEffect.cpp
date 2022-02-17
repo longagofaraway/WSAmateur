@@ -177,6 +177,11 @@ void encodeRemoveMarker(const RemoveMarker &e, Buf &buf) {
     encodePlace(e.place, buf);
 }
 
+void encodeCannotStand(const CannotStand &e, Buf &buf) {
+    encodeTarget(e.target, buf);
+    buf.push_back(static_cast<uint8_t>(e.duration));
+}
+
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
     encodeString(e.cardCode, buf);
     buf.push_back(zzenc_8(e.effectId));
@@ -276,6 +281,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::RemoveMarker:
         encodeRemoveMarker(std::get<RemoveMarker>(e.effect), buf);
+        break;
+    case EffectType::CannotStand:
+        encodeCannotStand(std::get<CannotStand>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

@@ -167,6 +167,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::SideAttackWithoutPenalty:
         playSideAttackWithoutPenalty(std::get<asn::SideAttackWithoutPenalty>(e.effect));
         break;
+    case asn::EffectType::CannotStand:
+        playCannotStand(std::get<asn::CannotStand>(e.effect));
+        break;
     default:
         break;
     }
@@ -829,6 +832,22 @@ void AbilityPlayer::playCannotMove(const asn::CannotMove &e) {
                 target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), BoolAttributeType::CannotMove, positional);
         } else {
             target->buffManager()->addBoolAttrChange(BoolAttributeType::CannotMove, e.duration);
+        }
+    }
+}
+
+void AbilityPlayer::playCannotStand(const asn::CannotStand &e) {
+    bool positional = isPositional(e.target);
+
+    auto targets = getTargets(e.target);
+    for (auto &target: targets) {
+        if (cont()) {
+            if (revert())
+                target->buffManager()->removeContBoolAttrChange(thisCard().card, abilityId(), BoolAttributeType::CannotStand);
+            else
+                target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), BoolAttributeType::CannotStand, positional);
+        } else {
+            target->buffManager()->addBoolAttrChange(BoolAttributeType::CannotStand, e.duration);
         }
     }
 }

@@ -70,6 +70,7 @@ class ServerCard : public CardBase
     bool mCannotBecomeReversed = false;
     bool mCannotMove = false;
     bool mSideAttackWithoutPenalty = false;
+    bool mCannotStand = false;
 
     CardBuffManager mBuffManager;
 
@@ -118,6 +119,7 @@ public:
     bool cannotSideAttack() const { return mCannotSideAttack; }
     bool cannotBecomeReversed() const { return mCannotBecomeReversed; }
     bool cannotMove() const { return mCannotMove; }
+    bool cannotStand() const { return mCannotStand; }
     bool sideAttackWithoutPenalty() const { return mSideAttackWithoutPenalty; }
 
     CardBuffManager* buffManager() { return &mBuffManager; }

@@ -229,6 +229,11 @@ struct RemoveMarker {
     Place place;
 };
 
+struct CannotStand {
+    Target target;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -273,6 +278,7 @@ enum class EffectType : uint8_t {
     Shuffle,
     PutOnStageRested,
     RemoveMarker,
+    CannotStand,
 
     OtherEffect = 255
 };
@@ -312,6 +318,7 @@ struct Effect {
         SideAttackWithoutPenalty,
         PutOnStageRested,
         RemoveMarker,
+        CannotStand,
         OtherEffect
     > effect;
 };

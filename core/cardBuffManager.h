@@ -40,6 +40,7 @@ public:
     void removePositionalContBuffsBySource(ServerCard *source);
 
     void endOfTurnEffectValidation();
+    void validateCannotStand();
 
 private:
     int addAbility(const asn::Ability &a);

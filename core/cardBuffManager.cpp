@@ -295,6 +295,27 @@ void CardBuffManager::endOfTurnEffectValidation() {
     validateBoolAttrChanges();
 }
 
+void CardBuffManager::validateCannotStand() {
+    std::vector<BoolAttributeType> changedParams;
+    auto it = mBoolAttrChanges.begin();
+    while (it != mBoolAttrChanges.end()) {
+        if (it->type != BoolAttributeType::CannotStand)
+            continue;
+
+        if (!it->duration) {
+            ++it;
+            continue;
+        }
+
+        auto type = it->type;
+        it = mBoolAttrChanges.erase(it);
+        if (!hasBoolAttrChange(type)) {
+            mCard->changeBoolAttribute(type, false);
+            sendBoolAttrChange(type, false);
+        }
+    }
+}
+
 void CardBuffManager::validateAttrBuffs() {
     auto oldAttrs = mCard->attributes();
     for (auto &buff: mBuffs) {
@@ -328,6 +349,9 @@ void CardBuffManager::validateBoolAttrChanges() {
     std::vector<BoolAttributeType> changedParams;
     auto it = mBoolAttrChanges.begin();
     while (it != mBoolAttrChanges.end()) {
+        if (it->type == BoolAttributeType::CannotStand)
+            continue;
+
         if (!it->duration || --it->duration) {
             ++it;
             continue;

@@ -186,8 +186,10 @@ Resumable ServerPlayer::startTurn() {
     auto stage = zone("stage");
     for (int i = 0; i < 5; ++i) {
         auto card = stage->card(i);
-        if (card && card->state() != asn::State::Standing)
+        if (card && card->state() != asn::State::Standing && !card->cannotStand())
             setCardState(card, asn::State::Standing);
+        if (card)
+            card->buffManager()->validateCannotStand();
     }
 
     co_await mGame->checkTiming();

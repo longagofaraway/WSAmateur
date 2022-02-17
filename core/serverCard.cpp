@@ -39,6 +39,8 @@ void ServerCard::reset() {
     mCannotSideAttack = false;
     mCannotBecomeReversed = false;
     mSideAttackWithoutPenalty = false;
+    mCannotStand = false;
+    mCannotMove = false;
     mInBattle = false;
 }
 
@@ -121,6 +123,9 @@ void ServerCard::changeBoolAttribute(BoolAttributeType type, bool value) {
     case BoolAttributeType::SideAttackWithoutPenalty:
         mSideAttackWithoutPenalty = value;
         break;
+    case BoolAttributeType::CannotStand:
+        mCannotStand = value;
+        break;
     default:
         assert(false);
     }
@@ -152,6 +157,8 @@ bool ServerCard::boolAttrByType(BoolAttributeType type) const {
         return cannotMove();
     case BoolAttributeType::SideAttackWithoutPenalty:
         return sideAttackWithoutPenalty();
+    case BoolAttributeType::CannotStand:
+        return cannotStand();
     default:
         assert(false);
         return false;

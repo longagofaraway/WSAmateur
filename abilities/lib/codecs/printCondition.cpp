@@ -98,12 +98,14 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
     bool article = false;
 
     if (c.invert) {
-        if (c.howMany.mod == NumModifier::AtLeast &&
-            c.howMany.value == 1) {
-            s += "you do not have ";
+        s += "you do not have ";
+        bool plural = false;
+        if (c.excludingThis) {
+            s += "other ";
+            plural = true;
         }
 
-        s += printCard(c.whichCards) + ", ";
+        s += printCard(c.whichCards, plural) + ", ";
 
         return s;
     } else if (haveExactName(c.whichCards.cardSpecifiers)) {

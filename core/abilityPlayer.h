@@ -132,6 +132,7 @@ private:
     void playOpponentAutoCannotDealDamage(const asn::OpponentAutoCannotDealDamage &e);
     void playStockSwap();
     void playCannotMove(const asn::CannotMove &e);
+    void playCannotStand(const asn::CannotStand &e);
     void playSideAttackWithoutPenalty(const asn::SideAttackWithoutPenalty &e);
     Resumable playPutOnStageRested(const asn::PutOnStageRested &e);
     void playAddMarker(const asn::AddMarker &e);
