@@ -174,6 +174,8 @@ std::string printChooseCard(const ChooseCard &e) {
     const auto &target = e.targets[0];
     if (target.target.type == TargetType::SpecificCards) {
         const auto &spec = *target.target.targetSpecification;
+        if (spec.number.value > 1)
+            plural = true;
         if ((spec.number.value > 1 && spec.number.mod == NumModifier::ExactMatch) ||
             (target.placeType == PlaceType::SpecificPlace && target.place->zone == Zone::Stage) ||
             spec.number.mod == NumModifier::UpTo) {
@@ -592,7 +594,7 @@ std::string printLook(const Look &e) {
     s += printZone(e.place.zone) + " ";
 
     if (e.valueType == ValueType::Multiplier && e.multiplier.value().type == MultiplierType::ForEach) {
-        s += "(X is equal to the number of ";
+        s += "(X is equal to the number ";
         s += printForEachMultiplier(e.multiplier.value().specifier.value(), true);
         s.pop_back();
         s += ") ";
