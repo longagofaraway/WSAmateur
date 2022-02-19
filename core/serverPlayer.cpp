@@ -315,7 +315,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
 
     auto cardPtr = startZone->takeCard(startPos);
 
-    auto addedCard = targetZone->addCard(std::move(cardPtr), targetPos);
+    targetZone->addCard(std::move(cardPtr), targetPos);
 
     EventMoveCard eventPublic;
     eventPublic.set_start_zone(startZone->name());

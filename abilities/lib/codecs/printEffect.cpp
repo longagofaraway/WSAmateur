@@ -151,6 +151,7 @@ std::string printAttributeGain(const AttributeGain &e) {
 
     if (!gPrintState.abilityChainingFirst) {
         res += printDuration(e.duration);
+    } else {
         gPrintState.abilityChainingFirst = false;
     }
 

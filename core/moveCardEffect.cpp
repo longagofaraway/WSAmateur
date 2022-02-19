@@ -59,11 +59,11 @@ Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, in
         clearLastMovedCards();
 
     for (int i = 0; i < spec.number.value; ++i) {
-        auto card = pzone->topCard();
+        auto card = (e.from.pos == asn::Position::Top) ? pzone->topCard() : pzone->card(0);
         if (!card)
             break;
 
-        player->moveCard(asnZoneToString(e.from.zone), pzone->count() - 1, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+        player->moveCard(asnZoneToString(e.from.zone), card->pos(), asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
         if (!isPayingCost())
             addLastMovedCard(CardImprint(card->zone()->name(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
@@ -303,19 +303,16 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             cardsToMove[card.card->pos()] = card.card;
         }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
-        // can't process top cards of deck in the main cycle below,
+        // can't process top/bottom cards of deck in the main cycle below,
         // because we don't know ids of next cards in case of refresh
-        if (e.from.pos == asn::Position::Top) {
+        if (e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom) {
             co_await moveTopDeck(e, toZoneIndex, toIndex);
             co_return;
         }
         player = owner(e.from.owner);
         auto zone = player->zone(asnZoneToString(e.from.zone));
         const auto &spec = *e.target.targetSpecification;
-        // TODO move n bottom cards
-        if (e.from.pos == asn::Position::Bottom && zone->card(0))
-            cardsToMove[0] = zone->card(0);
-        else if (spec.mode == asn::TargetMode::All) {
+        if (spec.mode == asn::TargetMode::All) {
             for (int i = 0; i < zone->count(); ++i) {
                 auto card = zone->card(i);
                 if (!card)
