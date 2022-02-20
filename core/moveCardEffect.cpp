@@ -51,7 +51,7 @@ Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e)
 
 Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex) {
     auto player = owner(e.from.owner);
-    auto pzone = player->zone(asnZoneToString(e.from.zone));
+    auto pzone = player->zone(e.from.zone);
     const auto &spec = *e.target.targetSpecification;
     assert(spec.number.mod == asn::NumModifier::ExactMatch);
 
@@ -81,7 +81,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
 
     if ((e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom)) {
         auto player = owner(e.from.owner);
-        if (player->zone(asnZoneToString(e.from.zone))->count() == 0)
+        if (player->zone(e.from.zone)->count() == 0)
             co_return;
     }
 
@@ -310,7 +310,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             co_return;
         }
         player = owner(e.from.owner);
-        auto zone = player->zone(asnZoneToString(e.from.zone));
+        auto zone = player->zone(e.from.zone);
         const auto &spec = *e.target.targetSpecification;
         if (spec.mode == asn::TargetMode::All) {
             for (int i = 0; i < zone->count(); ++i) {

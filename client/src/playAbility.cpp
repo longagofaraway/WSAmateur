@@ -24,11 +24,11 @@ int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place 
     const auto &specs = target.targetSpecification->cards.cardSpecifiers;
     int eligibleCount = 0;
     if (place.owner == asn::Player::Player || place.owner == asn::Player::Both) {
-        auto from = zone(asnZoneToString(place.zone));
+        auto from = zone(place.zone);
         eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode, mAbilityList->ability(mAbilityList->activeId()));
     }
     if (place.owner == asn::Player::Opponent || place.owner == asn::Player::Both) {
-        auto from = getOpponent()->zone(asnZoneToString(place.zone));
+        auto from = getOpponent()->zone(place.zone);
         eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode, mAbilityList->ability(mAbilityList->activeId()));
     }
     return eligibleCount;
@@ -56,9 +56,9 @@ void Player::sendChooseCard(const asn::ChooseCard &e) {
         from = zone("view");
     } else {
         if (e.targets[0].place->owner == asn::Player::Player)
-            from = zone(asnZoneToString(e.targets[0].place->zone));
+            from = zone(e.targets[0].place->zone);
         else if (e.targets[0].place->owner == asn::Player::Opponent)
-            from = mGame->opponent()->zone(asnZoneToString(e.targets[0].place->zone));
+            from = mGame->opponent()->zone(e.targets[0].place->zone);
         else
             throw std::runtime_error("shouldn't happen");
     }
@@ -111,12 +111,12 @@ void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
         QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
     }
     if (place->get().owner == asn::Player::Player || place->get().owner == asn::Player::Both) {
-        auto from = zone(asnZoneToString(place->get().zone));
+        auto from = zone(place->get().zone);
         highlightAllCards(from, false);
         selectAllCards(from, false);
     }
     if (place->get().owner == asn::Player::Opponent || place->get().owner == asn::Player::Both) {
-        auto from = getOpponent()->zone(asnZoneToString(place->get().zone));
+        auto from = getOpponent()->zone(place->get().zone);
         highlightAllCards(from, false);
         selectAllCards(from, false);
     }
@@ -386,7 +386,7 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
-            auto targets = getTargets(thisCard, e.target);
+            auto targets = getTargets(thisCard, e.target, e.from.zone);
             if (targets.empty())
                 return false;
 
@@ -523,7 +523,7 @@ void Player::cardInserted(QString startZone, QString targetZone) {
                         auto from = zone("view");
                         int count = highlightEligibleCards(from, spec.cards.cardSpecifiers, spec.mode, a);
 
-                        asn::NumModifier mod;
+                        asn::NumModifier mod = asn::NumModifier::ExactMatch;
                         if (std::holds_alternative<asn::Look>(a.effect)) {
                             auto &look = std::get<asn::Look>(a.effect);
                             mod = look.number.mod;
@@ -543,7 +543,8 @@ void Player::cardInserted(QString startZone, QString targetZone) {
     }
 }
 
-std::vector<const Card*> Player::getTargets(const Card &thisCard, const asn::Target &t) const {
+std::vector<const Card*> Player::getTargets(const Card &thisCard, const asn::Target &t,
+                                            asn::Zone from_zone) const {
     std::vector<const Card*> targets;
     if (t.type == asn::TargetType::ThisCard) {
         if (!thisCard.cardPresent())
@@ -551,7 +552,7 @@ std::vector<const Card*> Player::getTargets(const Card &thisCard, const asn::Tar
         targets.push_back(&thisCard);
     } else if (t.type == asn::TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
-        const auto &cards = mStage->cards();
+        const auto &cards = zone(from_zone)->cards();
         for (int i = 0; i < cards.size(); ++i) {
             auto &card = cards[i];
             if (!card.cardPresent())

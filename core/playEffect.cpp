@@ -401,7 +401,7 @@ Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
     EventSearchCard eventPrivate;
     eventPrivate.set_effect(buf.data(), buf.size());
     EventSearchCard eventPublic(eventPrivate);
-    auto pzone = mPlayer->zone(asnZoneToString(e.place.zone));
+    auto pzone = mPlayer->zone(e.place.zone);
     for (int i = 0; i < pzone->count(); ++i)
         eventPrivate.add_codes(pzone->card(i)->code());
     for (int i = 0; i < pzone->count(); ++i)
@@ -450,7 +450,7 @@ Resumable AbilityPlayer::playSearchCard(const asn::SearchCard &e) {
 void AbilityPlayer::playShuffle(const asn::Shuffle &e) {
     assert(e.owner != asn::Player::Both);
     assert(e.owner != asn::Player::NotSpecified);
-    owner(e.owner)->zone(asnZoneToString(e.zone))->shuffle();
+    owner(e.owner)->zone(e.zone)->shuffle();
 }
 
 Resumable AbilityPlayer::playAbilityGain(const asn::AbilityGain &e) {
@@ -906,7 +906,7 @@ void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     auto targetStageCard = targetStageCards.front();
 
     auto player = owner(e.from.owner);
-    auto pzone = player->zone(asnZoneToString(e.from.zone));
+    auto pzone = player->zone(e.from.zone);
     if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::Top &&
         e.from.zone == asn::Zone::Deck) {
         const auto &spec = *e.target.targetSpecification;

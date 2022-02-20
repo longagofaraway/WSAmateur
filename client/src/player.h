@@ -93,6 +93,7 @@ public:
     int id() const { return mId; }
     int level() const { return mLevel; }
     CardZone* zone(std::string_view name) const;
+    CardZone* zone(asn::Zone zone_) const;
 
     void processGameEvent(const std::shared_ptr<GameEvent> event);
     void sendGameCommand(const google::protobuf::Message &command);
@@ -211,7 +212,8 @@ private:
     void processAddMarker(const EventAddMarker &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
-    std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t) const;
+    std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t,
+                                        asn::Zone from_zone = asn::Zone::Stage) const;
     void fillReferenceCache();
     void setDeckInternal();
 

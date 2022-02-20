@@ -73,7 +73,7 @@ bool checkTargetMode(asn::TargetMode mode, const Card *thisCard, int thisCardPos
 int getForEachMultiplierValue(Player *player, int thisCardId, const asn::Multiplier &multiplier) {
     auto &specifier = *multiplier.specifier;
     assert(specifier.target->type == asn::TargetType::SpecificCards);
-    auto pzone = player->zone(asnZoneToString(specifier.place->zone));
+    auto pzone = player->zone(specifier.place->zone);
     auto thisCard = pzone->findCardById(thisCardId);
     int thisCardPos = pzone->model().findById(thisCardId);
     int cardCount = 0;

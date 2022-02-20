@@ -135,7 +135,7 @@ void Server::processGameJoinRequest(const CommandJoinGame &cmd, ServerProtocolHa
 }
 
 int Server::maxClientInactivityTime() const {
-    return mConnectionManager->isLocal() ? 999999 : 15;
+    return mConnectionManager->isLocal() ? 999999 : 1200;
 }
 
 void Server::sendServerIdentification(ServerProtocolHandler *client) {

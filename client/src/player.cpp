@@ -121,6 +121,10 @@ CardZone* Player::zone(std::string_view name) const {
     return mZones.at(name).get();
 }
 
+CardZone *Player::zone(asn::Zone zone_) const {
+    return zone(asnZoneToString(zone_));
+}
+
 void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
     if (event->event().Is<EventPlayerJoined>()) {
         assert(!mOpponent);

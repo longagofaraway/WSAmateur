@@ -1,67 +1,61 @@
 {
     "type": 4,
     "ability": {
-        "effects": [
-            {
-                "type": 13,
-                "effect": {
-                    "effect": [
-                        {
-                            "type": 2,
-                            "effect": {
-                                "targets": [{
-                                    "target": {
-                                        "type": 3,
-                                        "targetSpecification": {
-                                            "mode": 0,
-                                            "number": {
-                                                "mod": 1,
-                                                "value": 1
-                                            },
-                                            "cards": {
-                                                "cardSpecifiers": [
-                                                    {
-                                                        "type": 1,
-                                                        "specifier": 1
-                                                    }
-                                                ]
-                                            }
-                                        }
+        "effects": [{
+            "type": 13,
+            "effect": {
+                "effect": [{
+                    "type": 2,
+                    "effect": {
+                        "targets": [{
+                            "target": {
+                                "type": 3,
+                                "targetSpecification": {
+                                    "mode": 0,
+                                    "number": {
+                                        "mod": 1,
+                                        "value": 1
                                     },
-                                    "placeType": 2,
-                                    "place": {
-                                        "pos": 0,
-                                        "zone": 1,
-                                        "owner": 3
+                                    "cards": {
+                                        "cardSpecifiers": [{
+                                            "type": 1,
+                                            "specifier": 1
+                                        }]
                                     }
-                                }]
+                                }
+                            },
+                            "placeType": 2,
+                            "place": {
+                                "pos": 0,
+                                "zone": 1,
+                                "owner": 2
                             }
-                        }
-                    ],
-                    "ifYouDo": [],
-                    "ifYouDont": []
-                }
-            },
-            {
-                "type": 4,
-                "effect": {
-                    "executor": 1,
-                    "target": {
-                        "type": 2
-                    },
-                    "from": {
-                        "pos": 0,
-                        "zone": 0,
-                        "owner": 0
-                    },
-                    "to": [{
-                        "pos": 0,
-                        "zone": 5,
-                        "owner": 3
-                    }],
-                    "order": 0
-                }
-            }    
-        ]
+                        }]
+                    }
+                }],
+                "ifYouDo": [],
+                "ifYouDont": []
+            }
+        },
+        {
+            "type": 4,
+            "effect": {
+                "executor": 1,
+                "target": {
+                    "type": 2
+                },
+                "from": {
+                    "pos": 0,
+                    "zone": 0,
+                    "owner": 0
+                },
+                "to": [{
+                    "pos": 0,
+                    "zone": 5,
+                    "owner": 2
+                }],
+                "order": 0
+            }
+        }]
     }
 }

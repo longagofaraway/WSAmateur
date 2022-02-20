@@ -117,7 +117,7 @@ int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
     const auto &tspec = specifier.target->targetSpecification.value();
 
     if (specifier.placeType == asn::PlaceType::SpecificPlace) {
-        auto pzone = mPlayer->zone(asnZoneToString(specifier.place->zone));
+        auto pzone = mPlayer->zone(specifier.place->zone);
         for (int i = 0; i < pzone->count(); ++i) {
             if (checkTargetCard(tspec, pzone->card(i)))
                 cardCount++;
@@ -132,7 +132,7 @@ int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
     return cardCount;
 }
 
-std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t) {
+std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zone from_zone) {
     std::vector<ServerCard*> targets;
     if (t.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards())
@@ -149,7 +149,7 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t) {
         targets.push_back(thisCard().card);
     } else if (t.type == asn::TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
-        auto stage = mPlayer->zone("stage");
+        auto stage = mPlayer->zone(from_zone);
         for (int i = 0; i < stage->count(); ++i) {
             auto card = stage->card(i);
             if (!card)
@@ -179,7 +179,7 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
-            auto targets = getTargets(e.target);
+            auto targets = getTargets(e.target, e.from.zone);
             if (targets.empty())
                 return false;
 

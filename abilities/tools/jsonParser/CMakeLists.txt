@@ -9,7 +9,7 @@ set(jsonParserSources
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_executable(jsonParser ${jsonParserSources})
+add_executable(jsonParser WIN32 ${jsonParserSources})
 
 target_compile_features(jsonParser PRIVATE cxx_std_20)
 target_compile_definitions(jsonParser

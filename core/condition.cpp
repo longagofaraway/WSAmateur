@@ -83,7 +83,7 @@ bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
 
 bool AbilityPlayer::evaluateConditionHaveCard(const asn::ConditionHaveCard &c) {
     assert(c.who != asn::Player::Both);
-    auto z = owner(c.who)->zone(asnZoneToString(c.where.zone));
+    auto z = owner(c.who)->zone(c.where.zone);
     int count = 0;
     for (int i = 0; i < z->count(); ++i) {
         auto card = z->card(i);

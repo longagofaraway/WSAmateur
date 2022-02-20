@@ -120,6 +120,7 @@ public:
     DeckList* deck() { return mDeck.get(); }
     ServerCardZone* addZone(std::string_view name, ZoneType type = ZoneType::PublicZone);
     ServerCardZone* zone(std::string_view name);
+    ServerCardZone* zone(asn::Zone name);
     void setupZones();
     void createStage();
     void startGame();

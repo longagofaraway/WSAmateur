@@ -138,6 +138,10 @@ ServerCardZone* ServerPlayer::zone(std::string_view name) {
     return mZones.at(name).get();
 }
 
+ServerCardZone *ServerPlayer::zone(asn::Zone name) {
+    return zone(asnZoneToString(name));
+}
+
 void ServerPlayer::setupZones() {
     auto deck = addZone("deck", ZoneType::HiddenZone);
     addZone("wr");
@@ -1102,7 +1106,7 @@ Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct cmd) {
 }
 
 void ServerPlayer::reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone){
-    auto pzone = zone(asnZoneToString(destZone));
+    auto pzone = zone(destZone);
     if (pzone->count() < cmd.codes_size() || !cmd.codes_size())
         return;
     for (int i = 0; i < cmd.codes_size() - 1; ++i) {
