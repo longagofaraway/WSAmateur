@@ -138,7 +138,7 @@ void ServerPlayer::checkOnAttack(ServerCard *attCard) {
 }
 
 void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
-    auto checkTrigger = [=, this](ServerCard *card, bool alarm) {
+    auto checkTrigger = [=, this](ServerCard *card, bool topClock) {
         auto &abs = card->abilities();
         for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
             if (abs[j].ability.type != asn::AbilityType::Auto)
@@ -147,11 +147,13 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
             if (autoab.trigger.type != asn::TriggerType::OnPhaseEvent)
                 continue;
             // do not activate alarm if the card is on the stage
-            // (otherwise it is showing for a brief moment, but the condition is not met)
-            if (std::any_of(autoab.keywords.begin(), autoab.keywords.end(),
-                            [](asn::Keyword k){ return k == asn::Keyword::Alarm; })
-                && !alarm)
+            // (otherwise ability is shown for a brief moment, but the condition is not met)
+            // also prevent activating non alarm abilities from top clock
+            bool alarm = std::any_of(autoab.keywords.begin(), autoab.keywords.end(),
+                            [](asn::Keyword k){ return k == asn::Keyword::Alarm; });
+            if (alarm != topClock)
                 continue;
+
             const auto &trig = std::get<asn::PhaseTrigger>(autoab.trigger.trigger);
             if (trig.phase != phase || (trig.state != state && phase != asn::Phase::EndPhase) ||
                 (trig.player == asn::Player::Player && !mActive) ||
