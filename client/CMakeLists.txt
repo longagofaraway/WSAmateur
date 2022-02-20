@@ -81,7 +81,7 @@ endif()
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_executable(WSAmateur ${clientSources} qml.qrc)
+add_executable(WSAmateur WIN32 ${clientSources} qml.qrc)
 
 add_definitions(-DTEST_MODE)
 

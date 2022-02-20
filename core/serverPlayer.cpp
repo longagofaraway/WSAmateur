@@ -913,7 +913,7 @@ Resumable ServerPlayer::endOfAttack() {
 Resumable ServerPlayer::levelUp() {
     clearExpectedComands();
 
-    if (zone("level")->count() == 0) {
+    if (zone("level")->count() == 3) {
         sendEndGame(false);
         co_await std::suspend_always();
     }

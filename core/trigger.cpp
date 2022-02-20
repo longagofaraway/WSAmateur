@@ -106,7 +106,8 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
         checkTrigger(card);
     }
 
-    if (to == "stage" && movedCard->zone()->name() != to)
+    if ((to == "stage" && movedCard->zone()->name() != to) ||
+        (to == "climax" && movedCard->zone()->name() == "climax"))
         checkTrigger(movedCard);
 }
 
