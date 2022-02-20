@@ -81,7 +81,7 @@ endif()
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_executable(WSAmateur WIN32 ${clientSources} qml.qrc)
+add_executable(WSAmateur ${clientSources} qml.qrc)
 
 add_definitions(-DTEST_MODE)
 
@@ -100,6 +100,7 @@ if(WIN32)
     install(FILES "$<TARGET_FILE_DIR:WSAmateur>/libprotobuf.dll" DESTINATION ./)
 
     if(WIN32SSLRUNTIME_FOUND)
+        windeploy_openssl(WSAmateur ./)
         install(FILES ${WIN32SSLRUNTIME_LIBRARIES} DESTINATION ./)
     endif()
 

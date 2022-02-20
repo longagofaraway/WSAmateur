@@ -100,4 +100,14 @@ function(windeployqt target directory)
 
 endfunction()
 
+function(windeploy_openssl target directory)
+    if(WIN32SSLRUNTIME_FOUND)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E
+                copy_if_different ${WIN32SSLRUNTIME_LIBRARIES} \"$<TARGET_FILE_DIR:${target}>\"
+        )
+        install(FILES ${WIN32SSLRUNTIME_LIBRARIES} DESTINATION ${directory})
+    endif()
+endfunction()
+
 mark_as_advanced(WINDEPLOYQT_EXECUTABLE)

@@ -326,10 +326,12 @@ ListView {
                                 return;
                             } else if (gGame.isCounterStep()) {
                                 handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
+                                handView.mLastDragCardId = model.cardId;
                                 gGame.player.sendPlayCounter(model.index);
                                 return;
                             } else if (cardImgDelegate.cardType === "Event") {
                                 handView.mLastDragPosition = cardImgDelegate.mapToItem(gGame, 0, 0);
+                                handView.mLastDragCardId = model.cardId;
                                 gGame.player.cardPlayed(model.index, 0);
                                 return;
                             }
