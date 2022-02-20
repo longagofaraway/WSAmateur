@@ -64,7 +64,7 @@ void AbilityPlayer::revertContAbility(const asn::ContAbility &a) {
         playContEffect(effect);
 }
 
-Resumable AbilityPlayer::playAbility(const asn::Ability &a) {
+Resumable AbilityPlayer::playAbility(const asn::Ability a) {
     setCont(false);
     switch(a.type) {
     case asn::AbilityType::Auto:

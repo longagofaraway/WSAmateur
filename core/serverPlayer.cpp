@@ -258,7 +258,7 @@ void ServerPlayer::dealStartingHand() {
     mGame->sendPublicEvent(eventPublic, mId);
 }
 
-Resumable ServerPlayer::mulligan(const CommandMulligan &cmd) {
+Resumable ServerPlayer::mulligan(const CommandMulligan cmd) {
     if (cmd.ids_size()) {
         std::vector<int> ids;
         for (int i = 0; i < cmd.ids_size(); ++i)
@@ -522,7 +522,7 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
     addExpectedCommand(CommandSwitchStagePositions::descriptor()->name());
 }
 
-Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
+Resumable ServerPlayer::playCard(const CommandPlayCard cmd) {
     auto *hand = zone("hand");
     auto cardPtr = hand->card(cmd.hand_pos());
     if (!cardPtr)
@@ -536,7 +536,7 @@ Resumable ServerPlayer::playCard(const CommandPlayCard &cmd) {
         co_await playEvent(cmd.hand_pos());
 }
 
-Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
+Resumable ServerPlayer::playCounter(const CommandPlayCounter cmd) {
     auto hand = zone("hand");
     auto card = hand->card(cmd.hand_pos());
     if (!card)
@@ -559,7 +559,7 @@ Resumable ServerPlayer::playCounter(const CommandPlayCounter &cmd) {
     co_await mGame->continueFromDamageStep();
 }
 
-Resumable ServerPlayer::playCharacter(const CommandPlayCard &cmd) {
+Resumable ServerPlayer::playCharacter(const CommandPlayCard cmd) {
     if (mGame->phase() != asn::Phase::MainPhase)
         co_return;
 
@@ -658,7 +658,7 @@ Resumable ServerPlayer::playEvent(int handIndex) {
     co_await mGame->checkTiming();
 }
 
-Resumable ServerPlayer::switchPositions(const CommandSwitchStagePositions &cmd) {
+Resumable ServerPlayer::switchPositions(const CommandSwitchStagePositions cmd) {
     ServerCardZone *stage = zone("stage");
     if (cmd.stage_pos_from() >= stage->count()
         || cmd.stage_pos_to() >= stage->count())
@@ -770,7 +770,7 @@ void ServerPlayer::attackDeclarationStep() {
 }
 
 bool isCenterStagePosition(int pos) { return pos >= 3 ? false : true; }
-Resumable ServerPlayer::declareAttack(const CommandDeclareAttack &cmd) {
+Resumable ServerPlayer::declareAttack(const CommandDeclareAttack cmd) {
     auto stage = zone("stage");
     if (!isCenterStagePosition(cmd.stage_pos()))
         co_return;
@@ -998,7 +998,7 @@ Resumable ServerPlayer::encoreStep() {
     }
 }
 
-Resumable ServerPlayer::encoreCharacter(const CommandEncoreCharacter &cmd) {
+Resumable ServerPlayer::encoreCharacter(const CommandEncoreCharacter cmd) {
     if (cmd.stage_pos() < 0 || cmd.stage_pos() >= 5)
         co_return;
 
@@ -1080,7 +1080,7 @@ void ServerPlayer::sendEndGame(bool victory) {
     mGame->opponentOfPlayer(mId)->sendGameEvent(eventOpp);
 }
 
-Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct &cmd) {
+Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct cmd) {
     auto stage = zone("stage");
     if (cmd.card_pos() >= stage->count())
         co_return;

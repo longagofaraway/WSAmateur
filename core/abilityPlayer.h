@@ -51,7 +51,7 @@ public:
 
     bool canBePlayed(const asn::Ability &a);
 
-    Resumable playAbility(const asn::Ability &a);
+    Resumable playAbility(const asn::Ability a);
     void playContAbility(const asn::ContAbility &a, bool &active);
     void revertContAbility(const asn::ContAbility &a);
 
