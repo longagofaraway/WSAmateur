@@ -299,8 +299,10 @@ void CardBuffManager::validateCannotStand() {
     std::vector<BoolAttributeType> changedParams;
     auto it = mBoolAttrChanges.begin();
     while (it != mBoolAttrChanges.end()) {
-        if (it->type != BoolAttributeType::CannotStand)
+        if (it->type != BoolAttributeType::CannotStand) {
+            ++it;
             continue;
+        }
 
         if (!it->duration) {
             ++it;
@@ -349,8 +351,10 @@ void CardBuffManager::validateBoolAttrChanges() {
     std::vector<BoolAttributeType> changedParams;
     auto it = mBoolAttrChanges.begin();
     while (it != mBoolAttrChanges.end()) {
-        if (it->type == BoolAttributeType::CannotStand)
+        if (it->type == BoolAttributeType::CannotStand) {
+            ++it;
             continue;
+        }
 
         if (!it->duration || --it->duration) {
             ++it;

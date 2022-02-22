@@ -72,7 +72,7 @@ ListView {
                     if (!model.glow)
                         return;
                     model.selected = !model.selected;
-                    gGame.getPlayer(false).chooseCard(model.index, cardsView.mIsDeckView ? "deckView" : "wr");
+                    gGame.getPlayer(false).chooseCard(model.index, cardsView.mIsDeckView ? "deckView" : "wr", cardsView.mOpponent);
                 }
 
                 Card {

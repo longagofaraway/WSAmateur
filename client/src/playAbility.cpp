@@ -36,9 +36,12 @@ int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place 
 
 void Player::processChooseCardInternal(int eligibleCount, OptionalPlace place, bool mandatory, asn::Player executor) {
     if (eligibleCount) {
-        if (place && place->get().zone == asn::Zone::WaitingRoom &&
-            place->get().owner == asn::Player::Player)
-            QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
+        if (place && place->get().zone == asn::Zone::WaitingRoom) {
+            if (place->get().owner == asn::Player::Player)
+                QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
+            else if (place->get().owner == asn::Player::Opponent)
+                QMetaObject::invokeMethod(getOpponent()->zone("wr")->visualItem(), "openView", Q_ARG(QVariant, true));
+        }
         if (!mandatory)
             mAbilityList->activateCancel(mAbilityList->activeId(), true);
     } else {
@@ -108,7 +111,10 @@ void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
         return;
     }
     if (place->get().zone == asn::Zone::WaitingRoom) {
-        QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
+        if (place->get().owner == asn::Player::Player)
+            QMetaObject::invokeMethod(zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
+        if (place->get().owner == asn::Player::Opponent)
+            QMetaObject::invokeMethod(getOpponent()->zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
     }
     if (place->get().owner == asn::Player::Player || place->get().owner == asn::Player::Both) {
         auto from = zone(place->get().zone);

@@ -23,7 +23,7 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     sendToBoth(evStart);
 
     AbilityPlayer a(this);
-    a.setThisCard(CardImprint("res", 0, card));
+    a.setThisCard(CardImprint("res", card));
     a.setTriggerIcon(trigger);
     co_await a.playAbility(triggerAbility(trigger));
 

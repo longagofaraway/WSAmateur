@@ -7,6 +7,19 @@
 #include <QVariant>
 
 namespace {
+void validateAbility(const asn::Ability &a) {
+    if (a.type != asn::AbilityType::Event)
+        return;
+
+    const auto &eventAbility = std::get<asn::EventAbility>(a.ability);
+    if (std::any_of(eventAbility.effects.begin(), eventAbility.effects.end(),
+                    [](const asn::Effect &effect) {
+            return effect.type == asn::EffectType::CannotPlay;
+        }))
+        throw std::runtime_error("Please use CannotPlay effect in Continuous abilities only. "
+                                 "Ability is not added");
+}
+
 void addAbilityToArray(QByteArray &data, const asn::Ability &ability) {
     auto bytes = encodeAbility(ability);
     if (bytes.size() >= (1 << 16))
@@ -87,6 +100,7 @@ DbManager::~DbManager() {
 }
 
 void DbManager::addAbility(QString code, const asn::Ability ability) {
+    validateAbility(ability);
     auto data = getAbilitiesForCard(code);
     addAbilityToArray(data, ability);
     setAbilitiesToDb(code, data);
