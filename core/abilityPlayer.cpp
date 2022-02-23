@@ -170,6 +170,24 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zo
     return targets;
 }
 
+bool AbilityPlayer::findChooseTargetsAutomatically(const asn::ChooseCard &e) {
+    if (e.targets.size() > 1)
+        return false;
+    assert(e.targets.size());
+
+    const auto &target = e.targets[0].target;
+    if (target.type == asn::TargetType::CharInBattle) {
+        auto card = mPlayer->attackingCard();
+        if (!card)
+            return false;
+
+        addChosenCard(CardImprint(card->zone()->name(), card));
+        return true;
+    }
+
+    return false;
+}
+
 bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
     if (c.type == asn::CostType::Stock) {
         const auto &item = std::get<asn::StockCost>(c.costItem);

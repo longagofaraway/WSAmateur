@@ -176,12 +176,13 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
 }
 
 Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
+    mPerformedInFull = true;
     setMandatory(false);
     co_await playEffects(e.effect);
     setMandatory(true);
     bool youDo = !canceled();
     setCanceled(false);
-    if (youDo)
+    if (youDo && mPerformedInFull)
         co_await playEffects(e.ifYouDo);
     else
         co_await playEffects(e.ifYouDont);
@@ -190,6 +191,10 @@ Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
 Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrevious) {
     if (clearPrevious)
         clearChosenCards();
+
+    if (findChooseTargetsAutomatically(e))
+        co_return;
+
     std::vector<uint8_t> buf;
     encodeChooseCard(e, buf);
 

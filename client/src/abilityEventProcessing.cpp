@@ -98,11 +98,8 @@ void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &even
 
     if (effect.to.size() > 1) {
         std::vector<QString> data;
-        for (const auto &to: effect.to) {
-            assert(to.owner == asn::Player::Player);
-            assert(to.pos == asn::Position::NotSpecified);
-            data.push_back(asnZoneToReadableString(to.zone));
-        }
+        for (const auto &to: effect.to)
+            data.push_back(placeToReadableString(to));
 
         auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
         choiceDlg->setData("Choose where to put the card", data);

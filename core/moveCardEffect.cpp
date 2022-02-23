@@ -49,7 +49,7 @@ Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e)
     player->clearExpectedComands();
 }
 
-Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex) {
+Resumable AbilityPlayer::moveFromTop(const asn::MoveCard &e, int toZoneIndex, int toIndex) {
     auto player = owner(e.from.owner);
     auto pzone = player->zone(e.from.zone);
     const auto &spec = *e.target.targetSpecification;
@@ -58,11 +58,13 @@ Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, in
     if (!isPayingCost())
         clearLastMovedCards();
 
+    int movedCount = 0;
     for (int i = 0; i < spec.number.value; ++i) {
         auto card = (e.from.pos == asn::Position::Top) ? pzone->topCard() : pzone->card(0);
         if (!card)
             break;
 
+        movedCount++;
         player->moveCard(asnZoneToString(e.from.zone), card->pos(), asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
         if (!isPayingCost())
             addLastMovedCard(CardImprint(card->zone()->name(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
@@ -70,6 +72,9 @@ Resumable AbilityPlayer::moveTopDeck(const asn::MoveCard &e, int toZoneIndex, in
         if (e.from.zone == asn::Zone::Deck || e.to[toZoneIndex].zone == asn::Zone::Clock)
             co_await player->checkRefreshAndLevelUp();
     }
+    if ((spec.number.mod == asn::NumModifier::AtLeast || spec.number.mod == asn::NumModifier::ExactMatch) &&
+        movedCount < spec.number.value)
+        mPerformedInFull = false;
 }
 
 Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
@@ -128,6 +133,10 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 break;
             }
         }
+        const auto &number = e.target.targetSpecification->number;
+        if ((number.mod == asn::NumModifier::AtLeast || number.mod == asn::NumModifier::ExactMatch) &&
+            cardsToMove.size() < number.value)
+            mPerformedInFull = false;
         mPlayer->clearExpectedComands();
     } else if (!mandatory()) {
         auto executor = owner(e.executor);
@@ -306,7 +315,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         // can't process top/bottom cards of deck in the main cycle below,
         // because we don't know ids of next cards in case of refresh
         if (e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom) {
-            co_await moveTopDeck(e, toZoneIndex, toIndex);
+            co_await moveFromTop(e, toZoneIndex, toIndex);
             co_return;
         }
         player = owner(e.from.owner);

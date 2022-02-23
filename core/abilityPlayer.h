@@ -14,13 +14,15 @@ class CommandChooseCard;
 
 class AbilityPlayer {
     ServerPlayer *mPlayer;
-    bool mMandatory = true;
-    bool mCanceled = false;
-    bool mRevealChosen = false;
-    bool mRevert = false; // revert effect of cont ability
-    bool mConditionNotMet = false;
+
     bool mIsCont = false; // ability that is being played is CONT
     bool mIsPayingCost = false; // in the process of paying cost
+    bool mRevert = false; // revert effect of cont ability
+    bool mRevealChosen = false;
+    bool mMandatory = true;
+    bool mCanceled = false;
+    bool mConditionNotMet = false;
+    bool mPerformedInFull = false;
     int mAbilityId;
     std::vector<CardImprint> mChosenCards;
     std::vector<CardImprint> mMentionedCards;
@@ -156,9 +158,10 @@ private:
     void sendRevealCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
     Resumable getStagePosition(int &position, const asn::MoveCard &e);
-    Resumable moveTopDeck(const asn::MoveCard &e, int toZoneIndex, int toIndex);
+    Resumable moveFromTop(const asn::MoveCard &e, int toZoneIndex, int toIndex);
     void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type);
     int getForEachMultiplierValue(const asn::Multiplier &m);
     std::vector<ServerCard*> getTargets(const asn::Target &t,
                                         asn::Zone from_zone = asn::Zone::Stage);
+    bool findChooseTargetsAutomatically(const asn::ChooseCard &e);
 };

@@ -361,6 +361,7 @@ void Game::endGame(bool victory) {
 }
 
 void Game::playerLeft() {
+    hideText();
     emit endGamePrematurely("Opponent left the game", "lobby");
 }
 

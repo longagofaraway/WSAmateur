@@ -16,6 +16,7 @@ class ProtoAbility;
 
 std::string_view asnZoneToString(asn::Zone zone);
 QString asnZoneToReadableString(asn::Zone zone);
+QString placeToReadableString(const asn::Place &place);
 uint32_t abilityHash(const ProtoAbility &a);
 ProtoCardAttribute attrTypeToProto(asn::AttributeType t);
 asn::Player protoPlayerToPlayer(ProtoOwner player);

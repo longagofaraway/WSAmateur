@@ -564,7 +564,7 @@ std::vector<const Card*> Player::getTargets(const Card &thisCard, const asn::Tar
             if (!card.cardPresent())
                 continue;
 
-            if (spec.mode == asn::TargetMode::AllOther && thisCard.id() != card.id())
+            if (spec.mode == asn::TargetMode::AllOther && thisCard.id() == card.id())
                 continue;
 
             if (checkCard(spec.cards.cardSpecifiers, card))

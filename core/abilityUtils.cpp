@@ -60,6 +60,16 @@ QString asnZoneToReadableString(asn::Zone zone) {
     }
 }
 
+QString placeToReadableString(const asn::Place &place) {
+    assert(place.owner == asn::Player::Player);
+    auto result = asnZoneToReadableString(place.zone);
+    if (place.pos == asn::Position::Top)
+        result = "Top " + result;
+    else if (place.pos == asn::Position::Bottom)
+        result = "Bottom " + result;
+    return result;
+}
+
 uint32_t abilityHash(const ProtoAbility &a) {
     std::string buf = std::to_string(a.card_id());
     buf += std::to_string(a.ability_id());
