@@ -8,6 +8,7 @@ Lobby::Lobby() {
 }
 
 Lobby::~Lobby() {
+    leaveQueue();
     disconnect(client, &Client::lobbyEventReceived, this, &Lobby::processLobbyEvent);
 }
 

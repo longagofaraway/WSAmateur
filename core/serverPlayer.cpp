@@ -647,10 +647,16 @@ Resumable ServerPlayer::playEvent(int handIndex) {
 
     auto hand = zone("hand");
     auto resZone = zone("res");
+    auto stock = zone("stock");
 
     auto card = hand->card(handIndex);
+    if (!canPlay(card))
+        co_return;
 
     moveCard("hand", handIndex, "res");
+
+    for (int i = 0; i < card->cost(); ++i)
+        moveCard("stock", stock->count() - 1, "wr");
 
     co_await playEventEffects(card);
 
@@ -1149,8 +1155,11 @@ ServerPlayer* ServerPlayer::getOpponent() {
 ServerCard *ServerPlayer::cardInBattle() {
     auto stage = zone("stage");
     for (int i = 0; i < stage->count(); ++i) {
-        if (stage->card(i)->inBattle())
-            return stage->card(i);
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+        if (card->inBattle())
+            return card;
     }
     return nullptr;
 }

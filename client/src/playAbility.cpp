@@ -467,19 +467,27 @@ bool Player::canPlay(const Card &thisCard, const asn::Ability &a) const {
 bool Player::canPlayCounter(const Card &card) const {
     if (!card.isCounter())
         return false;
-    if (card.type() == CardType::Event)
-        return !mCannotPlayEvents;
-    if (mCannotPlayBackups)
+    if (card.level() > mLevel)
         return false;
-    for (int i = 0; i < card.abilityCount(); ++i) {
-        const auto &a = card.ability(i);
-        if (a.type != asn::AbilityType::Act)
-            continue;
-        const auto &aa = std::get<asn::ActAbility>(a.ability);
-        if (aa.keywords.empty() || aa.keywords[0] != asn::Keyword::Backup)
-            continue;
-        if (canPlay(card, a))
-            return true;
+    if (card.type() == CardType::Char) {
+        if (mCannotPlayBackups)
+            return false;
+        for (int i = 0; i < card.abilityCount(); ++i) {
+            const auto &a = card.ability(i);
+            if (a.type != asn::AbilityType::Act)
+                continue;
+            const auto &aa = std::get<asn::ActAbility>(a.ability);
+            if (aa.keywords.empty() || aa.keywords[0] != asn::Keyword::Backup)
+                continue;
+            if (canPlay(card, a))
+                return true;
+        }
+    } else if (card.type() == CardType::Event) {
+        if (mCannotPlayEvents)
+            return false;
+        if (card.cost() > zone("stock")->model().count())
+            return false;
+        return true;
     }
 
     return false;
