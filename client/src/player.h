@@ -38,6 +38,7 @@ class EventReveal;
 class EventRevealTopDeck;
 class EventLookTopDeck;
 class EventSetCannotPlay;
+class EventSetCardStateChoice;
 class EventSetCardStateTargetChoice;
 class EventSetCardBoolAttr;
 class EventSetPlayerAttr;
@@ -205,6 +206,7 @@ private:
     void payCostChoice();
     void setCannotPlay(const EventSetCannotPlay &event);
     void setPlayerAttr(const EventSetPlayerAttr &event);
+    void processSetCardStateChoice(const EventSetCardStateChoice &event);
     void processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event);
     void processSetCardBoolAttr(const EventSetCardBoolAttr &event);
     void processRevealFromHand(const EventRevealFromHand &event);

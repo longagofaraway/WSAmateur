@@ -582,6 +582,42 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
             auto player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
             player->setCardState(card.card, e.state);
         }
+    } else if (e.target.type == asn::TargetType::BattleOpponent ||
+               e.target.type == asn::TargetType::OppositeThis) {
+        auto targets = getTargets(e.target);
+        std::erase_if(targets, [&e](auto card) { return card->state() == e.state; });
+        if (targets.empty())
+            co_return;
+        auto card = targets.front();
+
+        bool confirmed = true;
+        if (!mandatory()) {
+            std::vector<uint8_t> buf;
+            encodeChangeState(e, buf);
+
+            EventSetCardStateChoice ev;
+            ev.set_effect(buf.data(), buf.size());
+            ev.set_mandatory(mandatory());
+
+            mPlayer->clearExpectedComands();
+            mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
+            mPlayer->sendToBoth(ev);
+
+            while (true) {
+                GameCommand cmd = co_await waitForCommand();
+                if (cmd.command().Is<CommandChoice>()) {
+                    CommandChoice choiceCmd;
+                    cmd.command().UnpackTo(&choiceCmd);
+                    // 0 is yes, so 'yes' will be the first on client's side
+                    confirmed = !choiceCmd.choice();
+                    break;
+                }
+            }
+            mPlayer->clearExpectedComands();
+        }
+
+        if (confirmed)
+            card->player()->setCardState(card, e.state);
     } else if (e.target.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.target.targetSpecification;
 

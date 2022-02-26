@@ -105,6 +105,11 @@ message EventEffectChoice {
     bytes effect = 1;
 }
 
+message EventSetCardStateChoice {
+    bytes effect = 1;
+    bool mandatory = 2;
+}
+
 message EventSetCardStateTargetChoice {
     bytes effect = 1;
     bool mandatory = 2;

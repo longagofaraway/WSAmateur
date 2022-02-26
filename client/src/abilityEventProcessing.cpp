@@ -351,6 +351,23 @@ void Player::setPlayerAttr(const EventSetPlayerAttr &event) {
     }
 }
 
+void Player::processSetCardStateChoice(const EventSetCardStateChoice &event) {
+    if (mOpponent)
+        return;
+
+    auto effect = decodingWrapper(event.effect(), decodeChangeState);
+
+    auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
+    activatedAbility.effect = effect;
+
+    auto effectText = printChangeState(effect) + '?';
+    effectText[0] = std::toupper(effectText[0]);
+    std::vector<QString> data { "Yes", "No" };
+    auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+    choiceDlg->setData(QString::fromStdString(effectText), data);
+    mChoiceDialog = std::move(choiceDlg);
+}
+
 void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice &event) {
     if (mOpponent)
         return;

@@ -164,8 +164,19 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zo
     } else if (t.type == asn::TargetType::OppositeThis ||
                t.type == asn::TargetType::BattleOpponent) {
         auto card = mPlayer->oppositeCard(thisCard().card);
-        if (card)
+        if (!card)
+            return targets;
+        if (t.type == asn::TargetType::BattleOpponent) {
+            const auto &spec = *t.targetSpecification;
+
+            if (!checkTargetMode(spec.mode, thisCard().card, card))
+                return targets;
+
+            if (checkCard(spec.cards.cardSpecifiers, *card))
+                targets.push_back(card);
+        } else if (t.type == asn::TargetType::OppositeThis) {
             targets.push_back(card);
+        }
     }
     return targets;
 }
