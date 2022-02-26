@@ -67,7 +67,8 @@ bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
             if (verified)
                 return true;
         }
-    } else if (c.target.type == asn::TargetType::BattleOpponent) {
+    } else if (c.target.type == asn::TargetType::BattleOpponent ||
+               c.target.type == asn::TargetType::OppositeThis) {
         if (thisCard().card->zone()->name() != "stage")
             return false;
         auto card = mPlayer->oppositeCard(thisCard().card);
