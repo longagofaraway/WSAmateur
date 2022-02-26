@@ -188,7 +188,7 @@ bool AbilityPlayer::findChooseTargetsAutomatically(const asn::ChooseCard &e) {
 
     const auto &target = e.targets[0].target;
     if (target.type == asn::TargetType::CharInBattle) {
-        auto card = mPlayer->attackingCard();
+        auto card = mPlayer->cardInBattle();
         if (!card)
             return false;
 

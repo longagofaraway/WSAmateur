@@ -96,6 +96,7 @@ public:
     ServerPlayer* getOpponent();
     int level() const { return mLevel; }
     PlayerBuffManager* buffManager() { return &mBuffManager; }
+    ServerCard* cardInBattle();
 
     void changeAttribute(PlayerAttrType type, bool value);
     bool attribute(PlayerAttrType type) const;

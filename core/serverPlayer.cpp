@@ -1146,6 +1146,15 @@ ServerPlayer* ServerPlayer::getOpponent() {
     return mGame->opponentOfPlayer(mId);
 }
 
+ServerCard *ServerPlayer::cardInBattle() {
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        if (stage->card(i)->inBattle())
+            return stage->card(i);
+    }
+    return nullptr;
+}
+
 void ServerPlayer::changeAttribute(PlayerAttrType type, bool value) {
     bool oldValue = attribute(type);
     switch (type) {
