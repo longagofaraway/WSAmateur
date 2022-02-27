@@ -32,8 +32,10 @@ void PlayerBuffManager::removeContAttrChange(ServerCard *card, int abilityId, Pl
 void PlayerBuffManager::validateAttrChanges() {
     auto it = mBuffs.begin();
     while (it != mBuffs.end()) {
-        if (!it->duration || --it->duration)
+        if (!it->duration || --it->duration) {
+            ++it;
             continue;
+        }
         auto type = it->type;
         it = mBuffs.erase(it);
         if (!hasAttrChange(type)) {

@@ -790,7 +790,7 @@ Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {
     auto card2Pos = card2->pos();
     auto player = card1->player();
     player->moveCard(card1Zone, card1->pos(), card2->zone()->name(), card2->pos());
-    player->moveCard(card2->zone()->name(), card2Pos, card1Zone, card1Pos);
+    player->moveCard(card2->zone()->name(), card2->pos(), card1Zone, card1Pos);
 }
 
 void AbilityPlayer::playCannotAttack(const asn::CannotAttack &e) {
