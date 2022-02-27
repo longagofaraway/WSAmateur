@@ -38,6 +38,10 @@ std::unordered_map<asn::TriggerIcon, std::vector<uint8_t>> gTriggerBinAbilities 
     { asn::TriggerIcon::Standby, {
           #include "standby"
       }
+    },
+    { asn::TriggerIcon::Gate, {
+          #include "gate"
+      }
     }
 };
 std::unordered_map<RuleAction, std::vector<uint8_t>> gRuleActionBinAbilities = {

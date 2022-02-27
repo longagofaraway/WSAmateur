@@ -19,11 +19,7 @@
                                     "cards": {
                                         "cardSpecifiers": [{
                                             "type": 1,
-                                            "specifier": 1
-                                        },
-                                        {
-                                            "type": 10,
-                                            "specifier": 1
+                                            "specifier": 2
                                         }]
                                     }
                                 }
@@ -56,11 +52,6 @@
                 "to": [{
                     "pos": 0,
                     "zone": 5,
-                    "owner": 1
-                },
-                {
-                    "pos": 0,
-                    "zone": 7,
                     "owner": 1
                 }],
                 "order": 0

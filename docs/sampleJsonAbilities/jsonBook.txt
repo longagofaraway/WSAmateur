@@ -1,8 +1,7 @@
 {
     "type": 4,
     "ability": {
-        "effects": [
-        {
+        "effects": [{
             "type": 13,
             "effect": {
                 "effect": [{
@@ -18,7 +17,6 @@
                 "ifYouDo": [],
                 "ifYouDont": []
             }
-        }
-        ]
+        }]
     }
 }
