@@ -119,6 +119,7 @@ void ServerProtocolHandler::flushOutputQueue() {
 
             locker.relock();
         }
+        locker.unlock();
         mConnection->flush();
     } catch (const std::exception &e) {
         qDebug() << QString::fromStdString(e.what());

@@ -177,6 +177,9 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zo
         } else if (t.type == asn::TargetType::OppositeThis) {
             targets.push_back(card);
         }
+    } else if (t.type == asn::TargetType::MentionedInTrigger) {
+        if (mCardFromTrigger)
+            targets.push_back(mCardFromTrigger);
     }
     return targets;
 }

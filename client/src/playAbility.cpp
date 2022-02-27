@@ -116,6 +116,8 @@ void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
         if (place->get().owner == asn::Player::Opponent)
             QMetaObject::invokeMethod(getOpponent()->zone("wr")->visualItem(), "openView", Q_ARG(QVariant, false));
     }
+    if (place->get().zone == asn::Zone::NotSpecified)
+        return;
     if (place->get().owner == asn::Player::Player || place->get().owner == asn::Player::Both) {
         auto from = zone(place->get().zone);
         highlightAllCards(from, false);

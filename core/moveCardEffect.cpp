@@ -1,5 +1,7 @@
 #include "abilityPlayer.h"
 
+#include <QDebug>
+
 #include "abilityEvents.pb.h"
 #include "abilityCommands.pb.h"
 #include "moveCommands.pb.h"
@@ -275,7 +277,11 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         } else if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn ||
                    e.to[toZoneIndex].pos == asn::Position::SlotThisWasInRested) {
             positionSet = true;
-            toIndex = thisCard().card->prevStagePos();
+            auto targets = getTargets(e.target);
+            if (targets.empty())
+                qDebug() << "wasn't able to get toIndex for SlotThisWasIn";
+            else
+                toIndex = targets.front()->prevStagePos();
         }
         if (!positionSet) {
             if (e.target.type == asn::TargetType::LastMovedCards) {
