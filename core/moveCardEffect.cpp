@@ -366,7 +366,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasInRested)
             player->setCardState(it->second, asn::State::Rested);
 
-        if (e.from.zone == asn::Zone::Deck || e.to[toZoneIndex].zone == asn::Zone::Clock)
+        if (e.from.zone == asn::Zone::Deck || e.to[toZoneIndex].zone == asn::Zone::Clock ||
+            player->zone("deck")->count() == 0)
             co_await player->checkRefreshAndLevelUp();
     }
 }
