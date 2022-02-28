@@ -80,6 +80,7 @@ ListView {
                     if (model.cannotMove)
                         return;
 
+                    drag.source.hoveringIndex = stagePlace.mIndex;
                     root.stageDropTarget = stagePlace;
                     if (mStageCard !== null)
                         mStageCard.onCardEntered();
@@ -93,7 +94,8 @@ ListView {
                     if (drag.source.index === mIndex)
                         return;
 
-                    root.stageDropTarget = undefined;
+                    if (drag.source.hoveringIndex === stagePlace.mIndex)
+                        root.stageDropTarget = undefined;
                     if (mStageCard !== null)
                         mStageCard.onCardExited();
                     else

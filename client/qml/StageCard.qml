@@ -10,6 +10,7 @@ Card {
     property bool selected: false
     property bool highlightedByAbility: false
     property int index
+    property int hoveringIndex: 0
     property int power: 9000
     property int soul: 1
     property int level: 0

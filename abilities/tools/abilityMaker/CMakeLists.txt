@@ -36,7 +36,7 @@ set(abilityMakerSources
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_executable(AbilityMaker ${abilityMakerSources})
+add_executable(AbilityMaker WIN32 ${abilityMakerSources})
 
 target_compile_features(AbilityMaker PRIVATE cxx_std_20)
 target_compile_definitions(AbilityMaker

@@ -150,6 +150,7 @@ ListView {
             Card {
                 id: cardImgDelegate
 
+                property int hoveringIndex: 0
                 mSource: {
                     if (model.code)
                         return model.code;
