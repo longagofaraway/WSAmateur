@@ -1,26 +1,20 @@
 import QtQuick 2.0
+import QtQuick.Dialogs 1.3
 
 Item {
     id: chooseWindow
     signal fileChosen(string path)
 
-    /* Doesn't work for some reason
     FileDialog {
         id: fileDialog
 
         title: "Please choose a file"
-        folder: StandardPaths.writableLocation(StandardPaths.DownloadLocation)
-        nameFilters: [ "Json files (*.json)", "All files (*)" ]
+        folder: shortcuts.home
+        nameFilters: [ "All files (*)" ]
         onAccepted: {
-            console.log('what');
-            console.log(fileDialog.fileUrl);
-            console.log(fileDialog.fileUrls);
             chooseWindow.fileChosen(fileDialog.fileUrl);
         }
-        onRejected: {
-            console.log('rejected');
-        }
-    }*/
+    }
 
     Rectangle {
         id: mainRectangle
@@ -28,7 +22,7 @@ Item {
         anchors.centerIn: parent
 
         width: mainWindow.width / 2.7
-        height: mainWindow.height / 4.0
+        height: mainWindow.height / 4.5
         border.width: 2
         border.color: "white"
         color: "#A0000000"
@@ -59,19 +53,12 @@ Item {
                 onLinkActivated: Qt.openUrlExternally(link)
             }
 
-            BasicTextInput {
-                id: urlInput
-
-                anchors.horizontalCenter: parent.horizontalCenter
-
-                width: mainRectangle.width * 0.7
-            }
             MenuButton {
                 anchors.horizontalCenter: parent.horizontalCenter
 
-                text: "OK"
+                text: "Choose file"
                 onPressed: {
-                    fileChosen(urlInput.text);
+                    fileDialog.visible = true;
                 }
             }
         }

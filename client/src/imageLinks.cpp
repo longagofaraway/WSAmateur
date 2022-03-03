@@ -21,7 +21,12 @@ std::optional<QString> ImageLinks::imageLink(const std::string &code) {
 }
 
 bool ImageLinks::setData(QString filePath) {
-    QFile file(filePath);
+    QString parsedFilePath = filePath;
+    if (parsedFilePath.startsWith("file:")) {
+        QUrl fileUrl(filePath);
+        parsedFilePath = fileUrl.toLocalFile();
+    }
+    QFile file(parsedFilePath);
     if (!file.open(QIODevice::ReadOnly))
         return false;
 

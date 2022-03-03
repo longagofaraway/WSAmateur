@@ -96,7 +96,7 @@ ServerPlayer* ServerGame::opponentOfPlayer(int id) const {
 void ServerGame::setStartingPlayer() {
     std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
     std::uniform_int_distribution<> distrib(1, 2);
-    int startingPlayerId = 1;//distrib(gen);
+    int startingPlayerId = distrib(gen);
     for (auto &playerEntry: mPlayers) {
         if (playerEntry.first == static_cast<int>(startingPlayerId))
             playerEntry.second->setActive(true);
