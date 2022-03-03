@@ -18,7 +18,6 @@ TcpConnection::TcpConnection(qintptr socketDescriptor)
 }
 
 TcpConnection::~TcpConnection() {
-    qDebug("connection deleted");
 }
 
 void TcpConnection::init() {

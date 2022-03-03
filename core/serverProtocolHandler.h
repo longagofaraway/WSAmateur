@@ -51,6 +51,7 @@ public:
     int id() const { return mId; }
     void setId(int id) { mId = id; }
     const std::string& name() const { return mName; }
+    QString qname() const { return QString::fromStdString(mName); }
     bool inQueue() const { return mInQueue; }
     void setInQueue(bool value) { mInQueue = value; }
     bool hasOutcomingInvite() const { return mHasOutcomingInvite; }

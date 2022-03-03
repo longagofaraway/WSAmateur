@@ -1,11 +1,13 @@
 set(severSources
     connectionPool.h
     networkConnectionManager.h
+    serverLogger.h
     tcpConnection.h
     tcpServer.h
     connectionPool.cpp
     main.cpp
     networkConnectionManager.cpp
+    serverLogger.cpp
     tcpConnection.cpp
     tcpServer.cpp
     )

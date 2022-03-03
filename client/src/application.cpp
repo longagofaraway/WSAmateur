@@ -70,7 +70,11 @@ void WSApplication::initialization() {
 }
 
 void WSApplication::connectToHost(QString address, QString port) {
+#ifdef LOCAL_GAME_ENABLED
+    client->connectToHost("127.0.0.1", 7474);
+#else
     client->connectToHost(address, port.toInt());
+#endif
 }
 
 void WSApplication::initGame(Game *game) {

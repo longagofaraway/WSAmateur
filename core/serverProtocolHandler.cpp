@@ -130,6 +130,9 @@ void ServerProtocolHandler::onConnectionClosed() {
     if (!mConnection)
         return;
 
+    qInfo() << "User" << qname() <<
+               "(id =" << mId << ") disconnected";
+
     mServer->removeClient(this);
 
     QReadLocker locker(&mServer->mGamesLock);
@@ -248,6 +251,8 @@ void ServerProtocolHandler::processSessionCommand(const SessionCommand &cmd) {
         CommandUserIdentification userCmd;
         cmd.command().UnpackTo(&userCmd);
         mName = userCmd.name();
+        qInfo() << "User" << qname() <<
+                   "(id =" << mId << ") connected ";
     }
 }
 

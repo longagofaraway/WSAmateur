@@ -60,6 +60,8 @@ void ServerGame::addPlayer(ServerProtocolHandler *client) {
 
     client->addGameAndPlayer(mId, newId);
 
+    qInfo() << "User" << client->qname() << "has joined game" << newId;
+
     EventGameJoined event;
     event.set_player_id(static_cast<google::protobuf::uint32>(newId));
     event.set_game_id(static_cast<google::protobuf::uint32>(mId));
