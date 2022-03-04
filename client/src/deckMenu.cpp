@@ -120,15 +120,16 @@ void DeckMenu::deckDownloaded() {
         return;
     }
 
+    if (deckWithSameNameExists(deck)) {
+        emit deckDownloadError("Deck with the same name exists");
+        return;
+    }
+
     if (!saveDeckToFile(deck)) {
         emit deckDownloadError("Error saving to disk");
         return;
     }
 
-    if (deckWithSameNameExists(deck)) {
-        emit deckDownloadError("Deck with the same name exists");
-        return;
-    }
 
     bool hasAllImages = allImagesDownloaded(deck);
     model.addDeck(deck, hasAllImages, true);

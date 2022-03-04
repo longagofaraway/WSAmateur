@@ -20,10 +20,7 @@ QString getCorrectedName(QString name) {
 }
 
 bool saveDeckToFile(const DeckList &deck) {
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir dir(appData);
-    dir.cd("decks");
-
+    auto dir = paths::decksDir();
     QString deckName = getCorrectedName(deck.qname());
 
     if (dir.exists(deckName))
