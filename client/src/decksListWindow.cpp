@@ -14,15 +14,22 @@
 #include "deckUtils.h"
 
 namespace {
+QString getCorrectedName(QString name) {
+    QString result = name;
+    return result.remove(" // ").remove(':').remove('"').remove('?').replace('/', ' ');
+}
+
 bool saveDeckToFile(const DeckList &deck) {
     QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir dir(appData);
     dir.cd("decks");
 
-    if (dir.exists(deck.qname()))
+    QString deckName = getCorrectedName(deck.qname());
+
+    if (dir.exists(deckName))
         return false;
 
-    QFile file(dir.filePath(deck.qname()) + ".cod");
+    QFile file(dir.filePath(deckName) + ".cod");
     if (!file.open(QIODevice::WriteOnly))
         return false;
 
