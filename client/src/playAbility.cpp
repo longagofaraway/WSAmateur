@@ -394,7 +394,19 @@ bool Player::canPay(const Card &thisCard, const asn::CostItem &c) const {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
-            auto targets = getTargets(thisCard, e.target, e.from.zone);
+
+            std::vector<const Card*> targets;
+            // do not check top and bottom cards
+            // only their presence
+            if (e.from.pos == asn::Position::Top ||
+                e.from.pos == asn::Position::Bottom) {
+                const auto &cards = zone(e.from.zone)->cards();
+                for (int i = 0; i < cards.size(); ++i) {
+                    targets.push_back(&cards[i]);
+                }
+            } else {
+                targets = getTargets(thisCard, e.target, e.from.zone);
+            }
             if (targets.empty())
                 return false;
 
