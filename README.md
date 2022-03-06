@@ -1,18 +1,7 @@
 This is a WS card game implementation with automated execution of card abilities.
 
 ## State of the project
-The game is in development. The goal of the first release is a playable online game with support for only one set (KGL).  
-Current state:
-- [x] Game logic of server and client
-- [x] Network part and server
-- [x] Main menu
-- [x] Deck management
-  - [x] Loading from Encore Decks and saving the deck
-  - [x] Loading user provided card images
-  - [x] Choosing a deck before the game
-- [x] Lobby (e.g. creating and finding a game)
-- [ ] Installer and updater (in progress)
-- [ ] A lot of testing
+Currently only Kaguya set is supported. You can download the latest release [here](https://github.com/longagofaraway/WSAmateur/releases). Automatic updates are supported on Windows. Visit discord for more info https://discord.gg/6hRd2VZ3vG
 
 ## Compiling
 
@@ -22,7 +11,7 @@ Requirements:
 - Visual Studio 2019 at least 16.8
 - Qt 5.15.2 (with support for msvc2019_64)
 - vcpkg  
-  - Using vcpkg  install protobuf
+  - Using vcpkg install protobuf and openssl
 
 #### Qt Creator
 
