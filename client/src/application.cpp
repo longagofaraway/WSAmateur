@@ -22,7 +22,7 @@
 
 #include <QDebug>
 
-//#define LOCAL_GAME_ENABLED
+#define LOCAL_GAME_ENABLED
 
 WSApplication::WSApplication() {
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");

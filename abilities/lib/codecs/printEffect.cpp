@@ -375,8 +375,10 @@ std::string printMoveCard(const MoveCard &e) {
         else if (e.to[i].pos == Position::EmptySlot)
             return s + "to an empty slot of " + printPlayer(e.to[i].owner) + "stage ";
         else if (e.to[i].pos == Position::SlotThisWasIn ||
-                 e.to[i].pos == Position::SlotThisWasInRested) {
-            if (e.target.type == asn::TargetType::ThisCard)
+                 e.to[i].pos == Position::SlotThisWasInRested ||
+                 e.to[i].pos == Position::SlotTargetWasIn) {
+            if (e.target.type == asn::TargetType::ThisCard ||
+                e.to[i].pos == Position::SlotTargetWasIn)
                 s += "to its previous position ";
             else
                 s += "on the stage position that this card was on ";
