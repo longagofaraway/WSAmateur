@@ -25,9 +25,9 @@ std::string gDeck = R"delim(<?xml version="1.0" encoding="UTF-8"?>
     <deckname>Vivid Green 2</deckname>
     <comments></comments>
     <main>
-        <card number="10" code="KGL/S79-089"/>
-        <card number="10" code="KGL/S79-064"/>
-        <card number="10" code="KGL/S79-095"/>
+        <card number="10" code="KGL/S79-T08"/>
+        <card number="10" code="KGL/S79-021"/>
+        <card number="5" code="KGL/S79-T03"/>
     </main>
 </deck>)delim";
 
