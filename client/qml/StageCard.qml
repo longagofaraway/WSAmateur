@@ -14,6 +14,7 @@ Card {
     property int power: 9000
     property int soul: 1
     property int level: 0
+    property real cardRotation: 0
     property string cardState: "Standing"
     property string cardType
 
@@ -22,11 +23,11 @@ Card {
     Drag.hotSpot.y: root.cardHeight
     rotation: {
         if (cardState === "Standing")
-            return 0;
+            return cardRotation;
         if (cardState === "Rested")
-            return -90;
+            return cardRotation - 90;
         if (cardState === "Reversed")
-            return -180;
+            return cardRotation - 180;
     }
 
     states: State {

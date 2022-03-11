@@ -25,6 +25,7 @@ Card {
     }
 
     visible: false
+    rotation: opponent ? 180 : 0
 
     x: {
         if (opponent)

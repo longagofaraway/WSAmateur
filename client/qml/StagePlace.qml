@@ -303,7 +303,8 @@ ListView {
             mStageCard.destroy();
         }
         let comp = Qt.createComponent("StageCard.qml");
-        mStageCard = comp.createObject(gGame, { x: _x, y: _y });
+        let rot = stage.opponent ? 180 : 0;
+        mStageCard = comp.createObject(gGame, { x: _x, y: _y, cardRotation: rot});
         mStageCard.mSource = code;
         mStageCard.index = mIndex;
         stagePlace.mTooltipsDisabled = true;

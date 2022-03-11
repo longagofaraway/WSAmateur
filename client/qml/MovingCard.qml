@@ -44,6 +44,8 @@ Card {
         movingCard.x = szone.getXForCard(startPos);
         movingCard.y = szone.getYForCard(startPos);
         movingCard.rotation = szone.rotation;
+        if (startZone === "hand" && opponent)
+            movingCard.rotation += 180;
         if (startZone === "stock")
             movingCard.rotation += -90;
         else if (startZone === "level")
@@ -90,6 +92,8 @@ Card {
             toScale = tzone.scaleForMovingCard();
         }
         toRot = tzone.rotation;
+        if (targetZone === "stage" && opponent)
+            toRot += 180;
         if (targetZone === "stock")
             toRot += -90;
         else if (targetZone === "level")
