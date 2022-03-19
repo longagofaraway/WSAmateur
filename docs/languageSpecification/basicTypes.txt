@@ -51,7 +51,7 @@ Number {
   value Int8
 }
 
-NumModifier {
+enum NumModifier {
   exactMatch = 1,
   upTo = 2,
   atLeast = 3,
@@ -81,7 +81,7 @@ ForEachMultiplier {
   }
 }
 
-PlaceType {
+enum PlaceType {
   selection = 1,
   specificPlace = 2,
   lastMovedCards = 3
@@ -130,6 +130,8 @@ enum FaceOrientation {
   faceUp = 1,
   faceDown = 2
 }
+
+###
 
 Array Of X {
   size UInt8,
