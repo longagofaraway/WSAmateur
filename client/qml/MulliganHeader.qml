@@ -1,5 +1,7 @@
 import QtQuick 2.12
 
+import "menu"
+
 Item {
     id: mlgn
 
@@ -49,15 +51,30 @@ Item {
 
         mText: "Keep hand"
         y: 600
+        z: 5
 
         onClicked: mlgn.finished()
     }
 
+    MenuButton {
+        id: backup_button
+        anchors.horizontalCenter: parent.horizontalCenter
+
+        activeColor: "red"
+        text: "Keep hand"
+        y: 600
+        z: 3
+        onPressed: mlgn.finished()
+    }
+
     function cardSelected(selected) {
         cardsSelected += selected ? 1 : -1;
-        if (cardsSelected)
+        if (cardsSelected) {
             button.setText("Discard " + String(cardsSelected));
-        else
+            backup_button.text = "Discard " + String(cardsSelected);
+        } else {
             button.setText("Keep hand");
+            backup_button.text = "Keep hand";
+        }
     }
 }

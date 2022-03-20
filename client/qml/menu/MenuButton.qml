@@ -5,6 +5,7 @@ Rectangle {
 
     property bool active: true
     property alias text: buttonText.text
+    property string activeColor: "#22162A"
     signal pressed()
 
     width: 158//231
@@ -16,7 +17,7 @@ Rectangle {
         State {
             name: "active"
             when: btn.active
-            PropertyChanges { target: btn; color: "#22162A" }
+            PropertyChanges { target: btn; color: btn.activeColor }
             PropertyChanges { target: mouse; enabled: true }
         },
         State {
