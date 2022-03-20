@@ -331,15 +331,14 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
         *eventPublic.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
     }
 
-    if ((startZone->type() == ZoneType::HiddenZone || startZone->type() == ZoneType::PrivateZone)
-        && targetZone->type() == ZoneType::PublicZone) {
+    if (startZone->type() == ZoneType::PublicZone || targetZone->type() == ZoneType::PublicZone) {
         eventPublic.set_code(card->code());
         eventPublic.set_card_id(card->id());
     }
 
     EventMoveCard eventPrivate(eventPublic);
 
-    if (startZone->type() == ZoneType::HiddenZone && targetZone->type() == ZoneType::PrivateZone) {
+    if (startZone->type() == ZoneType::PrivateZone || targetZone->type() == ZoneType::PrivateZone) {
         eventPrivate.set_code(card->code());
         eventPrivate.set_card_id(card->id());
         if (reveal)
