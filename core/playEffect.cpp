@@ -738,9 +738,9 @@ void AbilityPlayer::setCannotPlayBackupOrEvent(ServerPlayer *player, asn::Backup
     bool forbidEvents = !revert() && (type == asn::BackupOrEvent::Event || type == asn::BackupOrEvent::Both);
     bool forbidBackups = !revert() && (type == asn::BackupOrEvent::Backup || type == asn::BackupOrEvent::Both);
     if (revert()) {
-        if (forbidEvents)
+        if (!forbidEvents)
             player->buffManager()->removeContAttrChange(thisCard().card, abilityId(), PlayerAttrType::CannotPlayEvents);
-        if (forbidBackups)
+        if (!forbidBackups)
             player->buffManager()->removeContAttrChange(thisCard().card, abilityId(), PlayerAttrType::CannotPlayBackups);
     } else {
         if (forbidEvents)

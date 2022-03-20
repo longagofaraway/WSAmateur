@@ -28,7 +28,8 @@ struct PlayerAttrChange {
 };
 
 inline bool operator==(const PlayerAttrChange &lhs, const PlayerAttrChange &rhs) {
-    return lhs.source == rhs.source && lhs.abilityId == rhs.abilityId;
+    return lhs.source == rhs.source && lhs.abilityId == rhs.abilityId &&
+           lhs.type == rhs.type;
 }
 
 
