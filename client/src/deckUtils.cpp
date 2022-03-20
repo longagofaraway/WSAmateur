@@ -32,6 +32,7 @@ std::optional<DeckList> getDeckByName(QString deckName) {
             continue;
 
         QTextStream deckFile(&file);
+        deckFile.setCodec("UTF-8");
         auto deck = deckFile.readAll();
         DeckList deckList;
         if (!deckList.fromXml(deck))

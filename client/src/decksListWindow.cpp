@@ -31,6 +31,7 @@ bool saveDeckToFile(const DeckList &deck) {
         return false;
 
     QTextStream stream(&file);
+    stream.setCodec("UTF-8");
     stream << deck.toXml();
     file.close();
 
@@ -163,6 +164,7 @@ void DecksListWindow::loadDecksFromFs() {
             continue;
 
         QTextStream deckFile(&file);
+        deckFile.setCodec("UTF-8");
         auto deck = deckFile.readAll();
         DeckList deckList;
         if (!deckList.fromXml(deck))

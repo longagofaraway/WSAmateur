@@ -217,18 +217,20 @@ void CardDatabase::update(const std::string &newDb) {
     cards.clear();
     versionCached = false;
 
-    std::ofstream file(getDbPath().toStdString(), std::ios::out|std::ios::binary|std::ios::trunc);
-    if (!file.is_open())
+    QFile file(getDbPath());
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         throw std::runtime_error("failed to open db file");
 
-    file.write(newDb.data(), newDb.size());
+    QByteArray data(newDb.data(), newDb.size());
+    int written = file.write(data);
     file.close();
-    if (!db.open())
-        throw std::runtime_error("failed to open database at " + getDbPath().toStdString());
+
+    if (written == -1)
+        throw std::runtime_error("failed to update db file");
 }
 
 std::string CardDatabase::fileData() const {
-    std::ifstream file (getDbPath().toStdString(), std::ios::in|std::ios::binary|std::ios::ate);
+    std::ifstream file(getDbPath().toStdString(), std::ios::in|std::ios::binary|std::ios::ate);
     if (!file.is_open())
         return {};
 

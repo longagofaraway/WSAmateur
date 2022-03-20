@@ -31,7 +31,6 @@ void DeckMenuModel::addDeck(const DeckList &deck, bool hasAllImages, bool startI
     DeckMenuItem item(deck, hasAllImages);
     if (startImageDownload && !hasAllImages)
         item.downloadInProgress = true;
-    int nextRowCount = rowFromIndex(decks.size() + 1);
     int currentRowCount = rowFromIndex(decks.size());
     beginInsertRows(QModelIndex(), currentRowCount, currentRowCount);
 

@@ -22,7 +22,7 @@
 
 #include <QDebug>
 
-#define LOCAL_GAME_ENABLED
+//#define LOCAL_GAME_ENABLED
 
 WSApplication::WSApplication() {
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
@@ -223,6 +223,7 @@ void WSApplication::updateDatabase(const EventDatabase &event) {
         CardDatabase::get().init();
     } catch (const std::exception &) {
         emit error("Database update error");
+        return;
     }
     userIdenditification();
     enterLobby();
