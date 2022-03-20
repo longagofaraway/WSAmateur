@@ -53,11 +53,7 @@ QString JsonParser::printDecodedAbility() {
 }
 
 QString JsonParser::initialText() {
-    QFile loadFile("H:\\Projects\\Test\\WSAmatuer\\jsonKGLS79-068.txt");
-    loadFile.open(QIODevice::ReadOnly);
-    QString text = QString(loadFile.readAll());
-    loadFile.close();
-    return text;
+    return "";
 }
 
 QString JsonParser::addToDb(QString code, QString json) {

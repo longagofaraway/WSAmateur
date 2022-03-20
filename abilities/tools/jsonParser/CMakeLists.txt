@@ -18,3 +18,5 @@ target_compile_definitions(jsonParser
 target_link_libraries(jsonParser
   PRIVATE Qt5::Core Qt5::Quick dbManager
   PUBLIC wsamateurAbilities)
+
+install(TARGETS jsonParser RUNTIME DESTINATION ./)

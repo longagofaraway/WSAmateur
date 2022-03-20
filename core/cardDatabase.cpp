@@ -221,7 +221,7 @@ void CardDatabase::update(const std::string &newDb) {
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         throw std::runtime_error("failed to open db file");
 
-    QByteArray data(newDb.data(), newDb.size());
+    QByteArray data(newDb.data(), static_cast<int>(newDb.size()));
     int written = file.write(data);
     file.close();
 
