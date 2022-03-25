@@ -10,11 +10,12 @@ Item {
 
     signal finished()
     width: root.width
-    y: 170
+    height: root.height
     z: 1
 
     Text {
         id: textHeader
+        anchors { top: parent.top; topMargin: parent.width * 0.1 }
         width: root.width
         text: firstTurn ? "You're going first" : "Your opponent goes first"
         color: "#F0F0F0"
@@ -50,31 +51,18 @@ Item {
         state: "active"
 
         mText: "Keep hand"
-        y: 600
+        y: mlgn.height * 0.7
         z: 5
 
         onClicked: mlgn.finished()
-    }
-
-    MenuButton {
-        id: backup_button
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        activeColor: "red"
-        text: "Keep hand"
-        y: 600
-        z: 3
-        onPressed: mlgn.finished()
     }
 
     function cardSelected(selected) {
         cardsSelected += selected ? 1 : -1;
         if (cardsSelected) {
             button.setText("Discard " + String(cardsSelected));
-            backup_button.text = "Discard " + String(cardsSelected);
         } else {
             button.setText("Keep hand");
-            backup_button.text = "Keep hand";
         }
     }
 }

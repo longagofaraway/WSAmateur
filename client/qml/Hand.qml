@@ -47,7 +47,7 @@ ListView {
             NumberAnimation {
                 target: handView;
                 property: "y";
-                to: root.height / 2 - root.cardHeight / 2;
+                to: root.height / 2 - root.cardHeight / 2 - getFanOffset(2);
                 easing.type: Easing.OutExpo;
                 duration: 300
             }
