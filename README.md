@@ -39,4 +39,4 @@ Now the program should be ready to run.
 
 ### Linux
 
-You can take some hints from .github/workflows/ci-linux-build.yml
+You can take some hints from `.github/workflows/ci-linux-build.yml`. Additionally `QtQuick.Dialogs` should be installed with `qml-module-qtquick-dialogs` package.
