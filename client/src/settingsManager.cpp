@@ -4,8 +4,10 @@
 
 namespace {
 const QString kProfile = "profile";
-
 const QString kUsername = "username";
+
+const QString kDeveloper = "developer";
+const QString kLocalGameEnabled = "localgame";
 }
 
 SettingsManager::SettingsManager(QString settingsPath)
@@ -27,6 +29,10 @@ void SettingsManager::setUsername(QString username) {
 
 bool SettingsManager::hasUsername() {
     return hasValue(kUsername, kProfile);
+}
+
+bool SettingsManager::localGameEnabled() {
+    return hasValue(kLocalGameEnabled, kDeveloper);
 }
 
 void SettingsManager::setValue(QVariant value, QString name, QString group) {
