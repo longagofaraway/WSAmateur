@@ -16,6 +16,7 @@ public:
     QString getUsername();
     void setUsername(QString username);
     bool hasUsername();
+    bool localGameEnabled() ;
 
 private:
     void setValue(QVariant value, QString name, QString group);

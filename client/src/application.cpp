@@ -22,8 +22,6 @@
 
 #include <QDebug>
 
-//#define LOCAL_GAME_ENABLED
-
 WSApplication::WSApplication() {
     qRegisterMetaType<std::shared_ptr<GameEvent>>("std::shared_ptr<GameEvent>");
     qRegisterMetaType<std::shared_ptr<SessionEvent>>("std::shared_ptr<SessionEvent>");
@@ -70,11 +68,11 @@ void WSApplication::initialization() {
 }
 
 void WSApplication::connectToHost(QString address, QString port) {
-#ifdef LOCAL_GAME_ENABLED
-    client->connectToHost("127.0.0.1", 7474);
-#else
-    client->connectToHost(address, port.toInt());
-#endif
+    auto &settingsManager = SettingsManager::get();
+    if (settingsManager.localGameEnabled())
+        client->connectToHost("127.0.0.1", 7474);
+    else
+        client->connectToHost(address, port.toInt());
 }
 
 void WSApplication::initGame(Game *game) {
@@ -182,11 +180,11 @@ void WSApplication::onConnectionClosed() {
     connectionFailed = true;
     client->deleteLater();
     client = nullptr;
-#ifdef LOCAL_GAME_ENABLED
-    emit startGame();
-#else
-    emit error("Connection error");
-#endif
+    auto &settingsManager = SettingsManager::get();
+    if (settingsManager.localGameEnabled())
+        emit startGame();
+    else
+        emit error("Connection error");
 }
 
 void WSApplication::processHandshake(const EventServerHandshake &event) {
