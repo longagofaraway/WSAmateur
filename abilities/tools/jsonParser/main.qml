@@ -8,7 +8,7 @@ Window {
     id: root
     visible: true
     width: 640
-    height: 580
+    height: 640
     title: qsTr("jsonParser")
 
     JsonParser {
@@ -18,6 +18,25 @@ Window {
     Column {
         id: col
         anchors.horizontalCenter: root.contentItem.horizontalCenter
+
+    JsonPrinter {
+        id: jsonPrinter
+        onJsonAbility: {
+            textBox.text = jsonParser.printJsonAbility(code, pos);
+
+            resultBox.text = jsonParser.createAbility(textBox.text);
+            hexBox.text = jsonParser.printEncodedAbility();
+            fromBinBox.text = jsonParser.printDecodedAbility();
+        }
+        onEditAbility: {
+            if (!textBox.text || !code) {
+                statusText = "empty code or json text";
+                return;
+            }
+            statusText = jsonParser.saveAbility(code, pos, textBox.text);
+        }
+    }
+
     TextArea {
         id: textBox
         height: 250

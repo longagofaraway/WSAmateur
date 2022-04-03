@@ -69,15 +69,15 @@ ChooseCard parseChooseCard(const QJsonObject &json) {
 }
 
 RevealCard parseRevealCard(const QJsonObject &json) {
-    if (!json.contains("revealType") || !json["revealType"].isDouble())
-        throw std::runtime_error("no revealType in RevealCard");
+    if (!json.contains("type") || !json["type"].isDouble())
+        throw std::runtime_error("no type in RevealCard");
     if (!json.contains("number") || !json["number"].isObject())
         throw std::runtime_error("no number in RevealCard");
     if (json.contains("card") && !json["card"].isObject())
         throw std::runtime_error("wrong card in RevealCard");
 
     RevealCard e;
-    e.type = static_cast<RevealType>(json["revealType"].toInt());
+    e.type = static_cast<RevealType>(json["type"].toInt());
     e.number = parseNumber(json["number"].toObject());
     if (e.type == RevealType::FromHand)
         e.card = parseCard(json["card"].toObject());
@@ -290,14 +290,14 @@ CannotUseBackupOrEvent parseCannotUseBackupOrEvent(const QJsonObject &json) {
 }
 
 SwapCards parseSwapCards(const QJsonObject &json) {
-    if (!json.contains("chooseFirst") || !json["chooseFirst"].isObject())
-        throw std::runtime_error("no chooseFirst in SwapCards");
-    if (!json.contains("chooseSecond") || !json["chooseSecond"].isObject())
-        throw std::runtime_error("no chooseSecond in SwapCards");
+    if (!json.contains("first") || !json["first"].isObject())
+        throw std::runtime_error("no first in SwapCards");
+    if (!json.contains("second") || !json["second"].isObject())
+        throw std::runtime_error("no second in SwapCards");
 
     SwapCards e;
-    e.first = parseChooseCard(json["chooseFirst"].toObject());
-    e.second = parseChooseCard(json["chooseSecond"].toObject());
+    e.first = parseChooseCard(json["first"].toObject());
+    e.second = parseChooseCard(json["second"].toObject());
 
     return e;
 }
@@ -339,15 +339,15 @@ Replay parseReplay(const QJsonObject &json) {
 DrawCard parseDrawCard(const QJsonObject &json) {
     if (json.contains("executor") && !json["executor"].isDouble())
         throw std::runtime_error("wrong executor in DrawCard");
-    if (!json.contains("number") || !json["number"].isObject())
-        throw std::runtime_error("no number in DrawCard");
+    if (!json.contains("value") || !json["value"].isObject())
+        throw std::runtime_error("no value in DrawCard");
 
     DrawCard e;
     if (json.contains("executor"))
         e.executor = static_cast<Player>(json["executor"].toInt());
     else
         e.executor = Player::Player;
-    e.value = parseNumber(json["number"].toObject());
+    e.value = parseNumber(json["value"].toObject());
 
     return e;
 }
@@ -506,13 +506,13 @@ RemoveMarker parseRemoveMarker(const QJsonObject &json) {
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
-    if (json.contains("condition") && !json["condition"].isObject())
-        throw std::runtime_error("wrong condition type");
+    if (json.contains("cond") && !json["cond"].isObject())
+        throw std::runtime_error("wrong cond type");
 
     Effect e;
     e.type = static_cast<EffectType>(json["type"].toInt());
-    if (json.contains("condition"))
-        e.cond = parseCondition(json["condition"].toObject());
+    if (json.contains("cond"))
+        e.cond = parseCondition(json["cond"].toObject());
     else
         e.cond.type = ConditionType::NoCondition;
     switch (e.type) {

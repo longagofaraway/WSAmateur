@@ -78,6 +78,7 @@ enum class ConditionType : uint8_t {
 struct Condition {
     ConditionType type;
     std::variant<
+        std::monostate,
         ConditionIsCard,
         ConditionHaveCard,
         ConditionSumOfLevels,

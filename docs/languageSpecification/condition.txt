@@ -6,7 +6,7 @@ Condition {
     ConditionSumOfLevels,
     ConditionCardsLocation,
     ConditionDuringTurn,
-    ConditionCheckOpenedCards,
+    ConditionCheckMilledCards,
     ConditionRevealCard,
     ConditionPlayersLevel,
     ConditionAnd,
@@ -60,21 +60,21 @@ ConditionCardsLocation {
 }
 
 ConditionDuringTurn {
-  player Owner
+  player Player
 }
 
-ConditionCheckOpenedCards {
+ConditionCheckMilledCards {
   number Number,
   card Card
 }
-mill 2, if there's 1 char do x, if there's 2 do y...
+// mill 2, if there's 1 char do x, if there's 2 do y...
 
 ConditionRevealCard {
   number Number,
   card Card
 }
-If you reveal 1 or more cards this way,...
+// If you reveal 1 or more cards this way,...
 
 ConditionPlayersLevel {
-  number Number
+  value Number
 }

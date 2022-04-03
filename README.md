@@ -10,6 +10,7 @@ Currently only Kaguya set is supported. You can download the latest release [her
 Requirements: 
 - Visual Studio 2019 at least 16.8
 - Qt 5.15.2 (with support for msvc2019_64)
+- python3
 - vcpkg  
   - Using vcpkg install protobuf and openssl
 

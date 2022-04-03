@@ -18,7 +18,7 @@ enum TargetType {
   lastMovedCards = 9,
   mentionedInTrigger = 10
 }
-mentionedCards are revealed, beeing looked at etc
+// mentionedCards are revealed, beeing looked at etc
 
 TargetSpecificCards {
   mode TargetMode,
@@ -26,7 +26,7 @@ TargetSpecificCards {
   cards Card
 }
 
-TargetMode {
+enum TargetMode {
   notSpecified = 0,
   all = 1,
   allOther = 2,

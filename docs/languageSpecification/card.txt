@@ -2,7 +2,7 @@ Card {
   cardSpecifiers Array of CardSpecifier
 }
 
-Including 2 or more of the same specifier types into Card will apply OR to them.
+// Including 2 or more of the same specifier types into Card will apply OR to them.
 
 CardSpecifier {
   type CardSpecifierType,
@@ -65,13 +65,13 @@ NameContains {
 }
 
 Level {
-  number Number
+  value Number
 }
 
 CostSpecifier {
-  number Number
+  value Number
 }
 
 Power {
-  number Number
+  value Number
 }

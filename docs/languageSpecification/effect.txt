@@ -1,6 +1,6 @@
 Effect {
   type EffectType,
-  condition Condition,
+  cond Condition,
   effect Choice {
     AttributeGain,
     ChooseCard,
@@ -19,17 +19,20 @@ Effect {
     DealDamage,
     CannotUseBackupOrEvent,
     SwapCards,
+    CannotAttack,
     AddMarker,
     Bond,
     PerformReplay,
     Replay,
     DrawCard,
+    Shuffle,
     CannotBecomeReversed,
     OpponentAutoCannotDealDamage,
     CannotMove,
     SideAttackWithoutPenalty,
     PutOnStageRested,
     RemoveMarker,
+    CannotStand,
     OtherEffect,
     Nothing
   }
@@ -116,8 +119,8 @@ TargetAndPlace {
   }
 }
 
-Usually you'll use just one Target, but you'll need several in these cases: 
-"look at up to 6 cards from top of your deck, choose up to 1 red character and up to 1 blue character"
+// Usually you'll use just one Target, but you'll need several in these cases: 
+// "look at up to 6 cards from top of your deck, choose up to 1 red character and up to 1 blue character"
 
 
 Look {
@@ -132,7 +135,7 @@ Look {
 
 
 RevealCard {
-  revealType RevealType,
+  type RevealType,
   number Number,
   card Choice {
     Card,
@@ -247,8 +250,8 @@ enum BackupOrEvent {
 }
 
 SwapCards {
-  chooseFirst ChooseCard,
-  chooseSecond ChooseCard
+  first ChooseCard,
+  second ChooseCard
 }
 
 CannotAttack {
@@ -291,7 +294,7 @@ Replay {
 
 DrawCard {
   executor Player,
-  number Number
+  value Number
 }
 
 Shuffle {
@@ -309,6 +312,11 @@ OpponentAutoCannotDealDamage {
 }
 
 CannotMove {
+  target Target,
+  duration UInt8
+}
+
+CannotStand {
   target Target,
   duration UInt8
 }

@@ -19,7 +19,7 @@ struct StockCost{
 
 struct CostItem {
     CostType type;
-    std::variant<StockCost, Effect> costItem;
+    std::variant<std::monostate, StockCost, Effect> costItem;
 };
 
 

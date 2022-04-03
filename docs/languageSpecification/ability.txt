@@ -39,63 +39,30 @@ enum AbilityItem {
 }
 
 AutoAbility {
-  {
-    tag AbilityItem,
-    activatesUpTo Uint8
-  } OPTIONAL,
-  {
-    tag AbilityItem,
-    keyword Array of Keyword
-  } OPTIONAL,
-  {
-    tag AbilityItem,
-    cost Cost 
-  } OPTIONAL,
-  {
-    tag AbilityItem,
-    trigger Trigger
+  activationTimes UInt8,
+  keywords Array of Keyword,
+  cost Choice {
+    Cost,
+    Nothing
   },
-  {
-    tag AbilityItem,
-    effects Array of Effect
-  }
+  trigger Trigger,
+  effects Array of Effect
 }
 
 ContAbility {
-  {
-    tag AbilityItem,
-    keyword Array of Keyword
-  } OPTIONAL,
-  {
-    tag AbilityItem,
-    effects Array of Effect
-  }
+  keywords Array of Keyword,
+  effects Array of Effect
 }
 
 ActAbility {
-  {
-    tag AbilityItem,
-    keyword Array of Keyword
-  } OPTIONAL,
-  {
-    tag AbilityItem,
-    cost Cost 
-  },
-  {
-    tag AbilityItem,
-    effects Array of Effect
-  }
+  keywords Array of Keyword,
+  cost Cost,
+  effects Array of Effect
 }
 
 EventAbility {
-  {
-    tag AbilityItem,
-    keyword Array of Keyword
-  } OPTIONAL,
-  {
-    tag AbilityItem,
-    effects Array of Effect
-  }
+  keywords Array of Keyword,
+  effects Array of Effect
 }
   
   

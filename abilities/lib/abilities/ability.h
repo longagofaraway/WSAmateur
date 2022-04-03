@@ -68,7 +68,12 @@ struct EventAbility {
 
 struct Ability {
     AbilityType type;
-    std::variant<AutoAbility, ContAbility, ActAbility, EventAbility> ability;
+    std::variant<std::monostate,
+                 AutoAbility,
+                 ContAbility,
+                 ActAbility,
+                 EventAbility
+    > ability;
 };
 
 }

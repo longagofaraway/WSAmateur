@@ -7,6 +7,12 @@
 #include <QVariant>
 
 namespace {
+// db format ability
+// first byte - number of abilities
+// second, third bytes - length of the next ability, little endian
+// n bytes of the ability
+// n+1, n+2 bytes - length of the next ability...
+
 void validateAbility(const asn::Ability &a) {
     if (a.type != asn::AbilityType::Event)
         return;
@@ -83,7 +89,32 @@ QByteArray getAbilitiesForCard(QString code) {
         return QByteArray{};
     return var.toByteArray();
 }
+
+void replaceAbility(QByteArray& data, int pos, const asn::Ability ability) {
+    auto bytes = encodeAbility(ability);
+    QByteArray newAbility(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+    if (bytes.size() >= (1 << 16))
+        throw std::runtime_error("ability is too big");
+    if (data.isEmpty())
+        throw std::runtime_error("no abilities for the card");
+    int number = data[0];
+    if (pos > number)
+        throw std::runtime_error("wrong index");
+
+    int cur = 0;
+    int index = 1;
+    while (cur < number) {
+        cur++;
+        uint16_t size = static_cast<uint8_t>(data[index]) +
+                       (static_cast<uint8_t>(data[index + 1]) << 8);
+        index += 2;
+        if (cur == pos) {
+            data.replace(index, size, newAbility);
+            break;
+        }
+    }
 }
+} // namespace
 
 DbManager::DbManager(QString path) {
     db = QSqlDatabase::addDatabase("QSQLITE");
@@ -109,5 +140,37 @@ void DbManager::addAbility(QString code, const asn::Ability ability) {
 void DbManager::popAbility(QString code) {
     auto data = getAbilitiesForCard(code);
     popAbilityFromArray(data);
+    setAbilitiesToDb(code, data);
+}
+
+asn::Ability DbManager::getAbility(QString code, int pos) {
+    auto data = getAbilitiesForCard(code);
+    int abilityNumber = data[0];
+
+    if (pos > abilityNumber)
+        throw std::runtime_error("wrong index");
+
+    int cur = 0, n = 1;
+    QByteArray byteAbility;
+    while (cur < pos) {
+        cur++;
+        uint16_t size = static_cast<uint8_t>(data[n]) +
+                       (static_cast<uint8_t>(data[n + 1]) << 8);
+        n += 2;
+        if (cur == pos) {
+            byteAbility = data.mid(n, size);
+            break;
+        }
+        n += size;
+    }
+
+    std::vector<uint8_t> buf(byteAbility.begin(), byteAbility.end());
+    return decodeAbility(buf);
+}
+
+void DbManager::editAbility(QString code, int pos, const asn::Ability ability) {
+    validateAbility(ability);
+    auto data = getAbilitiesForCard(code);
+    replaceAbility(data, pos, ability);
     setAbilitiesToDb(code, data);
 }

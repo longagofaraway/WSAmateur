@@ -8,7 +8,7 @@
                     "type": 20,
                     "effect": {
                         "executor": 1,
-                        "number": {
+                        "value": {
                             "mod": 1,
                             "value": 1
                         }

@@ -200,13 +200,13 @@ PhaseTrigger parsePhaseTrigger(const QJsonObject &json) {
         throw std::runtime_error("no state in PhaseTrigger");
     if (!json.contains("phase") || !json["phase"].isDouble())
         throw std::runtime_error("no phase in PhaseTrigger");
-    if (!json.contains("owner") || !json["owner"].isDouble())
-        throw std::runtime_error("no owner in PhaseTrigger");
+    if (!json.contains("player") || !json["player"].isDouble())
+        throw std::runtime_error("no player in PhaseTrigger");
 
     PhaseTrigger p;
     p.state = static_cast<PhaseState>(json["state"].toInt());
     p.phase = static_cast<Phase>(json["phase"].toInt());
-    p.player = static_cast<Player>(json["owner"].toInt());
+    p.player = static_cast<Player>(json["player"].toInt());
 
     return p;
 }
@@ -317,8 +317,8 @@ AutoAbility parseAutoAbility(const QJsonObject &json) {
         throw std::runtime_error("no effects");
     if (json.contains("cost") && !json["cost"].isObject())
         throw std::runtime_error("wrong cost");
-    if (json.contains("keyword") && !json["keyword"].isArray())
-        throw std::runtime_error("wrong keyword");
+    if (json.contains("keywords") && !json["keywords"].isArray())
+        throw std::runtime_error("wrong keywords");
 
     AutoAbility a;
     if (json.contains("activatesUpTo"))
@@ -329,22 +329,22 @@ AutoAbility parseAutoAbility(const QJsonObject &json) {
     a.effects = parseArray(json["effects"].toArray(), parseEffect);
     if (json.contains("cost"))
         a.cost = parseCost(json["cost"].toObject());
-    if (json.contains("keyword"))
-        a.keywords = parseKeywords(json["keyword"].toArray());
+    if (json.contains("keywords"))
+        a.keywords = parseKeywords(json["keywords"].toArray());
 
     return a;
 }
 
 ContAbility parseContAbility(const QJsonObject &json) {
-    if (json.contains("keyword") && !json["keyword"].isArray())
+    if (json.contains("keywords") && !json["keywords"].isArray())
         throw std::runtime_error("wrong keyword");
     if (!json.contains("effects") || !json["effects"].isArray())
         throw std::runtime_error("no effects");
 
     ContAbility a;
     a.effects = parseArray(json["effects"].toArray(), parseEffect);
-    if (json.contains("keyword"))
-        a.keywords = parseKeywords(json["keyword"].toArray());
+    if (json.contains("keywords"))
+        a.keywords = parseKeywords(json["keywords"].toArray());
 
     return a;
 }
@@ -354,28 +354,28 @@ ActAbility parseActAbility(const QJsonObject &json) {
         throw std::runtime_error("no effects");
     if (!json.contains("cost") || !json["cost"].isObject())
         throw std::runtime_error("no cost");
-    if (json.contains("keyword") && !json["keyword"].isArray())
-        throw std::runtime_error("wrong keyword");
+    if (json.contains("keywords") && !json["keywords"].isArray())
+        throw std::runtime_error("wrong keywords");
 
     ActAbility a;
     a.effects = parseArray(json["effects"].toArray(), parseEffect);
     a.cost = parseCost(json["cost"].toObject());
-    if (json.contains("keyword"))
-        a.keywords = parseKeywords(json["keyword"].toArray());
+    if (json.contains("keywords"))
+        a.keywords = parseKeywords(json["keywords"].toArray());
 
     return a;
 }
 
 EventAbility parseEventAbility(const QJsonObject &json) {
-    if (json.contains("keyword") && !json["keyword"].isArray())
-        throw std::runtime_error("wrong keyword");
+    if (json.contains("keywords") && !json["keywords"].isArray())
+        throw std::runtime_error("wrong keywords");
     if (!json.contains("effects") || !json["effects"].isArray())
         throw std::runtime_error("no effects");
 
     EventAbility a;
     a.effects = parseArray(json["effects"].toArray(), parseEffect);
-    if (json.contains("keyword"))
-        a.keywords = parseKeywords(json["keyword"].toArray());
+    if (json.contains("keywords"))
+        a.keywords = parseKeywords(json["keywords"].toArray());
 
     return a;
 }

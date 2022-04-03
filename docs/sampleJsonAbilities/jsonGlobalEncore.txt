@@ -1,7 +1,7 @@
 {
     "type": 2,
     "ability": {
-        "keyword": [1],
+        "keywords": [1],
         "trigger": {
             "type": 1,
             "trigger": {

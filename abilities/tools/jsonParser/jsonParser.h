@@ -34,11 +34,11 @@ std::vector<T> parseArray(const QJsonArray &json, T(*parseType)(const QJsonObjec
 
 template<typename T>
 T parseNumberType(const QJsonObject &json) {
-    if (!json.contains("number") || !json["number"].isObject())
-        throw std::runtime_error("no number");
+    if (!json.contains("value") || !json["value"].isObject())
+        throw std::runtime_error("no value");
 
     T t;
-    t.value = parseNumber(json["number"].toObject());
+    t.value = parseNumber(json["value"].toObject());
     return t;
 }
 
@@ -82,5 +82,7 @@ public:
     Q_INVOKABLE QString initialText();
     Q_INVOKABLE QString addToDb(QString code, QString json);
     Q_INVOKABLE QString popFromDb(QString code);
+    Q_INVOKABLE QString printJsonAbility(QString code, QString pos);
+    Q_INVOKABLE QString saveAbility(QString code, QString pos, QString json);
 
 };

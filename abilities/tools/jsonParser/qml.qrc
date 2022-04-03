@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>DbControls.qml</file>
         <file>BasicTextInput.qml</file>
+        <file>JsonPrinter.qml</file>
     </qresource>
 </RCC>

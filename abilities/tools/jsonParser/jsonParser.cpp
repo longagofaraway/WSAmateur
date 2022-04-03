@@ -16,10 +16,22 @@
 
 #include "dbManager.h"
 
+#include "gen_cpp.h"
+
 using namespace asn;
 
 Ability gA;
 std::vector<uint8_t> gBuf;
+
+namespace {
+QDir getDbPath() {
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir path(appData);
+    path.cdUp();
+    path.cd("WSAmateur");
+    return path;
+}
+}
 
 QString JsonParser::createAbility(QString json) {
     QJsonParseError error;
@@ -69,11 +81,7 @@ QString JsonParser::addToDb(QString code, QString json) {
         return QString(e.what());
     }
 
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir path(appData);
-    path.cdUp();
-    path.cd("WSAmateur");
-
+    auto path = getDbPath();
     try {
         DbManager db(path.filePath("cards.db"));
         db.addAbility(code, ability);
@@ -84,10 +92,7 @@ QString JsonParser::addToDb(QString code, QString json) {
 }
 
 QString JsonParser::popFromDb(QString code) {
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir path(appData);
-    path.cdUp();
-    path.cd("WSAmateur");
+    auto path = getDbPath();
 
     try {
         DbManager db(path.filePath("cards.db"));
@@ -96,4 +101,45 @@ QString JsonParser::popFromDb(QString code) {
         return QString::fromStdString(e.what());
     }
     return "Ability removed";
+}
+
+QString JsonParser::printJsonAbility(QString code, QString pos) {
+    auto path = getDbPath();
+
+    try {
+        int intPos = pos.toInt();
+        if (intPos == 0)
+            intPos = 1;
+        DbManager db(path.filePath("cards.db"));
+        auto ability = db.getAbility(code, intPos);
+        return QString::fromStdString(serializeAbility(ability));
+    } catch (const std::exception &e) {
+        return QString::fromStdString(e.what());
+    }
+}
+
+QString JsonParser::saveAbility(QString code, QString pos, QString json) {
+    QJsonParseError error;
+    auto doc = QJsonDocument::fromJson(json.toUtf8(), &error);
+    if (doc.isNull())
+        return error.errorString();
+
+    Ability ability;
+    try {
+        ability = parseAbility(doc.object());
+    } catch (const std::exception &e) {
+        return QString(e.what());
+    }
+
+    auto path = getDbPath();
+    try {
+        int intPos = pos.toInt();
+        if (intPos == 0)
+            intPos = 1;
+        DbManager db(path.filePath("cards.db"));
+        db.editAbility(code, intPos, ability);
+    } catch (const std::exception &e) {
+        return QString::fromStdString(e.what());
+    }
+    return "Ability saved";
 }
