@@ -72,5 +72,6 @@
         <file>qml/conditions/ConditionButton.qml</file>
         <file>qml/conditions/AndOr.qml</file>
         <file>qml/ArrayOfConditions.qml</file>
+        <file>qml/effects/Shuffle.qml</file>
     </qresource>
 </RCC>

@@ -471,10 +471,13 @@ std::string printSearchCard(const SearchCard &e) {
 }
 
 std::string printShuffle(const Shuffle &e) {
-    std::string s = "shuffle ";
+    std::string s;
+    if (e.owner == Player::Opponent)
+        s += "your opponent shuffles ";
+    else
+        s += "shuffle ";
 
-    if (e.owner == Player::Player)
-        s += "your ";
+    s += printPlayer(e.owner, Player::Opponent);
     s += printZone(e.zone);
 
     return s;

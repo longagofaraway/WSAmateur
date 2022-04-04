@@ -393,6 +393,13 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setFaceOrientation", Q_ARG(QVariant, (int)ef.orientation));
         break;
     }
+    case asn::EffectType::Shuffle: {
+        const auto &ef = std::get<asn::Shuffle>(e);
+
+        QMetaObject::invokeMethod(qmlObject, "setPlayer", Q_ARG(QVariant, (int)ef.owner));
+        QMetaObject::invokeMethod(qmlObject, "setZone", Q_ARG(QVariant, (int)ef.zone));
+        break;
+    }
     default:
         break;
     }
@@ -424,10 +431,10 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::SideAttackWithoutPenalty, "TargetDurationEffect" },
         { asn::EffectType::AddMarker, "AddMarker" },
         { asn::EffectType::RemoveMarker, "RemoveMarker" },
+        { asn::EffectType::Shuffle, "Shuffle" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
-        asn::EffectType::Shuffle,
         asn::EffectType::EarlyPlay,
         asn::EffectType::TriggerCheckTwice,
         asn::EffectType::StockSwap,
@@ -578,6 +585,12 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(editMarkerBearer()), this, SLOT(editMarkerBearer()));
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
+        break;
+    case asn::EffectType::Shuffle:
+        QMetaObject::invokeMethod(qmlObject, "setZone", Q_ARG(QVariant, QString("3")));
+
+        connect(qmlObject, SIGNAL(playerChanged(int)), this, SLOT(onPlayerChanged(int)));
+        connect(qmlObject, SIGNAL(zoneChanged(int)), this, SLOT(onZoneChanged(int)));
         break;
     default:
         break;
@@ -887,6 +900,24 @@ void EffectImplComponent::onPlayerChanged(int value) {
     case asn::EffectType::DrawCard: {
         auto &e = std::get<asn::DrawCard>(effect);
         e.executor = static_cast<asn::Player>(value);
+        break;
+    }
+    case asn::EffectType::Shuffle: {
+        auto &e = std::get<asn::Shuffle>(effect);
+        e.owner = static_cast<asn::Player>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onZoneChanged(int value) {
+    switch (type) {
+    case asn::EffectType::Shuffle: {
+        auto &e = std::get<asn::Shuffle>(effect);
+        e.zone = static_cast<asn::Zone>(value);
         break;
     }
     default:
