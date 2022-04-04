@@ -7,6 +7,8 @@
 #include "placeComponent.h"
 #include "targetComponent.h"
 
+class ArrayOfConditionsComponent;
+
 class ConditionImplComponent : public QObject
 {
     Q_OBJECT
@@ -25,6 +27,7 @@ private:
 
     std::unique_ptr<PlaceComponent> qmlPlace;
     std::unique_ptr<CardComponent> qmlCard;
+    std::unique_ptr<ArrayOfConditionsComponent> qmlConditions;
 
 public:
     ConditionImplComponent(asn::ConditionType type, QQuickItem *parent);
@@ -52,6 +55,11 @@ private slots:
 
     void onNumModifierChanged(int value);
     void onNumValueChanged(QString value);
+
+    void editConditionsField();
+    void editConditions(const std::vector<asn::Condition> &conditions);
+    void destroyConditions();
+    void conditionsReady(const std::vector<asn::Condition> &conditions);
 
 private:
     void init(QQuickItem *parent);

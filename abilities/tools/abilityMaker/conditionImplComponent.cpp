@@ -6,9 +6,11 @@
 #include <QQmlContext>
 #include <QString>
 
+#include "arrayOfConditionsComponent.h"
+
 void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::ConditionType type) {
     auto defaultNum = asn::Number();
-    defaultNum.mod = asn::NumModifier::ExactMatch;
+    defaultNum.mod = asn::NumModifier::AtLeast;
     defaultNum.value = 1;
 
     auto defaultPlace = asn::Place();
@@ -67,6 +69,14 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         auto c = asn::ConditionPlayersLevel();
         c.value = defaultNum;
         condition = c;
+        break;
+    }
+    case asn::ConditionType::And: {
+        condition = asn::ConditionAnd();
+        break;
+    }
+    case asn::ConditionType::Or: {
+        condition = asn::ConditionOr();
         break;
     }
     default: break;
@@ -189,6 +199,8 @@ void ConditionImplComponent::init(QQuickItem *parent) {
     std::unordered_map<asn::ConditionType, QString> components {
         { asn::ConditionType::IsCard, "IsCard" },
         { asn::ConditionType::HaveCards, "HaveCards" },
+        { asn::ConditionType::And, "AndOr" },
+        { asn::ConditionType::Or, "AndOr" },
         { asn::ConditionType::CardsLocation, "CardsLocation" },
         { asn::ConditionType::CheckMilledCards, "CheckMilledCards" },
         { asn::ConditionType::RevealedCard, "CheckMilledCards" },
@@ -198,7 +210,8 @@ void ConditionImplComponent::init(QQuickItem *parent) {
     };
 
     std::unordered_set<asn::ConditionType> readyComponents {
-        asn::ConditionType::NoCondition
+        asn::ConditionType::NoCondition,
+        asn::ConditionType::InBattleWithThis
     };
     if (readyComponents.contains(type))
         return;
@@ -220,7 +233,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         break;
     case asn::ConditionType::HaveCards:
         QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)asn::Player::Player));
-        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::AtLeast));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
 
         connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
@@ -235,7 +248,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         break;
     case asn::ConditionType::CheckMilledCards:
-        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::AtLeast));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
 
         connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
@@ -243,7 +256,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
         break;
     case asn::ConditionType::RevealedCard:
-        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::AtLeast));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
 
         connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
@@ -261,11 +274,17 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(onPlayerChanged(int)));
         break;
     case asn::ConditionType::PlayersLevel:
-        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::ExactMatch));
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::AtLeast));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
 
         connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
         connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        break;
+    case asn::ConditionType::And:
+        connect(qmlObject, SIGNAL(editConditions()), this, SLOT(editConditionsField()));
+        break;
+    case asn::ConditionType::Or:
+        connect(qmlObject, SIGNAL(editConditions()), this, SLOT(editConditionsField()));
         break;
     default: break;
     }
@@ -473,5 +492,48 @@ void ConditionImplComponent::onNumValueChanged(QString value) {
         assert(false);
     }
 
+    emit componentChanged(condition);
+}
+
+void ConditionImplComponent::editConditionsField() {
+    std::vector<asn::Condition> *cond = nullptr;
+    switch (type) {
+    case asn::ConditionType::And:
+        cond = &std::get<asn::ConditionAnd>(condition).cond;
+        break;
+    case asn::ConditionType::Or:
+        cond = &std::get<asn::ConditionOr>(condition).cond;
+        break;
+    default: assert(false);
+    }
+
+    editConditions(*cond);
+    connect(qmlConditions.get(), &ArrayOfConditionsComponent::componentChanged, this, &ConditionImplComponent::conditionsReady);
+}
+
+void ConditionImplComponent::editConditions(const std::vector<asn::Condition> &conditions) {
+    qmlConditions = std::make_unique<ArrayOfConditionsComponent>(conditions, qmlObject);
+
+    connect(qmlConditions.get(), &ArrayOfConditionsComponent::close, this, &ConditionImplComponent::destroyConditions);
+}
+
+void ConditionImplComponent::destroyConditions() {
+    qmlConditions.reset();
+}
+
+void ConditionImplComponent::conditionsReady(const std::vector<asn::Condition> &conditions) {
+    switch (type) {
+    case asn::ConditionType::And: {
+        auto &c = std::get<asn::ConditionAnd>(condition);
+        c.cond = conditions;
+        break;
+    }
+    case asn::ConditionType::Or: {
+        auto &c = std::get<asn::ConditionOr>(condition);
+        c.cond = conditions;
+        break;
+    }
+    default: assert(false);
+    }
     emit componentChanged(condition);
 }

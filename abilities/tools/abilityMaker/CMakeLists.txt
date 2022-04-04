@@ -5,6 +5,8 @@ set(abilityMakerSources
     abilityMaker.cpp
     arrayOfAbilitiesComponent.h
     arrayOfAbilitiesComponent.cpp
+    arrayOfConditionsComponent.h
+    arrayOfConditionsComponent.cpp
     arrayOfEffectsComponent.h
     arrayOfEffectsComponent.cpp
     baseComponent.h
