@@ -4,6 +4,7 @@
 
 #include "abilities.h"
 #include "cardComponent.h"
+#include "chooseCardComponent.h"
 #include "multiplierComponent.h"
 #include "placeComponent.h"
 #include "targetComponent.h"
@@ -26,6 +27,7 @@ private:
     std::unique_ptr<TargetComponent> qmlTarget;
 
     std::unique_ptr<PlaceComponent> qmlPlace;
+    std::unique_ptr<ChooseCardComponent> qmlChooseCard;
     std::unique_ptr<CardComponent> qmlCard;
     std::unique_ptr<MultiplierComponent> qmlMultiplier;
     std::unique_ptr<ArrayOfEffectsComponent> qmlEffects;
@@ -95,9 +97,17 @@ private slots:
     void onCardStateChanged(int value);
 
     void onBackupLevelChanged(QString value);
+    void onBackupOrEventChanged(int value);
 
     void onAttackTypeChanged(int value);
     void onFaceOrientationChanged(int value);
+
+    void editSwapCards(int n);
+    void editChooseOne();
+    void editChooseTwo();
+    void destroyChooseCard();
+    void chooseOneReady(const asn::ChooseCard &e);
+    void chooseTwoReady(const asn::ChooseCard &e);
 
 private:
     void init(QQuickItem *parent);

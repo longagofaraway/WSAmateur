@@ -691,6 +691,8 @@ std::string printCannotUseBackupOrEvent(const CannotUseBackupOrEvent &e) {
 
     s += " from hand ";
 
+    s += printDuration(e.duration);
+
     return s;
 }
 

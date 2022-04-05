@@ -22,6 +22,14 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     auto defaultTarget = asn::Target();
     defaultTarget.type = asn::TargetType::ThisCard;
 
+    auto defaultChooseCard = asn::ChooseCard();
+    auto tp = asn::TargetAndPlace();
+    tp.placeType = asn::PlaceType::SpecificPlace;
+    tp.place = defaultPlace;
+    tp.target = defaultTarget;
+    defaultChooseCard.executor = asn::Player::Player;
+    defaultChooseCard.targets.push_back(tp);
+
     switch (type) {
     case asn::EffectType::AttributeGain: {
         auto e = asn::AttributeGain();
@@ -34,14 +42,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         break;
     }
     case asn::EffectType::ChooseCard: {
-        auto e = asn::ChooseCard();
-        auto tp = asn::TargetAndPlace();
-        tp.placeType = asn::PlaceType::SpecificPlace;
-        tp.place = defaultPlace;
-        tp.target = defaultTarget;
-        e.executor = asn::Player::Player;
-        e.targets.push_back(tp);
-        effect = e;
+        effect = defaultChooseCard;
         break;
     }
     case asn::EffectType::RevealCard: {
@@ -174,6 +175,27 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         e.targetMarker = defaultTarget;
         e.markerBearer = defaultTarget;
         e.place = defaultPlace;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::MoveWrToDeck: {
+        auto e = asn::MoveWrToDeck();
+        e.executor = asn::Player::Player;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::CannotUseBackupOrEvent: {
+        auto e = asn::CannotUseBackupOrEvent();
+        e.what = asn::BackupOrEvent::Backup;
+        e.player = asn::Player::Player;
+        e.duration = 0;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::SwapCards: {
+        auto e = asn::SwapCards();
+        e.first = defaultChooseCard;
+        e.second = defaultChooseCard;
         effect = e;
         break;
     }
@@ -406,28 +428,36 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     }
     case asn::EffectType::CannotAttack: {
         const auto &ef = std::get<asn::CannotAttack>(e);
-
         QMetaObject::invokeMethod(qmlObject, "setAttackType", Q_ARG(QVariant, (int)ef.type));
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
     case asn::EffectType::SideAttackWithoutPenalty: {
         const auto &ef = std::get<asn::SideAttackWithoutPenalty>(e);
-
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
     case asn::EffectType::AddMarker: {
         const auto &ef = std::get<asn::AddMarker>(e);
-
         QMetaObject::invokeMethod(qmlObject, "setFaceOrientation", Q_ARG(QVariant, (int)ef.orientation));
         break;
     }
     case asn::EffectType::Shuffle: {
         const auto &ef = std::get<asn::Shuffle>(e);
-
         QMetaObject::invokeMethod(qmlObject, "setPlayer", Q_ARG(QVariant, (int)ef.owner));
         QMetaObject::invokeMethod(qmlObject, "setZone", Q_ARG(QVariant, (int)ef.zone));
+        break;
+    }
+    case asn::EffectType::MoveWrToDeck: {
+        const auto &ef = std::get<asn::MoveWrToDeck>(e);
+        QMetaObject::invokeMethod(qmlObject, "setExecutor", Q_ARG(QVariant, (int)ef.executor));
+        break;
+    }
+    case asn::EffectType::CannotUseBackupOrEvent: {
+        const auto &ef = std::get<asn::CannotUseBackupOrEvent>(e);
+        QMetaObject::invokeMethod(qmlObject, "setBackupOrEvent", Q_ARG(QVariant, (int)ef.what));
+        QMetaObject::invokeMethod(qmlObject, "setPlayer", Q_ARG(QVariant, (int)ef.player));
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
     default:
@@ -462,13 +492,17 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::AddMarker, "AddMarker" },
         { asn::EffectType::RemoveMarker, "RemoveMarker" },
         { asn::EffectType::Shuffle, "Shuffle" },
+        { asn::EffectType::MoveWrToDeck, "MoveWrToDeck" },
+        { asn::EffectType::CannotUseBackupOrEvent, "CannotUseBackup" },
+        { asn::EffectType::SwapCards, "SwapCards" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
         asn::EffectType::EarlyPlay,
         asn::EffectType::TriggerCheckTwice,
         asn::EffectType::StockSwap,
-        asn::EffectType::Standby
+        asn::EffectType::Standby,
+        asn::EffectType::CannotPlay
     };
 
     if (readyComponents.contains(type))
@@ -628,6 +662,18 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(playerChanged(int)), this, SLOT(onPlayerChanged(int)));
         connect(qmlObject, SIGNAL(zoneChanged(int)), this, SLOT(onZoneChanged(int)));
         break;
+    case asn::EffectType::MoveWrToDeck:
+        connect(qmlObject, SIGNAL(executorChanged(int)), this, SLOT(onPlayerChanged(int)));
+        break;
+    case asn::EffectType::CannotUseBackupOrEvent:
+        connect(qmlObject, SIGNAL(backupOrEventChanged(int)), this, SLOT(onBackupOrEventChanged(int)));
+        connect(qmlObject, SIGNAL(playerChanged(int)), this, SLOT(onPlayerChanged(int)));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::SwapCards:
+        connect(qmlObject, SIGNAL(editChooseOne()), this, SLOT(editChooseOne()));
+        connect(qmlObject, SIGNAL(editChooseTwo()), this, SLOT(editChooseTwo()));
+        break;
     default:
         break;
     }
@@ -781,6 +827,19 @@ void EffectImplComponent::onBackupLevelChanged(QString value) {
     emit componentChanged(effect);
 }
 
+void EffectImplComponent::onBackupOrEventChanged(int value) {
+    switch (type) {
+    case asn::EffectType::CannotUseBackupOrEvent: {
+        auto &e = std::get<asn::CannotUseBackupOrEvent>(effect);
+        e.what = static_cast<asn::BackupOrEvent>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
 void EffectImplComponent::onAttackTypeChanged(int value) {
     switch (type) {
     case asn::EffectType::CannotAttack: {
@@ -807,6 +866,42 @@ void EffectImplComponent::onFaceOrientationChanged(int value) {
     emit componentChanged(effect);
 }
 
+void EffectImplComponent::editSwapCards(int n) {
+    auto &e = std::get<asn::SwapCards>(effect);
+    const auto& eff = n == 1 ? e.first : e.second;
+    qmlChooseCard = std::make_unique<ChooseCardComponent>(eff, qmlObject);
+
+    if (n == 1)
+        connect(qmlChooseCard.get(), &ChooseCardComponent::componentChanged, this, &EffectImplComponent::chooseOneReady);
+    else
+        connect(qmlChooseCard.get(), &ChooseCardComponent::componentChanged, this, &EffectImplComponent::chooseTwoReady);
+    connect(qmlChooseCard.get(), &ChooseCardComponent::close, this, &EffectImplComponent::destroyChooseCard);
+}
+
+void EffectImplComponent::editChooseOne() {
+    editSwapCards(1);
+}
+
+void EffectImplComponent::editChooseTwo() {
+    editSwapCards(2);
+}
+
+void EffectImplComponent::destroyChooseCard() {
+    qmlChooseCard.reset();
+}
+
+void EffectImplComponent::chooseOneReady(const asn::ChooseCard &e) {
+    auto &eff = std::get<asn::SwapCards>(effect);
+    eff.first = e;
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::chooseTwoReady(const asn::ChooseCard &e) {
+    auto &eff = std::get<asn::SwapCards>(effect);
+    eff.second = e;
+    emit componentChanged(effect);
+}
+
 void EffectImplComponent::onDurationChanged(int value) {
     switch (type) {
     case asn::EffectType::AttributeGain: {
@@ -826,6 +921,11 @@ void EffectImplComponent::onDurationChanged(int value) {
     }
     case asn::EffectType::SideAttackWithoutPenalty: {
         auto &e = std::get<asn::SideAttackWithoutPenalty>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::CannotUseBackupOrEvent: {
+        auto &e = std::get<asn::CannotUseBackupOrEvent>(effect);
         e.duration = value;
         break;
     }
@@ -941,6 +1041,16 @@ void EffectImplComponent::onPlayerChanged(int value) {
     case asn::EffectType::Shuffle: {
         auto &e = std::get<asn::Shuffle>(effect);
         e.owner = static_cast<asn::Player>(value);
+        break;
+    }
+    case asn::EffectType::MoveWrToDeck: {
+        auto &e = std::get<asn::MoveWrToDeck>(effect);
+        e.executor = static_cast<asn::Player>(value);
+        break;
+    }
+    case asn::EffectType::CannotUseBackupOrEvent: {
+        auto &e = std::get<asn::CannotUseBackupOrEvent>(effect);
+        e.player = static_cast<asn::Player>(value);
         break;
     }
     default:

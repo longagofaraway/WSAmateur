@@ -13,6 +13,8 @@ set(abilityMakerSources
     baseComponent.cpp
     cardComponent.h
     cardComponent.cpp
+    chooseCardComponent.h
+    chooseCardComponent.cpp
     conditionComponent.h
     conditionComponent.cpp
     conditionImplComponent.h

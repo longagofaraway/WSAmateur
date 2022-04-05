@@ -2,9 +2,13 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 import "../basicTypes"
+import ".."
 
 Rectangle {
     id: effectImpl
+
+    signal componentReady()
+    signal cancel()
 
     signal editTarget()
     signal placeTypeChanged(int value)
@@ -21,6 +25,7 @@ Rectangle {
     }
 
     width: root.width
+    height: root.height - root.pathHeight - root.textAreaHeight - 100
 
     MouseArea {
         anchors.fill: parent
@@ -85,6 +90,27 @@ Rectangle {
                 }
             }
         }
+    }
+
+    ConfirmButton {
+        id: confirmButton
+        visible: false
+        onClicked: componentReady()
+    }
+
+    CancelButton {
+        id: cancelButton
+        visible: false
+        onClicked: cancel()
+    }
+
+    function setActualY() {
+        y = -mapToItem(root, 0, 0).y + root.pathHeight;
+    }
+
+    function enableButtons() {
+        confirmButton.visible = true;
+        cancelButton.visible = true;
     }
 
     function setPlaceType(value) {
