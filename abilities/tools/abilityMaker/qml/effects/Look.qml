@@ -9,6 +9,8 @@ Rectangle {
     signal editPlace()
     signal numModifierChanged(int value)
     signal numValueChanged(string value)
+    signal valueTypeChanged(int value)
+    signal editMultiplier()
 
     width: root.width
 
@@ -50,6 +52,32 @@ Rectangle {
                 }
             }
         }
+
+        Column {
+            Text { text: "Value Type" }
+            ValueType {
+                id: valueType
+                onValueChanged:{
+                    if (value == 1)
+                        multiplier.enabled = false;
+                    else
+                        multiplier.enabled = true;
+                    valueTypeChanged(value);
+                }
+            }
+        }
+
+        Column {
+            id: multiplier
+            enabled: false
+            Text { text: "Multiplier" }
+            Button {
+                text: "Open editor"
+                onClicked: {
+                    editMultiplier();
+                }
+            }
+        }
     }
 
     function setNumModifier(value) {
@@ -58,5 +86,9 @@ Rectangle {
 
     function setNumValue(value) {
         number.incomingValue(value);
+    }
+
+    function setValueType(value) {
+        valueType.setValue(value);
     }
 }

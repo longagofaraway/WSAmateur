@@ -4,6 +4,7 @@
 
 #include "abilities.h"
 #include "cardComponent.h"
+#include "multiplierComponent.h"
 #include "placeComponent.h"
 #include "targetComponent.h"
 
@@ -26,6 +27,7 @@ private:
 
     std::unique_ptr<PlaceComponent> qmlPlace;
     std::unique_ptr<CardComponent> qmlCard;
+    std::unique_ptr<MultiplierComponent> qmlMultiplier;
     std::unique_ptr<ArrayOfEffectsComponent> qmlEffects;
     std::unique_ptr<ArrayOfAbilitiesComponent> qmlAbilities;
 
@@ -67,6 +69,11 @@ private slots:
 
     void onNumModifierChanged(int value);
     void onNumValueChanged(QString value);
+
+    void onValueTypeChanged(int value);
+    void editMultiplier();
+    void destroyMultiplier();
+    void multiplierReady(const std::optional<asn::Multiplier> &m);
 
     void onOrderChanged(int value);
 

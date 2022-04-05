@@ -10,6 +10,8 @@ Rectangle {
     signal attrChanged(int index)
     signal valueInputChanged(string value)
     signal durationChanged(int value)
+    signal gainTypeChanged(int value)
+    signal editMultiplier()
 
     width: root.width
 
@@ -69,6 +71,32 @@ Rectangle {
                 onCurrentIndexChanged: durationChanged(currentIndex);
             }
         }
+
+        Column {
+            Text { text: "Gain Type" }
+            ValueType {
+                id: valueType
+                onValueChanged:{
+                    if (value == 1)
+                        multiplier.enabled = false;
+                    else
+                        multiplier.enabled = true;
+                    gainTypeChanged(value);
+                }
+            }
+        }
+
+        Column {
+            id: multiplier
+            enabled: false
+            Text { text: "Multiplier" }
+            Button {
+                text: "Open editor"
+                onClicked: {
+                    editMultiplier();
+                }
+            }
+        }
     }
 
     function setAttrType(value) {
@@ -81,5 +109,9 @@ Rectangle {
 
     function setDuration(value) {
         duration.currentIndex = value;
+    }
+
+    function setGainType(value) {
+        valueType.setValue(value);
     }
 }

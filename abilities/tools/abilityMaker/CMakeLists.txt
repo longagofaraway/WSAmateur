@@ -26,6 +26,10 @@ set(abilityMakerSources
     effectImplComponent.h
     effectImplComponent.cpp
     main.cpp
+    multiplierComponent.h
+    multiplierComponent.cpp
+    multiplierImplComponent.h
+    multiplierImplComponent.cpp
     placeComponent.h
     placeComponent.cpp
     targetComponent.h

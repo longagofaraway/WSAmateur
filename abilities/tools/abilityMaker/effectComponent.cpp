@@ -48,8 +48,6 @@ void EffectComponent::setEffectType(int index) {
         initializing = false;
         emit componentChanged(constructEffect());
     } else {
-        type = static_cast<asn::EffectType>(index);
-
         if (needImpl) {
             qmlEffectImpl = std::make_unique<EffectImplComponent>(type, qmlObject);
             initEffectByType(effect, type);

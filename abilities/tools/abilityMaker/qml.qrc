@@ -73,5 +73,9 @@
         <file>qml/conditions/AndOr.qml</file>
         <file>qml/ArrayOfConditions.qml</file>
         <file>qml/effects/Shuffle.qml</file>
+        <file>qml/basicTypes/Multiplier.qml</file>
+        <file>qml/basicTypes/PlaceType.qml</file>
+        <file>qml/basicTypes/ValueType.qml</file>
+        <file>qml/basicTypes/ForEachMultiplier.qml</file>
     </qresource>
 </RCC>

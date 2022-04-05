@@ -55,6 +55,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         auto e = asn::Look();
         e.number = defaultNum;
         e.place = defaultPlace;
+        e.valueType = asn::ValueType::Raw;
         effect = e;
         break;
     }
@@ -284,6 +285,32 @@ const asn::Card& getCard(EffectImplComponent::VarEffect &effect, asn::EffectType
     static auto p = asn::Card();
     return p;
 }
+const std::optional<asn::Multiplier> getMultiplier(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
+    switch (type) {
+    case asn::EffectType::AttributeGain: {
+        const auto &e = std::get<asn::AttributeGain>(effect);
+        return e.modifier;
+    }
+    case asn::EffectType::Look: {
+        const auto &e = std::get<asn::Look>(effect);
+        return e.multiplier;
+    }
+    case asn::EffectType::DealDamage: {
+        const auto &e = std::get<asn::DealDamage>(effect);
+        return e.modifier;
+    }
+    default:
+        assert(false);
+    }
+}
+asn::Multiplier getDefaultMultiplier() {
+    asn::Multiplier m;
+    m.type = asn::MultiplierType::ForEach;
+    m.specifier = asn::ForEachMultiplier();
+    m.specifier->target = std::make_shared<asn::Target>();
+    m.specifier->placeType = asn::PlaceType::Selection;
+    return m;
+}
 }
 
 EffectImplComponent::EffectImplComponent(asn::EffectType type, QQuickItem *parent)
@@ -303,6 +330,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setAttrType", Q_ARG(QVariant, (int)ef.type));
         QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString::number(ef.value)));
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, ef.duration));
+        QMetaObject::invokeMethod(qmlObject, "setGainType", Q_ARG(QVariant, (int)(ef.gainType)));
         break;
     }
     case asn::EffectType::ChooseCard: {
@@ -323,6 +351,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         const auto &ef = std::get<asn::Look>(e);
         QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)ef.number.mod));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(ef.number.value)));
+        QMetaObject::invokeMethod(qmlObject, "setValueType", Q_ARG(QVariant, (int)(ef.valueType)));
         break;
     }
     case asn::EffectType::SearchCard: {
@@ -347,6 +376,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     case asn::EffectType::DealDamage: {
         const auto &ef = std::get<asn::DealDamage>(e);
         QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString::number(ef.damage)));
+        QMetaObject::invokeMethod(qmlObject, "setDamageType", Q_ARG(QVariant, (int)(ef.damageType)));
         break;
     }
     case asn::EffectType::ChangeState: {
@@ -466,6 +496,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(attrChanged(int)), this, SLOT(onAttrTypeChanged(int)));
         connect(qmlObject, SIGNAL(valueInputChanged(QString)), this, SLOT(onAttrChanged(QString)));
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        connect(qmlObject, SIGNAL(gainTypeChanged(int)), this, SLOT(onValueTypeChanged(int)));
+        connect(qmlObject, SIGNAL(editMultiplier()), this, SLOT(editMultiplier()));
         break;
     case asn::EffectType::ChooseCard:
         QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, static_cast<int>(asn::PlaceType::SpecificPlace)));
@@ -489,6 +521,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
         connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        connect(qmlObject, SIGNAL(valueTypeChanged(int)), this, SLOT(onValueTypeChanged(int)));
+        connect(qmlObject, SIGNAL(editMultiplier()), this, SLOT(editMultiplier()));
         break;
     case asn::EffectType::MoveCard:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
@@ -535,6 +569,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString("1")));
 
         connect(qmlObject, SIGNAL(valueInputChanged(QString)), this, SLOT(onAttrChanged(QString)));
+        connect(qmlObject, SIGNAL(damageTypeChanged(int)), this, SLOT(onValueTypeChanged(int)));
+        connect(qmlObject, SIGNAL(editMultiplier()), this, SLOT(editMultiplier()));
         break;
     case asn::EffectType::ChangeState:
         QMetaObject::invokeMethod(qmlObject, "setCardState", Q_ARG(QVariant, static_cast<int>(asn::State::Rested)));
@@ -1060,6 +1096,82 @@ void EffectImplComponent::onNumValueChanged(QString value) {
         assert(false);
     }
 
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onValueTypeChanged(int value) {
+    switch (type) {
+    case asn::EffectType::AttributeGain: {
+        auto &e = std::get<asn::AttributeGain>(effect);
+        e.gainType = static_cast<asn::ValueType>(value);
+        if (e.gainType == asn::ValueType::Multiplier) {
+            if (!e.modifier)
+                e.modifier = getDefaultMultiplier();
+        } else {
+            e.modifier.reset();
+        }
+        break;
+    }
+    case asn::EffectType::Look: {
+        auto &e = std::get<asn::Look>(effect);
+        e.valueType = static_cast<asn::ValueType>(value);
+        if (e.valueType == asn::ValueType::Multiplier) {
+            if (!e.multiplier)
+                e.multiplier = getDefaultMultiplier();
+        } else {
+            e.multiplier.reset();
+        }
+        break;
+    }
+    case asn::EffectType::DealDamage: {
+        auto &e = std::get<asn::DealDamage>(effect);
+        e.damageType = static_cast<asn::ValueType>(value);
+        if (e.damageType == asn::ValueType::Multiplier) {
+            if (!e.modifier)
+                e.modifier = getDefaultMultiplier();
+        } else {
+            e.modifier.reset();
+        }
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::editMultiplier() {
+    const auto &m = getMultiplier(effect, type);
+    qmlMultiplier = std::make_unique<MultiplierComponent>(*m, qmlObject);
+
+    connect(qmlMultiplier.get(), &MultiplierComponent::componentChanged, this, &EffectImplComponent::multiplierReady);
+    connect(qmlMultiplier.get(), &MultiplierComponent::close, this, &EffectImplComponent::destroyMultiplier);
+}
+
+void EffectImplComponent::destroyMultiplier() {
+    qmlMultiplier.reset();
+}
+
+void EffectImplComponent::multiplierReady(const std::optional<asn::Multiplier> &m) {
+    switch (type) {
+    case asn::EffectType::AttributeGain: {
+        auto &e = std::get<asn::AttributeGain>(effect);
+        e.modifier = m;
+        break;
+    }
+    case asn::EffectType::Look: {
+        auto &e = std::get<asn::Look>(effect);
+        e.multiplier = m;
+        break;
+    }
+    case asn::EffectType::DealDamage: {
+        auto &e = std::get<asn::DealDamage>(effect);
+        e.modifier = m;
+        break;
+    }
+    default:
+        assert(false);
+    }
     emit componentChanged(effect);
 }
 
