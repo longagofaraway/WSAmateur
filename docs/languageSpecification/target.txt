@@ -5,6 +5,8 @@ Target {
     Nothing
   }
 }
+// for target types specificCards and battleOpponent
+// you have to specify targetSpecification
 
 enum TargetType {
   thisCard = 1,

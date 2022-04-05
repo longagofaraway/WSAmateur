@@ -12,7 +12,7 @@ enum AbilityType {
   cont = 1,
   auto = 2,
   act = 3,
-  event = 4
+  event = 4 // for abilities on events, triggers icons, global encore etc...
 }
 
 enum Keyword {
@@ -29,6 +29,7 @@ enum Keyword {
   assist = 11
 }
 
+// for binary encoding
 enum AbilityItem {
   endTag = 0,
   cost = 1,
@@ -64,5 +65,3 @@ EventAbility {
   keywords Array of Keyword,
   effects Array of Effect
 }
-  
-  

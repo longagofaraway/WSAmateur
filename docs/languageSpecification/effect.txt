@@ -118,9 +118,9 @@ TargetAndPlace {
     Nothing
   }
 }
-
-// Usually you'll use just one Target, but you'll need several in these cases: 
+// Abilities like the following are better done with two different choose effect
 // "look at up to 6 cards from top of your deck, choose up to 1 red character and up to 1 blue character"
+// Array of targets are not supported
 
 
 Look {
@@ -217,12 +217,14 @@ Backup {
 }
 
 
+// for every 'may' in the ability use this effect
 NonMandatory {
   effect Array of Effect,
   ifYouDo Array of Effect,
   ifYouDont Array of Effect
 }
 
+// change card orientation
 ChangeState {
   target Target,
   state State
