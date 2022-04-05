@@ -61,4 +61,8 @@ Column {
             currentIndex = -1;
         }
     }
+
+    function setKeywords(keywordsString) {
+        keywordsLabel.text = keywordsString;
+    }
 }

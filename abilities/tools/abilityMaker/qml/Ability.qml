@@ -165,4 +165,12 @@ Rectangle {
         rootCombo.currentIndex = value - 1;
         rootCombo.enabled = false;
     }
+
+    function changeAbilityType(value) {
+        rootCombo.currentIndex = value - 1;
+    }
+
+    function changeKeywords(keywordsString) {
+        keywords.setKeywords(keywordsString);
+    }
 }

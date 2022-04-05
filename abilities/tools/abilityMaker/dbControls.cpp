@@ -19,6 +19,8 @@ DbControls::DbControls(AbilityMaker *maker_, QQuickItem *parent)
 
     connect(qmlObject, SIGNAL(addAbility(QString)), this, SLOT(addAbility(QString)));
     connect(qmlObject, SIGNAL(popAbility(QString)), this, SLOT(popAbility(QString)));
+    connect(qmlObject, SIGNAL(loadAbility(QString,QString)), this, SLOT(loadAbility(QString,QString)));
+    connect(qmlObject, SIGNAL(saveAbility(QString,QString)), this, SLOT(saveAbility(QString,QString)));
     connect(this, SIGNAL(sendMessage(QString)), qmlObject, SIGNAL(setStatus(QString)));
 
     QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
@@ -51,6 +53,29 @@ void DbControls::popAbility(QString code) {
         dbManager->popAbility(code);
         emit sendMessage("Ability removed");
     } catch (const std::exception &e) {
+        emit sendMessage(e.what());
+    }
+}
+
+void DbControls::loadAbility(QString code, QString index) {
+    try {
+        int intPos = index.toInt();
+        if (intPos == 0)
+            intPos = 1;
+        const auto ability = dbManager->getAbility(code, intPos);
+        maker->setAbility(ability);
+    }  catch (const std::exception &e) {
+        emit sendMessage(e.what());
+    }
+}
+
+void DbControls::saveAbility(QString code, QString index) {
+    try {
+        int intPos = index.toInt();
+        if (intPos == 0)
+            intPos = 1;
+        dbManager->editAbility(code, intPos, maker->getAbility());
+    }  catch (const std::exception &e) {
         emit sendMessage(e.what());
     }
 }

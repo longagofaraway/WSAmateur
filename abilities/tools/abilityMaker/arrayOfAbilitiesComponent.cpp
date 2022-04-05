@@ -47,9 +47,9 @@ void ArrayOfAbilitiesComponent::addAbility() {
 }
 
 void ArrayOfAbilitiesComponent::editAbility(int pos) {
-    //if (abilitiesSet[pos])
-        //qmlAbility = std::make_shared<AbilityComponent>(abilities[pos], qmlObject);
-    //else
+    if (abilitiesSet[pos])
+        qmlAbility = std::make_shared<AbilityComponent>(abilities[pos], qmlObject);
+    else
         qmlAbility = std::make_shared<AbilityComponent>(qmlObject);
     if (onlyEventAbilities)
         qmlAbility->fixEventAbility();

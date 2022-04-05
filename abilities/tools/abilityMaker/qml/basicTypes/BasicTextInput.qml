@@ -1,9 +1,11 @@
 import QtQuick 2.12
 
 Rectangle {
+    id: basicTextInput
     signal valueChanged(string value)
 
     property string text: textInput.text
+    property string placeholderText: "Enter value"
 
     width: 100
     height: 30
@@ -17,11 +19,9 @@ Rectangle {
         verticalAlignment: TextInput.AlignVCenter
         selectByMouse: true
 
-        property string placeholderText: "Enter value"
-
         Text {
             anchors.verticalCenter: textInput.verticalCenter
-            text: textInput.placeholderText
+            text: basicTextInput.placeholderText
             color: "#aaa"
             visible: !textInput.text
         }

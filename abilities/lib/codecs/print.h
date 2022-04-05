@@ -29,6 +29,7 @@ std::string printPlace(asn::Place place);
 std::string printFaceOrientation(asn::FaceOrientation orientation);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
+std::string printKeyword(asn::Keyword keyword);
 std::string printKeywords(const std::vector<asn::Keyword> &keywords);
 std::string printCondition(const asn::Condition &c);
 std::string printCost(const asn::Cost &c);

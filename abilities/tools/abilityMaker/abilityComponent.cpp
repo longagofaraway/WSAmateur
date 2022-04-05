@@ -2,6 +2,8 @@
 
 #include <QQmlContext>
 
+#include "codecs/print.h"
+
 namespace {
 asn::Keyword stringToKeyword(const QString &s) {
     std::unordered_map<std::string, asn::Keyword> map{{"Encore", asn::Keyword::Encore},
@@ -17,6 +19,17 @@ asn::Keyword stringToKeyword(const QString &s) {
                                                   {"Assist", asn::Keyword::Assist}};
     return map[s.toStdString()];
 }
+QString keywordsToString(const std::vector<asn::Keyword> &k) {
+    QString keywords;
+
+    for (size_t i = 0; i < k.size(); ++i) {
+        keywords += QString::fromStdString(printKeyword(k[i]));
+        if (i < k.size() - 1)
+            keywords += ", ";
+    }
+
+    return keywords;
+}
 }
 
 AbilityComponent::AbilityComponent(QQuickItem *parent)
@@ -27,8 +40,7 @@ AbilityComponent::AbilityComponent(QQuickItem *parent)
 AbilityComponent::AbilityComponent(const asn::Ability &a, QQuickItem *parent)
     : BaseComponent("Ability", parent) {
     init();
-
-    //QMetaObject::invokeMethod(qmlObject, "changeAbilityType", Q_ARG(QVariant, (int)a.type));
+    setAbility(a);
 }
 
 void AbilityComponent::init() {
@@ -43,6 +55,40 @@ void AbilityComponent::init() {
     QMetaObject::invokeMethod(qmlObject, "setActualY");
 }
 
+void AbilityComponent::initAbility(const asn::Ability &a) {
+    switch (a.type) {
+    case asn::AbilityType::Cont: {
+        const auto &ca = std::get<asn::ContAbility>(a.ability);
+        effects = ca.effects;
+        keywords = ca.keywords;
+        break;
+    }
+    case asn::AbilityType::Auto: {
+        const auto &aa = std::get<asn::AutoAbility>(a.ability);
+        effects = aa.effects;
+        keywords = aa.keywords;
+        trigger = aa.trigger;
+        triggerSet = true;
+        cost = aa.cost;
+        activationTimes = aa.activationTimes;
+        break;
+    }
+    case asn::AbilityType::Act: {
+        const auto &aa = std::get<asn::ActAbility>(a.ability);
+        effects = aa.effects;
+        keywords = aa.keywords;
+        cost = aa.cost;
+        break;
+    }
+    case asn::AbilityType::Event: {
+        const auto &ea = std::get<asn::EventAbility>(a.ability);
+        effects = ea.effects;
+        keywords = ea.keywords;
+        break;
+    }
+    }
+}
+
 void AbilityComponent::removeButtons() {
     qmlObject->setProperty("noButtons", true);
 }
@@ -53,6 +99,13 @@ void AbilityComponent::fixEventAbility() {
 
 void AbilityComponent::addDbControls(AbilityMaker *maker) {
     dbControls = std::make_unique<DbControls>(maker, qmlObject);
+}
+
+void AbilityComponent::setAbility(const asn::Ability &a) {
+    initAbility(a);
+
+    QMetaObject::invokeMethod(qmlObject, "changeAbilityType", Q_ARG(QVariant, (int)a.type));
+    QMetaObject::invokeMethod(qmlObject, "changeKeywords", Q_ARG(QVariant, keywordsToString(keywords)));
 }
 
 void AbilityComponent::setAbilityType(int type_) {

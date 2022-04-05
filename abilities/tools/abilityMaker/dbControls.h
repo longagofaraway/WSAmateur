@@ -25,5 +25,7 @@ signals:
 private slots:
     void addAbility(QString code);
     void popAbility(QString code);
+    void loadAbility(QString code, QString index);
+    void saveAbility(QString code, QString index);
 };
 

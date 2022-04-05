@@ -8,7 +8,7 @@ import abilityMaker 1.0
 Window {
     visible: true
     width: 640
-    height: 480
+    height: 580
     title: qsTr("Ability Maker")
 
 
@@ -30,12 +30,6 @@ Window {
                 text: "/ability"
             }
         }
-
-
-        /*Ability {
-            id: ability
-            anchors { top: path.bottom; left: parent.left; right: parent.right; bottom: description.top }
-        }*/
 
         Text {
             id: description

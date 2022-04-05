@@ -38,6 +38,7 @@ public:
     void removeButtons();
     void fixEventAbility();
     void addDbControls(AbilityMaker *maker);
+    void setAbility(const asn::Ability &a);
 
 signals:
     void componentChanged(const asn::Ability &ability);
@@ -51,7 +52,6 @@ public slots:
     void triggerReady(const asn::Trigger &t);
     void destroyTrigger();
 
-
     void editEffects();
     void effectsReady(const std::vector<asn::Effect> &e);
     void destroyEffects();
@@ -62,6 +62,7 @@ public slots:
 
 private:
     void init();
+    void initAbility(const asn::Ability &a);
     void componentReady() override;
     asn::Ability constructAbility();
     void setSpecificAbility(asn::Ability &a);

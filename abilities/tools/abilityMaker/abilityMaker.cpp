@@ -15,6 +15,10 @@ void AbilityMaker::componentComplete() {
     qmlAbility->addDbControls(this);
 }
 
+void AbilityMaker::setAbility(const asn::Ability &a) {
+    qmlAbility->setAbility(a);
+}
+
 void AbilityMaker::translate(const asn::Ability &ability) {
     ability_ = ability;
     auto str = printAbility(ability);

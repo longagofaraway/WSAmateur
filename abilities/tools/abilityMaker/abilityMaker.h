@@ -15,6 +15,8 @@ private:
 
 public:
     asn::Ability getAbility() const { return ability_; }
+    void setAbility(const asn::Ability &a);
+
 public slots:
     void translate(const asn::Ability &ability);
 
