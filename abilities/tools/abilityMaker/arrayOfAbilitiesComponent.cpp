@@ -18,12 +18,12 @@ QQuickItem* createQmlObject(const QString &name, QQuickItem *parent) {
 }
 
 ArrayOfAbilitiesComponent::ArrayOfAbilitiesComponent(QQuickItem *parent)
-    : BaseComponent("ArrayOfAbilities", parent) {
+    : BaseComponent("ArrayOfAbilities", parent, "abilities") {
     init();
 }
 
 ArrayOfAbilitiesComponent::ArrayOfAbilitiesComponent(const std::vector<asn::Ability> &ab, QQuickItem *parent)
-    : BaseComponent("ArrayOfAbilities", parent) {
+    : BaseComponent("ArrayOfAbilities", parent, "abilities") {
     init();
 
     abilities = ab;
@@ -48,9 +48,9 @@ void ArrayOfAbilitiesComponent::addAbility() {
 
 void ArrayOfAbilitiesComponent::editAbility(int pos) {
     if (abilitiesSet[pos])
-        qmlAbility = std::make_shared<AbilityComponent>(abilities[pos], qmlObject);
+        qmlAbility = std::make_shared<AbilityComponent>(abilities[pos], qmlObject, pos);
     else
-        qmlAbility = std::make_shared<AbilityComponent>(qmlObject);
+        qmlAbility = std::make_shared<AbilityComponent>(qmlObject, pos);
     if (onlyEventAbilities)
         qmlAbility->fixEventAbility();
 

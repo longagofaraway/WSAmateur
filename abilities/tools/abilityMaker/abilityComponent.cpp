@@ -32,13 +32,13 @@ QString keywordsToString(const std::vector<asn::Keyword> &k) {
 }
 }
 
-AbilityComponent::AbilityComponent(QQuickItem *parent)
-    : BaseComponent("Ability", parent) {
+AbilityComponent::AbilityComponent(QQuickItem *parent, int position)
+    : BaseComponent("Ability", parent, "ability " + QString::number(position)) {
     init();
 }
 
-AbilityComponent::AbilityComponent(const asn::Ability &a, QQuickItem *parent)
-    : BaseComponent("Ability", parent) {
+AbilityComponent::AbilityComponent(const asn::Ability &a, QQuickItem *parent, int position)
+    : BaseComponent("Ability", parent, "ability " + QString::number(position)) {
     init();
     setAbility(a);
 }

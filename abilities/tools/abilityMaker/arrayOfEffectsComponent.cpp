@@ -1,5 +1,7 @@
 #include "arrayOfEffectsComponent.h"
 
+#include "statusLine.h"
+
 #include <QQmlContext>
 
 namespace {
@@ -16,12 +18,12 @@ QQuickItem* createQmlObject(const QString &name, QQuickItem *parent) {
 }
 
 ArrayOfEffectsComponent::ArrayOfEffectsComponent(QQuickItem *parent)
-    : BaseComponent("ArrayOfEffects", parent) {
+    : BaseComponent("ArrayOfEffects", parent, "effects") {
     init();
 }
 
 ArrayOfEffectsComponent::ArrayOfEffectsComponent(const std::vector<asn::Effect> &ef, QQuickItem *parent)
-    : BaseComponent("ArrayOfEffects", parent) {
+    : BaseComponent("ArrayOfEffects", parent, "effects") {
     init();
 
     effects = ef;
@@ -53,9 +55,9 @@ void ArrayOfEffectsComponent::addEffect() {
 
 void ArrayOfEffectsComponent::editEffect(int pos) {
     if (effectSet[pos])
-        qmlEffect = std::make_unique<EffectComponent>(effects[pos], qmlObject);
+        qmlEffect = std::make_unique<EffectComponent>(effects[pos], qmlObject, pos);
     else
-        qmlEffect = std::make_unique<EffectComponent>(qmlObject);
+        qmlEffect = std::make_unique<EffectComponent>(qmlObject, pos);
 
     currentPos = pos;
     connect(qmlEffect.get(), &EffectComponent::componentChanged, this, &ArrayOfEffectsComponent::effectReady);
@@ -64,9 +66,9 @@ void ArrayOfEffectsComponent::editEffect(int pos) {
 
 void ArrayOfEffectsComponent::editCondition(int pos) {
     if (conditionSet[pos])
-        qmlCondition = std::make_unique<ConditionComponent>(effects[pos].cond, qmlObject);
+        qmlCondition = std::make_unique<ConditionComponent>(effects[pos].cond, qmlObject, pos);
     else
-        qmlCondition = std::make_unique<ConditionComponent>(qmlObject);
+        qmlCondition = std::make_unique<ConditionComponent>(qmlObject, pos);
 
     currentPos = pos;
     connect(qmlCondition.get(), &ConditionComponent::componentChanged, this, &ArrayOfEffectsComponent::conditionReady);

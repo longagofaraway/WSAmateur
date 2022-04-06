@@ -1,12 +1,12 @@
 #include "conditionComponent.h"
 
-ConditionComponent::ConditionComponent(QQuickItem *parent)
-    : BaseComponent("Condition", parent) {
+ConditionComponent::ConditionComponent(QQuickItem *parent, int position)
+    : BaseComponent("Condition", parent, "condition " + QString::number(position)) {
     init();
 }
 
-ConditionComponent::ConditionComponent(const asn::Condition &c, QQuickItem *parent)
-    : BaseComponent("Condition", parent) {
+ConditionComponent::ConditionComponent(const asn::Condition &c, QQuickItem *parent, int position)
+    : BaseComponent("Condition", parent, "condition " + QString::number(position)) {
     init();
     initCondition(c);
 }

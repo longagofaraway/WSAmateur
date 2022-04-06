@@ -1,7 +1,7 @@
 #include "placeComponent.h"
 
 PlaceComponent::PlaceComponent(const asn::Place &p, QQuickItem *parent)
-    : BaseComponent("basicTypes/Place", parent), place(p) {
+    : BaseComponent("basicTypes/Place", parent, "place"), place(p) {
     connect(this, SIGNAL(initPosition(int)), qmlObject, SIGNAL(incomingPosition(int)));
     connect(this, SIGNAL(initZone(int)), qmlObject, SIGNAL(incomingZone(int)));
     connect(this, SIGNAL(initOwner(int)), qmlObject, SIGNAL(incomingOwner(int)));

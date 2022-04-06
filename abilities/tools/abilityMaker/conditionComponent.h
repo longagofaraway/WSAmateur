@@ -22,8 +22,8 @@ private:
     std::unique_ptr<ConditionImplComponent> qmlConditionImpl;
 
 public:
-    ConditionComponent(QQuickItem *parent);
-    ConditionComponent(const asn::Condition &c, QQuickItem *parent);
+    ConditionComponent(QQuickItem *parent, int position);
+    ConditionComponent(const asn::Condition &c, QQuickItem *parent, int position);
 
 signals:
     void componentChanged(const asn::Condition &condition);

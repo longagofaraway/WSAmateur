@@ -3,12 +3,12 @@
 #include <QQmlContext>
 
 TriggerComponent::TriggerComponent(QQuickItem *parent)
-    : BaseComponent("Trigger", parent)  {
+    : BaseComponent("Trigger", parent, "trigger") {
     init(parent);
 }
 
 TriggerComponent::TriggerComponent(const asn::Trigger &trigger, QQuickItem *parent)
-    : BaseComponent("Trigger", parent)  {
+    : BaseComponent("Trigger", parent, "trigger") {
     init(parent);
     initTrigger(trigger);
 }

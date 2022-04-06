@@ -34,6 +34,8 @@ set(abilityMakerSources
     multiplierImplComponent.cpp
     placeComponent.h
     placeComponent.cpp
+    statusLine.h
+    statusLine.cpp
     targetComponent.h
     targetComponent.cpp
     triggerComponent.h

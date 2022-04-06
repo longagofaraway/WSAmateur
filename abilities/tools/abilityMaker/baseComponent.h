@@ -11,7 +11,7 @@ protected:
     QQuickItem *qmlObject;
 
 public:
-    explicit BaseComponent(const QString &moduleName, QQuickItem *parent);
+    explicit BaseComponent(const QString &moduleName, QQuickItem *parent, QString statusLineDir);
     virtual ~BaseComponent();
 
 signals:

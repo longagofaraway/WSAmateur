@@ -4,19 +4,37 @@
 
 #include "abilities.h"
 #include "abilityComponent.h"
+#include "statusLine.h"
 
 
 void AbilityMaker::componentComplete() {
     QQuickItem::componentComplete();
 
-    qmlAbility = std::make_unique<AbilityComponent>(this);
+    initStatusLine(this);
+    qmlAbility = std::make_unique<AbilityComponent>(this, -1);
     connect(qmlAbility.get(), &AbilityComponent::componentChanged, this, &AbilityMaker::translate);
     qmlAbility->removeButtons();
     qmlAbility->addDbControls(this);
+    abilityPath = "/ability";
+    emit updateStatusLine(abilityPath);
+}
+
+AbilityMaker::~AbilityMaker() {
+    deinitStatusLine();
 }
 
 void AbilityMaker::setAbility(const asn::Ability &a) {
     qmlAbility->setAbility(a);
+}
+
+void AbilityMaker::statusLinePush(QString dir) {
+    abilityPath += "/" + dir;
+    emit updateStatusLine(abilityPath);
+}
+
+void AbilityMaker::statusLinePop() {
+    abilityPath.chop(abilityPath.size() - abilityPath.lastIndexOf('/'));
+    emit updateStatusLine(abilityPath);
 }
 
 void AbilityMaker::translate(const asn::Ability &ability) {

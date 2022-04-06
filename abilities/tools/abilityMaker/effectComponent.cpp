@@ -1,12 +1,12 @@
 #include "effectComponent.h"
 
-EffectComponent::EffectComponent(QQuickItem *parent)
-    : BaseComponent("Effect", parent) {
+EffectComponent::EffectComponent(QQuickItem *parent, int position)
+    : BaseComponent("Effect", parent, "effect " + QString::number(position)) {
     init();
 }
 
-EffectComponent::EffectComponent(const asn::Effect &e, QQuickItem *parent)
-    : BaseComponent("Effect", parent) {
+EffectComponent::EffectComponent(const asn::Effect &e, QQuickItem *parent, int position)
+    : BaseComponent("Effect", parent, "effect " + QString::number(position)) {
     init();
     initEffect(e);
 }

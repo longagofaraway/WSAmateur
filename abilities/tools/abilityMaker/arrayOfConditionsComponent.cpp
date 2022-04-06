@@ -18,12 +18,12 @@ QQuickItem* createQmlObject(const QString &name, QQuickItem *parent) {
 }
 
 ArrayOfConditionsComponent::ArrayOfConditionsComponent(QQuickItem *parent)
-    : BaseComponent("ArrayOfConditions", parent) {
+    : BaseComponent("ArrayOfConditions", parent, "conditions") {
     init();
 }
 
 ArrayOfConditionsComponent::ArrayOfConditionsComponent(const std::vector<asn::Condition> &ab, QQuickItem *parent)
-    : BaseComponent("ArrayOfConditions", parent) {
+    : BaseComponent("ArrayOfConditions", parent, "conditions") {
     init();
 
     conditions = ab;
@@ -47,10 +47,10 @@ void ArrayOfConditionsComponent::addCondition() {
 }
 
 void ArrayOfConditionsComponent::editCondition(int pos) {
-    //if (conditionsSet[pos])
-        //qmlCondition = std::make_shared<ConditionComponent>(conditions[pos], qmlObject);
-    //else
-        qmlCondition = std::make_shared<ConditionComponent>(qmlObject);
+    if (conditionsSet[pos])
+        qmlCondition = std::make_shared<ConditionComponent>(conditions[pos], qmlObject, pos);
+    else
+        qmlCondition = std::make_shared<ConditionComponent>(qmlObject, pos);
 
     currentPos = pos;
     connect(qmlCondition.get(), &ConditionComponent::componentChanged, this, &ArrayOfConditionsComponent::conditionReady);

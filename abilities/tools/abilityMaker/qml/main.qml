@@ -20,12 +20,17 @@ Window {
 
         anchors.fill: parent
 
+        onUpdateStatusLine: {
+            abilityPath.text = line;
+        }
+
         Rectangle {
             id: path
             anchors { top: parent.top; left: parent.left; right: parent.right; leftMargin: 5 }
             height: 30
 
             Text {
+                id: abilityPath
                 anchors { top: parent.top; left: parent.left }
                 text: "/ability"
             }

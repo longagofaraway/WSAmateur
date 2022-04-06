@@ -24,12 +24,12 @@ void initCostItems(asn::CostItem &item) {
 }
 
 CostComponent::CostComponent(QQuickItem *parent)
-    : BaseComponent("Cost", parent) {
+    : BaseComponent("Cost", parent, "cost") {
     init();
 }
 
 CostComponent::CostComponent(const asn::Cost &cost, QQuickItem *parent)
-    : BaseComponent("Cost", parent) {
+    : BaseComponent("Cost", parent, "cost") {
     init();
 
     if (cost.items.empty())
@@ -126,9 +126,9 @@ void CostComponent::stringSet(int pos, QString value) {
 void CostComponent::editEffect(int pos) {
     if (effectSet[pos]) {
         auto &ef = std::get<asn::Effect>(costItems[pos].costItem);
-        qmlEffect = std::make_unique<EffectComponent>(ef, qmlObject);
+        qmlEffect = std::make_unique<EffectComponent>(ef, qmlObject, pos);
     } else
-        qmlEffect = std::make_unique<EffectComponent>(qmlObject);
+        qmlEffect = std::make_unique<EffectComponent>(qmlObject, pos);
 
     currentPos = pos;
     connect(qmlEffect.get(), &EffectComponent::componentChanged, this, &CostComponent::effectReady);

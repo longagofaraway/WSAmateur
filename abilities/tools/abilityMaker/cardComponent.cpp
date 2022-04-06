@@ -45,12 +45,12 @@ void initSpecifier(asn::CardSpecifier &spec) {
 }
 
 CardComponent::CardComponent(QQuickItem *parent)
-    : BaseComponent("Card", parent) {
+    : BaseComponent("Card", parent, "card") {
     init();
 }
 
 CardComponent::CardComponent(const asn::Card &card, QQuickItem *parent)
-    : BaseComponent("Card", parent) {
+    : BaseComponent("Card", parent, "card") {
     init();
 
     if (card.cardSpecifiers.empty())

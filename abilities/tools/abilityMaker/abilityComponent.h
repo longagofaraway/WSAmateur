@@ -32,8 +32,8 @@ private:
     std::unique_ptr<DbControls> dbControls;
 
 public:
-    AbilityComponent(QQuickItem *parent);
-    AbilityComponent(const asn::Ability &a, QQuickItem *parent);
+    AbilityComponent(QQuickItem *parent, int position);
+    AbilityComponent(const asn::Ability &a, QQuickItem *parent, int position);
 
     void removeButtons();
     void fixEventAbility();

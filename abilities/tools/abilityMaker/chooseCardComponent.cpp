@@ -1,7 +1,7 @@
 #include "chooseCardComponent.h"
 
 ChooseCardComponent::ChooseCardComponent(const asn::ChooseCard &e, QQuickItem *parent)
-    : BaseComponent("effects/ChooseCard", parent), chooseCard(e) {
+    : BaseComponent("effects/ChooseCard", parent, "chooseCard"), chooseCard(e) {
     connect(this, SIGNAL(initPlaceType(int)), qmlObject, SIGNAL(incomingPlaceType(int)));
     connect(this, SIGNAL(initExecutor(int)), qmlObject, SIGNAL(incomingExecutor(int)));
 

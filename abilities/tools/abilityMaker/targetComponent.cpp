@@ -3,12 +3,12 @@
 #include <QQmlContext>
 
 TargetComponent::TargetComponent(QQuickItem *parent)
-    : BaseComponent("Target", parent) {
+    : BaseComponent("Target", parent, "target") {
     init();
 }
 
 TargetComponent::TargetComponent(const asn::Target &t, QQuickItem *parent)
-    : BaseComponent("Target", parent) {
+    : BaseComponent("Target", parent, "target") {
     init();
     initTarget(t);
 }

@@ -22,8 +22,8 @@ private:
     std::unique_ptr<EffectImplComponent> qmlEffectImpl;
 
 public:
-    EffectComponent(QQuickItem *parent);
-    EffectComponent(const asn::Effect &e, QQuickItem *parent);
+    EffectComponent(QQuickItem *parent, int position);
+    EffectComponent(const asn::Effect &e, QQuickItem *parent, int position);
 
 signals:
     void componentChanged(const asn::Effect &effect);

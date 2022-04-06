@@ -1,12 +1,12 @@
 #include "multiplierComponent.h"
 
 MultiplierComponent::MultiplierComponent(QQuickItem *parent)
-    : BaseComponent("basicTypes/Multiplier", parent) {
+    : BaseComponent("basicTypes/Multiplier", parent, "multiplier") {
     init();
 }
 
 MultiplierComponent::MultiplierComponent(const asn::Multiplier &m, QQuickItem *parent)
-    : BaseComponent("basicTypes/Multiplier", parent) {
+    : BaseComponent("basicTypes/Multiplier", parent, "multiplier") {
     init();
     initMultiplier(m);
 }
