@@ -199,10 +199,47 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::OpponentAutoCannotDealDamage: {
+        auto e = asn::OpponentAutoCannotDealDamage();
+        e.duration = 0;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::CannotBecomeReversed: {
+        auto e = asn::CannotBecomeReversed();
+        e.duration = 0;
+        e.target = defaultTarget;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::CannotMove: {
+        auto e = asn::CannotMove();
+        e.duration = 0;
+        e.target = defaultTarget;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::CannotStand: {
+        auto e = asn::CannotStand();
+        e.duration = 0;
+        e.target = defaultTarget;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::PutOnStageRested: {
+        auto e = asn::PutOnStageRested();
+        e.target = defaultTarget;
+        e.from = defaultPlace;
+        e.to = asn::Position::NotSpecified;
+        effect = e;
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
     case asn::EffectType::StockSwap:
     case asn::EffectType::Standby:
+    case asn::EffectType::CannotPlay:
+    case asn::EffectType::CharAutoCannotDealDamage:
         effect = std::monostate();
         break;
     default:
@@ -236,6 +273,10 @@ const asn::Place& getPlace(EffectImplComponent::VarEffect &effect, asn::EffectTy
     case asn::EffectType::RemoveMarker: {
         const auto &e = std::get<asn::RemoveMarker>(effect);
         return e.place;
+    }
+    case asn::EffectType::PutOnStageRested: {
+        const auto &e = std::get<asn::PutOnStageRested>(effect);
+        return e.from;
     }
     default:
         assert(false);
@@ -280,6 +321,22 @@ const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::Effect
     case asn::EffectType::RemoveMarker: {
         const auto &e = std::get<asn::RemoveMarker>(effect);
         return e.targetMarker;
+    }
+    case asn::EffectType::CannotBecomeReversed: {
+        const auto &e = std::get<asn::CannotBecomeReversed>(effect);
+        return e.target;
+    }
+    case asn::EffectType::CannotMove: {
+        const auto &e = std::get<asn::CannotMove>(effect);
+        return e.target;
+    }
+    case asn::EffectType::PutOnStageRested: {
+        const auto &e = std::get<asn::PutOnStageRested>(effect);
+        return e.target;
+    }
+    case asn::EffectType::CannotStand: {
+        const auto &e = std::get<asn::CannotStand>(effect);
+        return e.target;
     }
     default:
         assert(false);
@@ -460,6 +517,30 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
+    case asn::EffectType::OpponentAutoCannotDealDamage: {
+        const auto &ef = std::get<asn::OpponentAutoCannotDealDamage>(e);
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+    }
+    case asn::EffectType::CannotBecomeReversed: {
+        const auto &ef = std::get<asn::CannotBecomeReversed>(e);
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
+    case asn::EffectType::CannotMove: {
+        const auto &ef = std::get<asn::CannotMove>(e);
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
+    case asn::EffectType::PutOnStageRested: {
+        const auto &ef = std::get<asn::PutOnStageRested>(e);
+        QMetaObject::invokeMethod(qmlObject, "setPosition", Q_ARG(QVariant, (int)ef.to));
+        break;
+    }
+    case asn::EffectType::CannotStand: {
+        const auto &ef = std::get<asn::CannotStand>(e);
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
     default:
         break;
     }
@@ -495,6 +576,11 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::MoveWrToDeck, "MoveWrToDeck" },
         { asn::EffectType::CannotUseBackupOrEvent, "CannotUseBackup" },
         { asn::EffectType::SwapCards, "SwapCards" },
+        { asn::EffectType::OpponentAutoCannotDealDamage, "TargetDurationEffect" },
+        { asn::EffectType::CannotBecomeReversed, "TargetDurationEffect" },
+        { asn::EffectType::CannotMove, "TargetDurationEffect" },
+        { asn::EffectType::PutOnStageRested, "PutOnStageRested" },
+        { asn::EffectType::CannotStand, "TargetDurationEffect" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -502,7 +588,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         asn::EffectType::TriggerCheckTwice,
         asn::EffectType::StockSwap,
         asn::EffectType::Standby,
-        asn::EffectType::CannotPlay
+        asn::EffectType::CannotPlay,
+        asn::EffectType::CharAutoCannotDealDamage
     };
 
     if (readyComponents.contains(type))
@@ -674,6 +761,27 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editChooseOne()), this, SLOT(editChooseOne()));
         connect(qmlObject, SIGNAL(editChooseTwo()), this, SLOT(editChooseTwo()));
         break;
+    case asn::EffectType::OpponentAutoCannotDealDamage:
+        QMetaObject::invokeMethod(qmlObject, "hideTarget");
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::CannotBecomeReversed:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::CannotMove:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::PutOnStageRested:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
+        connect(qmlObject, SIGNAL(positionChanged(int)), this, SLOT(onPositionChanged(int)));
+        break;
+    case asn::EffectType::CannotStand:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
     default:
         break;
     }
@@ -740,6 +848,26 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     case asn::EffectType::RemoveMarker: {
         auto &e = std::get<asn::RemoveMarker>(effect);
         e.targetMarker = t;
+        break;
+    }
+    case asn::EffectType::CannotBecomeReversed: {
+        auto &e = std::get<asn::CannotBecomeReversed>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::CannotMove: {
+        auto &e = std::get<asn::CannotMove>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::PutOnStageRested: {
+        auto &e = std::get<asn::PutOnStageRested>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::CannotStand: {
+        auto &e = std::get<asn::CannotStand>(effect);
+        e.target = t;
         break;
     }
     default:
@@ -929,6 +1057,26 @@ void EffectImplComponent::onDurationChanged(int value) {
         e.duration = value;
         break;
     }
+    case asn::EffectType::OpponentAutoCannotDealDamage: {
+        auto &e = std::get<asn::OpponentAutoCannotDealDamage>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::CannotBecomeReversed: {
+        auto &e = std::get<asn::CannotBecomeReversed>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::CannotMove: {
+        auto &e = std::get<asn::CannotMove>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::CannotStand: {
+        auto &e = std::get<asn::CannotStand>(effect);
+        e.duration = value;
+        break;
+    }
     default:
         assert(false);
     }
@@ -985,6 +1133,11 @@ void EffectImplComponent::placeReady(const asn::Place &p) {
     case asn::EffectType::RemoveMarker: {
         auto &e = std::get<asn::RemoveMarker>(effect);
         e.place = p;
+        break;
+    }
+    case asn::EffectType::PutOnStageRested: {
+        auto &e = std::get<asn::PutOnStageRested>(effect);
+        e.from = p;
         break;
     }
     default:
@@ -1064,6 +1217,19 @@ void EffectImplComponent::onZoneChanged(int value) {
     case asn::EffectType::Shuffle: {
         auto &e = std::get<asn::Shuffle>(effect);
         e.zone = static_cast<asn::Zone>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onPositionChanged(int value) {
+    switch (type) {
+    case asn::EffectType::PutOnStageRested: {
+        auto &e = std::get<asn::PutOnStageRested>(effect);
+        e.to = static_cast<asn::Position>(value);
         break;
     }
     default:

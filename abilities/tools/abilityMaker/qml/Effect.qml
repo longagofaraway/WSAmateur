@@ -35,7 +35,7 @@ Rectangle {
 
     ComboBox {
         id: effectTypeCombo
-        width: implicitWidth
+        width: 180
         anchors.horizontalCenter: effect.horizontalCenter
         model: ["Attribute Gain", "Choose Card", "Reveal Card", "Move Card", "Search Card",
                 "Pay Cost", "Ability Gain", "Move wr to deck", "Flip Over", "Backup",

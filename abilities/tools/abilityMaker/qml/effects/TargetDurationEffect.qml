@@ -30,6 +30,7 @@ Rectangle {
         anchors.horizontalCenter: effectImpl.horizontalCenter
 
         Column {
+            id: targetColumn
             Text {
                 text: "Target"
             }
@@ -53,5 +54,9 @@ Rectangle {
 
     function setDuration(value) {
         duration.currentIndex = value;
+    }
+
+    function hideTarget() {
+        targetColumn.visible = false;
     }
 }

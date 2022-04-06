@@ -80,5 +80,6 @@
         <file>qml/effects/MoveWrToDeck.qml</file>
         <file>qml/effects/CannotUseBackup.qml</file>
         <file>qml/effects/SwapCards.qml</file>
+        <file>qml/effects/PutOnStageRested.qml</file>
     </qresource>
 </RCC>

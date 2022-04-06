@@ -281,6 +281,8 @@ RemoveMarker {
   place Place
 }
 
+// not supported
+// use on play pay cost, choose and move
 Bond {
   value String
 }
@@ -328,13 +330,13 @@ SideAttackWithoutPenalty {
   duration UInt8
 }
 
-OtherEffect {
-  cardCode String,
-  effectId Int8
-}
-
 PutOnStageRested {
   target Target,
   from Place,
   to Position
+}
+
+OtherEffect {
+  cardCode String,
+  effectId Int8
 }

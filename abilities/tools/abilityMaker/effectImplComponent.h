@@ -62,6 +62,7 @@ private slots:
     void onPlaceTypeChanged(int value);
     void onPlayerChanged(int value);
     void onZoneChanged(int value);
+    void onPositionChanged(int value);
 
     void editCard();
     void cardReady(const asn::Card &card_);
