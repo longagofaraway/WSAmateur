@@ -171,7 +171,7 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
     }
     case asn::ConditionType::SumOfLevels: {
         const auto &cond = std::get<asn::ConditionSumOfLevels>(c);
-        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.equalOrMoreThan)));
+        QMetaObject::invokeMethod(qmlObject, "setSum", Q_ARG(QVariant, QString::number(cond.equalOrMoreThan)));
         break;
     }
     case asn::ConditionType::DuringTurn: {
