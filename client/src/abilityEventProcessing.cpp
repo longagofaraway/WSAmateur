@@ -313,7 +313,7 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(600);
-    createMovingCard(event.card_id(), code, "deck", 0, "view", 0, false, true, true);
+    createMovingCard(event.card_id(), code, "deck", 0, "view", -1, false, true, true);
 
     processLookRevealNextCard(asn::EffectType::RevealCard);
 }
@@ -324,7 +324,7 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(400);
-    createMovingCard(event.card_id(), code, "deck", 0, "view", 0, false, true, true);
+    createMovingCard(event.card_id(), code, "deck", 0, "view", -1, false, true, true);
 
     processLookRevealNextCard(asn::EffectType::Look);
 }
@@ -422,7 +422,7 @@ void Player::processRevealFromHand(const EventRevealFromHand &event) {
 
     auto &card = mHand->cards()[handPos];
     std::string code = event.code();
-    createMovingCard(card.id(), QString::fromStdString(code), "hand", handPos, "reveal", 0, false, false, true);
+    createMovingCard(card.id(), QString::fromStdString(code), "hand", handPos, "reveal", -1, false, false, true);
 }
 
 void Player::processRuleActionChoice() {

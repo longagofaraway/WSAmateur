@@ -485,9 +485,9 @@ ListView {
         }
     }
 
-    function addCard(id, code) {
+    function addCard(id, code, targetPos) {
         if (hidden) gGame.getPlayer(opponent).addCard(0, "", "hand");
-        else gGame.getPlayer(opponent).addCard(id, code, "hand");
+        else gGame.getPlayer(opponent).addCard(id, code, "hand", targetPos);
     }
     function removeCard(index) { handView.mModel.removeCard(index); }
 

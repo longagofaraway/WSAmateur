@@ -110,7 +110,7 @@ ListView {
         }
     }
 
-    function addCard(id, code) { gGame.getPlayer(opponent).addCard(id, code, "res"); }
+    function addCard(id, code, targetPos) { gGame.getPlayer(opponent).addCard(id, code, "res", targetPos); }
     function removeCard(index) { zone.mModel.removeCard(index); }
     function getXForNewCard() { return zone.x + zone.count * mMargin; }
     function getYForNewCard() { return zone.y; }

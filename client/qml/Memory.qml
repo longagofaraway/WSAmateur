@@ -92,9 +92,9 @@ Card {
         mView.visible = open;
     }
 
-    function addCard(id, code) {
+    function addCard(id, code, targetPos) {
         memory.mSource = code;
-        gGame.getPlayer(opponent).addCard(id, code, "memory");
+        gGame.getPlayer(opponent).addCard(id, code, "memory", targetPos);
     }
     function removeCard(index) {
         memory.mModel.removeCard(index);

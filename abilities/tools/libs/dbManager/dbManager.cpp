@@ -92,7 +92,8 @@ QByteArray getAbilitiesForCard(QString code) {
 
 void replaceAbility(QByteArray& data, int pos, const asn::Ability ability) {
     auto bytes = encodeAbility(ability);
-    QByteArray newAbility(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+    QByteArray newAbility(reinterpret_cast<const char*>(bytes.data()),
+                          static_cast<int>(bytes.size()));
     if (bytes.size() >= (1 << 16))
         throw std::runtime_error("ability is too big");
     if (data.isEmpty())

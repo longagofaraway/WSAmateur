@@ -664,7 +664,7 @@ void Player::moveClockToWr() {
         if (i == 5)
             dontFinishAction = false;
         auto &card = clock->cards()[0];
-        createMovingCard(card.id(), card.qcode(), "clock", 0, "wr", 0, false, dontFinishAction);
+        createMovingCard(card.id(), card.qcode(), "clock", 0, "wr", -1, false, dontFinishAction);
     }
 }
 
@@ -771,7 +771,7 @@ void Player::sendSwitchPositions(int from, int to) {
 
 void Player::sendFromStageToWr(int pos) {
     auto &card = mStage->cards()[pos];
-    createMovingCard(card.id(), card.qcode(), "stage", pos, "wr", 0, true, false, true);
+    createMovingCard(card.id(), card.qcode(), "stage", pos, "wr", -1, true, false, true);
 }
 
 void Player::resetChoiceDialog() {

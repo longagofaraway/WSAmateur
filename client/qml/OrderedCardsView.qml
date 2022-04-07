@@ -257,7 +257,7 @@ Rectangle {
 
     function clear() { clearAnim.start(); }
 
-    function addCard(id, code) { gGame.getPlayer(opponent).addCard(id, code, "view"); }
+    function addCard(id, code, targetPos) { gGame.getPlayer(opponent).addCard(id, code, "view", targetPos); }
     function removeCard(index) { cardsView.mModel.removeCard(index); }
     function getXForNewCard() { return cardsView.x + listView.x + listView.count * listView.mMargin; }
     function getYForNewCard() { return cardsView.y + listView.y; }
