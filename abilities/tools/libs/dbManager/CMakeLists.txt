@@ -1,6 +1,8 @@
 set(sources
     dbManager.h
-    dbManager.cpp)
+    dbManager.cpp
+    filesystemPaths.h
+    filesystemPaths.cpp)
 
 find_package(Qt5 COMPONENTS Sql REQUIRED)
 

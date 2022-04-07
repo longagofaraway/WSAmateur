@@ -6,6 +6,8 @@
 #include <QSqlQuery>
 #include <QVariant>
 
+#include "filesystemPaths.h"
+
 namespace {
 // db format ability
 // first byte - number of abilities
@@ -117,8 +119,11 @@ void replaceAbility(QByteArray& data, int pos, const asn::Ability ability) {
 }
 } // namespace
 
-DbManager::DbManager(QString path) {
+DbManager::DbManager() {
+    prepareDbFile();
     db = QSqlDatabase::addDatabase("QSQLITE");
+    auto dir = getDbDir();
+    auto path = dir.filePath("cards.db");
     db.setDatabaseName(path);
 
     if (!db.open()) {
@@ -174,4 +179,9 @@ void DbManager::editAbility(QString code, int pos, const asn::Ability ability) {
     auto data = getAbilitiesForCard(code);
     replaceAbility(data, pos, ability);
     setAbilitiesToDb(code, data);
+}
+
+void DbManager::prepareDbFile() {
+    createDirectories();
+    checkDeveloperDb();
 }

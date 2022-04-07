@@ -7,7 +7,7 @@ import abilityMaker 1.0
 
 Window {
     visible: true
-    width: 640
+    width: 780
     height: 580
     title: qsTr("Ability Maker")
 
@@ -16,7 +16,7 @@ Window {
         id: root
 
         property real pathHeight: 32
-        property real textAreaHeight: 80
+        property real textAreaHeight: 120
 
         anchors.fill: parent
 

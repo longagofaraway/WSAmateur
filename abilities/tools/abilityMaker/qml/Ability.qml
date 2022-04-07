@@ -26,6 +26,7 @@ Rectangle {
         anchors.right: rootCombo.left
         anchors.verticalCenter: rootCombo.verticalCenter
         text: "Ability type:"
+        font.pointSize: 8
     }
 
     ComboBox {

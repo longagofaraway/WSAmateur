@@ -40,7 +40,7 @@ Item {
     Text {
         id: statusText
         x: 10
-        anchors { top: addButton.bottom; topMargin: 5 }
+        anchors { top: loadButton.bottom; topMargin: 5 }
     }
 
     Column {

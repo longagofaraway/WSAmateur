@@ -67,16 +67,8 @@ void updateAbilities(QString code, std::vector<asn::Ability> &abilities) {
         throw std::runtime_error(insert.lastError().text().toStdString());
 }
 
-QString getDbPath() {
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir path(appData);
-    path.cdUp();
-    path.cd("WSAmateur");
-    return path.filePath("cards.db");
-}
-
 void transform() {
-    DbManager dbManager(getDbPath());
+    DbManager dbManager;
 
     QSqlQuery query;
     query.prepare("SELECT code, abilities FROM cards");
@@ -102,7 +94,7 @@ void transform() {
 }
 
 void print(std::string cardId) {
-    DbManager dbManager(getDbPath());
+    DbManager dbManager;
 
     QSqlQuery query;
     query.prepare("SELECT abilities FROM cards WHERE code = (:code)");

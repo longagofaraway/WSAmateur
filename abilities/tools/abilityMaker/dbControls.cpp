@@ -23,13 +23,8 @@ DbControls::DbControls(AbilityMaker *maker_, QQuickItem *parent)
     connect(qmlObject, SIGNAL(saveAbility(QString,QString)), this, SLOT(saveAbility(QString,QString)));
     connect(this, SIGNAL(sendMessage(QString)), qmlObject, SIGNAL(setStatus(QString)));
 
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir path(appData);
-    path.cdUp();
-    path.cd("WSAmateur");
-
     try {
-        dbManager = std::make_unique<DbManager>(path.filePath("cards.db"));
+        dbManager = std::make_unique<DbManager>();
     } catch (const std::exception &e) {
         emit sendMessage(e.what());
     }
