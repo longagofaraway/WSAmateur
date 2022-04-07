@@ -27,6 +27,16 @@ Item {
                 color: "white"
                 font.pointSize: 24
             }
+            Text {
+                id: errorText
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                }
+                text: "User name must be at least 2 characters"
+                color: "red"
+                font.pointSize: 16
+                visible: false
+            }
             BasicTextInput {
                 id: urlInput
 
@@ -43,6 +53,10 @@ Item {
 
                 text: "OK"
                 onPressed: {
+                    if (urlInput.text.length <= 1) {
+                        errorText.visible = true;
+                        return;
+                    }
                     usernameChosen(urlInput.text);
                 }
             }
