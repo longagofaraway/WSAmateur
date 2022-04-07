@@ -1,5 +1,7 @@
 #include "player.h"
 
+#include <QTimer>
+
 #include "abilityEvents.pb.h"
 #include "abilityCommands.pb.h"
 
@@ -70,6 +72,7 @@ void Player::processSearchCard(const EventSearchCard &event) {
     } else {
         mGame->pause(800);
         sendGameCommand(CommandCancelEffect());
+        QTimer::singleShot(800, this, [this]() { mDeckView->hide(); });
     }
 }
 
