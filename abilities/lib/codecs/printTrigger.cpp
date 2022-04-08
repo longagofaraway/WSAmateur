@@ -80,7 +80,7 @@ std::string printPhaseTrigger(const PhaseTrigger &t) {
 }
 
 std::string printOnTriggerReveal(const TriggerRevealTrigger &t) {
-    std::string s = "when your character's trigger check reveals ";
+    std::string s = "When your character's trigger check reveals ";
 
     s += printCard(t.card) + ", ";
 
@@ -88,7 +88,7 @@ std::string printOnTriggerReveal(const TriggerRevealTrigger &t) {
 }
 
 std::string printOnPlay(const OnPlayTrigger &t) {
-    std::string s = "when you play ";
+    std::string s = "When you play ";
 
     s += printTarget(t.target);
     s.pop_back();
@@ -104,6 +104,15 @@ std::string printEndOfAttack() {
 std::string printOnOppCharPlacedByStanbyTrigger() {
     std::string s = "When your opponent puts a character on the stage by the effect of ";
     s += printTriggerIcon(TriggerIcon::Standby) + " trigger, ";
+    return s;
+}
+
+std::string printOnBeingAttackedTrigger(const OnBeingAttackedTrigger &t) {
+    std::string s = "When ";
+
+    s += printTarget(t.target);
+    s += "is" + printAttackType(t.attackType) + " attacked, ";
+
     return s;
 }
 
@@ -141,6 +150,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
         s += printOnOppCharPlacedByStanbyTrigger();
+        break;
+    case TriggerType::OnBeingAttacked:
+        s += printOnBeingAttackedTrigger(std::get<OnBeingAttackedTrigger>(t.trigger));
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));

@@ -262,12 +262,6 @@ CannotAttack {
   duration UInt8
 }
 
-enum AttackType {
-  any = 0,
-  front = 1,
-  side = 2
-}
-
 AddMarker {
   target Target,
   from Place,

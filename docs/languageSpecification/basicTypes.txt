@@ -131,6 +131,13 @@ enum FaceOrientation {
   faceDown = 2
 }
 
+enum AttackType {
+  any = 0,
+  front = 1,
+  side = 2,
+  direct = 3
+}
+
 ###
 
 Array Of X {

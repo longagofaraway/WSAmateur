@@ -18,8 +18,6 @@ private:
     VarTrigger trigger;
 
     std::unique_ptr<TargetComponent> qmlTarget;
-    asn::Target target;
-    bool targetSet = false;
 
     std::unique_ptr<CardComponent> qmlCard;
     asn::Card card;
@@ -45,6 +43,7 @@ private slots:
     void setPhase(int index);
     void setOwner(int index);
     void setState(int index);
+    void setAttackType(int index);
 
     void editCard();
     void clearCard();

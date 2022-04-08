@@ -31,6 +31,15 @@ StateChangeTrigger decodeStateChangeTrigger(Iterator &it, Iterator end) {
     return t;
 }
 
+OnBeingAttackedTrigger decodeOnBeingAttackedTrigger(Iterator &it, Iterator end) {
+    OnBeingAttackedTrigger t;
+
+    t.target = decodeTarget(it, end);
+    t.attackType = decodeEnum<AttackType>(it, end);
+
+    return t;
+}
+
 Trigger decodeTrigger(Iterator &it, Iterator end) {
     Trigger t;
 
@@ -53,6 +62,9 @@ Trigger decodeTrigger(Iterator &it, Iterator end) {
         break;
     case TriggerType::OnAttack:
         t.trigger = OnAttackTrigger{ decodeTarget(it, end) };
+        break;
+    case TriggerType::OnBeingAttacked:
+        t.trigger = decodeOnBeingAttackedTrigger(it, end);
         break;
     case TriggerType::OtherTrigger:
         t.trigger = OtherTrigger{ decodeString(it, end) };

@@ -65,7 +65,7 @@ Rectangle {
         width: 200
         model: ["Zone change", "On play", "On state change", "On attack", "On backup of this",
                 "On trigger reveal", "Phase event", "End of this card's attack",
-                "On standby trigger effect"]
+                "On standby trigger effect", "On being attacked"]
         currentIndex: -1
         onCurrentIndexChanged: {
             triggerTypeChanged(currentIndex + 1);

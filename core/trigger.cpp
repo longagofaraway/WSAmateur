@@ -122,18 +122,80 @@ void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, std::string_view fro
 }
 
 void ServerPlayer::checkOnAttack(ServerCard *attCard) {
-    auto &abs = attCard->abilities();
-    for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
-        if (abs[i].ability.type != asn::AbilityType::Auto)
-            continue;
-        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (autoab.trigger.type != asn::TriggerType::OnAttack)
-            continue;
-        const auto &trig = std::get<asn::OnAttackTrigger>(autoab.trigger.trigger);
-        if (trig.target.type != asn::TargetType::ThisCard)
+    auto checkTrigger = [=, this](ServerCard *card) {
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            if (autoab.trigger.type != asn::TriggerType::OnAttack)
+                continue;
+            const auto &trig = std::get<asn::OnAttackTrigger>(autoab.trigger.trigger);
+            if (trig.target.type == asn::TargetType::ThisCard) {
+                if (card != attCard)
+                    continue;
+            } else if (trig.target.type == asn::TargetType::SpecificCards) {
+                const auto &spec = *trig.target.targetSpecification;
+
+                if (!checkTargetMode(spec.mode, card, attCard))
+                    continue;
+
+                if (!checkCard(spec.cards.cardSpecifiers, *attCard))
+                    continue;
+            }
+
+            queueActivatedAbility(autoab, abs[i], attCard, "", attCard);
+        }
+    };
+
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
             continue;
 
-        queueActivatedAbility(autoab, abs[i], attCard);
+        checkTrigger(card);
+    }
+}
+
+void ServerPlayer::checkOnBeingAttacked(ServerCard *attackTarget, asn::AttackType attackType) {
+    if (!attackTarget)
+        return;
+    auto checkTrigger = [=, this](ServerCard *card) {
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            if (aa.trigger.type != asn::TriggerType::OnBeingAttacked)
+                continue;
+            const auto &trig = std::get<asn::OnBeingAttackedTrigger>(aa.trigger.trigger);
+            if (trig.attackType != attackType)
+                continue;
+            if (trig.target.type == asn::TargetType::ThisCard) {
+                if (card != attackTarget)
+                    continue;
+            } else if (trig.target.type == asn::TargetType::SpecificCards) {
+                const auto &spec = *trig.target.targetSpecification;
+
+                if (!checkTargetMode(spec.mode, card, attackTarget))
+                    continue;
+
+                if (!checkCard(spec.cards.cardSpecifiers, *attackTarget))
+                    continue;
+            }
+
+            queueActivatedAbility(aa, abs[i], card, card->zone()->name(), attackTarget);
+        }
+    };
+
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        checkTrigger(card);
     }
 }
 
@@ -387,7 +449,7 @@ void ServerPlayer::checkOnPlayTrigger(ServerCard *playedCard) {
                     continue;
             }
 
-            queueActivatedAbility(autoab, abs[j], card);
+            queueActivatedAbility(autoab, abs[j], card, "", playedCard);
         }
     }
 }

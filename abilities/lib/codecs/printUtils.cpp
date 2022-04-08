@@ -277,12 +277,14 @@ std::string printForEachMultiplier(const ForEachMultiplier &m, bool addOf) {
 
 std::string printAttackType(AttackType t) {
     switch (t) {
-    case AttackType::FronalAttack:
-        return "frontal attack";
-    case AttackType::SideAttack:
-        return "side attack";
+    case AttackType::Frontal:
+        return " frontal";
+    case AttackType::Side:
+        return " side";
+    case AttackType::Direct:
+        return " direct";
     case AttackType::Any:
-        return "attack";
+        return "";
     }
     assert(false);
     return "";

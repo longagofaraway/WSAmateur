@@ -825,6 +825,9 @@ Resumable ServerPlayer::declareAttack(const CommandDeclareAttack cmd) {
     }
 
     checkOnAttack(attCard);
+    if (battleOpp)
+        battleOpp->player()->checkOnBeingAttacked(battleOpp,
+                                                  protoAttackTypeToAttackType(type));
     co_await mGame->checkTiming();
 
     co_await triggerStep(cmd.stage_pos());

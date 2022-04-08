@@ -66,4 +66,11 @@ enum class FaceOrientation : uint8_t {
     FaceDown
 };
 
+enum class AttackType : uint8_t {
+    Any = 0,
+    Frontal,
+    Side,
+    Direct
+};
+
 }

@@ -81,5 +81,7 @@
         <file>qml/effects/CannotUseBackup.qml</file>
         <file>qml/effects/SwapCards.qml</file>
         <file>qml/effects/PutOnStageRested.qml</file>
+        <file>qml/basicTypes/AttackType.qml</file>
+        <file>qml/triggers/OnBeingAttackedTrigger.qml</file>
     </qresource>
 </RCC>

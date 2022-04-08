@@ -713,7 +713,7 @@ std::string printCannotAttack(const CannotAttack &e) {
     std::string s;
 
     s = printTarget(e.target);
-    s += "cannot " + printAttackType(e.type) + " ";
+    s += "cannot" + printAttackType(e.type) + " attack ";
     s += printDuration(e.duration);
 
     return s;

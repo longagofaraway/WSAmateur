@@ -211,6 +211,19 @@ PhaseTrigger parsePhaseTrigger(const QJsonObject &json) {
     return p;
 }
 
+OnBeingAttackedTrigger parseOnBeingAttackedTrigger(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in OnBeingAttackedTrigger");
+    if (!json.contains("attackType") || !json["attackType"].isDouble())
+        throw std::runtime_error("no attackType in OnBeingAttackedTrigger");
+
+    OnBeingAttackedTrigger t;
+    t.target = parseTarget(json["target"].toObject());
+    t.attackType = static_cast<AttackType>(json["attackType"].toInt());
+
+    return t;
+}
+
 OtherTrigger parseOtherTrigger(const QJsonObject &json) {
     if (!json.contains("cardCode") || !json["cardCode"].isString())
         throw std::runtime_error("no cardCode");
@@ -246,6 +259,9 @@ Trigger parseTrigger(const QJsonObject &json) {
         break;
     case TriggerType::OnAttack:
         t.trigger = parseTargetType<OnAttackTrigger>(json["trigger"].toObject());
+        break;
+    case TriggerType::OnBeingAttacked:
+        t.trigger = parseOnBeingAttackedTrigger(json["trigger"].toObject());
         break;
     case TriggerType::OnBackupOfThis:
     case TriggerType::OnEndOfThisCardsAttack:

@@ -16,6 +16,7 @@ enum class TriggerType : uint8_t {
     OnPhaseEvent,
     OnEndOfThisCardsAttack,
     OnOppCharPlacedByStandbyTriggerReveal,
+    OnBeingAttacked,
 
     OtherTrigger = 255
 };
@@ -71,6 +72,11 @@ struct StateChangeTrigger {
     Target target;
 };
 
+struct OnBeingAttackedTrigger {
+    Target target;
+    AttackType attackType;
+};
+
 struct OtherTrigger {
     std::string cardCode;
 };
@@ -85,6 +91,7 @@ struct Trigger {
         OnPlayTrigger,
         OnAttackTrigger,
         StateChangeTrigger,
+        OnBeingAttackedTrigger,
         OtherTrigger
     > trigger;
 };

@@ -2,24 +2,59 @@
 
 #include <QQmlContext>
 
+namespace {
+const asn::Target& getTarget(TriggerImplComponent::VarTrigger &trigger, asn::TriggerType type) {
+    switch (type) {
+    case asn::TriggerType::OnPlay: {
+        const auto& t = std::get<asn::OnPlayTrigger>(trigger);
+        return t.target;
+    }
+    case asn::TriggerType::OnAttack: {
+        const auto& t = std::get<asn::OnAttackTrigger>(trigger);
+        return t.target;
+    }
+    case asn::TriggerType::OnStateChange: {
+        const auto& t = std::get<asn::StateChangeTrigger>(trigger);
+        return t.target;
+    }
+    case asn::TriggerType::OnBeingAttacked: {
+        const auto& t = std::get<asn::OnBeingAttackedTrigger>(trigger);
+        return t.target;
+    }
+    default:
+        assert(false);
+    }
+    throw std::runtime_error("no target in trigger");
+}
+}
+
 void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerType type) {
+    auto defaultTarget = asn::Target();
+    defaultTarget.type = asn::TargetType::ThisCard;
+
     switch (type) {
     case asn::TriggerType::OnZoneChange: {
         auto tr = asn::ZoneChangeTrigger();
-
-        tr.target.push_back(asn::Target());
+        tr.target.push_back(defaultTarget);
         trigger = tr;
         break;
     }
-    case asn::TriggerType::OnPlay:
-        trigger = asn::OnPlayTrigger();
+    case asn::TriggerType::OnPlay: {
+        auto tr = asn::OnPlayTrigger();
+        tr.target = defaultTarget;
+        trigger = tr;
         break;
-    case asn::TriggerType::OnAttack:
-        trigger = asn::OnAttackTrigger();
+    }
+    case asn::TriggerType::OnAttack: {
+        auto tr = asn::OnAttackTrigger();
+        tr.target = defaultTarget;
+        trigger = tr;
         break;
+    }
     case asn::TriggerType::OnStateChange: {
         auto tr = asn::StateChangeTrigger();
         tr.state = asn::State::Reversed;
+        tr.target = defaultTarget;
         trigger = tr;
         break;
     }
@@ -31,6 +66,13 @@ void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerTy
         tr.phase = asn::Phase::Mulligan;
         tr.state = asn::PhaseState::Start;
         tr.player = asn::Player::Player;
+        trigger = tr;
+        break;
+    }
+    case asn::TriggerType::OnBeingAttacked: {
+        auto tr = asn::OnBeingAttackedTrigger();
+        tr.attackType = asn::AttackType::Any;
+        tr.target = defaultTarget;
         trigger = tr;
         break;
     }
@@ -60,20 +102,6 @@ TriggerImplComponent::TriggerImplComponent(asn::TriggerType type, const VarTrigg
         const auto &trImpl = std::get<asn::ZoneChangeTrigger>(tr);
         QMetaObject::invokeMethod(qmlObject, "setFrom", Q_ARG(QVariant, static_cast<int>(trImpl.from)));
         QMetaObject::invokeMethod(qmlObject, "setTo", Q_ARG(QVariant, static_cast<int>(trImpl.to)));
-        target = trImpl.target[0];
-        targetSet = true;
-        break;
-    }
-    case asn::TriggerType::OnPlay: {
-        const auto &trImpl = std::get<asn::OnPlayTrigger>(tr);
-        target = trImpl.target;
-        targetSet = true;
-        break;
-    }
-    case asn::TriggerType::OnAttack: {
-        const auto &trImpl = std::get<asn::OnAttackTrigger>(tr);
-        target = trImpl.target;
-        targetSet = true;
         break;
     }
     case asn::TriggerType::OnPhaseEvent: {
@@ -92,8 +120,11 @@ TriggerImplComponent::TriggerImplComponent(asn::TriggerType type, const VarTrigg
     case asn::TriggerType::OnStateChange: {
         const auto &trImpl = std::get<asn::StateChangeTrigger>(tr);
         QMetaObject::invokeMethod(qmlObject, "setCardState", Q_ARG(QVariant, static_cast<int>(trImpl.state)));
-        target = trImpl.target;
-        targetSet = true;
+        break;
+    }
+    case asn::TriggerType::OnBeingAttacked: {
+        const auto &trImpl = std::get<asn::OnBeingAttackedTrigger>(tr);
+        QMetaObject::invokeMethod(qmlObject, "setAttackType", Q_ARG(QVariant, static_cast<int>(trImpl.attackType)));
         break;
     }
     default:
@@ -108,7 +139,8 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         { asn::TriggerType::OnAttack, "OnAttackTrigger" },
         { asn::TriggerType::OnPhaseEvent, "PhaseTrigger" },
         { asn::TriggerType::OnTriggerReveal, "TriggerReveal" },
-        { asn::TriggerType::OnStateChange, "StateChangeTrigger" }
+        { asn::TriggerType::OnStateChange, "StateChangeTrigger" },
+        { asn::TriggerType::OnBeingAttacked, "OnBeingAttackedTrigger" }
     };
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/triggers/" + components.at(type) + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
@@ -142,6 +174,9 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
         connect(qmlObject, SIGNAL(clearCard()), this, SLOT(clearCard()));
         break;
+    case asn::TriggerType::OnBeingAttacked:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(attackTypeChanged(int)), this, SLOT(setAttackType(int)));
     default:
         break;
     }
@@ -168,10 +203,8 @@ void TriggerImplComponent::setTo(int index) {
 }
 
 void TriggerImplComponent::editTarget() {
-    if (targetSet)
-        qmlTarget = std::make_unique<TargetComponent>(target, qmlObject);
-    else
-        qmlTarget = std::make_unique<TargetComponent>(qmlObject);
+    const auto &target = getTarget(trigger, type);
+    qmlTarget = std::make_unique<TargetComponent>(target, qmlObject);
 
     connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &TriggerImplComponent::targetReady);
     connect(qmlTarget.get(), &TargetComponent::close, this, &TriggerImplComponent::destroyTarget);
@@ -182,8 +215,6 @@ void TriggerImplComponent::destroyTarget() {
 }
 
 void TriggerImplComponent::targetReady(const asn::Target &t) {
-    targetSet = true;
-    target = t;
     switch (type) {
     case asn::TriggerType::OnZoneChange: {
         auto &trig = std::get<asn::ZoneChangeTrigger>(trigger);
@@ -203,6 +234,11 @@ void TriggerImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::TriggerType::OnStateChange: {
         auto &trig = std::get<asn::StateChangeTrigger>(trigger);
+        trig.target = t;
+        break;
+    }
+    case asn::TriggerType::OnBeingAttacked: {
+        auto &trig = std::get<asn::OnBeingAttackedTrigger>(trigger);
         trig.target = t;
         break;
     }
@@ -233,6 +269,19 @@ void TriggerImplComponent::setOwner(int index) {
 void TriggerImplComponent::setState(int index) {
     auto &tr = std::get<asn::StateChangeTrigger>(trigger);
     tr.state = static_cast<asn::State>(index);
+    emit componentChanged(trigger);
+}
+
+void TriggerImplComponent::setAttackType(int index) {
+    switch (type) {
+    case asn::TriggerType::OnBeingAttacked: {
+        auto &tr = std::get<asn::OnBeingAttackedTrigger>(trigger);
+        tr.attackType = static_cast<asn::AttackType>(index);
+        break;
+    }
+    default:
+        assert(false);
+    }
     emit componentChanged(trigger);
 }
 

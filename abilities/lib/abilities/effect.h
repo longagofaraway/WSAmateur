@@ -156,12 +156,6 @@ struct SwapCards {
     ChooseCard second;
 };
 
-enum class AttackType : uint8_t {
-    Any = 0,
-    FronalAttack,
-    SideAttack
-};
-
 struct CannotAttack {
     Target target;
     AttackType type;

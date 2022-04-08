@@ -5,6 +5,7 @@
 #include <QString>
 
 #include "ability.pb.h"
+#include "attackType.pb.h"
 #include "cardAttribute.pb.h"
 
 #include "abilities.h"
@@ -21,6 +22,7 @@ uint32_t abilityHash(const ProtoAbility &a);
 ProtoCardAttribute attrTypeToProto(asn::AttributeType t);
 asn::Player protoPlayerToPlayer(ProtoOwner player);
 asn::State protoStateToState(CardState state);
+asn::AttackType protoAttackTypeToAttackType(AttackType attackType);
 CardState stateToProtoState(asn::State state);
 asn::Player reversePlayer(asn::Player p);
 ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type);

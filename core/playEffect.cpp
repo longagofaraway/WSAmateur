@@ -802,8 +802,8 @@ void AbilityPlayer::playCannotAttack(const asn::CannotAttack &e) {
 
     auto targets = getTargets(e.target);
     for (auto target: targets) {
-        auto attr = e.type == asn::AttackType::FronalAttack ? BoolAttributeType::CannotFrontAttack
-                                                            : BoolAttributeType::CannotSideAttack;
+        auto attr = e.type == asn::AttackType::Frontal ? BoolAttributeType::CannotFrontAttack
+                                                       : BoolAttributeType::CannotSideAttack;
 
         if (cont()) {
             if (revert())

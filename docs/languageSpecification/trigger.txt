@@ -6,6 +6,7 @@ Trigger {
     TriggerRevealTrigger,
     OnPlayTrigger,
     OnAttackTrigger,
+    OnBeingAttackedTrigger,
     StateChangeTrigger,
     OtherTrigger,
     Nothing
@@ -23,6 +24,7 @@ enum TriggerType {
   onEndOfThisCardsAttack = 8,
   onOppCharPlacedByStandbyTriggerReveal = 9,
   onEndOfThisTurn = 10,
+  onBeingAttacked = 11,
   
   otherTrigger = 255
 }
@@ -48,12 +50,17 @@ OnPlayTrigger {
 }
 
 OnAttackTrigger {
-  target Target
+  target Target // who attacks
 }
 
 StateChangeTrigger {
   state State,
   target Target
+}
+
+OnBeingAttackedTrigger {
+  target Target, // who is beeing attacked
+  attackType AttackType
 }
 
 OtherTrigger {

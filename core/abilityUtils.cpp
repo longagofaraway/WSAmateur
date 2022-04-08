@@ -257,6 +257,19 @@ asn::State protoStateToState(CardState state) {
     return asn::State::Standing;
 }
 
+asn::AttackType protoAttackTypeToAttackType(AttackType attackType) {
+    switch (attackType) {
+    case AttackType::SideAttack:
+        return asn::AttackType::Side;
+    case AttackType::FrontAttack:
+        return asn::AttackType::Frontal;
+    case AttackType::DirectAttack:
+        return asn::AttackType::Direct;
+    }
+    assert(false);
+    return asn::AttackType::Frontal;
+}
+
 CardState stateToProtoState(asn::State state) {
     switch (state) {
     case asn::State::Standing:

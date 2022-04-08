@@ -4,11 +4,10 @@ import QtQuick.Controls 2.12
 import "../basicTypes"
 
 Rectangle {
-    id: effectImpl
+    id: triggerImpl
 
     signal editTarget()
     signal attackTypeChanged(int value)
-    signal durationChanged(int value)
 
     width: root.width
 
@@ -18,16 +17,15 @@ Rectangle {
 
     Text {
         id: label
-        anchors.horizontalCenter: effectImpl.horizontalCenter
-        text: "Cannot Attack"
+        anchors.horizontalCenter: triggerImpl.horizontalCenter
+        text: "On Being Attacked"
         font.pointSize: 12
     }
 
     Row {
         spacing: 5
         anchors{ top: label.bottom; topMargin: 10 }
-        anchors.horizontalCenter: effectImpl.horizontalCenter
-
+        anchors.horizontalCenter: triggerImpl.horizontalCenter
         Column {
             Text { text: "Target" }
             Button {
@@ -47,22 +45,9 @@ Rectangle {
                 }
             }
         }
-
-        Column {
-            Text { text: "Duration" }
-            ComboBox {
-                id: duration
-                model: ["0", "1", "2"]
-                onCurrentIndexChanged: durationChanged(currentIndex);
-            }
-        }
     }
 
     function setAttackType(value) {
         attackType.setValue(value);
-    }
-
-    function setDuration(value) {
-        duration.currentIndex = value;
     }
 }
