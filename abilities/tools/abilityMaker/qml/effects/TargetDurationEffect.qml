@@ -57,6 +57,7 @@ Rectangle {
     }
 
     function hideTarget() {
+        console.log("lah");
         targetColumn.visible = false;
     }
 }

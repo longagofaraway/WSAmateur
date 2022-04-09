@@ -50,6 +50,8 @@ private slots:
     void cardReady(const asn::Card &card_);
     void destroyCard();
 
+    void onBoolChanged(bool value);
+
 private:
     void init(QQuickItem *parent);
 };

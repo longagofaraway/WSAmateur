@@ -116,6 +116,25 @@ std::string printOnBeingAttackedTrigger(const OnBeingAttackedTrigger &t) {
     return s;
 }
 
+std::string printOnDamageCancelTrigger(const OnDamageCancelTrigger &t) {
+    std::string s = "When damage dealt by ";
+
+    s += printTarget(t.damageDealer) + "is ";
+    if (!t.cancelled)
+        s += "not ";
+    s += "cancelled, ";
+
+    return s;
+}
+
+std::string printOnDamageTakenCancelTrigger(const OnDamageTakenCancelTrigger &t) {
+    std::string s = "When damage taken by you is ";
+    if (!t.cancelled)
+        s += "not ";
+    s += "cancelled, ";
+    return s;
+}
+
 std::string printOtherTrigger(const OtherTrigger &t) {
     return gOtherTriggers[t.cardCode];
 }
@@ -153,6 +172,12 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnBeingAttacked:
         s += printOnBeingAttackedTrigger(std::get<OnBeingAttackedTrigger>(t.trigger));
+        break;
+    case TriggerType::OnDamageCancel:
+        s += printOnDamageCancelTrigger(std::get<OnDamageCancelTrigger>(t.trigger));
+        break;
+    case TriggerType::OnDamageTakenCancel:
+        s += printOnDamageTakenCancelTrigger(std::get<OnDamageTakenCancelTrigger>(t.trigger));
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));

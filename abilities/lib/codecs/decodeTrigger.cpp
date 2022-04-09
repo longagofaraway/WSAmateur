@@ -40,6 +40,23 @@ OnBeingAttackedTrigger decodeOnBeingAttackedTrigger(Iterator &it, Iterator end) 
     return t;
 }
 
+OnDamageCancelTrigger decodeOnDamageCancelTrigger(Iterator &it, Iterator end) {
+    OnDamageCancelTrigger t;
+
+    t.damageDealer = decodeTarget(it, end);
+    t.cancelled = decodeBool(it, end);
+
+    return t;
+}
+
+OnDamageTakenCancelTrigger decodeOnDamageTakenCancelTrigger(Iterator &it, Iterator end) {
+    OnDamageTakenCancelTrigger t;
+
+    t.cancelled = decodeBool(it, end);
+
+    return t;
+}
+
 Trigger decodeTrigger(Iterator &it, Iterator end) {
     Trigger t;
 
@@ -65,6 +82,12 @@ Trigger decodeTrigger(Iterator &it, Iterator end) {
         break;
     case TriggerType::OnBeingAttacked:
         t.trigger = decodeOnBeingAttackedTrigger(it, end);
+        break;
+    case TriggerType::OnDamageCancel:
+        t.trigger = decodeOnDamageCancelTrigger(it, end);
+        break;
+    case TriggerType::OnDamageTakenCancel:
+        t.trigger = decodeOnDamageTakenCancelTrigger(it, end);
         break;
     case TriggerType::OtherTrigger:
         t.trigger = OtherTrigger{ decodeString(it, end) };

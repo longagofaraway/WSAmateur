@@ -891,7 +891,7 @@ Resumable ServerPlayer::damageStep() {
     if (attCard->zone()->name() != "stage")
         co_return;
 
-    co_await takeDamage(attCard->soul());
+    co_await takeDamage(attCard->soul(), attCard);
 
     co_await mGame->checkTiming();
 }
@@ -1198,9 +1198,9 @@ bool ServerPlayer::attribute(PlayerAttrType type) const {
     return false;
 }
 
-Resumable ServerPlayer::takeDamage(int damage) {
+Resumable ServerPlayer::takeDamage(int damage, ServerCard *attacker) {
     auto resZone = zone("res");
-    bool canceled = false;
+    bool cancelled = false;
     for (int i = 0; i < damage; ++i) {
         moveTopDeck("res");
         auto card = resZone->topCard();
@@ -1209,16 +1209,19 @@ Resumable ServerPlayer::takeDamage(int damage) {
         if (!card)
             co_await std::suspend_always();
         if (card->type() == CardType::Climax) {
-            canceled = true;
+            cancelled = true;
             break;
         }
     }
 
     while (resZone->card(0))
-        moveCard("res", 0, canceled ? "wr" : "clock");
+        moveCard("res", 0, cancelled ? "wr" : "clock");
 
     if (zone("clock")->count() >= 7)
         co_await levelUp();
+
+    getOpponent()->checkOnDamageCancel(attacker, cancelled);
+    checkOnDamageTakenCancel(cancelled);
 }
 
 Resumable ServerPlayer::checkRefreshAndLevelUp() {

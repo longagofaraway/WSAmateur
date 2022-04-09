@@ -21,6 +21,10 @@ const asn::Target& getTarget(TriggerImplComponent::VarTrigger &trigger, asn::Tri
         const auto& t = std::get<asn::OnBeingAttackedTrigger>(trigger);
         return t.target;
     }
+    case asn::TriggerType::OnDamageCancel: {
+        const auto& t = std::get<asn::OnDamageCancelTrigger>(trigger);
+        return t.damageDealer;
+    }
     default:
         assert(false);
     }
@@ -76,6 +80,19 @@ void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerTy
         trigger = tr;
         break;
     }
+    case asn::TriggerType::OnDamageCancel: {
+        auto tr = asn::OnDamageCancelTrigger();
+        tr.damageDealer = defaultTarget;
+        tr.cancelled = true;
+        trigger = tr;
+        break;
+    }
+    case asn::TriggerType::OnDamageTakenCancel: {
+        auto tr = asn::OnDamageTakenCancelTrigger();
+        tr.cancelled = false;
+        trigger = tr;
+        break;
+    }
     case asn::TriggerType::OnBackupOfThis:
     case asn::TriggerType::OnEndOfThisCardsAttack:
     case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
@@ -127,6 +144,16 @@ TriggerImplComponent::TriggerImplComponent(asn::TriggerType type, const VarTrigg
         QMetaObject::invokeMethod(qmlObject, "setAttackType", Q_ARG(QVariant, static_cast<int>(trImpl.attackType)));
         break;
     }
+    case asn::TriggerType::OnDamageCancel: {
+        const auto &trImpl = std::get<asn::OnDamageCancelTrigger>(tr);
+        QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, static_cast<int>(trImpl.cancelled)));
+        break;
+    }
+    case asn::TriggerType::OnDamageTakenCancel: {
+        const auto &trImpl = std::get<asn::OnDamageTakenCancelTrigger>(tr);
+        QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, static_cast<int>(trImpl.cancelled)));
+        break;
+    }
     default:
         break;
     }
@@ -140,7 +167,9 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         { asn::TriggerType::OnPhaseEvent, "PhaseTrigger" },
         { asn::TriggerType::OnTriggerReveal, "TriggerReveal" },
         { asn::TriggerType::OnStateChange, "StateChangeTrigger" },
-        { asn::TriggerType::OnBeingAttacked, "OnBeingAttackedTrigger" }
+        { asn::TriggerType::OnBeingAttacked, "OnBeingAttackedTrigger" },
+        { asn::TriggerType::OnDamageCancel, "OnDamageCancel" },
+        { asn::TriggerType::OnDamageTakenCancel, "OnDamageCancel" }
     };
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/triggers/" + components.at(type) + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
@@ -177,6 +206,15 @@ void TriggerImplComponent::init(QQuickItem *parent) {
     case asn::TriggerType::OnBeingAttacked:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(attackTypeChanged(int)), this, SLOT(setAttackType(int)));
+        break;
+    case asn::TriggerType::OnDamageCancel:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(cancelledChanged(bool)), this, SLOT(onBoolChanged(bool)));
+        break;
+    case asn::TriggerType::OnDamageTakenCancel:
+        QMetaObject::invokeMethod(qmlObject, "hideTarget");
+        connect(qmlObject, SIGNAL(cancelledChanged(bool)), this, SLOT(onBoolChanged(bool)));
+        break;
     default:
         break;
     }
@@ -240,6 +278,11 @@ void TriggerImplComponent::targetReady(const asn::Target &t) {
     case asn::TriggerType::OnBeingAttacked: {
         auto &trig = std::get<asn::OnBeingAttackedTrigger>(trigger);
         trig.target = t;
+        break;
+    }
+    case asn::TriggerType::OnDamageCancel: {
+        auto &trig = std::get<asn::OnDamageCancelTrigger>(trigger);
+        trig.damageDealer = t;
         break;
     }
     default:
@@ -318,4 +361,22 @@ void TriggerImplComponent::cardReady(const asn::Card &card_) {
 
 void TriggerImplComponent::destroyCard() {
     qmlCard.reset();
+}
+
+void TriggerImplComponent::onBoolChanged(bool value) {
+    switch (type) {
+    case asn::TriggerType::OnDamageCancel: {
+        auto &tr = std::get<asn::OnDamageCancelTrigger>(trigger);
+        tr.cancelled = value;
+        break;
+    }
+    case asn::TriggerType::OnDamageTakenCancel: {
+        auto &tr = std::get<asn::OnDamageTakenCancelTrigger>(trigger);
+        tr.cancelled = value;
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(trigger);
 }

@@ -224,6 +224,29 @@ OnBeingAttackedTrigger parseOnBeingAttackedTrigger(const QJsonObject &json) {
     return t;
 }
 
+OnDamageCancelTrigger parseOnDamageCancelTrigger(const QJsonObject &json) {
+    if (!json.contains("damageDealer") || !json["damageDealer"].isObject())
+        throw std::runtime_error("no damageDealer in OnDamageCancelTrigger");
+    if (!json.contains("cancelled") || !json["cancelled"].isBool())
+        throw std::runtime_error("no cancelled in OnDamageCancelTrigger");
+
+    OnDamageCancelTrigger t;
+    t.damageDealer = parseTarget(json["damageDealer"].toObject());
+    t.cancelled = json["cancelled"].toBool();
+
+    return t;
+}
+
+OnDamageTakenCancelTrigger parseOnDamageTakenCancelTrigger(const QJsonObject &json) {
+    if (!json.contains("cancelled") || !json["cancelled"].isBool())
+        throw std::runtime_error("no cancelled in OnDamageTakenCancelTrigger");
+
+    OnDamageTakenCancelTrigger t;
+    t.cancelled = json["cancelled"].toBool();
+
+    return t;
+}
+
 OtherTrigger parseOtherTrigger(const QJsonObject &json) {
     if (!json.contains("cardCode") || !json["cardCode"].isString())
         throw std::runtime_error("no cardCode");
@@ -262,6 +285,12 @@ Trigger parseTrigger(const QJsonObject &json) {
         break;
     case TriggerType::OnBeingAttacked:
         t.trigger = parseOnBeingAttackedTrigger(json["trigger"].toObject());
+        break;
+    case TriggerType::OnDamageCancel:
+        t.trigger = parseOnDamageCancelTrigger(json["trigger"].toObject());
+        break;
+    case TriggerType::OnDamageTakenCancel:
+        t.trigger = parseOnDamageTakenCancelTrigger(json["trigger"].toObject());
         break;
     case TriggerType::OnBackupOfThis:
     case TriggerType::OnEndOfThisCardsAttack:

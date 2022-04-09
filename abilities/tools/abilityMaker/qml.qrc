@@ -83,5 +83,6 @@
         <file>qml/effects/PutOnStageRested.qml</file>
         <file>qml/basicTypes/AttackType.qml</file>
         <file>qml/triggers/OnBeingAttackedTrigger.qml</file>
+        <file>qml/triggers/OnDamageCancel.qml</file>
     </qresource>
 </RCC>

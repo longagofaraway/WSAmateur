@@ -453,3 +453,69 @@ void ServerPlayer::checkOnPlayTrigger(ServerCard *playedCard) {
         }
     }
 }
+
+void ServerPlayer::checkOnDamageCancel(ServerCard *attCard, bool cancelled) {
+    auto checkTrigger = [=, this](ServerCard *card) {
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            if (aa.trigger.type != asn::TriggerType::OnDamageCancel)
+                continue;
+            const auto &trig = std::get<asn::OnDamageCancelTrigger>(aa.trigger.trigger);
+            if (trig.cancelled != cancelled)
+                continue;
+            if (trig.damageDealer.type == asn::TargetType::ThisCard) {
+                if (card != attCard)
+                    continue;
+            } else if (trig.damageDealer.type == asn::TargetType::SpecificCards) {
+                const auto &spec = *trig.damageDealer.targetSpecification;
+
+                if (!checkTargetMode(spec.mode, card, attCard))
+                    continue;
+
+                if (!checkCard(spec.cards.cardSpecifiers, *attCard))
+                    continue;
+            }
+
+            queueActivatedAbility(aa, abs[i], card, card->zone()->name(), attCard);
+        }
+    };
+
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        checkTrigger(card);
+    }
+}
+
+void ServerPlayer::checkOnDamageTakenCancel(bool cancelled) {
+    auto checkTrigger = [=, this](ServerCard *card) {
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            if (aa.trigger.type != asn::TriggerType::OnDamageTakenCancel)
+                continue;
+            const auto &trig = std::get<asn::OnDamageTakenCancelTrigger>(aa.trigger.trigger);
+            if (trig.cancelled != cancelled)
+                continue;
+
+            queueActivatedAbility(aa, abs[i], card);
+        }
+    };
+
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        checkTrigger(card);
+    }
+}

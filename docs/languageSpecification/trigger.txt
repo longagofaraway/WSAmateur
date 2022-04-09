@@ -23,8 +23,9 @@ enum TriggerType {
   onPhaseEvent = 7,
   onEndOfThisCardsAttack = 8,
   onOppCharPlacedByStandbyTriggerReveal = 9,
-  onEndOfThisTurn = 10,
-  onBeingAttacked = 11,
+  onBeingAttacked = 10,
+  onDamageCancel = 11,
+  onDamageTakenCancel = 12,
   
   otherTrigger = 255
 }
@@ -61,6 +62,16 @@ StateChangeTrigger {
 OnBeingAttackedTrigger {
   target Target, // who is beeing attacked
   attackType AttackType
+}
+
+OnDamageCancelTrigger {
+  damageDealer Target,
+  cancelled Bool
+}
+
+// when the damage taken by you isn't cancelled...
+OnDamageTakenCancelTrigger {
+  cancelled Bool
 }
 
 OtherTrigger {

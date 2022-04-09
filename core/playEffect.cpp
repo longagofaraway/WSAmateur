@@ -767,7 +767,7 @@ Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
     else
         damage = e.damage;
 
-    co_await mPlayer->getOpponent()->takeDamage(damage);
+    co_await mPlayer->getOpponent()->takeDamage(damage, thisCard().card);
 }
 
 Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {

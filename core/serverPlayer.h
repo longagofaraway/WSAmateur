@@ -168,7 +168,7 @@ public:
     void sendEndGame(bool victory);
     Resumable processPlayActCmd(const CommandPlayAct cmd);
     void reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone);
-    Resumable takeDamage(int damage);
+    Resumable takeDamage(int damage, ServerCard *card);
     Resumable checkRefreshAndLevelUp();
 
     void removePositionalContBuffsBySource(ServerCard *card);
@@ -185,6 +185,8 @@ public:
     void checkOnBackup(ServerCard *card);
     void checkOnTriggerReveal(ServerCard *card);
     void checkOnPlayTrigger(ServerCard *card);
+    void checkOnDamageCancel(ServerCard *attCard, bool cancelled);
+    void checkOnDamageTakenCancel(bool cancelled);
     void checkOtherTrigger(const std::string &code);
     void triggerBackupAbility(ServerCard *card);
     void triggerRuleAction(RuleAction action, ServerCard *thisCard = nullptr);
