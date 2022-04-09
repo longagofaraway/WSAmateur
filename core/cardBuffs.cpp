@@ -16,6 +16,7 @@ void ServerPlayer::endOfTurnEffectValidation() {
             continue;
 
         card->setTriggerCheckTwice(false);
+        card->setFirstTurn(false);
 
         card->buffManager()->endOfTurnEffectValidation();
     }

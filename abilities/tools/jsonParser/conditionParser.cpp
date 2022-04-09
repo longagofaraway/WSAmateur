@@ -145,6 +145,7 @@ Condition parseCondition(const QJsonObject &json) {
         break;
     case ConditionType::InBattleWithThis:
     case ConditionType::NoCondition:
+    case ConditionType::DuringCardsFirstTurn:
         break;
     default:
         throw std::runtime_error("wrong condition type");

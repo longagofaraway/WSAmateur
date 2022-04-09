@@ -42,6 +42,7 @@ void ServerCard::reset() {
     mCannotStand = false;
     mCannotMove = false;
     mInBattle = false;
+    mFirstTurn = false;
 }
 
 void ServerCard::setPos(int pos) {

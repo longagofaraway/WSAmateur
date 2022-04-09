@@ -830,7 +830,7 @@ std::string printEffect(const Effect &e) {
     std::string s;
 
     if (e.cond.type != ConditionType::NoCondition)
-        s += printCondition(e.cond);
+        s += printCondition(e.cond, gPrintState.type == AbilityType::Auto);
 
     switch (e.type) {
     case EffectType::ChooseCard:

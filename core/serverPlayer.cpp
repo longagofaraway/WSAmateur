@@ -382,6 +382,8 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
 
     auto oldStageCard = stage->putOnStage(std::move(card), targetPos);
     auto cardOnStage = stage->card(targetPos);
+    if (startZone->name() == "hand")
+        cardOnStage->setFirstTurn(true);
 
     EventMoveCard event;
     event.set_card_id(cardOnStage->id());
@@ -594,6 +596,7 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard cmd) {
 
     auto oldStageCard = stage->putOnStage(std::move(card), cmd.stage_pos());
     auto cardInPlay = stage->card(cmd.stage_pos());
+    cardInPlay->setFirstTurn(true);
 
     EventPlayCard event;
     event.set_card_id(cardInPlay->id());

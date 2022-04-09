@@ -146,12 +146,12 @@ TriggerImplComponent::TriggerImplComponent(asn::TriggerType type, const VarTrigg
     }
     case asn::TriggerType::OnDamageCancel: {
         const auto &trImpl = std::get<asn::OnDamageCancelTrigger>(tr);
-        QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, static_cast<int>(trImpl.cancelled)));
+        QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, trImpl.cancelled));
         break;
     }
     case asn::TriggerType::OnDamageTakenCancel: {
         const auto &trImpl = std::get<asn::OnDamageTakenCancelTrigger>(tr);
-        QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, static_cast<int>(trImpl.cancelled)));
+        QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, trImpl.cancelled));
         break;
     }
     default:
@@ -208,6 +208,7 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(attackTypeChanged(int)), this, SLOT(setAttackType(int)));
         break;
     case asn::TriggerType::OnDamageCancel:
+        QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, true));
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(cancelledChanged(bool)), this, SLOT(onBoolChanged(bool)));
         break;

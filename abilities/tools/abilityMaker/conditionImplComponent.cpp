@@ -211,7 +211,8 @@ void ConditionImplComponent::init(QQuickItem *parent) {
 
     std::unordered_set<asn::ConditionType> readyComponents {
         asn::ConditionType::NoCondition,
-        asn::ConditionType::InBattleWithThis
+        asn::ConditionType::InBattleWithThis,
+        asn::ConditionType::DuringCardsFirstTurn
     };
     if (readyComponents.contains(type))
         return;

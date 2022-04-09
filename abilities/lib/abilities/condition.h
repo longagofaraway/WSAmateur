@@ -72,7 +72,8 @@ enum class ConditionType : uint8_t {
     DuringTurn,
     CheckMilledCards,
     RevealedCard,
-    PlayersLevel
+    PlayersLevel,
+    DuringCardsFirstTurn
 };
 
 struct Condition {

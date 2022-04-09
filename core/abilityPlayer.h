@@ -147,6 +147,7 @@ private:
     bool evaluateConditionHaveCard(const asn::ConditionHaveCard &c);
     bool evaluateConditionAnd(const asn::ConditionAnd &c);
     bool evaluateConditionInBattleWithThis();
+    bool evaluateConditionDuringCardsFirstTurn();
     bool evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c);
     bool evaluateConditionDuringTurn(const asn::ConditionDuringTurn &c);
     bool evaluateConditionCheckMilledCards(const asn::ConditionCheckMilledCards &c);

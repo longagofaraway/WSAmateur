@@ -29,6 +29,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionRevealedCard(std::get<asn::ConditionRevealCard>(c.cond));
     case asn::ConditionType::PlayersLevel:
         return evaluateConditionPlayersLevel(std::get<asn::ConditionPlayersLevel>(c.cond));
+    case asn::ConditionType::DuringCardsFirstTurn:
+        return evaluateConditionDuringCardsFirstTurn();
     default:
         assert(false);
         return false;
@@ -120,6 +122,10 @@ bool AbilityPlayer::evaluateConditionAnd(const asn::ConditionAnd &c) {
 
 bool AbilityPlayer::evaluateConditionInBattleWithThis() {
     return thisCard().card->inBattle();
+}
+
+bool AbilityPlayer::evaluateConditionDuringCardsFirstTurn() {
+    return thisCard().card->isFirstTurn();
 }
 
 bool AbilityPlayer::evaluateConditionSumOfLevels(const asn::ConditionSumOfLevels &c) {

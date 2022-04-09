@@ -9,6 +9,11 @@ struct PrintState {
     bool abilityChainingFirst = false;
     bool abilityChainingSecond = false;
     bool mandatory = true;
+    asn::AbilityType type = asn::AbilityType::Cont;
+
+    PrintState() = default;
+    PrintState(const asn::Number &num1, const asn::Number &num2)
+        : mentionedCardsNumber(num1), chosenCardsNumber(num2) {}
 };
 extern PrintState gPrintState;
 
@@ -31,7 +36,8 @@ bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
 std::string printKeyword(asn::Keyword keyword);
 std::string printKeywords(const std::vector<asn::Keyword> &keywords);
-std::string printCondition(const asn::Condition &c);
+std::string printGlobalConditions(const std::vector<asn::Effect> &effects);
+std::string printCondition(const asn::Condition &c, bool skipGlobalConditions = false);
 std::string printCost(const asn::Cost &c);
 std::string printEffect(const asn::Effect &e);
 std::string printEffects(const std::vector<asn::Effect> &effects);
@@ -54,15 +60,21 @@ std::string printSpecificAbility(const T &a, asn::CardType cardType) {
     defaultNumber.mod = asn::NumModifier::ExactMatch;
     defaultNumber.value = 0;
 
-    gPrintState = { defaultNumber, defaultNumber, false, false };
+    gPrintState = PrintState(defaultNumber, defaultNumber);
 
-    if constexpr (std::is_same_v<T, asn::AutoAbility>)
+    if constexpr (std::is_same_v<T, asn::AutoAbility>) {
         s += "【AUTO】 ";
-    else if constexpr (std::is_same_v<T, asn::ContAbility>) {
+        gPrintState.type = asn::AbilityType::Auto;
+    } else if constexpr (std::is_same_v<T, asn::ContAbility>) {
         if (cardType != asn::CardType::Event)
             s += "【CONT】 ";
-    } else if constexpr (std::is_same_v<T, asn::ActAbility>)
+        gPrintState.type = asn::AbilityType::Cont;
+    } else if constexpr (std::is_same_v<T, asn::ActAbility>) {
         s += "【ACT】 ";
+        gPrintState.type = asn::AbilityType::Act;
+    } else {
+        gPrintState.type = asn::AbilityType::Event;
+    }
 
     s += printKeywords(a.keywords);
     size_t prefixLen = s.size();
@@ -73,6 +85,7 @@ std::string printSpecificAbility(const T &a, asn::CardType cardType) {
         if (a.activationTimes > 0)
             s += printActivationTimes(a.activationTimes);
         prefixLen = s.size();
+        s += printGlobalConditions(a.effects);
 
         s += printTrigger(a.trigger);
     }
@@ -102,7 +115,7 @@ std::string printSpecificAbility(const T &a, asn::CardType cardType) {
         s.pop_back();
     s.push_back('.');
 
-    gPrintState = { asn::Number(), asn::Number(), false, false };
+    gPrintState = PrintState(defaultNumber, defaultNumber);
 
     return s;
 }

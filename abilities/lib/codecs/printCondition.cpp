@@ -1,11 +1,17 @@
 #include "print.h"
 
+#include <unordered_set>
+
 using namespace asn;
 
 extern PrintState gPrintState;
 namespace {
 bool isPartOfAndOr = false;
 bool firstInHaveCardChain = true;
+std::unordered_set<ConditionType> globalConditionTypes {
+    ConditionType::DuringTurn,
+    ConditionType::DuringCardsFirstTurn
+};
 
 bool haveCardChain(int current, std::vector<Condition> vc) {
     // check if the next condition 'HaveCards' describes the same
@@ -242,8 +248,16 @@ std::string printConditionPlayersLevel(const ConditionPlayersLevel &c) {
     return s;
 }
 
-std::string printCondition(const Condition &c) {
+std::string printConditionDuringCardsFirstTurn() {
+    return "during the turn that this card was placed on the stage from your hand, ";
+}
+
+
+std::string printCondition(const Condition &c, bool skipGlobalConditions) {
     std::string s;
+
+    if (skipGlobalConditions && globalConditionTypes.contains(c.type))
+        return "";
 
     switch(c.type) {
     case ConditionType::IsCard:
@@ -276,9 +290,37 @@ std::string printCondition(const Condition &c) {
     case ConditionType::PlayersLevel:
         s += printConditionPlayersLevel(std::get<ConditionPlayersLevel>(c.cond));
         break;
+    case ConditionType::DuringCardsFirstTurn:
+        s += printConditionDuringCardsFirstTurn();
+        break;
     default:
         break;
     }
 
     return s;
+}
+
+namespace {
+std::string printGlobalConditions(const asn::Condition &condition) {
+    std::string s;
+    switch (condition.type) {
+    case asn::ConditionType::And: {
+        const auto &conditions = std::get<ConditionAnd>(condition.cond);
+        for (const auto &cond: conditions.cond) {
+            s += printGlobalConditions(cond);
+        }
+        break;
+    }
+    case asn::ConditionType::DuringTurn:
+    case asn::ConditionType::DuringCardsFirstTurn:
+        return printCondition(condition);
+    }
+    return s;
+}
+}
+
+std::string printGlobalConditions(const std::vector<asn::Effect> &effects) {
+    if (effects.empty())
+        return "";
+    return printGlobalConditions(effects[0].cond);
 }

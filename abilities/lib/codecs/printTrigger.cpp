@@ -13,7 +13,7 @@ std::unordered_map<std::string, std::string> gOtherTriggers {
 }
 
 std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
-    std::string s = "When ";
+    std::string s = "when ";
 
     for (size_t i = 0; i < t.target.size(); ++i) {
         if (i)
@@ -44,12 +44,12 @@ std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
 
 std::string printOnAttackTrigger(const OnAttackTrigger &t) {
     if (t.target.type == TargetType::ThisCard)
-        return "When this card attacks, ";
+        return "when this card attacks, ";
     return "";
 }
 
 std::string printStateChangeTrigger(const StateChangeTrigger &t) {
-    std::string s = "When ";
+    std::string s = "when ";
 
     s += printTarget(t.target);
 
@@ -59,10 +59,10 @@ std::string printStateChangeTrigger(const StateChangeTrigger &t) {
 }
 
 std::string printOnBackupOfThis() {
-    return "When you use this card's \"<b>Backup</b>\", ";
+    return "when you use this card's \"<b>Backup</b>\", ";
 }
 std::string printOnReversed() {
-    return "When this card becomes" + printState(State::Reversed) + ", ";
+    return "when this card becomes" + printState(State::Reversed) + ", ";
 }
 std::string printPhaseTrigger(const PhaseTrigger &t) {
     std::string s;
@@ -80,7 +80,7 @@ std::string printPhaseTrigger(const PhaseTrigger &t) {
 }
 
 std::string printOnTriggerReveal(const TriggerRevealTrigger &t) {
-    std::string s = "When your character's trigger check reveals ";
+    std::string s = "when your character's trigger check reveals ";
 
     s += printCard(t.card) + ", ";
 
@@ -88,7 +88,7 @@ std::string printOnTriggerReveal(const TriggerRevealTrigger &t) {
 }
 
 std::string printOnPlay(const OnPlayTrigger &t) {
-    std::string s = "When you play ";
+    std::string s = "when you play ";
 
     s += printTarget(t.target);
     s.pop_back();
@@ -98,17 +98,17 @@ std::string printOnPlay(const OnPlayTrigger &t) {
 }
 
 std::string printEndOfAttack() {
-    return "At the end of this card's attack, ";
+    return "at the end of this card's attack, ";
 }
 
 std::string printOnOppCharPlacedByStanbyTrigger() {
-    std::string s = "When your opponent puts a character on the stage by the effect of ";
+    std::string s = "when your opponent puts a character on the stage by the effect of ";
     s += printTriggerIcon(TriggerIcon::Standby) + " trigger, ";
     return s;
 }
 
 std::string printOnBeingAttackedTrigger(const OnBeingAttackedTrigger &t) {
-    std::string s = "When ";
+    std::string s = "when ";
 
     s += printTarget(t.target);
     s += "is" + printAttackType(t.attackType) + " attacked, ";
@@ -117,7 +117,7 @@ std::string printOnBeingAttackedTrigger(const OnBeingAttackedTrigger &t) {
 }
 
 std::string printOnDamageCancelTrigger(const OnDamageCancelTrigger &t) {
-    std::string s = "When damage dealt by ";
+    std::string s = "when damage dealt by ";
 
     s += printTarget(t.damageDealer) + "is ";
     if (!t.cancelled)
@@ -128,7 +128,7 @@ std::string printOnDamageCancelTrigger(const OnDamageCancelTrigger &t) {
 }
 
 std::string printOnDamageTakenCancelTrigger(const OnDamageTakenCancelTrigger &t) {
-    std::string s = "When damage taken by you is ";
+    std::string s = "when damage taken by you is ";
     if (!t.cancelled)
         s += "not ";
     s += "cancelled, ";
