@@ -88,7 +88,7 @@ public:
     bool mulliganFinished() const { return mMulliganFinished; }
     bool active() const { return mActive; }
     void setActive(bool active) { mActive = active; }
-    ServerCard* oppositeCard(ServerCard *card) const;
+    ServerCard* oppositeCard(const ServerCard *card) const;
     ServerCard* attackingCard() { return mAttackingCard; }
     void setAttackingCard(ServerCard *card) { mAttackingCard = card; }
     AttackType attackType() const { return mAttackType; }

@@ -234,7 +234,8 @@ std::string printCardsLocation(const ConditionCardsLocation &c) {
     std::string s = "if ";
 
     s += printTarget(c.target);
-    s += "is ";
+    if (c.place.pos != Position::OppositeCharacter)
+        s += "is ";
     s += printPlace(c.place) + ", ";
 
     return s;

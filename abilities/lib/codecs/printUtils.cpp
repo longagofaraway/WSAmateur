@@ -313,6 +313,9 @@ std::string printPlace(Place place) {
         break;
     }
 
+    if (place.pos == Position::OppositeCharacter)
+        return "have a character facing this card";
+
     if (place.pos == Position::Top)
         s += "the top card of ";
 

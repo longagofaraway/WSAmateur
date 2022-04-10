@@ -94,7 +94,8 @@ enum Position {
   emptySlot = 7,
   slotThisWasInRested = 8,
   slotThisWasIn = 9,
-  slotTargetWasIn = 10
+  slotTargetWasIn = 10,
+  oppositeCharacter = 11 // have a character facing this
 }
 
 enum State {

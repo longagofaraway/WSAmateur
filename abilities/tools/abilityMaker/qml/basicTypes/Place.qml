@@ -43,7 +43,7 @@ Rectangle {
             id: position
             model: ["Not specified", "Top", "Bottom", "Front row", "Back row", "Empty slot front row",
                     "Empty slot back row", "Empty slot", "Slot this was in rested", "Slot this was in",
-                    "Slot target was in"]
+                    "Slot target was in", "Opposite character"]
             onCurrentIndexChanged: positionChanged(currentIndex)
         }
     }

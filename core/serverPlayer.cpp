@@ -1142,7 +1142,7 @@ void ServerPlayer::setCardState(ServerCard *card, asn::State state) {
     sendToBoth(event);
 }
 
-ServerCard *ServerPlayer::oppositeCard(ServerCard *card) const {
+ServerCard *ServerPlayer::oppositeCard(const ServerCard *card) const {
     auto opponent = mGame->opponentOfPlayer(mId);
     if (!opponent)
         return nullptr;

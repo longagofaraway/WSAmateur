@@ -7,6 +7,7 @@
 
 #include "../client/src/card.h"
 #include "serverCardZone.h"
+#include "serverPlayer.h"
 
 std::string_view asnZoneToString(asn::Zone zone) {
     switch (zone) {
@@ -349,6 +350,8 @@ bool checkPlace(const ServerCard *card, const asn::Place &place) {
         return isBackRow(card->pos());
     case asn::Position::Top:
         return card->pos() == (card->zone()->count() - 1);
+    case asn::Position::OppositeCharacter:
+        return card->player()->oppositeCard(card) != nullptr;
     }
     assert(false);
     return true;
