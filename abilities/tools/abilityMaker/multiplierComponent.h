@@ -27,7 +27,7 @@ signals:
 
 private slots:
     void setMultiplierType(int index);
-    void onMultiplierChanged(const asn::Multiplier &m);
+    void onMultiplierChanged(const MultiplierImplComponent::VarMultiplier &m);
 
 private:
     void init();

@@ -76,7 +76,7 @@ private slots:
     void onValueTypeChanged(int value);
     void editMultiplier();
     void destroyMultiplier();
-    void multiplierReady(const std::optional<asn::Multiplier> &m);
+    void multiplierReady(const asn::Multiplier &m);
 
     void onOrderChanged(int value);
 

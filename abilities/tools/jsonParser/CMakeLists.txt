@@ -15,6 +15,7 @@ set(languageSpec
     condition.txt
     target.txt
     card.txt
+    multiplier.txt
     basicTypes.txt)
 
 list(TRANSFORM languageSpec PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)

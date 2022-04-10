@@ -58,29 +58,6 @@ enum NumModifier {
   multiplier = 4
 }
 
-Multiplier {
-  type MultiplierType,
-  specifier Choice {
-    ForEachMultiplier,
-    Nothing
-  }
-}
-
-enum MultiplierType {
-  forEach = 1,
-  timesLevel = 2,
-  markersPutInWrThisWay = 3
-}
-
-ForEachMultiplier {
-  target Target,
-  placeType PlaceType,
-  place Choice {
-    Place,
-    Nothing
-  }
-}
-
 enum PlaceType {
   selection = 1,
   specificPlace = 2,

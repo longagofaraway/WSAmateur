@@ -166,12 +166,7 @@ def parseVariant(fieldType, memberName, tokens, current, cpp):
 
 def parseChoice(fieldType, memberName, tokens, current, cpp):
     choiceType = ''
-    if fieldType == 'Multiplier':
-        choiceType = 'ForEachMultiplier'
-        code = '''\
-    if (field.type == MultiplierType::ForEach) {
-'''
-    elif fieldType == 'ForEachMultiplier':
+    if fieldType == 'ForEachMultiplier':
         choiceType = 'Place'
         code = '''\
     if (field.placeType == PlaceType::SpecificPlace) {
@@ -211,7 +206,8 @@ def parseChoice(fieldType, memberName, tokens, current, cpp):
         code = '''\
     if (field.cost.has_value()) {
 '''
-    elif (fieldType in ['Effect', 'Trigger', 'CardSpecifier', 'Condition', 'CostItem', 'Ability']):
+    elif (fieldType in ['Effect', 'Trigger', 'CardSpecifier', 'Condition', 
+                        'CostItem', 'Ability', 'Multiplier']):
         return parseVariant(fieldType, memberName, tokens, current, cpp)
     else:
         raise Exception('Unknown Choice type' + fieldType)
@@ -287,7 +283,8 @@ def addStructBody(fieldType, tokens, current, cpp):
             code += array_code
         else:
             indirection = ''
-            if memberName == 'target' and fieldType == 'ForEachMultiplier':
+            if memberName == 'target' and (fieldType == 'ForEachMultiplier' or 
+                                           fieldType == 'AddLevelMultiplier'):
                 indirection = '*'
                 
             code += '''\n\

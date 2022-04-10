@@ -100,7 +100,7 @@ void AbilityPlayer::removeMentionedCard(int cardId) {
 }
 
 int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
-    auto &specifier = m.specifier.value();
+    const auto &specifier = std::get<asn::ForEachMultiplier>(m.specifier);
     assert(specifier.target->type == asn::TargetType::SpecificCards);
 
     auto checkTargetCard = [this](const asn::TargetSpecificCards &spec, ServerCard *card) {
@@ -130,6 +130,16 @@ int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
     }
 
     return cardCount;
+}
+
+int AbilityPlayer::getAddLevelMultiplierValue(const asn::Multiplier &m) {
+    const auto &specifier = std::get<asn::AddLevelMultiplier>(m.specifier);
+    auto targets = getTargets(*specifier.target);
+    int res = 0;
+    for (const auto &target: targets) {
+        res += target->level();
+    }
+    return res;
 }
 
 std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zone from_zone) {

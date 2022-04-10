@@ -145,8 +145,9 @@ std::string printAttributeGain(const AttributeGain &e) {
     }
 
     if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::ForEach) {
+        const auto &m = std::get<ForEachMultiplier>(e.modifier->specifier);
         res += "for each ";
-        res += printForEachMultiplier(*e.modifier->specifier);
+        res += printForEachMultiplier(m);
     }
 
     if (!gPrintState.abilityChainingFirst) {
@@ -333,8 +334,9 @@ std::string printMoveCard(const MoveCard &e) {
     } else if(e.target.type == TargetType::SpecificCards) {
         bool plural = false;
         const auto &spec = *e.target.targetSpecification;
+        gPrintState.lastMovedCardsNumber = spec.number.value;
         // 'of' case
-        if ((e.from.pos == Position::Top ||e.from.pos == Position::Bottom)
+        if ((e.from.pos == Position::Top || e.from.pos == Position::Bottom)
                 && spec.number.mod == NumModifier::ExactMatch) {
             if (e.from.pos == Position::Top)
                 s += "the top ";
@@ -599,8 +601,9 @@ std::string printLook(const Look &e) {
     s += printZone(e.place.zone) + " ";
 
     if (e.valueType == ValueType::Multiplier && e.multiplier.value().type == MultiplierType::ForEach) {
+        const auto &m = std::get<ForEachMultiplier>(e.multiplier->specifier);
         s += "(X is equal to the number ";
-        s += printForEachMultiplier(e.multiplier.value().specifier.value(), true);
+        s += printForEachMultiplier(m, true);
         s.pop_back();
         s += ") ";
     }
@@ -657,8 +660,19 @@ std::string printDealDamage(const DealDamage &e) {
 
     if (e.damageType == ValueType::Multiplier) {
         s += ". X is equal to ";
-        if (e.modifier->type == MultiplierType::ForEach)
-            s += "the number " + printForEachMultiplier(*e.modifier->specifier, true);
+        if (e.modifier->type == MultiplierType::ForEach) {
+            const auto &m = std::get<ForEachMultiplier>(e.modifier->specifier);
+            s += "the number " + printForEachMultiplier(m, true);
+        } else if (e.modifier->type == MultiplierType::AddLevel) {
+            const auto &m = std::get<AddLevelMultiplier>(e.modifier->specifier);
+            if (e.damage > 0)
+                s += std::to_string(e.damage) + " + ";
+            s += "the level of ";
+            if (m.target->type == asn::TargetType::LastMovedCards)
+                s += "that card ";
+            else
+                s += printTarget(*m.target);
+        }
     } else
         s += " ";
 

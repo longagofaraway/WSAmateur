@@ -39,7 +39,7 @@ Rectangle {
         id: multiplierTypeCombo
         width: implicitWidth
         anchors.horizontalCenter: multiplier.horizontalCenter
-        model: ["For Each", "Times Level"]
+        model: ["For Each", "Times Level", "Add Level"]
         currentIndex: -1
         onCurrentIndexChanged: {
             multiplierTypeChanged(currentIndex + 1);

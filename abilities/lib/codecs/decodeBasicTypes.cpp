@@ -43,12 +43,20 @@ ForEachMultiplier decodeForEachMultiplier(Iterator &it, Iterator end) {
     return m;
 }
 
+AddLevelMultiplier decodeAddLevelMultiplier(Iterator &it, Iterator end) {
+    AddLevelMultiplier m;
+    m.target = std::make_shared<Target>(decodeTarget(it, end));
+    return m;
+}
+
 Multiplier decodeMultiplier(Iterator &it, Iterator end) {
     Multiplier m;
 
     m.type = decodeEnum<MultiplierType>(it, end);
     if (m.type == MultiplierType::ForEach)
         m.specifier = decodeForEachMultiplier(it, end);
+    else if (m.type == MultiplierType::AddLevel)
+        m.specifier = decodeAddLevelMultiplier(it, end);
 
     return m;
 }

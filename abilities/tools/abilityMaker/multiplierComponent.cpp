@@ -34,21 +34,29 @@ void MultiplierComponent::setMultiplierType(int index) {
     bool needImpl = false;
     multiplier.type = static_cast<asn::MultiplierType>(index);
     switch (multiplier.type) {
-    case asn::MultiplierType::ForEach:
+    case asn::MultiplierType::ForEach: {
         needImpl = true;
-        if (!multiplier.specifier) {
-            multiplier.specifier = asn::ForEachMultiplier();
-            multiplier.specifier->target = std::make_shared<asn::Target>();
-            multiplier.specifier->placeType = asn::PlaceType::Selection;
-        }
+        auto m = asn::ForEachMultiplier();
+        m = asn::ForEachMultiplier();
+        m.target = std::make_shared<asn::Target>();
+        m.placeType = asn::PlaceType::Selection;
+        multiplier.specifier = m;
         break;
+    }
+    case asn::MultiplierType::AddLevel: {
+        needImpl = true;
+        auto m = asn::AddLevelMultiplier();
+        m.target = std::make_shared<asn::Target>();
+        multiplier.specifier = m;
+        break;
+    }
     }
 
     if (needImpl) {
-        qmlMultiplierImpl = std::make_unique<MultiplierImplComponent>(multiplier, qmlObject);
+        qmlMultiplierImpl = std::make_unique<MultiplierImplComponent>(multiplier.type, multiplier.specifier, qmlObject);
     } else {
         qmlMultiplierImpl.reset();
-        multiplier.specifier.reset();
+        multiplier.specifier = std::monostate();
     }
 
     emit componentChanged(multiplier);
@@ -57,7 +65,7 @@ void MultiplierComponent::setMultiplierType(int index) {
         connect(qmlMultiplierImpl.get(), &MultiplierImplComponent::componentChanged, this, &MultiplierComponent::onMultiplierChanged);
 }
 
-void MultiplierComponent::onMultiplierChanged(const asn::Multiplier &m) {
-    multiplier = m;
+void MultiplierComponent::onMultiplierChanged(const MultiplierImplComponent::VarMultiplier &m) {
+    multiplier.specifier = m;
     emit componentChanged(multiplier);
 }

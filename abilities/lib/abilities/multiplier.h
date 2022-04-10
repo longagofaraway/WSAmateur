@@ -11,7 +11,7 @@ struct Target;
 enum class MultiplierType : uint8_t {
     ForEach = 1,
     TimesLevel,
-    MarkersPutInWrThisWay
+    AddLevel
 };
 
 struct ForEachMultiplier {
@@ -21,9 +21,16 @@ struct ForEachMultiplier {
     std::optional<Place> place;
 };
 
+struct AddLevelMultiplier {
+    std::shared_ptr<Target> target;
+};
+
 struct Multiplier {
     MultiplierType type;
-    std::optional<ForEachMultiplier> specifier;
+    std::variant<std::monostate,
+                 ForEachMultiplier,
+                 AddLevelMultiplier
+    > specifier;
 };
 
 }

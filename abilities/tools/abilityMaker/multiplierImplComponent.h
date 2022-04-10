@@ -10,20 +10,24 @@
 class MultiplierImplComponent : public QObject
 {
     Q_OBJECT
+public:
+    using VarMultiplier = decltype(asn::Multiplier::specifier);
+
 private:
     QQuickItem *qmlObject = nullptr;
 
-    asn::Multiplier multiplier;
+    asn::MultiplierType type;
+    VarMultiplier multiplier;
 
     std::unique_ptr<TargetComponent> qmlTarget;
     std::unique_ptr<PlaceComponent> qmlPlace;
 
 public:
-    MultiplierImplComponent(const asn::Multiplier &m, QQuickItem *parent);
+    MultiplierImplComponent(asn::MultiplierType type, const VarMultiplier &m, QQuickItem *parent);
     ~MultiplierImplComponent();
 
 signals:
-    void componentChanged(const asn::Multiplier &m);
+    void componentChanged(const VarMultiplier &m);
 
 private slots:
     void editTarget();

@@ -762,9 +762,12 @@ Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
         co_return;
 
     int damage;
-    if (e.damageType == asn::ValueType::Multiplier)
-        damage = getForEachMultiplierValue(*e.modifier) * e.damage;
-    else
+    if (e.damageType == asn::ValueType::Multiplier) {
+        if (e.modifier->type == asn::MultiplierType::ForEach)
+            damage = getForEachMultiplierValue(*e.modifier) * e.damage;
+        else if (e.modifier->type == asn::MultiplierType::AddLevel)
+            damage = getAddLevelMultiplierValue(*e.modifier) + e.damage;
+    } else
         damage = e.damage;
 
     co_await mPlayer->getOpponent()->takeDamage(damage, thisCard().card);

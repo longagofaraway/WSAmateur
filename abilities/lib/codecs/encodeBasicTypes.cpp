@@ -24,10 +24,16 @@ void encodeForEachMultiplier(const ForEachMultiplier &m, Buf &buf) {
         encodePlace(m.place.value(), buf);
 }
 
+void encodeAddLevelMultiplier(const AddLevelMultiplier &m, Buf &buf) {
+    encodeTarget(*m.target, buf);
+}
+
 void encodeMultiplier(const Multiplier &m, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(m.type));
     if (m.type == MultiplierType::ForEach)
-        encodeForEachMultiplier(m.specifier.value(), buf);
+        encodeForEachMultiplier(std::get<ForEachMultiplier>(m.specifier), buf);
+    else if (m.type == MultiplierType::AddLevel)
+        encodeAddLevelMultiplier(std::get<AddLevelMultiplier>(m.specifier), buf);
 }
 
 void encodePlace(const Place &c, Buf &buf) {

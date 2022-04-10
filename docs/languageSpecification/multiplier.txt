@@ -1,0 +1,28 @@
+Multiplier {
+  type MultiplierType,
+  specifier Choice {
+    ForEachMultiplier,
+    AddLevelMultiplier,
+    Nothing
+  }
+}
+
+enum MultiplierType {
+  forEach = 1,
+  timesLevel = 2, // level assist
+  addLevel = 3 
+}
+
+ForEachMultiplier {
+  target Target,
+  placeType PlaceType,
+  place Choice {
+    Place,
+    Nothing
+  }
+}
+
+// i.e. mill 1, deal damage x - 1 + level of milled card
+AddLevelMultiplier {
+  target Target // add level of these cards
+}

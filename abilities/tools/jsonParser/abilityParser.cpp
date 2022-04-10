@@ -26,6 +26,16 @@ ForEachMultiplier parseForEachMultiplier(const QJsonObject &json) {
     return m;
 }
 
+AddLevelMultiplier parseAddLevelMultiplier(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in AddLevelMultiplier");
+
+    AddLevelMultiplier m;
+    m.target = std::make_shared<Target>(parseTarget(json["target"].toObject()));
+
+    return m;
+}
+
 Multiplier parseMultiplier(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no type in Multiplier");
@@ -36,6 +46,8 @@ Multiplier parseMultiplier(const QJsonObject &json) {
     m.type = static_cast<MultiplierType>(json["type"].toInt());
     if (m.type == MultiplierType::ForEach)
         m.specifier = parseForEachMultiplier(json["specifier"].toObject());
+    else if (m.type == MultiplierType::AddLevel)
+        m.specifier = parseAddLevelMultiplier(json["specifier"].toObject());
 
     return m;
 }

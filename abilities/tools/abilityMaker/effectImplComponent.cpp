@@ -385,9 +385,10 @@ const std::optional<asn::Multiplier> getMultiplier(EffectImplComponent::VarEffec
 asn::Multiplier getDefaultMultiplier() {
     asn::Multiplier m;
     m.type = asn::MultiplierType::ForEach;
-    m.specifier = asn::ForEachMultiplier();
-    m.specifier->target = std::make_shared<asn::Target>();
-    m.specifier->placeType = asn::PlaceType::Selection;
+    auto mm = asn::ForEachMultiplier();
+    mm.target = std::make_shared<asn::Target>();
+    mm.placeType = asn::PlaceType::Selection;
+    m.specifier = mm;
     return m;
 }
 }
@@ -1428,7 +1429,7 @@ void EffectImplComponent::destroyMultiplier() {
     qmlMultiplier.reset();
 }
 
-void EffectImplComponent::multiplierReady(const std::optional<asn::Multiplier> &m) {
+void EffectImplComponent::multiplierReady(const asn::Multiplier &m) {
     switch (type) {
     case asn::EffectType::AttributeGain: {
         auto &e = std::get<asn::AttributeGain>(effect);

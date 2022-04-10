@@ -5,6 +5,7 @@
 struct PrintState {
     asn::Number mentionedCardsNumber;
     asn::Number chosenCardsNumber;
+    int lastMovedCardsNumber = 0;
     bool battleOpponentMentioned = false;
     bool abilityChainingFirst = false;
     bool abilityChainingSecond = false;
