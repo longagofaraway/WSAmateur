@@ -25,11 +25,14 @@ int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place 
     int eligibleCount = 0;
     if (place.owner == asn::Player::Player || place.owner == asn::Player::Both) {
         auto from = zone(place.zone);
-        eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode, mAbilityList->ability(mAbilityList->activeId()));
+        eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode,
+                                                mAbilityList->ability(mAbilityList->activeId()));
     }
     if (place.owner == asn::Player::Opponent || place.owner == asn::Player::Both) {
         auto from = getOpponent()->zone(place.zone);
-        eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode, mAbilityList->ability(mAbilityList->activeId()));
+        eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode,
+                                                mAbilityList->ability(mAbilityList->activeId()),
+                                                true/* use CannotBeChosen */);
     }
     return eligibleCount;
 }

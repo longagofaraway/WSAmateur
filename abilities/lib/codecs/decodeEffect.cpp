@@ -233,6 +233,13 @@ CannotStand decodeCannotStand(Iterator &it, Iterator end) {
     return e;
 }
 
+CannotBeChosen decodeCannotBeChosen(Iterator &it, Iterator end) {
+    CannotBeChosen e;
+    e.target = decodeTarget(it, end);
+    e.duration = decodeUInt8(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -341,6 +348,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::CannotStand:
         e.effect = decodeCannotStand(it, end);
+        break;
+    case EffectType::CannotBeChosen:
+        e.effect = decodeCannotBeChosen(it, end);
         break;
     default:
         break;

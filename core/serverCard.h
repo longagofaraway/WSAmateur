@@ -71,6 +71,7 @@ class ServerCard : public CardBase
     bool mCannotMove = false;
     bool mSideAttackWithoutPenalty = false;
     bool mCannotStand = false;
+    bool mCannotBeChosen = false;
     bool mFirstTurn = false;
 
     CardBuffManager mBuffManager;
@@ -121,6 +122,7 @@ public:
     bool cannotBecomeReversed() const { return mCannotBecomeReversed; }
     bool cannotMove() const { return mCannotMove; }
     bool cannotStand() const { return mCannotStand; }
+    bool cannotBeChosen() const { return mCannotBeChosen; }
     bool sideAttackWithoutPenalty() const { return mSideAttackWithoutPenalty; }
     void setFirstTurn(bool val) { mFirstTurn = val; }
     bool isFirstTurn() const { return mFirstTurn; }

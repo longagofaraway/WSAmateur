@@ -226,6 +226,13 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::CannotBeChosen: {
+        auto e = asn::CannotBeChosen();
+        e.duration = 0;
+        e.target = defaultTarget;
+        effect = e;
+        break;
+    }
     case asn::EffectType::PutOnStageRested: {
         auto e = asn::PutOnStageRested();
         e.target = defaultTarget;
@@ -336,6 +343,10 @@ const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::Effect
     }
     case asn::EffectType::CannotStand: {
         const auto &e = std::get<asn::CannotStand>(effect);
+        return e.target;
+    }
+    case asn::EffectType::CannotBeChosen: {
+        const auto &e = std::get<asn::CannotBeChosen>(effect);
         return e.target;
     }
     default:
@@ -542,6 +553,11 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
+    case asn::EffectType::CannotBeChosen: {
+        const auto &ef = std::get<asn::CannotBeChosen>(e);
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
     default:
         break;
     }
@@ -582,6 +598,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::CannotMove, "TargetDurationEffect" },
         { asn::EffectType::PutOnStageRested, "PutOnStageRested" },
         { asn::EffectType::CannotStand, "TargetDurationEffect" },
+        { asn::EffectType::CannotBeChosen, "TargetDurationEffect" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -766,19 +783,14 @@ void EffectImplComponent::init(QQuickItem *parent) {
         QMetaObject::invokeMethod(qmlObject, "hideTarget");
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
         break;
-    case asn::EffectType::CannotBecomeReversed:
-        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
-        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
-        break;
-    case asn::EffectType::CannotMove:
-        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
-        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
-        break;
     case asn::EffectType::PutOnStageRested:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         connect(qmlObject, SIGNAL(positionChanged(int)), this, SLOT(onPositionChanged(int)));
         break;
+    case asn::EffectType::CannotBecomeReversed:
+    case asn::EffectType::CannotMove:
+    case asn::EffectType::CannotBeChosen:
     case asn::EffectType::CannotStand:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
@@ -868,6 +880,11 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::EffectType::CannotStand: {
         auto &e = std::get<asn::CannotStand>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::CannotBeChosen: {
+        auto &e = std::get<asn::CannotBeChosen>(effect);
         e.target = t;
         break;
     }
@@ -1075,6 +1092,11 @@ void EffectImplComponent::onDurationChanged(int value) {
     }
     case asn::EffectType::CannotStand: {
         auto &e = std::get<asn::CannotStand>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::CannotBeChosen: {
+        auto &e = std::get<asn::CannotBeChosen>(effect);
         e.duration = value;
         break;
     }

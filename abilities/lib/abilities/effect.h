@@ -228,6 +228,11 @@ struct CannotStand {
     int duration;
 };
 
+struct CannotBeChosen {
+    Target target;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -273,6 +278,7 @@ enum class EffectType : uint8_t {
     PutOnStageRested,
     RemoveMarker,
     CannotStand,
+    CannotBeChosen,
 
     OtherEffect = 255
 };
@@ -313,6 +319,7 @@ struct Effect {
         PutOnStageRested,
         RemoveMarker,
         CannotStand,
+        CannotBeChosen,
         OtherEffect
     > effect;
 };

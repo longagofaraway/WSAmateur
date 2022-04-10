@@ -384,7 +384,8 @@ void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice
     auto checkState = [&effect](const Card &card) { return card.state() != effect.state; };
 
     const auto &spec = *effect.target.targetSpecification;
-    highlightEligibleCards(mStage, spec.cards.cardSpecifiers, spec.mode, activatedAbility, checkState);
+    highlightEligibleCards(mStage, spec.cards.cardSpecifiers, spec.mode,
+                           activatedAbility, checkState, false);
 
     auto effectText = printChangeState(effect);
     effectText[0] = std::toupper(effectText[0]);
@@ -409,6 +410,9 @@ void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
         break;
     case ProtoCannotMove:
         mStage->model().setCannotMove(event.card_pos(), event.value());
+        break;
+    case ProtoCannotBeChosen:
+        mStage->cards()[event.card_pos()].setCannotBeChosen(event.value());
         break;
     case ProtoSideAttackWithoutPenalty:
     case ProtoCannotStand:

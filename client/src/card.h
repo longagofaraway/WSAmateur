@@ -41,6 +41,7 @@ class Card : public CardBase {
     bool mCannotSideAttack = false;
     bool mCannotBecomeReversed = false;
     bool mCannotMove = false;
+    bool mCannotBeChosen = false;
 
 public:
     Card(CardZone *zone) : mZone(zone) {}
@@ -90,6 +91,8 @@ public:
     void setCannotBecomeReversed(bool p) { mCannotBecomeReversed = p; }
     bool cannotMove() const { return mCannotMove; }
     void setCannotMove(bool p) { mCannotMove = p; }
+    bool cannotBeChosen() const { return mCannotBeChosen; }
+    void setCannotBeChosen(bool p) { mCannotBeChosen = p; }
     bool highlightedByAbility() const { return mHighlightedByAbility; }
     void setHighlightedByAbility(bool p) { mHighlightedByAbility = p; }
 

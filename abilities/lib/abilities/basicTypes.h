@@ -46,7 +46,7 @@ enum class Position : uint8_t {
     EmptySlot,
     SlotThisWasInRested,
     SlotThisWasIn,
-    SlotTargetWasIn
+    SlotTargetWasIn,
 };
 
 struct Place {

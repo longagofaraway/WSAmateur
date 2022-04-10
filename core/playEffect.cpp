@@ -102,6 +102,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::RemoveMarker:
         playRemoveMarker(std::get<asn::RemoveMarker>(e.effect));
         break;
+    case asn::EffectType::CannotBeChosen:
+        playCannotBeChosen(std::get<asn::CannotBeChosen>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -169,6 +172,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
         break;
     case asn::EffectType::CannotStand:
         playCannotStand(std::get<asn::CannotStand>(e.effect));
+        break;
+    case asn::EffectType::CannotBeChosen:
+        playCannotBeChosen(std::get<asn::CannotBeChosen>(e.effect));
         break;
     default:
         break;
@@ -238,21 +244,23 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
             //TODO: add checks
             for (int i = chooseCmd.positions_size() - 1; i >= 0; --i) {
                 auto playerType = protoPlayerToPlayer(chooseCmd.owner());
+                auto cardOwner = playerType;
                 if (e.executor == asn::Player::Opponent) {
                     // revert sides
-                    if (playerType == asn::Player::Player)
-                        playerType = asn::Player::Opponent;
+                    if (cardOwner == asn::Player::Player)
+                        cardOwner = asn::Player::Opponent;
                     else
-                        playerType = asn::Player::Player;
+                        cardOwner = asn::Player::Player;
                 }
-                auto pzone = owner(playerType)->zone(chooseCmd.zone());
+                auto pzone = owner(cardOwner)->zone(chooseCmd.zone());
                 if (!pzone)
                     break;
 
                 auto card = pzone->card(chooseCmd.positions(i));
                 if (!card)
                     break;
-                addChosenCard(CardImprint(chooseCmd.zone(), card, card->player() != mPlayer));
+                if (playerType != e.executor && !card->cannotBeChosen())
+                    addChosenCard(CardImprint(chooseCmd.zone(), card, card->player() != mPlayer));
                 // here we assume that chosen cards from revealed/being looked at are moved after being chosen
                 // it's probably better to do this at the moment the chosen card is being moved
                 // by checking its unique id in selection
@@ -827,6 +835,27 @@ void AbilityPlayer::playCannotBecomeReversed(const asn::CannotBecomeReversed &e)
     }
 
     auto attr = BoolAttributeType::CannotBecomeReversed;
+    auto targets = getTargets(e.target);
+    for (auto target: targets) {
+        if (cont()) {
+            if (revert())
+                target->buffManager()->removeContBoolAttrChange(thisCard().card, abilityId(), attr);
+            else
+                target->buffManager()->addContBoolAttrChange(thisCard().card, abilityId(), attr, positional);
+        } else {
+            target->buffManager()->addBoolAttrChange(attr, e.duration);
+        }
+    }
+}
+
+void AbilityPlayer::playCannotBeChosen(const asn::CannotBeChosen &e) {
+    bool positional = isPositional(e.target);
+    if (e.target.type == asn::TargetType::ThisCard) {
+        if (thisCard().card == nullptr || thisCard().card->zone()->name() != "stage")
+            return;
+    }
+
+    auto attr = BoolAttributeType::CannotBeChosen;
     auto targets = getTargets(e.target);
     for (auto target: targets) {
         if (cont()) {

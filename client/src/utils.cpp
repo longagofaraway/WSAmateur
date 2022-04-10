@@ -19,9 +19,9 @@ void selectAllCards(CardZone *zone, bool select) {
 }
 
 int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs,
-                           asn::TargetMode mode, const ActivatedAbility &a) {
+                           asn::TargetMode mode, const ActivatedAbility &a, bool readCannotBeChosen) {
     auto noop = [](const Card&){ return true; };
-    return highlightEligibleCards(zone, specs, mode, a, noop);
+    return highlightEligibleCards(zone, specs, mode, a, noop, readCannotBeChosen);
 }
 
 

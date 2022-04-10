@@ -15,7 +15,8 @@ int getForEachMultiplierValue(Player *player, int thisCardId, const asn::Multipl
 
 template<typename T>
 int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs,
-                             asn::TargetMode mode, const ActivatedAbility &a, T pred) {
+                           asn::TargetMode mode, const ActivatedAbility &a, T pred,
+                           bool readCannotBeChosen) {
     int eligibleCount = 0;
     const auto &cards = zone->cards();
     highlightAllCards(zone, false);
@@ -23,6 +24,9 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
 
     for (int i = 0; i < zone->model().count(); ++i) {
         if (!cards[i].cardPresent())
+            continue;
+
+        if (cards[i].cannotBeChosen())
             continue;
 
         if ((mode == asn::TargetMode::FrontRow && i > 2) ||
@@ -46,5 +50,6 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
 }
 
 int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs,
-                           asn::TargetMode mode, const ActivatedAbility &a);
+                           asn::TargetMode mode, const ActivatedAbility &a,
+                           bool readCannotBeChosen = false);
 

@@ -461,6 +461,18 @@ CannotStand parseCannotStand(const QJsonObject &json) {
     return e;
 }
 
+CannotBeChosen parseCannotBeChosen(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in CannotBeChosen");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in CannotBeChosen");
+
+    CannotBeChosen e;
+    e.target = parseTarget(json["target"].toObject());
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 SideAttackWithoutPenalty parseSideAttackWithoutPenalty(const QJsonObject &json) {
     if (!json.contains("target") || !json["target"].isObject())
         throw std::runtime_error("no target in CannotMove");
@@ -608,6 +620,9 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::CannotStand:
         e.effect = parseCannotStand(json["effect"].toObject());
+        break;
+    case EffectType::CannotBeChosen:
+        e.effect = parseCannotBeChosen(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

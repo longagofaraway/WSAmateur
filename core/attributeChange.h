@@ -62,7 +62,8 @@ enum class BoolAttributeType {
     CannotBecomeReversed,
     CannotMove,
     SideAttackWithoutPenalty,
-    CannotStand
+    CannotStand,
+    CannotBeChosen
 };
 
 class BoolAttributeChange {

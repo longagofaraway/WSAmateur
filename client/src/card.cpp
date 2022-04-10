@@ -57,6 +57,7 @@ void Card::clear() {
     mCannotSideAttack = false;
     mCannotBecomeReversed = false;
     mCannotMove = false;
+    mCannotBeChosen = false;
 }
 
 QString Card::qstate() const {

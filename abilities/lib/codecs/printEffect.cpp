@@ -835,6 +835,16 @@ std::string printCannotStand(const CannotStand &e) {
     return s;
 }
 
+std::string printCannotBeChosen(const CannotBeChosen &e) {
+    std::string s;
+
+    s += printTarget(e.target);
+    s += "cannot be chosen by your opponent's effects ";
+    s += printDuration(e.duration);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -942,6 +952,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CannotStand:
         s += printCannotStand(std::get<CannotStand>(e.effect));
+        break;
+    case EffectType::CannotBeChosen:
+        s += printCannotBeChosen(std::get<CannotBeChosen>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

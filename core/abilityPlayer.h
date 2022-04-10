@@ -131,6 +131,7 @@ private:
     Resumable playSwapCards(const asn::SwapCards &e);
     void playCannotAttack(const asn::CannotAttack &e);
     void playCannotBecomeReversed(const asn::CannotBecomeReversed &e);
+    void playCannotBeChosen(const asn::CannotBeChosen &e);
     void playOpponentAutoCannotDealDamage(const asn::OpponentAutoCannotDealDamage &e);
     void playStockSwap();
     void playCannotMove(const asn::CannotMove &e);

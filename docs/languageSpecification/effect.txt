@@ -33,6 +33,7 @@ Effect {
     PutOnStageRested,
     RemoveMarker,
     CannotStand,
+    CannotBeChosen,
     OtherEffect,
     Nothing
   }
@@ -76,6 +77,7 @@ enum EffectType {
   putOnStageRested = 35,
   removeMarker = 36,
   cannotStand = 37,
+  cannotBeChosen = 38,
   
   otherEffect = 255
 }
@@ -328,6 +330,11 @@ PutOnStageRested {
   target Target,
   from Place,
   to Position
+}
+
+CannotBeChosen {
+  target Target,
+  duration UInt8
 }
 
 OtherEffect {
