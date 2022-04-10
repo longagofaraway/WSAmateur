@@ -16,6 +16,10 @@ const asn::Target& getTarget(MultiplierImplComponent::VarMultiplier &multiplier,
         const auto &m = std::get<asn::AddLevelMultiplier>(multiplier);
         return *m.target;
     }
+    case asn::MultiplierType::AddTriggerNumber: {
+        const auto &m = std::get<asn::AddTriggerNumberMultiplier>(multiplier);
+        return *m.target;
+    }
     default:
         assert(false);
     }
@@ -39,7 +43,8 @@ MultiplierImplComponent::~MultiplierImplComponent() {
 void MultiplierImplComponent::init(QQuickItem *parent) {
     std::unordered_map<asn::MultiplierType, QString> components {
         { asn::MultiplierType::ForEach, "ForEachMultiplier" },
-        { asn::MultiplierType::AddLevel, "AddLevelMultiplier" }
+        { asn::MultiplierType::AddLevel, "AddLevelMultiplier" },
+        { asn::MultiplierType::AddTriggerNumber, "AddTriggerNumberMultiplier" }
     };
     std::unordered_set<asn::MultiplierType> readyComponents {
         asn::MultiplierType::TimesLevel
@@ -71,6 +76,14 @@ void MultiplierImplComponent::init(QQuickItem *parent) {
     }
     case asn::MultiplierType::AddLevel: {
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        break;
+    }
+    case asn::MultiplierType::AddTriggerNumber: {
+        const auto &m = std::get<asn::AddTriggerNumberMultiplier>(multiplier);
+        QMetaObject::invokeMethod(qmlObject, "setTriggerIcon", Q_ARG(QVariant, (int)m.triggerIcon));
+
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(triggerIconChanged(int)), this, SLOT(onTriggerIconChanged(int)));
         break;
     }
     default:
@@ -126,6 +139,19 @@ void MultiplierImplComponent::onPlaceTypeChanged(int value) {
     emit componentChanged(multiplier);
 }
 
+void MultiplierImplComponent::onTriggerIconChanged(int value) {
+    switch (type) {
+    case asn::MultiplierType::AddTriggerNumber: {
+        auto &m = std::get<asn::AddTriggerNumberMultiplier>(multiplier);
+        m.triggerIcon = static_cast<asn::TriggerIcon>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(multiplier);
+}
+
 void MultiplierImplComponent::editTarget() {
     const auto &target = getTarget(multiplier, type);
     qmlTarget = std::make_unique<TargetComponent>(target, qmlObject);
@@ -147,6 +173,11 @@ void MultiplierImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::MultiplierType::AddLevel: {
         auto &m = std::get<asn::AddLevelMultiplier>(multiplier);
+        m.target = std::make_shared<asn::Target>(t);
+        break;
+    }
+    case asn::MultiplierType::AddTriggerNumber: {
+        auto &m = std::get<asn::AddTriggerNumberMultiplier>(multiplier);
         m.target = std::make_shared<asn::Target>(t);
         break;
     }

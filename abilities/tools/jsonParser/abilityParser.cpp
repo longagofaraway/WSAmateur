@@ -36,6 +36,19 @@ AddLevelMultiplier parseAddLevelMultiplier(const QJsonObject &json) {
     return m;
 }
 
+AddTriggerNumberMultiplier parseAddTriggerNumberMultiplier(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in AddTriggerNumberMultiplier");
+    if (!json.contains("triggerIcon") || !json["triggerIcon"].isObject())
+        throw std::runtime_error("no triggerIcon in AddTriggerNumberMultiplier");
+
+    AddTriggerNumberMultiplier m;
+    m.target = std::make_shared<Target>(parseTarget(json["target"].toObject()));
+    m.triggerIcon = static_cast<TriggerIcon>(json["triggerIcon"].toInt());
+
+    return m;
+}
+
 Multiplier parseMultiplier(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no type in Multiplier");

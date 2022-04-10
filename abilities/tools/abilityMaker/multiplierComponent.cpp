@@ -50,6 +50,14 @@ void MultiplierComponent::setMultiplierType(int index) {
         multiplier.specifier = m;
         break;
     }
+    case asn::MultiplierType::AddTriggerNumber: {
+        needImpl = true;
+        auto m = asn::AddTriggerNumberMultiplier();
+        m.target = std::make_shared<asn::Target>();
+        m.triggerIcon = asn::TriggerIcon::Soul;
+        multiplier.specifier = m;
+        break;
+    }
     }
 
     if (needImpl) {

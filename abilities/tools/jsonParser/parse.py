@@ -284,7 +284,8 @@ def addStructBody(fieldType, tokens, current, cpp):
         else:
             indirection = ''
             if memberName == 'target' and (fieldType == 'ForEachMultiplier' or 
-                                           fieldType == 'AddLevelMultiplier'):
+                                           fieldType == 'AddLevelMultiplier' or
+                                           fieldType == 'AddTriggerNumberMultiplier'):
                 indirection = '*'
                 
             code += '''\n\

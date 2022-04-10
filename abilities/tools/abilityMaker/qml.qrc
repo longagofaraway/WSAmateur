@@ -85,5 +85,6 @@
         <file>qml/triggers/OnBeingAttackedTrigger.qml</file>
         <file>qml/triggers/OnDamageCancel.qml</file>
         <file>qml/basicTypes/AddLevelMultiplier.qml</file>
+        <file>qml/basicTypes/AddTriggerNumberMultiplier.qml</file>
     </qresource>
 </RCC>

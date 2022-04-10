@@ -49,6 +49,13 @@ AddLevelMultiplier decodeAddLevelMultiplier(Iterator &it, Iterator end) {
     return m;
 }
 
+AddTriggerNumberMultiplier decodeAddTriggerNumberMultiplier(Iterator &it, Iterator end) {
+    AddTriggerNumberMultiplier m;
+    m.target = std::make_shared<Target>(decodeTarget(it, end));
+    m.triggerIcon = decodeEnum<TriggerIcon>(it, end);
+    return m;
+}
+
 Multiplier decodeMultiplier(Iterator &it, Iterator end) {
     Multiplier m;
 
@@ -57,6 +64,8 @@ Multiplier decodeMultiplier(Iterator &it, Iterator end) {
         m.specifier = decodeForEachMultiplier(it, end);
     else if (m.type == MultiplierType::AddLevel)
         m.specifier = decodeAddLevelMultiplier(it, end);
+    else if (m.type == MultiplierType::AddTriggerNumber)
+        m.specifier = decodeAddTriggerNumberMultiplier(it, end);
 
     return m;
 }

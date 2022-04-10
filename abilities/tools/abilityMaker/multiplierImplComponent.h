@@ -39,6 +39,7 @@ private slots:
     void placeReady(const asn::Place &p);
 
     void onPlaceTypeChanged(int value);
+    void onTriggerIconChanged(int value);
 
 private:
     void init(QQuickItem *parent);

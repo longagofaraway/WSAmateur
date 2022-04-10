@@ -672,6 +672,15 @@ std::string printDealDamage(const DealDamage &e) {
                 s += "that card ";
             else
                 s += printTarget(*m.target);
+        } else if (e.modifier->type == MultiplierType::AddTriggerNumber) {
+            const auto &m = std::get<AddTriggerNumberMultiplier>(e.modifier->specifier);
+            if (e.damage > 0)
+                s += std::to_string(e.damage) + " + ";
+            s += "the total number of " + printTriggerIcon(m.triggerIcon) + " trigger icons among ";
+            if (m.target->type == asn::TargetType::LastMovedCards)
+                s += "those cards ";
+            else
+                s += printTarget(*m.target);
         }
     } else
         s += " ";

@@ -1,5 +1,7 @@
 #include "abilityPlayer.h"
 
+#include <numeric>
+
 #include "abilityUtils.h"
 #include "serverPlayer.h"
 #include "serverGame.h"
@@ -140,6 +142,17 @@ int AbilityPlayer::getAddLevelMultiplierValue(const asn::Multiplier &m) {
         res += target->level();
     }
     return res;
+}
+
+int AbilityPlayer::getTriggerNumberMultiplierValue(const asn::Multiplier &m) {
+    const auto &specifier = std::get<asn::AddTriggerNumberMultiplier>(m.specifier);
+    auto targets = getTargets(*specifier.target);
+    return std::accumulate(targets.begin(), targets.end(), 0, [&specifier](int sum, const ServerCard *card){
+        const auto &triggerIcons = card->triggers();
+        return sum + std::accumulate(triggerIcons.begin(), triggerIcons.end(), 0, [&specifier](int sum, asn::TriggerIcon icon){
+            return icon == specifier.triggerIcon ? sum + 1 : sum;
+        });
+    });
 }
 
 std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zone from_zone) {
