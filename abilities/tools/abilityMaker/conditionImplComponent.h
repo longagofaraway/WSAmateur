@@ -24,6 +24,7 @@ private:
     std::unique_ptr<TargetComponent> qmlTarget;
     asn::Target target;
     bool targetSet = false;
+    int currentCardIndex = 0;
 
     std::unique_ptr<PlaceComponent> qmlPlace;
     std::unique_ptr<CardComponent> qmlCard;
@@ -42,7 +43,10 @@ private slots:
     void destroyTarget();
     void targetReady(const asn::Target &t);
 
+    void addCard();
     void editCard();
+    void editCard1();
+    void editCard2();
     void cardReady(const asn::Card &card_);
     void destroyCard();
 

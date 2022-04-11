@@ -100,11 +100,12 @@ const asn::Place& getPlace(ConditionImplComponent::VarCondition &condition, asn:
     static auto p = asn::Place();
     return p;
 }
-const asn::Card& getCard(ConditionImplComponent::VarCondition &condition, asn::ConditionType type) {
+const asn::Card& getCard(ConditionImplComponent::VarCondition &condition, asn::ConditionType type,
+                         int cardIndex) {
     switch (type) {
     case asn::ConditionType::IsCard: {
         const auto &c = std::get<asn::ConditionIsCard>(condition);
-        return c.neededCard[0];
+        return c.neededCard[cardIndex];
     }
     case asn::ConditionType::HaveCards: {
         const auto &c = std::get<asn::ConditionHaveCard>(condition);
@@ -231,6 +232,8 @@ void ConditionImplComponent::init(QQuickItem *parent) {
     case asn::ConditionType::IsCard:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(editCard()), this, SLOT(editCard()));
+        connect(qmlObject, SIGNAL(editCard2()), this, SLOT(editCard2()));
+        connect(qmlObject, SIGNAL(addCard()), this, SLOT(addCard()));
         break;
     case asn::ConditionType::HaveCards:
         QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)asn::Player::Player));
@@ -327,19 +330,35 @@ void ConditionImplComponent::targetReady(const asn::Target &t) {
     emit componentChanged(condition);
 }
 
+void ConditionImplComponent::addCard() {
+    auto &c = std::get<asn::ConditionIsCard>(condition);
+    c.neededCard.push_back(asn::Card());
+    emit componentChanged(condition);
+}
+
 void ConditionImplComponent::editCard() {
-    qmlCard = std::make_unique<CardComponent>(getCard(condition, type), qmlObject);
+    qmlCard = std::make_unique<CardComponent>(getCard(condition, type, currentCardIndex), qmlObject);
     qmlCard->moveToTop();
 
     connect(qmlCard.get(), &CardComponent::componentChanged, this, &ConditionImplComponent::cardReady);
     connect(qmlCard.get(), &CardComponent::close, this, &ConditionImplComponent::destroyCard);
 }
 
+void ConditionImplComponent::editCard1() {
+    currentCardIndex = 0;
+    editCard();
+}
+
+void ConditionImplComponent::editCard2() {
+    currentCardIndex = 1;
+    editCard();
+}
+
 void ConditionImplComponent::cardReady(const asn::Card &card_) {
     switch (type) {
     case asn::ConditionType::IsCard: {
         auto &c = std::get<asn::ConditionIsCard>(condition);
-        c.neededCard[0] = card_;
+        c.neededCard[currentCardIndex] = card_;
         break;
     }
     case asn::ConditionType::HaveCards: {

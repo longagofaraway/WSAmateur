@@ -6,7 +6,9 @@ import "../basicTypes"
 Rectangle {
     id: conditionImpl
 
+    signal addCard()
     signal editCard()
+    signal editCard2()
     signal editTarget()
 
     width: root.width
@@ -46,6 +48,23 @@ Rectangle {
                 text: "Open editor"
                 onClicked: {
                     editCard();
+                }
+            }
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "+"
+            }
+            Button {
+                property bool created: false
+                text: "Add Card Filter"
+                onClicked: {
+                    if (!created) {
+                        addCard();
+                        text = "Open Editor";
+                        created = true;
+                    } else {
+                        editCard2();
+                    }
                 }
             }
         }
