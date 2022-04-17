@@ -275,6 +275,16 @@ void ServerGame::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
     opponent->checkPhaseTrigger(state, phase);
 }
 
+void ServerGame::checkOnActAbillity(int id) {
+    ServerPlayer *turnPlayer = activePlayer();
+    ServerPlayer *opponent = activePlayer(false);
+    if (!turnPlayer || !opponent)
+        return;
+
+    turnPlayer->checkOnActAbillity(turnPlayer->id() == id ? asn::Player::Player : asn::Player::Opponent);
+    opponent->checkOnActAbillity(opponent->id() == id ? asn::Player::Player : asn::Player::Opponent);
+}
+
 Resumable ServerGame::checkTiming() {
     ServerPlayer *turnPlayer = activePlayer();
     ServerPlayer *opponent = activePlayer(false);

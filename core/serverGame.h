@@ -70,6 +70,7 @@ public:
     Resumable endPhase();
 
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
+    void checkOnActAbillity(int id);
 
     Resumable checkTiming();
     Resumable processRuleActions();

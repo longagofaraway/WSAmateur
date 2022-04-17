@@ -93,6 +93,12 @@ void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerTy
         trigger = tr;
         break;
     }
+    case asn::TriggerType::OnActAbillity: {
+        auto tr = asn::OnActAbillityTrigger();
+        tr.player = asn::Player::Player;
+        trigger = tr;
+        break;
+    }
     case asn::TriggerType::OnBackupOfThis:
     case asn::TriggerType::OnEndOfThisCardsAttack:
     case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
@@ -154,6 +160,11 @@ TriggerImplComponent::TriggerImplComponent(asn::TriggerType type, const VarTrigg
         QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, trImpl.cancelled));
         break;
     }
+    case asn::TriggerType::OnActAbillity: {
+        const auto &trImpl = std::get<asn::OnActAbillityTrigger>(tr);
+        QMetaObject::invokeMethod(qmlObject, "setPlayer", Q_ARG(QVariant, static_cast<int>(trImpl.player)));
+        break;
+    }
     default:
         break;
     }
@@ -169,7 +180,8 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         { asn::TriggerType::OnStateChange, "StateChangeTrigger" },
         { asn::TriggerType::OnBeingAttacked, "OnBeingAttackedTrigger" },
         { asn::TriggerType::OnDamageCancel, "OnDamageCancel" },
-        { asn::TriggerType::OnDamageTakenCancel, "OnDamageCancel" }
+        { asn::TriggerType::OnDamageTakenCancel, "OnDamageCancel" },
+        { asn::TriggerType::OnActAbillity, "OnActAbillity" }
     };
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/triggers/" + components.at(type) + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
@@ -215,6 +227,9 @@ void TriggerImplComponent::init(QQuickItem *parent) {
     case asn::TriggerType::OnDamageTakenCancel:
         QMetaObject::invokeMethod(qmlObject, "hideTarget");
         connect(qmlObject, SIGNAL(cancelledChanged(bool)), this, SLOT(onBoolChanged(bool)));
+        break;
+    case asn::TriggerType::OnActAbillity:
+        connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(setOwner(int)));
         break;
     default:
         break;
@@ -305,9 +320,21 @@ void TriggerImplComponent::setPhase(int index) {
 }
 
 void TriggerImplComponent::setOwner(int index) {
-    auto &tr = std::get<asn::PhaseTrigger>(trigger);
-    tr.player = static_cast<asn::Player>(index);
-    emit componentChanged(trigger);
+    switch (type) {
+    case asn::TriggerType::OnActAbillity: {
+        auto &trig = std::get<asn::OnActAbillityTrigger>(trigger);
+        trig.player = static_cast<asn::Player>(index);
+        break;
+    }
+    case asn::TriggerType::OnPhaseEvent: {
+        auto &tr = std::get<asn::PhaseTrigger>(trigger);
+        tr.player = static_cast<asn::Player>(index);
+        break;
+    }
+}
+
+emit componentChanged(trigger);
+
 }
 
 void TriggerImplComponent::setState(int index) {

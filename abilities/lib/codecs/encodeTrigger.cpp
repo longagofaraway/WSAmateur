@@ -33,6 +33,10 @@ void encodeOnDamageTakenCancel(const OnDamageTakenCancelTrigger &t, Buf &buf) {
     buf.push_back(t.cancelled ? 1 : 0);
 }
 
+void encodeOnActAbillity(const OnActAbillityTrigger &t, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(t.player));
+}
+
 void encodeTrigger(const Trigger &t, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(t.type));
     switch (t.type) {
@@ -62,6 +66,9 @@ void encodeTrigger(const Trigger &t, Buf &buf) {
         break;
     case TriggerType::OnDamageTakenCancel:
         encodeOnDamageTakenCancel(std::get<OnDamageTakenCancelTrigger>(t.trigger), buf);
+        break;
+    case TriggerType::OnActAbillity:
+        encodeOnActAbillity(std::get<OnActAbillityTrigger>(t.trigger), buf);
         break;
     case TriggerType::OtherTrigger:
         encodeString(std::get<OtherTrigger>(t.trigger).cardCode, buf);

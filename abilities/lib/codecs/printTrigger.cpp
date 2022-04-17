@@ -135,6 +135,16 @@ std::string printOnDamageTakenCancelTrigger(const OnDamageTakenCancelTrigger &t)
     return s;
 }
 
+std::string printOnActAbillityTrigger(const OnActAbillityTrigger &t) {
+    std::string s = "when ";
+    if (t.player == Player::Player)
+        s += "you use";
+    else if (t.player == Player::Opponent)
+            s += "your opponent uses";
+    s += " 【ACT】 abillity, ";
+    return s;
+}
+
 std::string printOtherTrigger(const OtherTrigger &t) {
     return gOtherTriggers[t.cardCode];
 }
@@ -178,6 +188,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnDamageTakenCancel:
         s += printOnDamageTakenCancelTrigger(std::get<OnDamageTakenCancelTrigger>(t.trigger));
+        break;
+    case TriggerType::OnActAbillity:
+        s += printOnActAbillityTrigger(std::get<OnActAbillityTrigger>(t.trigger));
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));

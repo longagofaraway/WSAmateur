@@ -8,6 +8,7 @@ Trigger {
     OnAttackTrigger,
     OnBeingAttackedTrigger,
     StateChangeTrigger,
+    OnActAbillityTrigger,
     OtherTrigger,
     Nothing
   }
@@ -25,7 +26,8 @@ enum TriggerType {
   onOppCharPlacedByStandbyTriggerReveal = 9,
   onBeingAttacked = 10,
   onDamageCancel = 11,
-  onDamageTakenCancel = 12,
+  onDamageTakenCancel = 12
+  onActAbillity = 13,
   
   otherTrigger = 255
 }
@@ -72,6 +74,10 @@ OnDamageCancelTrigger {
 // when the damage taken by you isn't cancelled...
 OnDamageTakenCancelTrigger {
   cancelled Bool
+}
+
+OnActAbillityTrigger {
+  player Player
 }
 
 OtherTrigger {

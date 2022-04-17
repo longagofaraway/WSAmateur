@@ -1114,6 +1114,8 @@ Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct cmd) {
     mQueue.push_back(ta);
 
     co_await mGame->checkTiming();
+    mGame->checkOnActAbillity(mId);
+
 }
 
 void ServerPlayer::reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone){
