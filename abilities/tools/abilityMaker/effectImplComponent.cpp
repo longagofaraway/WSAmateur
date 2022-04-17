@@ -241,6 +241,14 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::TriggerIconGain: {
+        auto e = asn::TriggerIconGain();
+        e.target = defaultTarget;
+        e.duration = 0;
+        e.triggerIcon = asn::TriggerIcon::Soul;
+        effect = e;
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
     case asn::EffectType::StockSwap:
@@ -349,6 +357,10 @@ const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::Effect
         const auto &e = std::get<asn::CannotBeChosen>(effect);
         return e.target;
     }
+    case asn::EffectType::TriggerIconGain: {
+        const auto &e = std::get<asn::TriggerIconGain>(effect);
+        return e.target;
+    }
     default:
         assert(false);
     }
@@ -392,7 +404,7 @@ const std::optional<asn::Multiplier> getMultiplier(EffectImplComponent::VarEffec
     default:
         assert(false);
     }
-    throw std::runtime_error("unhandled EffectType");
+    throw std::runtime_error("unhandled EffectType in multiplier");
 }
 asn::Multiplier getDefaultMultiplier() {
     asn::Multiplier m;
@@ -559,6 +571,12 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
+    case asn::EffectType::TriggerIconGain: {
+        const auto &ef = std::get<asn::TriggerIconGain>(e);
+        QMetaObject::invokeMethod(qmlObject, "setTriggerIcon", Q_ARG(QVariant, (int)ef.triggerIcon));
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
     default:
         break;
     }
@@ -600,6 +618,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::PutOnStageRested, "PutOnStageRested" },
         { asn::EffectType::CannotStand, "TargetDurationEffect" },
         { asn::EffectType::CannotBeChosen, "TargetDurationEffect" },
+        { asn::EffectType::TriggerIconGain, "TriggerIconGain" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -789,6 +808,11 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         connect(qmlObject, SIGNAL(positionChanged(int)), this, SLOT(onPositionChanged(int)));
         break;
+    case asn::EffectType::TriggerIconGain:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(triggerIconChanged(int)), this, SLOT(onTriggerIconChanged(int)));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
     case asn::EffectType::CannotBecomeReversed:
     case asn::EffectType::CannotMove:
     case asn::EffectType::CannotBeChosen:
@@ -886,6 +910,11 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::EffectType::CannotBeChosen: {
         auto &e = std::get<asn::CannotBeChosen>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::TriggerIconGain: {
+        auto &e = std::get<asn::TriggerIconGain>(effect);
         e.target = t;
         break;
     }
@@ -1049,6 +1078,12 @@ void EffectImplComponent::chooseTwoReady(const asn::ChooseCard &e) {
     emit componentChanged(effect);
 }
 
+void EffectImplComponent::onTriggerIconChanged(int value) {
+    auto &eff = std::get<asn::TriggerIconGain>(effect);
+    eff.triggerIcon = static_cast<asn::TriggerIcon>(value);
+    emit componentChanged(effect);
+}
+
 void EffectImplComponent::onDurationChanged(int value) {
     switch (type) {
     case asn::EffectType::AttributeGain: {
@@ -1098,6 +1133,11 @@ void EffectImplComponent::onDurationChanged(int value) {
     }
     case asn::EffectType::CannotBeChosen: {
         auto &e = std::get<asn::CannotBeChosen>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::TriggerIconGain: {
+        auto &e = std::get<asn::TriggerIconGain>(effect);
         e.duration = value;
         break;
     }

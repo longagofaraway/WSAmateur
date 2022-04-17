@@ -13,6 +13,7 @@ ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone, int
     mPower = info->power();
     mSoul = info->soul();
     mLevel = info->level();
+    mTriggerIcons = info->triggers();
 
     for (const auto &abBuf: info->abilities())
         mAbilities.emplace_back(decodeAbility(abBuf), static_cast<int>(mAbilities.size()));
@@ -32,6 +33,7 @@ void ServerCard::reset() {
     mPower = mCardInfo->power();
     mSoul = mCardInfo->soul();
     mLevel = mCardInfo->level();
+    // do not reset trigger icons
 
     mTriggerCheckTwice = false;
     mCannotPlay = false;
@@ -60,6 +62,16 @@ int ServerCard::pos() const {
 
 ServerPlayer* ServerCard::player() const {
     return mZone->player();
+}
+
+void ServerCard::addTriggerIcon(asn::TriggerIcon icon) {
+    mTriggerIcons.push_back(icon);
+}
+
+void ServerCard::removeTriggerIcon(asn::TriggerIcon icon) {
+    auto it = std::find(mTriggerIcons.begin(), mTriggerIcons.end(), icon);
+    if (it != mTriggerIcons.end())
+        mTriggerIcons.erase(it);
 }
 
 int ServerCard::playersLevel() const {

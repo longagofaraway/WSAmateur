@@ -48,6 +48,7 @@ class ServerCard : public CardBase
     ServerCardZone *mZone;
     std::string mCode;
     std::vector<AbilityState> mAbilities;
+    std::vector<asn::TriggerIcon> mTriggerIcons;
 
     std::vector<std::unique_ptr<ServerCard>> mMarkers;
 
@@ -101,7 +102,9 @@ public:
     bool isCounter() const { return mCardInfo->isCounter(); }
     asn::State state() const { return mState; }
     void setState(asn::State st) { mState = st; }
-    const std::vector<TriggerIcon>& triggers() const override { return mCardInfo->triggers(); }
+    const std::vector<TriggerIcon>& triggers() const override { return mTriggerIcons; }
+    void addTriggerIcon(asn::TriggerIcon icon);
+    void removeTriggerIcon(asn::TriggerIcon icon);
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
     int playersLevel() const override;
     asn::FaceOrientation faceOrientation() const { return mFaceOrientation; }

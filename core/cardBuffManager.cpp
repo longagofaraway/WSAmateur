@@ -13,10 +13,36 @@ void CardBuffManager::reset() {
     mContBuffs.clear();
     mAbilityBuffs.clear();
     mBoolAttrChanges.clear();
+
+    std::erase_if(cardBuffs, [](const std::unique_ptr<Buff> &buff) {
+        return buff->type != BuffType::TriggerIcon;
+    });
 }
 
-void CardBuffManager::sendAttrChange(asn::AttributeType attr)
-{
+void CardBuffManager::addBuff(const Buff &buff) {
+    if (buff.duration > 0) {
+        const auto& newBuff = cardBuffs.emplace_back(buff.clone());
+        newBuff->apply(mCard);
+        return;
+    }
+    auto it = std::find(cardBuffs.begin(), cardBuffs.end(), buff);
+    if (it == cardBuffs.end()) {
+        const auto& newBuff = cardBuffs.emplace_back(buff.clone());
+        newBuff->apply(mCard);
+        return;
+    }
+    it->get()->update(buff);
+}
+
+void CardBuffManager::removeContBuff(const Buff &buff) {
+    auto it = std::find(cardBuffs.begin(), cardBuffs.end(), buff);
+    if (it == cardBuffs.end())
+        return;
+
+    removeBuff(it);
+}
+
+void CardBuffManager::sendAttrChange(asn::AttributeType attr) {
     EventSetCardAttr event;
     event.set_card_pos(mCard->pos());
     event.set_zone(mCard->zone()->name());
@@ -199,6 +225,13 @@ void CardBuffManager::removePositionalContBuffs() {
     removePositionalContBoolAttrChanges();
     removeAbilityAsPositionalContBuff();
 
+    for (auto it = cardBuffs.begin(); it != cardBuffs.end();) {
+        if ((*it)->positional)
+            it = removeBuff(it);
+        else
+            ++it;
+    }
+
     if (mCard->power() <= 0)
         mCard->player()->triggerRuleAction(RuleAction::InsufficientPower, mCard);
 }
@@ -250,6 +283,13 @@ void CardBuffManager::removePositionalContBuffsBySource(ServerCard *source) {
 
     removeAbilityAsPositionalContBuffBySource(source);
     removePositionalContBoolAttrChangeBySource(source);
+
+    for (auto it = cardBuffs.begin(); it != cardBuffs.end();) {
+        if ((*it)->positional && (*it)->source == source)
+            it = removeBuff(it);
+        else
+            ++it;
+    }
 }
 
 void CardBuffManager::removePositionalContAttrBuffsBySource(ServerCard *source) {
@@ -293,6 +333,20 @@ void CardBuffManager::endOfTurnEffectValidation() {
     validateAttrBuffs();
     validateAbilities();
     validateBoolAttrChanges();
+
+    for (auto it = cardBuffs.begin(); it != cardBuffs.end();) {
+        if (shouldSkipEffectValidation(**it)) {
+            ++it;
+            continue;
+        }
+
+        if (!(*it)->duration || --(*it)->duration) {
+            ++it;
+            continue;
+        }
+
+        it = removeBuff(it);
+    }
 }
 
 void CardBuffManager::validateCannotStand() {
@@ -316,6 +370,18 @@ void CardBuffManager::validateCannotStand() {
             sendBoolAttrChange(type, false);
         }
     }
+}
+
+CardBuffManager::CardBuffs::iterator
+CardBuffManager::removeBuff(CardBuffs::iterator it) {
+    auto removedBuff = std::move(*it);
+    it = cardBuffs.erase(it);
+    removedBuff->undo(mCard);
+    return it;
+}
+
+bool CardBuffManager::shouldSkipEffectValidation(const Buff &buff) {
+    return false;
 }
 
 void CardBuffManager::validateAttrBuffs() {

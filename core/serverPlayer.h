@@ -38,6 +38,8 @@ class CommandMoveInOrder;
 
 class ProtoTypeCard;
 
+using ZoneMap = std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>>;
+
 struct TriggeredAbility {
     CardImprint card;
     ProtoAbilityType type;
@@ -59,7 +61,7 @@ class ServerPlayer
     bool mActive = false;
     int mAttacksThisTurn = 0;
     std::unique_ptr<DeckList> mDeck;
-    std::unordered_map<std::string_view, std::unique_ptr<ServerCardZone>> mZones;
+    ZoneMap mZones;
     std::vector<ExpectedCommand> mExpectedCommands;
 
     ServerCard* mAttackingCard = nullptr;
@@ -120,8 +122,10 @@ public:
     void addDeck(const std::string &deck);
     DeckList* deck() { return mDeck.get(); }
     ServerCardZone* addZone(std::string_view name, ZoneType type = ZoneType::PublicZone);
+
     ServerCardZone* zone(std::string_view name);
     ServerCardZone* zone(asn::Zone name);
+    const ZoneMap& zones() const { return mZones; }
     void setupZones();
     void createStage();
     void startGame();
@@ -135,7 +139,7 @@ public:
     bool moveCardToStage(ServerCardZone *startZone, int startPos, ServerCardZone *targetZone, int targetPos);
     void moveTopDeck(std::string_view targetZoneName);
     void addMarker(ServerCardZone *startZone, int startPos,
-                                  int targetPos, asn::FaceOrientation faceOrientation);
+                   int targetPos, asn::FaceOrientation faceOrientation);
     void removeTopMarker(ServerCard *markerBearer, const asn::Place &place);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard cmd);

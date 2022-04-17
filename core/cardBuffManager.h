@@ -6,6 +6,8 @@
 
 
 class CardBuffManager {
+    using CardBuffs = std::vector<std::unique_ptr<Buff>>;
+
     ServerCard *mCard;
 
     std::vector<AttributeChange> mBuffs;
@@ -13,10 +15,15 @@ class CardBuffManager {
     std::vector<BoolAttributeChange> mBoolAttrChanges;
     std::vector<AbilityBuff> mAbilityBuffs;
 
+    CardBuffs cardBuffs;
+
 public:
     CardBuffManager(ServerCard *card) : mCard(card) {}
 
     void reset();
+
+    void addBuff(const Buff &buff);
+    void removeContBuff(const Buff &buff);
 
     void sendAttrChange(asn::AttributeType attr);
     void sendChangedAttrs(std::tuple<int, int, int> oldAttrs);
@@ -43,6 +50,10 @@ public:
     void validateCannotStand();
 
 private:
+    CardBuffs::iterator removeBuff(CardBuffs::iterator it);
+
+    bool shouldSkipEffectValidation(const Buff &buff);
+
     int addAbility(const asn::Ability &a);
     bool hasBoolAttrChange(BoolAttributeType type) const;
 

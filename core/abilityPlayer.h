@@ -11,6 +11,7 @@
 class ServerPlayer;
 class CommandSwitchPositions;
 class CommandChooseCard;
+class Buff;
 
 class AbilityPlayer {
     ServerPlayer *mPlayer;
@@ -140,6 +141,7 @@ private:
     Resumable playPutOnStageRested(const asn::PutOnStageRested &e);
     void playAddMarker(const asn::AddMarker &e);
     void playRemoveMarker(const asn::RemoveMarker &e);
+    void playTriggerGain(const asn::TriggerIconGain &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 
@@ -156,6 +158,7 @@ private:
     bool evaluateConditionRevealedCard(const asn::ConditionRevealCard &c);
     bool evaluateConditionPlayersLevel(const asn::ConditionPlayersLevel &c);
 
+    void applyBuff(std::vector<ServerCard*> &targets, Buff &buff);
     void sendLookCard(ServerCard *card);
     void sendRevealCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
@@ -167,5 +170,7 @@ private:
     int getTriggerNumberMultiplierValue(const asn::Multiplier &m);
     std::vector<ServerCard*> getTargets(const asn::Target &t,
                                         asn::Zone from_zone = asn::Zone::Stage);
+    std::vector<ServerCard *> getTargetsFromAllZones(const asn::Target &t);
+    bool checkTarget(const asn::TargetSpecificCards &spec, ServerCard *card);
     bool findChooseTargetsAutomatically(const asn::ChooseCard &e);
 };

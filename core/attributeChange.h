@@ -87,3 +87,59 @@ public:
 inline bool operator==(const BoolAttributeChange &lhs, const BoolAttributeChange &rhs) {
     return lhs.source == rhs.source && lhs.abilityId == rhs.abilityId;
 }
+
+
+
+enum class BuffType {
+    TriggerIcon = 0
+};
+
+class Buff {
+public:
+    // card, that gives this buff
+    ServerCard *source = nullptr;
+    // ability of source that gives the buff
+    int abilityId = 0;
+    bool positional = false;
+    int duration = 0;
+    BuffType type;
+
+    Buff() = default;
+    Buff(BuffType type, int duration)
+        : duration(duration), type(type) {}
+    Buff(ServerCard *source, int abilityId, BuffType type)
+        : source(source), abilityId(abilityId), type(type) {}
+
+    virtual ~Buff() = default;
+    virtual void apply(ServerCard *card) const = 0;
+    virtual void update(const Buff &buff) const = 0;
+    virtual void undo(ServerCard *card) const = 0;
+    virtual std::unique_ptr<Buff> clone() const = 0;
+
+protected:
+    void fillBaseFields(Buff *newBuff, const Buff *sourceBuff) const;
+};
+
+inline bool operator==(const Buff &lhs, const Buff &rhs) {
+    return lhs.type == rhs.type && lhs.source == rhs.source &&
+        lhs.abilityId == rhs.abilityId;
+}
+inline bool operator==(const std::unique_ptr<Buff> &lhs, const Buff &rhs) {
+    return lhs->type == rhs.type && lhs->source == rhs.source &&
+        lhs->abilityId == rhs.abilityId;
+}
+
+class TriggerIconBuff : public Buff {
+public:
+    asn::TriggerIcon icon;
+
+    TriggerIconBuff() = default;
+    TriggerIconBuff(asn::TriggerIcon icon, int duration)
+        : Buff(BuffType::TriggerIcon, duration), icon(icon) {}
+    TriggerIconBuff(asn::TriggerIcon icon, ServerCard *source, int abilityId)
+        : Buff(source, abilityId, BuffType::TriggerIcon), icon(icon) {}
+    void apply(ServerCard *card) const override;
+    void update(const Buff &buff) const override {}
+    void undo(ServerCard *card) const override;
+    std::unique_ptr<Buff> clone() const override;
+};

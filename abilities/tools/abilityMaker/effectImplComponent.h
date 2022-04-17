@@ -110,6 +110,8 @@ private slots:
     void chooseOneReady(const asn::ChooseCard &e);
     void chooseTwoReady(const asn::ChooseCard &e);
 
+    void onTriggerIconChanged(int value);
+
 private:
     void init(QQuickItem *parent);
 };

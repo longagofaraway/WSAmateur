@@ -240,6 +240,14 @@ CannotBeChosen decodeCannotBeChosen(Iterator &it, Iterator end) {
     return e;
 }
 
+TriggerIconGain decodeTriggerIconGain(Iterator &it, Iterator end) {
+    TriggerIconGain e;
+    e.target = decodeTarget(it, end);
+    e.triggerIcon = decodeEnum<TriggerIcon>(it, end);
+    e.duration = decodeUInt8(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -351,6 +359,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::CannotBeChosen:
         e.effect = decodeCannotBeChosen(it, end);
+        break;
+    case EffectType::TriggerIconGain:
+        e.effect = decodeTriggerIconGain(it, end);
         break;
     default:
         break;

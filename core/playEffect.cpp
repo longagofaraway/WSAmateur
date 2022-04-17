@@ -105,6 +105,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::CannotBeChosen:
         playCannotBeChosen(std::get<asn::CannotBeChosen>(e.effect));
         break;
+    case asn::EffectType::TriggerIconGain:
+        playTriggerGain(std::get<asn::TriggerIconGain>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -176,8 +179,28 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::CannotBeChosen:
         playCannotBeChosen(std::get<asn::CannotBeChosen>(e.effect));
         break;
+    case asn::EffectType::TriggerIconGain:
+        playTriggerGain(std::get<asn::TriggerIconGain>(e.effect));
+        break;
     default:
         break;
+    }
+}
+
+void AbilityPlayer::applyBuff(std::vector<ServerCard *> &targets, Buff &buff) {
+    if (cont()) {
+        buff.source = thisCard().card;
+        buff.abilityId = abilityId();
+    }
+    for (auto &target: targets) {
+        if (cont()) {
+            if (revert())
+                target->buffManager()->removeContBuff(buff);
+            else
+                target->buffManager()->addBuff(buff);
+        } else {
+            target->buffManager()->addBuff(buff);
+        }
     }
 }
 
@@ -999,6 +1022,7 @@ void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
         return;
     }
 
+    // TODO: won't work with TargetType::SpecificCards
     auto targets = getTargets(e.target);
     std::sort(targets.begin(), targets.end(), [](const ServerCard *card1, const ServerCard * card2) {
         return card1->pos() > card2->pos();
@@ -1025,6 +1049,13 @@ void AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
         for (int i = 0; i < spec.number.value; ++i)
             mPlayer->removeTopMarker(markerBearer, e.place);
     }
+}
+
+void AbilityPlayer::playTriggerGain(const asn::TriggerIconGain &e) {
+    auto targets = getTargetsFromAllZones(e.target);
+
+    TriggerIconBuff buff(e.triggerIcon, e.duration);
+    applyBuff(targets, buff);
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

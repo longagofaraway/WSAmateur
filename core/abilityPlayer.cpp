@@ -105,28 +105,18 @@ int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
     const auto &specifier = std::get<asn::ForEachMultiplier>(m.specifier);
     assert(specifier.target->type == asn::TargetType::SpecificCards);
 
-    auto checkTargetCard = [this](const asn::TargetSpecificCards &spec, ServerCard *card) {
-        if (!card)
-            return false;
-
-        if (!checkTargetMode(spec.mode, thisCard().card, card))
-            return false;
-
-        return checkCard(spec.cards.cardSpecifiers, *card);
-    };
-
     int cardCount = 0;
     const auto &tspec = specifier.target->targetSpecification.value();
 
     if (specifier.placeType == asn::PlaceType::SpecificPlace) {
         auto pzone = mPlayer->zone(specifier.place->zone);
         for (int i = 0; i < pzone->count(); ++i) {
-            if (checkTargetCard(tspec, pzone->card(i)))
+            if (checkTarget(tspec, pzone->card(i)))
                 cardCount++;
         }
     } else if (specifier.placeType == asn::PlaceType::LastMovedCards) {
         for (const auto &card: lastMovedCards()) {
-            if (checkTargetCard(tspec, card.card))
+            if (checkTarget(tspec, card.card))
                 cardCount++;
         }
     }
@@ -175,13 +165,7 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zo
         auto stage = mPlayer->zone(from_zone);
         for (int i = 0; i < stage->count(); ++i) {
             auto card = stage->card(i);
-            if (!card)
-                continue;
-
-            if (!checkTargetMode(spec.mode, thisCard().card, card))
-                continue;
-
-            if (checkCard(spec.cards.cardSpecifiers, *card))
+            if (checkTarget(spec, card))
                 targets.push_back(card);
         }
     } else if (t.type == asn::TargetType::OppositeThis ||
@@ -192,10 +176,7 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zo
         if (t.type == asn::TargetType::BattleOpponent) {
             const auto &spec = *t.targetSpecification;
 
-            if (!checkTargetMode(spec.mode, thisCard().card, card))
-                return targets;
-
-            if (checkCard(spec.cards.cardSpecifiers, *card))
+            if (checkTarget(spec, card))
                 targets.push_back(card);
         } else if (t.type == asn::TargetType::OppositeThis) {
             targets.push_back(card);
@@ -205,6 +186,36 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zo
             targets.push_back(mCardFromTrigger);
     }
     return targets;
+}
+
+std::vector<ServerCard *> AbilityPlayer::getTargetsFromAllZones(const asn::Target &t) {
+    std::vector<ServerCard*> targets;
+    if (t.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *t.targetSpecification;
+
+        const auto &zones = mPlayer->zones();
+        for (const auto &zoneIt: zones) {
+            const auto &zone = zoneIt.second;
+            for (int i = 0; i < zone->count(); ++i) {
+                auto card = zone->card(i);
+                if (checkTarget(spec, card))
+                    targets.push_back(card);
+            }
+        }
+    } else {
+        return getTargets(t);
+    }
+    return targets;
+}
+
+bool AbilityPlayer::checkTarget(const asn::TargetSpecificCards &spec, ServerCard *card) {
+    if (!card)
+        return false;
+
+    if (!checkTargetMode(spec.mode, thisCard().card, card))
+        return false;
+
+    return checkCard(spec.cards.cardSpecifiers, *card);
 }
 
 bool AbilityPlayer::findChooseTargetsAutomatically(const asn::ChooseCard &e) {

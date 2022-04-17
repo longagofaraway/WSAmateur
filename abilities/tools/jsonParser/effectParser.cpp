@@ -515,6 +515,21 @@ RemoveMarker parseRemoveMarker(const QJsonObject &json) {
     return e;
 }
 
+TriggerIconGain parseTriggerIconGain(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in TriggerIconGain");
+    if (!json.contains("markerBearer") || !json["markerBearer"].isObject())
+        throw std::runtime_error("no markerBearer in TriggerIconGain");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in TriggerIconGain");
+
+    TriggerIconGain e;
+    e.target = parseTarget(json["target"].toObject());
+    e.triggerIcon = static_cast<TriggerIcon>(json["to"].toInt());
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -623,6 +638,9 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::CannotBeChosen:
         e.effect = parseCannotBeChosen(json["effect"].toObject());
+        break;
+    case EffectType::TriggerIconGain:
+        e.effect = parseTriggerIconGain(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

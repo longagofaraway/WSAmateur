@@ -34,6 +34,7 @@ Effect {
     RemoveMarker,
     CannotStand,
     CannotBeChosen,
+    TriggerIconGain,
     OtherEffect,
     Nothing
   }
@@ -78,6 +79,7 @@ enum EffectType {
   removeMarker = 36,
   cannotStand = 37,
   cannotBeChosen = 38,
+  triggerIconGain = 39,
   
   otherEffect = 255
 }
@@ -334,6 +336,12 @@ PutOnStageRested {
 
 CannotBeChosen {
   target Target,
+  duration UInt8
+}
+
+TriggerIconGain {
+  target Target,
+  triggerIcon TriggerIcon,
   duration UInt8
 }
 

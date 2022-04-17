@@ -9,16 +9,18 @@
 void ServerPlayer::endOfTurnEffectValidation() {
     mBuffManager.validateAttrChanges();
 
-    auto stage = zone("stage");
-    for (int i = 0; i < 5; ++i) {
-        auto card = stage->card(i);
-        if (!card)
-            continue;
+    for (const auto &zoneIt: zones()) {
+        const auto zone = zoneIt.second.get();
+        for (int i = 0; i < zone->count(); ++i) {
+            auto card = zone->card(i);
+            if (!card)
+                continue;
 
-        card->setTriggerCheckTwice(false);
-        card->setFirstTurn(false);
+            card->setTriggerCheckTwice(false);
+            card->setFirstTurn(false);
 
-        card->buffManager()->endOfTurnEffectValidation();
+            card->buffManager()->endOfTurnEffectValidation();
+        }
     }
     mAttacksThisTurn = 0;
 }

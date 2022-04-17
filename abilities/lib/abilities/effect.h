@@ -233,6 +233,12 @@ struct CannotBeChosen {
     int duration;
 };
 
+struct TriggerIconGain {
+    Target target;
+    TriggerIcon triggerIcon;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -279,6 +285,7 @@ enum class EffectType : uint8_t {
     RemoveMarker,
     CannotStand,
     CannotBeChosen,
+    TriggerIconGain,
 
     OtherEffect = 255
 };
@@ -320,6 +327,7 @@ struct Effect {
         RemoveMarker,
         CannotStand,
         CannotBeChosen,
+        TriggerIconGain,
         OtherEffect
     > effect;
 };

@@ -17,11 +17,10 @@ bool ServerPlayer::canBePlayed(ServerCard *thisCard, const asn::Ability &a) {
 }
 
 void ServerPlayer::resolveAllContAbilities() {
-    std::array<std::string_view, 3> zones{ "stage", "climax", "hand" };
-    for (auto zoneName: zones) {
-        auto pzone = zone(zoneName);
-        for (int i = 0; i < pzone->count(); ++i) {
-            auto card = pzone->card(i);
+    for (const auto &zoneIt: zones()) {
+        const auto zone = zoneIt.second.get();
+        for (int i = 0; i < zone->count(); ++i) {
+            auto card = zone->card(i);
             if (!card)
                 continue;
 
@@ -31,10 +30,34 @@ void ServerPlayer::resolveAllContAbilities() {
 }
 
 namespace {
+bool checkTriggerIconGainValidity(const asn::ContAbility &a, const std::string &name) {
+    const auto &effect = std::get<asn::TriggerIconGain>(a.effects[0].effect);
+    if (effect.target.type != asn::TargetType::ThisCard && name != "stage")
+        return false;
+
+    return true;
+}
+
+bool isEffectPlayedFromHand(const asn::EffectType &type) {
+    static std::array<asn::EffectType, 2> handEffects{
+        asn::EffectType::EarlyPlay,
+        asn::EffectType::CannotPlay
+    };
+    return std::any_of(handEffects.begin(), handEffects.end(),
+                       [type](asn::EffectType t){
+        return type == t;
+    });
+}
+
 bool checkAbilityValidForZone(const asn::ContAbility &a, const std::string &name) {
-    std::array<asn::EffectType, 2> e{ asn::EffectType::EarlyPlay,
-                                      asn::EffectType::CannotPlay };
-    return std::any_of(e.begin(), e.end(),[a](asn::EffectType type){ return a.effects[0].type == type; }) == (name == "hand");
+    if (a.effects.empty())
+        return false;
+    const auto effectType = a.effects[0].type;
+    if (effectType == asn::EffectType::TriggerIconGain)
+        return checkTriggerIconGainValidity(a, name);
+    if (isEffectPlayedFromHand(effectType))
+        return name == "hand";
+    return name == "stage" || name == "climax";
 }
 }
 

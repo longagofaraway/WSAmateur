@@ -3,6 +3,7 @@ add_subdirectory(proto)
 set(coreSources
     abilityPlayer.cpp
     abilityUtils.cpp
+    buff.cpp
     cardBuffs.cpp
     cardBuffManager.cpp
     cardDatabase.cpp

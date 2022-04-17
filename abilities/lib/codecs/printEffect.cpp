@@ -854,6 +854,16 @@ std::string printCannotBeChosen(const CannotBeChosen &e) {
     return s;
 }
 
+std::string printTriggerIconGain(const TriggerIconGain &e) {
+    std::string s;
+
+    s += printTarget(e.target);
+    s += "get " + printTriggerIcon(e.triggerIcon) + " trigger icon in all zones ";
+    s += printDuration(e.duration);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -964,6 +974,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CannotBeChosen:
         s += printCannotBeChosen(std::get<CannotBeChosen>(e.effect));
+        break;
+    case EffectType::TriggerIconGain:
+        s += printTriggerIconGain(std::get<TriggerIconGain>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));
