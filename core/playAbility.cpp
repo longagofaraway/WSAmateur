@@ -256,6 +256,7 @@ Resumable ServerPlayer::playChosenAbility(uint32_t uniqueId, bool helperQueue) {
 
 Resumable ServerPlayer::checkTiming() {
     // protocol for playing abilities
+    // 0. Resolve Rule Actions and resolve all abilities of turn player, if it is not this player's turn.
     // 1. Server sends EventAbilityActivated with activated abilities. Client shows them.
     // 2. If there are more than 1 playable ability, client must send, which one he wants to play
     //    using CommandPlayAbility. Otherwise, server will automatically choose to play the single playable ability.

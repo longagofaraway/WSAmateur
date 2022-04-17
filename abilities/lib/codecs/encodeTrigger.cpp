@@ -38,6 +38,10 @@ void encodeOnPayingCost(const OnPayingCostTrigger &t, Buf &buf) {
     encodeTarget(t.target, buf);
 }
 
+void encodeOnActAbillity(const OnActAbillityTrigger &t, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(t.player));
+}
+
 void encodeTrigger(const Trigger &t, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(t.type));
     switch (t.type) {
@@ -70,6 +74,9 @@ void encodeTrigger(const Trigger &t, Buf &buf) {
         break;
     case TriggerType::OnPayingCost:
         encodeOnPayingCost(std::get<OnPayingCostTrigger>(t.trigger), buf);
+        break;
+    case TriggerType::OnActAbillity:
+        encodeOnActAbillity(std::get<OnActAbillityTrigger>(t.trigger), buf);
         break;
     case TriggerType::OtherTrigger:
         encodeString(std::get<OtherTrigger>(t.trigger).cardCode, buf);

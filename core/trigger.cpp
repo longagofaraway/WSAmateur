@@ -584,3 +584,32 @@ void ServerPlayer::checkOnDamageTakenCancel(bool cancelled) {
         checkTrigger(card);
     }
 }
+
+void ServerPlayer::checkOnActAbility(asn::Player player) {
+    auto checkTrigger = [=, this] (ServerCard *card) {
+        auto &abs = card->abilities();
+        for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
+            if (abs[i].ability.type != asn::AbilityType::Auto)
+                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnActAbillity)
+                    continue;
+                const auto &trig = std::get<asn::OnActAbillityTrigger>(trigger.trigger);
+                if (trig.player != player)
+                    continue;
+
+                queueActivatedAbility(aa, abs[i], card);
+            }
+        }
+    };
+
+    auto stage = zone("stage");
+    for (int i = 0; i < stage->count(); ++i) {
+        auto card = stage->card(i);
+        if (!card)
+            continue;
+
+        checkTrigger(card);
+    }
+}

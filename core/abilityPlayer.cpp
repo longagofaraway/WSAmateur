@@ -44,6 +44,7 @@ Resumable AbilityPlayer::playActAbility(const asn::ActAbility &a) {
     setCost(a.cost);
     co_await payCost();
     co_await playEffects(a.effects);
+    mPlayer->game()->checkOnActAbility(mPlayer->id());
 }
 
 void AbilityPlayer::playContAbility(const asn::ContAbility &a, bool &active) {

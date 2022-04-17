@@ -20,6 +20,7 @@ enum class TriggerType : uint8_t {
     OnDamageCancel,
     OnDamageTakenCancel,
     OnPayingCost,
+    OnActAbillity,
 
     OtherTrigger = 255
 };
@@ -70,6 +71,9 @@ struct OnDamageCancelTrigger {
 struct OnDamageTakenCancelTrigger {
     bool cancelled;
 };
+struct OnActAbillityTrigger {
+    Player player;
+};
 
 struct OnPayingCostTrigger {
     AbilityType abilityType;
@@ -94,6 +98,7 @@ struct Trigger {
         OnDamageCancelTrigger,
         OnDamageTakenCancelTrigger,
         OnPayingCostTrigger,
+        OnActAbillityTrigger,
         OtherTrigger
     > trigger;
 };

@@ -11,6 +11,7 @@ Trigger {
     OnDamageCancelTrigger,
     OnDamageTakenCancelTrigger,
     OnPayingCostTrigger,
+    OnActAbillityTrigger,
     OtherTrigger,
     Nothing
   }
@@ -30,6 +31,7 @@ enum TriggerType {
   onDamageCancel = 11,
   onDamageTakenCancel = 12,
   onPayingCost = 13,
+  onActAbillity = 14,
   
   otherTrigger = 255
 }
@@ -81,6 +83,10 @@ OnDamageTakenCancelTrigger {
 OnPayingCostTrigger {
   abilityType AbilityType, // i.e. when paying for [Auto] of target...
   target Target
+}
+
+OnActAbillityTrigger {
+  player Player
 }
 
 OtherTrigger {

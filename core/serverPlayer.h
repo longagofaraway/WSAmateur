@@ -206,6 +206,7 @@ public:
     void checkOnDamageCancel(ServerCard *attCard, bool cancelled);
     void checkOnDamageTakenCancel(bool cancelled);
     void checkOtherTrigger(const std::string &code);
+    void checkOnActAbility(asn::Player player);
     void triggerBackupAbility(ServerCard *card);
     void triggerRuleAction(RuleAction action, ServerCard *thisCard = nullptr);
     void triggerOnEndOfCardsAttack(ServerCard *card);

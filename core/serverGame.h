@@ -80,6 +80,7 @@ public:
 
     TriggerManager* triggerManager() { return &mTriggerManager; }
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
+    void checkOnActAbility(int id);
 
     Resumable checkTiming();
     Resumable processRuleActions();

@@ -66,6 +66,14 @@ OnPayingCostTrigger decodeOnPayingCostTrigger(Iterator &it, Iterator end) {
     return t;
 }
 
+OnActAbillityTrigger decodeOnActAbillityTrigger(Iterator &it, Iterator end) {
+    OnActAbillityTrigger t;
+
+    t.player = decodeEnum<Player>(it, end);
+
+    return t;
+}
+
 Trigger decodeTrigger(Iterator &it, Iterator end) {
     Trigger t;
 
@@ -100,6 +108,9 @@ Trigger decodeTrigger(Iterator &it, Iterator end) {
         break;
     case TriggerType::OnPayingCost:
         t.trigger = decodeOnPayingCostTrigger(it, end);
+        break;
+    case TriggerType::OnActAbillity:
+        t.trigger = decodeOnActAbillityTrigger(it, end);
         break;
     case TriggerType::OtherTrigger:
         t.trigger = OtherTrigger{ decodeString(it, end) };

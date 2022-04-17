@@ -99,5 +99,6 @@
         <file>qml/triggers/TriggerButton.qml</file>
         <file>qml/effects/SkipPhase.qml</file>
         <file>qml/effects/OtherEffect.qml</file>
+        <file>qml/triggers/OnActAbillity.qml</file>
     </qresource>
 </RCC>
