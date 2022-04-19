@@ -392,6 +392,7 @@ const std::optional<asn::Multiplier> getMultiplier(EffectImplComponent::VarEffec
     default:
         assert(false);
     }
+    throw std::runtime_error("unhandled EffectType");
 }
 asn::Multiplier getDefaultMultiplier() {
     asn::Multiplier m;

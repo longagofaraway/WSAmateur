@@ -242,25 +242,25 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
                 continue;
             }
             //TODO: add checks
+            auto relativePlayerType = protoPlayerToPlayer(chooseCmd.owner());
+            auto cardOwner = relativePlayerType;
+            if (e.executor == asn::Player::Opponent) {
+                // revert sides
+                if (cardOwner == asn::Player::Player)
+                    cardOwner = asn::Player::Opponent;
+                else
+                    cardOwner = asn::Player::Player;
+            }
+            auto pzone = owner(cardOwner)->zone(chooseCmd.zone());
+            if (!pzone)
+                break;
             for (int i = chooseCmd.positions_size() - 1; i >= 0; --i) {
-                auto playerType = protoPlayerToPlayer(chooseCmd.owner());
-                auto cardOwner = playerType;
-                if (e.executor == asn::Player::Opponent) {
-                    // revert sides
-                    if (cardOwner == asn::Player::Player)
-                        cardOwner = asn::Player::Opponent;
-                    else
-                        cardOwner = asn::Player::Player;
-                }
-                auto pzone = owner(cardOwner)->zone(chooseCmd.zone());
-                if (!pzone)
-                    break;
-
                 auto card = pzone->card(chooseCmd.positions(i));
                 if (!card)
                     break;
-                if (playerType != e.executor && !card->cannotBeChosen())
-                    addChosenCard(CardImprint(chooseCmd.zone(), card, card->player() != mPlayer));
+                if (relativePlayerType == asn::Player::Opponent && card->cannotBeChosen())
+                    continue;
+                addChosenCard(CardImprint(chooseCmd.zone(), card, card->player() != mPlayer));
                 // here we assume that chosen cards from revealed/being looked at are moved after being chosen
                 // it's probably better to do this at the moment the chosen card is being moved
                 // by checking its unique id in selection
