@@ -12,7 +12,8 @@ enum class MultiplierType : uint8_t {
     ForEach = 1,
     TimesLevel,
     AddLevel,
-    AddTriggerNumber
+    AddTriggerNumber,
+    PreviousDamage
 };
 
 struct ForEachMultiplier {

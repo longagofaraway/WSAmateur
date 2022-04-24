@@ -1223,6 +1223,7 @@ Resumable ServerPlayer::takeDamage(int damage, ServerCard *attacker) {
     if (zone("clock")->count() >= 7)
         co_await levelUp();
 
+    attacker->setPreviousDamage(damage);
     getOpponent()->checkOnDamageCancel(attacker, cancelled);
     checkOnDamageTakenCancel(cancelled);
 }

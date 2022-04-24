@@ -12,7 +12,8 @@ enum MultiplierType {
   forEach = 1,
   timesLevel = 2, // level assist
   addLevel = 3,
-  addTriggerNumber = 4
+  addTriggerNumber = 4,
+  previousDamage = 5 // if cancelled, deal the same amount of damage
 }
 
 ForEachMultiplier {
@@ -29,7 +30,7 @@ AddLevelMultiplier {
   target Target // add level of these cards
 }
 
-
+// i.e. mill 3, deal X, X = number of choice icons among milled cards
 AddTriggerNumberMultiplier {
   target Target, // which triggers to count
   triggerIcon TriggerIcon

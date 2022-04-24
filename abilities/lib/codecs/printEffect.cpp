@@ -681,6 +681,8 @@ std::string printDealDamage(const DealDamage &e) {
                 s += "those cards ";
             else
                 s += printTarget(*m.target);
+        } else if (e.modifier->type == MultiplierType::PreviousDamage) {
+            s += "the same amount of damage ";
         }
     } else
         s += " ";

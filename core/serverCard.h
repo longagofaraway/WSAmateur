@@ -55,6 +55,7 @@ class ServerCard : public CardBase
     StageRow mRow;
     int mPosition;
     int mPreviousStagePosition = 0;
+    int mPreviousDamage = 0;
 
     int mPower;
     int mSoul;
@@ -129,6 +130,8 @@ public:
     bool sideAttackWithoutPenalty() const { return mSideAttackWithoutPenalty; }
     void setFirstTurn(bool val) { mFirstTurn = val; }
     bool isFirstTurn() const { return mFirstTurn; }
+    void setPreviousDamage(int value) { mPreviousDamage = value; }
+    int previousDamage() const { return mPreviousDamage; }
 
     CardBuffManager* buffManager() { return &mBuffManager; }
 

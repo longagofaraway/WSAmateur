@@ -47,7 +47,8 @@ void MultiplierImplComponent::init(QQuickItem *parent) {
         { asn::MultiplierType::AddTriggerNumber, "AddTriggerNumberMultiplier" }
     };
     std::unordered_set<asn::MultiplierType> readyComponents {
-        asn::MultiplierType::TimesLevel
+        asn::MultiplierType::TimesLevel,
+        asn::MultiplierType::PreviousDamage
     };
 
     if (readyComponents.contains(type))

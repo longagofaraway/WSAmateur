@@ -800,6 +800,8 @@ Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
             damage = getAddLevelMultiplierValue(*e.modifier) + e.damage;
         else if (e.modifier->type == asn::MultiplierType::AddTriggerNumber)
             damage = getTriggerNumberMultiplierValue(*e.modifier) + e.damage;
+        else if (e.modifier->type == asn::MultiplierType::PreviousDamage)
+            damage = thisCard().card->previousDamage();
     } else
         damage = e.damage;
 
