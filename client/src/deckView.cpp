@@ -16,5 +16,5 @@ DeckView::DeckView(Player *player, Game *game)
     mQmlObject->setParentItem(game);
     mQmlObject->setParent(game);
     mQmlObject->setProperty("mOpponent", player->isOpponent());
-    mQmlObject->setProperty("mIsDeckView", true);
+    mQmlObject->setProperty("mZoneName", QString("deckView"));
 }

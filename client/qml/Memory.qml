@@ -78,7 +78,6 @@ Card {
             let comp = Qt.createComponent("CardsView.qml");
             mView = comp.createObject(gGame);
             mView.mModel = mModel;
-            mView.mZoneName = "Memory";
             if (memory.opponent) {
                 mView.anchors.left = memory.right;
                 mView.y = memory.y;
@@ -86,6 +85,7 @@ Card {
                 mView.anchors.right = memory.left;
             }
             mView.mOpponent = opponent;
+            mView.mZoneName = "memory";
             mView.closeSignal.connect(() => mView.visible = !mView.visible);
             return;
         }

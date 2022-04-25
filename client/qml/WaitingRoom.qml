@@ -112,6 +112,7 @@ Card {
                 mView.anchors.right = waitingRoom.left;
             }
             mView.mOpponent = opponent;
+            mView.mZoneName = "wr";
             mView.closeSignal.connect(() => mView.visible = !mView.visible);
         }
         mView.visible = open;

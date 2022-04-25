@@ -219,6 +219,8 @@ private:
     void fillReferenceCache();
     void setDeckInternal();
 
+    void toggleZoneView(const asn::Place &place, bool open);
+
 public slots:
     void sendSwitchPositions(int from, int to);
     void sendFromStageToWr(int pos);

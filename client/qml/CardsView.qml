@@ -6,10 +6,10 @@ import wsamateur 1.0
 Rectangle {
     id: cardsView
     property CardModel mModel: innerModel
-    property bool mIsDeckView: false
+    property string mZoneName: "deckView"
+    property bool mIsDeckView: mZoneName === "deckView"
     property real mColumnMaxHeight: root.height * 0.5 - header.height
     property bool mOpponent: false
-    property string mZoneName: "Waiting Room"
     signal closeSignal()
 
     x: root.width * 0.9 - width
@@ -51,7 +51,12 @@ Rectangle {
         }
         text: {
             let txt = mOpponent ? "Opponent's " : " ";
-            return txt + (mIsDeckView ? "Deck" : mZoneName);
+            if (mZoneName === "deckView")
+                return txt + "Deck";
+            else if (mZoneName === "wr")
+                return txt + "Waiting Room";
+            else if (mZoneName === "memory")
+                return txt + "Memory";
         }
         font.family: "Futura Bk BT"
         font.pointSize: 20
