@@ -42,6 +42,14 @@ T decodeConditionAndOr(Iterator &it, Iterator end) {
     return t;
 }
 
+ConditionCardMoved decodeConditionCardMoved(Iterator &it, Iterator end) {
+    ConditionCardMoved c;
+    c.player = decodeEnum<Player>(it, end);
+    c.from = decodeEnum<Zone>(it, end);
+    c.to = decodeEnum<Zone>(it, end);
+    return c;
+}
+
 Condition decodeCondition(Iterator &it, Iterator end) {
     Condition c;
 
@@ -60,7 +68,7 @@ Condition decodeCondition(Iterator &it, Iterator end) {
         c.cond = decodeConditionCardsLocation(it, end);
         break;
     case ConditionType::DuringTurn:
-        c.cond = ConditionDuringTurn { decodeEnum<Player>(it, end) };
+        c.cond = ConditionDuringTurn{ decodeEnum<Player>(it, end) };
         break;
     case ConditionType::CheckMilledCards:
         c.cond = decodeNumberCard<ConditionCheckMilledCards>(it, end);
@@ -76,6 +84,9 @@ Condition decodeCondition(Iterator &it, Iterator end) {
         break;
     case ConditionType::Or:
         c.cond = decodeConditionAndOr<ConditionOr>(it, end);
+        break;
+    case ConditionType::CardMoved:
+        c.cond = decodeConditionCardMoved(it, end);
         break;
     default:
         break;

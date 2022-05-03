@@ -79,6 +79,14 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         condition = asn::ConditionOr();
         break;
     }
+    case asn::ConditionType::CardMoved: {
+        auto c = asn::ConditionCardMoved();
+        c.player = asn::Player::Player;
+        c.from = asn::Zone::NotSpecified;
+        c.to = asn::Zone::Hand;
+        condition = c;
+        break;
+    }
     default: break;
     }
 }
@@ -186,6 +194,13 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.value.value)));
         break;
     }
+    case asn::ConditionType::CardMoved: {
+        const auto &cond = std::get<asn::ConditionCardMoved>(c);
+        QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)cond.player));
+        QMetaObject::invokeMethod(qmlObject, "setFrom", Q_ARG(QVariant, (int)cond.from));
+        QMetaObject::invokeMethod(qmlObject, "setTo", Q_ARG(QVariant, (int)cond.to));
+        break;
+    }
     default:
         break;
     }
@@ -208,6 +223,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         { asn::ConditionType::SumOfLevels, "SumOfLevels" },
         { asn::ConditionType::DuringTurn, "DuringTurn" },
         { asn::ConditionType::PlayersLevel, "PlayersLevel" },
+        { asn::ConditionType::CardMoved, "CardMoved" },
     };
 
     std::unordered_set<asn::ConditionType> readyComponents {
@@ -289,6 +305,15 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         break;
     case asn::ConditionType::Or:
         connect(qmlObject, SIGNAL(editConditions()), this, SLOT(editConditionsField()));
+        break;
+    case asn::ConditionType::CardMoved:
+        QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)asn::Player::Player));
+        QMetaObject::invokeMethod(qmlObject, "setFrom", Q_ARG(QVariant, (int)asn::Zone::NotSpecified));
+        QMetaObject::invokeMethod(qmlObject, "setTo", Q_ARG(QVariant, (int)asn::Zone::Hand));
+
+        connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(onPlayerChanged(int)));
+        connect(qmlObject, SIGNAL(fromChanged(int)), this, SLOT(onZoneFromChanged(int)));
+        connect(qmlObject, SIGNAL(toChanged(int)), this, SLOT(onZoneToChanged(int)));
         break;
     default: break;
     }
@@ -428,6 +453,11 @@ void ConditionImplComponent::onPlayerChanged(int value) {
         c.player = static_cast<asn::Player>(value);
         break;
     }
+    case asn::ConditionType::CardMoved: {
+        auto &c = std::get<asn::ConditionCardMoved>(condition);
+        c.player = static_cast<asn::Player>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -444,6 +474,18 @@ void ConditionImplComponent::onExcludingThisChanged(bool value) {
     default:
         assert(false);
     }
+    emit componentChanged(condition);
+}
+
+void ConditionImplComponent::onZoneFromChanged(int value) {
+    auto &c = std::get<asn::ConditionCardMoved>(condition);
+    c.from = static_cast<asn::Zone>(value);
+    emit componentChanged(condition);
+}
+
+void ConditionImplComponent::onZoneToChanged(int value) {
+    auto &c = std::get<asn::ConditionCardMoved>(condition);
+    c.to = static_cast<asn::Zone>(value);
     emit componentChanged(condition);
 }
 

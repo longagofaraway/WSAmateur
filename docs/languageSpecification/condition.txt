@@ -10,7 +10,8 @@ Condition {
     ConditionRevealCard,
     ConditionPlayersLevel,
     ConditionAnd,
-    ConditionOr
+    ConditionOr,
+    ConditionCardMoved
   }
 }
 
@@ -27,7 +28,8 @@ enum ConditionType {
   checkOpenedCards = 9,
   revealedCard = 10,
   playersLevel = 11,
-  duringCardsFirstTurn = 12 // during turn this placed from hand to stage
+  duringCardsFirstTurn = 12, // during turn this placed from hand to stage
+  cardMoved = 13
 }
 
 ConditionAnd {
@@ -80,3 +82,11 @@ ConditionPlayersLevel {
   value Number
 }
 // if your level is...
+
+ConditionCardMoved {
+    player Player,
+    from Zone,
+    to Zone
+}
+// Look at up to 4, take 1 in hand.
+// If you put a card into hand this way...

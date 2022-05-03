@@ -87,5 +87,6 @@
         <file>qml/basicTypes/AddLevelMultiplier.qml</file>
         <file>qml/basicTypes/AddTriggerNumberMultiplier.qml</file>
         <file>qml/effects/TriggerIconGain.qml</file>
+        <file>qml/conditions/CardMoved.qml</file>
     </qresource>
 </RCC>

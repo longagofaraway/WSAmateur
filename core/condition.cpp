@@ -31,6 +31,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionPlayersLevel(std::get<asn::ConditionPlayersLevel>(c.cond));
     case asn::ConditionType::DuringCardsFirstTurn:
         return evaluateConditionDuringCardsFirstTurn();
+    case asn::ConditionType::CardMoved:
+        return evaluateConditionCardMoved(std::get<asn::ConditionCardMoved>(c.cond));
     default:
         assert(false);
         return false;
@@ -188,4 +190,13 @@ bool AbilityPlayer::evaluateConditionRevealedCard(const asn::ConditionRevealCard
 
 bool AbilityPlayer::evaluateConditionPlayersLevel(const asn::ConditionPlayersLevel &c) {
     return checkNumber(c.value, mPlayer->level());
+}
+
+bool AbilityPlayer::evaluateConditionCardMoved(const asn::ConditionCardMoved &c) {
+    auto player = owner(c.player);
+    for (const auto &record: mMoveLog) {
+        if (record.to == c.to && record.player == player)
+            return true;
+    }
+    return false;
 }

@@ -245,14 +245,27 @@ std::string printConditionPlayersLevel(const ConditionPlayersLevel &c) {
     std::string s = "if your level is ";
 
     s += printNumber(c.value, true);
+    s.pop_back();
 
-    return s;
+    return s + ", ";
 }
 
 std::string printConditionDuringCardsFirstTurn() {
     return "during the turn that this card was placed on the stage from your hand, ";
 }
 
+std::string printConditionCardMoved(const ConditionCardMoved &c) {
+    std::string s = "if ";
+    s += c.player == Player::Player ? "you" : "your opponent";
+    s += " put";
+    if (c.player == Player::Opponent)
+        s += "s";
+    s += " a card into ";
+    s += c.player == Player::Player ? "your " : "his ";
+    s += printZone(c.to);
+    s += ", ";
+    return s;
+}
 
 std::string printCondition(const Condition &c, bool skipGlobalConditions) {
     std::string s;
@@ -293,6 +306,9 @@ std::string printCondition(const Condition &c, bool skipGlobalConditions) {
         break;
     case ConditionType::DuringCardsFirstTurn:
         s += printConditionDuringCardsFirstTurn();
+        break;
+    case ConditionType::CardMoved:
+        s += printConditionCardMoved(std::get<ConditionCardMoved>(c.cond));
         break;
     default:
         break;

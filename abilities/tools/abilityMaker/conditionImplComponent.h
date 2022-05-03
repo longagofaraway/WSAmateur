@@ -56,6 +56,8 @@ private slots:
 
     void onPlayerChanged(int value);
     void onExcludingThisChanged(bool value);
+    void onZoneFromChanged(int value);
+    void onZoneToChanged(int value);
 
     void onNumModifierChanged(int value);
     void onNumValueChanged(QString value);

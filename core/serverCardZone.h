@@ -31,6 +31,7 @@ public:
     int count() const { return static_cast<int>(mCards.size()); }
     const std::string& name() const { return mName; }
     ZoneType type() const { return mType; }
+
     void addCard(std::shared_ptr<CardInfo> info, int uniqueId);
     virtual ServerCard* addCard(std::unique_ptr<ServerCard> card, int targetPos = -1);
     virtual std::unique_ptr<ServerCard> putOnStage(std::unique_ptr<ServerCard> card, int pos);

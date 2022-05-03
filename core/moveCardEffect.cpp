@@ -22,6 +22,10 @@ bool isStandbyTarget(const asn::Target &target) {
 
 }
 
+void AbilityPlayer::logMove(ServerPlayer *player, asn::Zone toZone) {
+    mMoveLog.push_back({player, toZone});
+}
+
 Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e) {
     std::vector<uint8_t> buf;
     encodeMoveCard(e, buf);
@@ -365,8 +369,10 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         owner(asn::Player::Opponent)->triggerOnOppCharPlacedByStandby();
     for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
         player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
-        if (!isPayingCost())
+        if (!isPayingCost()) {
             addLastMovedCard(CardImprint(it->second->zone()->name(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
+            logMove(player, e.to[toZoneIndex].zone);
+        }
 
         if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasInRested)
             player->setCardState(it->second, asn::State::Rested);

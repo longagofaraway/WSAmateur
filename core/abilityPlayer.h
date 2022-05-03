@@ -13,6 +13,11 @@ class CommandSwitchPositions;
 class CommandChooseCard;
 class Buff;
 
+struct MoveRecord {
+    ServerPlayer *player;
+    asn::Zone to;
+};
+
 class AbilityPlayer {
     ServerPlayer *mPlayer;
 
@@ -31,6 +36,7 @@ class AbilityPlayer {
     CardImprint mThisCard;
     std::optional<asn::Cost> mCost;
     ServerCard *mCardFromTrigger = nullptr;
+    std::vector<MoveRecord> mMoveLog;
 
     std::optional<GameCommand> mLastCommand;
 
@@ -157,6 +163,7 @@ private:
     bool evaluateConditionCardsLocation(const asn::ConditionCardsLocation &c);
     bool evaluateConditionRevealedCard(const asn::ConditionRevealCard &c);
     bool evaluateConditionPlayersLevel(const asn::ConditionPlayersLevel &c);
+    bool evaluateConditionCardMoved(const asn::ConditionCardMoved &c);
 
     void applyBuff(std::vector<ServerCard*> &targets, Buff &buff);
     void sendLookCard(ServerCard *card);
@@ -173,4 +180,6 @@ private:
     std::vector<ServerCard *> getTargetsFromAllZones(const asn::Target &t);
     bool checkTarget(const asn::TargetSpecificCards &spec, ServerCard *card);
     bool findChooseTargetsAutomatically(const asn::ChooseCard &e);
+
+    void logMove(ServerPlayer *player, asn::Zone toZone);
 };

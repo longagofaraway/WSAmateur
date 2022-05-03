@@ -26,6 +26,12 @@ void encodeConditionCardsLocation(const ConditionCardsLocation &c, Buf &buf) {
     encodePlace(c.place, buf);
 }
 
+void encodeConditionCardMoved(const ConditionCardMoved &c, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(c.player));
+    buf.push_back(static_cast<uint8_t>(c.from));
+    buf.push_back(static_cast<uint8_t>(c.to));
+}
+
 void encodeCondition(const Condition &c, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(c.type));
     switch (c.type) {
@@ -58,6 +64,9 @@ void encodeCondition(const Condition &c, Buf &buf) {
         break;
     case ConditionType::PlayersLevel:
         encodeNumber(std::get<ConditionPlayersLevel>(c.cond).value, buf);
+        break;
+    case ConditionType::CardMoved:
+        encodeConditionCardMoved(std::get<ConditionCardMoved>(c.cond), buf);
         break;
     default:
         break;

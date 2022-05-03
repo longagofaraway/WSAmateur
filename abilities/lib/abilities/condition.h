@@ -52,12 +52,18 @@ struct ConditionCheckMilledCards {
 };
 
 struct ConditionRevealCard {
-     Number number;
-     Card card;
+    Number number;
+    Card card;
 };
 
 struct ConditionPlayersLevel {
     Number value;
+};
+
+struct ConditionCardMoved {
+    Player player;
+    Zone from;
+    Zone to;
 };
 
 enum class ConditionType : uint8_t {
@@ -73,7 +79,8 @@ enum class ConditionType : uint8_t {
     CheckMilledCards,
     RevealedCard,
     PlayersLevel,
-    DuringCardsFirstTurn
+    DuringCardsFirstTurn,
+    CardMoved
 };
 
 struct Condition {
@@ -89,7 +96,8 @@ struct Condition {
         ConditionRevealCard,
         ConditionPlayersLevel,
         ConditionAnd,
-        ConditionOr
+        ConditionOr,
+        ConditionCardMoved
     > cond;
 };
 
