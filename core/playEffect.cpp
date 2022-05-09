@@ -126,6 +126,16 @@ bool needNextEffect(asn::EffectType type) {
     };
     return types.contains(type);
 }
+bool needToSetTargetsByServer(const asn::Target &target) {
+    if (target.type != asn::TargetType::SpecificCards)
+        return false;
+    const auto &spec = *target.targetSpecification;
+    for (const auto &cardSpec: spec.cards.cardSpecifiers) {
+        if (cardSpec.type == asn::CardSpecifierType::LevelWithMultiplier)
+            return true;
+    }
+    return false;
+}
 }
 
 Resumable AbilityPlayer::playEffects(const std::vector<asn::Effect> &e) {
@@ -218,6 +228,9 @@ Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
 }
 
 Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrevious) {
+    if (e.targets[0].target.type == asn::TargetType::ChosenCards)
+        co_return;
+
     if (clearPrevious)
         clearChosenCards();
 
@@ -230,6 +243,13 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
     EventChooseCard ev;
     ev.set_effect(buf.data(), buf.size());
     ev.set_mandatory(mandatory());
+    if (needToSetTargetsByServer(e.targets[0].target)) {
+        const auto &target = e.targets[0];
+        auto targets = getTargets(target.target, target.placeType, target.place);
+        for (const auto &t: targets) {
+            ev.add_fixed_targets(t->pos());
+        }
+    }
     mPlayer->sendToBoth(ev);
 
     auto player = owner(e.executor);

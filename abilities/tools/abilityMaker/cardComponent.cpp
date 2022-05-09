@@ -1,5 +1,7 @@
 #include "cardComponent.h"
 
+#include "multiplierComponent.h"
+
 #include <QQmlContext>
 
 namespace {
@@ -38,9 +40,28 @@ void initSpecifier(asn::CardSpecifier &spec) {
     case asn::CardSpecifierType::Power:
         spec.specifier = asn::Power{ defaultNumber };
         break;
+    case asn::CardSpecifierType::LevelWithMultiplier: {
+        auto sp = asn::LevelWithMultiplier();
+        sp.value = defaultNumber;
+        sp.multiplier.type = asn::MultiplierType::TimesLevel;
+        spec.specifier = sp;
+        break;
+    }
     default:
         break;
     }
+}
+
+const std::optional<asn::Multiplier> getMultiplier(asn::CardSpecifier &specifier) {
+    switch (specifier.type) {
+    case asn::CardSpecifierType::LevelWithMultiplier: {
+        const auto &e = std::get<asn::LevelWithMultiplier>(specifier.specifier);
+        return e.multiplier;
+    }
+    default:
+        assert(false);
+    }
+    throw std::runtime_error("unhandled card specifier in multiplier");
 }
 }
 
@@ -136,6 +157,15 @@ void CardComponent::onSpecifierChanged(int pos, int value) {
         connect(obj, SIGNAL(valueChangedEx(int,QString)), this, SLOT(stringSet(int,QString)));
         break;
     }
+    case asn::CardSpecifierType::LevelWithMultiplier: {
+        obj = createQmlObject("basicTypes/CardSpecifierNumberWithMultiplier", qmlObject);
+        if (initState)
+            initComponent(pos, obj);
+        connect(obj, SIGNAL(numModifierChangedEx(int,int)), this, SLOT(enumSet(int,int)));
+        connect(obj, SIGNAL(valueChangedEx(int,QString)), this, SLOT(stringSet(int,QString)));
+        connect(obj, SIGNAL(editMultiplier(int)), this, SLOT(editMultiplier(int)));
+        break;
+    }
     default:
         return;
     }
@@ -188,6 +218,9 @@ void CardComponent::enumSet(int pos, int value) {
     case asn::CardSpecifierType::Power:
         setNumModifier<asn::Power>(specifiers[pos], value);
         break;
+    case asn::CardSpecifierType::LevelWithMultiplier:
+        setNumModifier<asn::LevelWithMultiplier>(specifiers[pos], value);
+        break;
     default:
         assert(false);
     }
@@ -213,6 +246,35 @@ void CardComponent::stringSet(int pos, QString value) {
     case asn::CardSpecifierType::Power:
         setNumValue<asn::Power>(specifiers[pos], value);
         break;
+    case asn::CardSpecifierType::LevelWithMultiplier:
+        setNumValue<asn::LevelWithMultiplier>(specifiers[pos], value);
+        break;
+    default:
+        assert(false);
+    }
+}
+
+void CardComponent::editMultiplier(int pos) {
+    const auto &m = getMultiplier(specifiers[pos]);
+    currentPos = pos;
+    qmlMultiplier = std::make_shared<MultiplierComponent>(*m, qmlObject);
+
+    connect(qmlMultiplier.get(), &MultiplierComponent::componentChanged, this, &CardComponent::multiplierReady);
+    connect(qmlMultiplier.get(), &MultiplierComponent::close, this, &CardComponent::destroyMultiplier);
+}
+
+void CardComponent::destroyMultiplier() {
+    qmlMultiplier.reset();
+}
+
+void CardComponent::multiplierReady(const asn::Multiplier &m) {
+    auto &sp = specifiers[currentPos];
+    switch (sp.type) {
+    case asn::CardSpecifierType::LevelWithMultiplier: {
+        auto &e = std::get<asn::LevelWithMultiplier>(sp.specifier);
+        e.multiplier = m;
+        break;
+    }
     default:
         assert(false);
     }
@@ -299,6 +361,9 @@ void CardComponent::initComponent(int pos, QQuickItem *obj) {
         break;
     case asn::CardSpecifierType::NameContains:
         initComponentString<asn::NameContains>(obj, specifiers[pos]);
+        break;
+    case asn::CardSpecifierType::LevelWithMultiplier:
+        initComponentNum<asn::LevelWithMultiplier>(obj, specifiers[pos]);
         break;
     default:
         break;

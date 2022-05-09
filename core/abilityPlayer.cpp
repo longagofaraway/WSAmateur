@@ -145,7 +145,18 @@ int AbilityPlayer::getTriggerNumberMultiplierValue(const asn::Multiplier &m) {
     });
 }
 
-std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zone from_zone) {
+std::vector<ServerCard*> AbilityPlayer::getTargets(
+        const asn::Target &t,
+        asn::PlaceType placeType,
+        std::optional<asn::Place> place
+) {
+    if (placeType == asn::PlaceType::SpecificPlace && !place.has_value()) {
+        place = asn::Place{
+            asn::Position::NotSpecified,
+            asn::Zone::Stage,
+            asn::Player::Player
+        };
+    }
     std::vector<ServerCard*> targets;
     if (t.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards())
@@ -162,11 +173,19 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(const asn::Target &t, asn::Zo
         targets.push_back(thisCard().card);
     } else if (t.type == asn::TargetType::SpecificCards) {
         const auto &spec = *t.targetSpecification;
-        auto stage = mPlayer->zone(from_zone);
-        for (int i = 0; i < stage->count(); ++i) {
-            auto card = stage->card(i);
-            if (checkTarget(spec, card))
-                targets.push_back(card);
+        if (placeType == asn::PlaceType::Selection) {
+            for (const auto &card: mentionedCards()) {
+                if (checkTarget(spec, card.card))
+                    targets.push_back(card.card);
+            }
+        } else if (placeType == asn::PlaceType::SpecificPlace) {
+            auto player = owner(place->owner);
+            auto pzone = player->zone(place->zone);
+            for (int i = 0; i < pzone->count(); ++i) {
+                auto card = pzone->card(i);
+                if (checkTarget(spec, card))
+                    targets.push_back(card);
+            }
         }
     } else if (t.type == asn::TargetType::OppositeThis ||
                t.type == asn::TargetType::BattleOpponent) {
@@ -215,7 +234,7 @@ bool AbilityPlayer::checkTarget(const asn::TargetSpecificCards &spec, ServerCard
     if (!checkTargetMode(spec.mode, thisCard().card, card))
         return false;
 
-    return checkCard(spec.cards.cardSpecifiers, *card);
+    return checkCard(spec.cards.cardSpecifiers, *card, this);
 }
 
 bool AbilityPlayer::findChooseTargetsAutomatically(const asn::ChooseCard &e) {
@@ -245,7 +264,7 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
         const auto &item = std::get<asn::Effect>(c.costItem);
         if (item.type == asn::EffectType::MoveCard) {
             const auto &e = std::get<asn::MoveCard>(item.effect);
-            auto targets = getTargets(e.target, e.from.zone);
+            auto targets = getTargets(e.target, asn::PlaceType::SpecificPlace, e.from);
             if (targets.empty())
                 return false;
 

@@ -6,6 +6,7 @@
 #include <QByteArray>
 
 #include "../client/src/card.h"
+#include "abilityPlayer.h"
 #include "serverCardZone.h"
 #include "serverPlayer.h"
 
@@ -98,7 +99,7 @@ ProtoCardAttribute attrTypeToProto(asn::AttributeType t) {
     }
 }
 
-bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card) {
+bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card, AbilityPlayer *abilityPlayer) {
     bool eligible = true;
     bool hasNameContains = false;
     bool nameContains = false;
@@ -174,6 +175,18 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             if (card.level() > card.playersLevel() + 1)
                 eligible = false;
             break;
+        case asn::CardSpecifierType::LevelWithMultiplier: {
+            const auto &level = std::get<asn::LevelWithMultiplier>(spec.specifier);
+            asn::Number number;
+            number.mod = level.value.mod;
+            if (level.multiplier.type == asn::MultiplierType::AddLevel)
+                number.value = abilityPlayer->getAddLevelMultiplierValue(level.multiplier) + number.value;
+            else
+                throw std::runtime_error("unhandled multiplier");
+            if (!checkNumber(level.value, card.level()))
+                eligible = false;
+            break;
+        }
         case asn::CardSpecifierType::Owner:
             // don't process here
             break;

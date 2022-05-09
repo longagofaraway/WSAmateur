@@ -2,6 +2,13 @@
 
 using namespace asn;
 
+LevelWithMultiplier decodeLevelWithMultiplier(Iterator &it, Iterator end) {
+    LevelWithMultiplier c;
+    c.value = decodeNumber(it, end);
+    c.multiplier = decodeMultiplier(it, end);
+    return c;
+}
+
 CardSpecifier decodeCardSpecifier(Iterator &it, Iterator end) {
     CardSpecifier c;
 
@@ -36,6 +43,9 @@ CardSpecifier decodeCardSpecifier(Iterator &it, Iterator end) {
         break;
     case CardSpecifierType::Power:
         c.specifier = Power{ decodeNumber(it, end) };
+        break;
+    case CardSpecifierType::LevelWithMultiplier:
+        c.specifier = decodeLevelWithMultiplier(it, end);
         break;
     default:
         break;

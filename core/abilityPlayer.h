@@ -173,13 +173,16 @@ private:
     Resumable moveFromTop(const asn::MoveCard &e, int toZoneIndex, int toIndex);
     void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type);
     int getForEachMultiplierValue(const asn::Multiplier &m);
-    int getAddLevelMultiplierValue(const asn::Multiplier &m);
     int getTriggerNumberMultiplierValue(const asn::Multiplier &m);
     std::vector<ServerCard*> getTargets(const asn::Target &t,
-                                        asn::Zone from_zone = asn::Zone::Stage);
+                                        asn::PlaceType placeType = asn::PlaceType::SpecificPlace,
+                                        std::optional<asn::Place> place = {});
     std::vector<ServerCard *> getTargetsFromAllZones(const asn::Target &t);
     bool checkTarget(const asn::TargetSpecificCards &spec, ServerCard *card);
     bool findChooseTargetsAutomatically(const asn::ChooseCard &e);
 
     void logMove(ServerPlayer *player, asn::Zone toZone);
+
+public:
+    int getAddLevelMultiplierValue(const asn::Multiplier &m);
 };

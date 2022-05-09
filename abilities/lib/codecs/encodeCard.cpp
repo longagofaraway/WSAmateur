@@ -4,6 +4,11 @@
 
 using namespace asn;
 
+void encodeLevelWithMultiplier(const LevelWithMultiplier &c, Buf &buf) {
+    encodeNumber(c.value, buf);
+    encodeMultiplier(c.multiplier, buf);
+}
+
 void encodeCardSpecifier(const CardSpecifier &c, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(c.type));
     switch (c.type) {
@@ -36,6 +41,9 @@ void encodeCardSpecifier(const CardSpecifier &c, Buf &buf) {
         break;
     case CardSpecifierType::Power:
         encodeNumber(std::get<Power>(c.specifier).value, buf);
+        break;
+    case CardSpecifierType::LevelWithMultiplier:
+        encodeLevelWithMultiplier(std::get<LevelWithMultiplier>(c.specifier), buf);
         break;
     default:
         break;
