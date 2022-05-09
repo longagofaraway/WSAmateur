@@ -74,4 +74,17 @@ enum class AttackType : uint8_t {
     Direct
 };
 
+enum class TriggerIcon : uint8_t {
+    Soul = 1,
+    Wind,
+    Bag,
+    Door,
+    Book,
+    Shot,
+    Treasure,
+    Gate,
+    Standby,
+    Choice
+};
+
 }

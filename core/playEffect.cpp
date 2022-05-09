@@ -126,6 +126,16 @@ bool needNextEffect(asn::EffectType type) {
     };
     return types.contains(type);
 }
+bool needToSetTargetsByServer(const asn::Target &target) {
+    if (target.type != asn::TargetType::SpecificCards)
+        return false;
+    const auto &spec = *target.targetSpecification;
+    for (const auto &cardSpec: spec.cards.cardSpecifiers) {
+        if (cardSpec.type == asn::CardSpecifierType::LevelWithMultiplier)
+            return true;
+    }
+    return false;
+}
 }
 
 Resumable AbilityPlayer::playEffects(const std::vector<asn::Effect> &e) {
@@ -218,6 +228,9 @@ Resumable AbilityPlayer::playNonMandatory(const asn::NonMandatory &e) {
 }
 
 Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrevious) {
+    if (e.targets[0].target.type == asn::TargetType::ChosenCards)
+        co_return;
+
     if (clearPrevious)
         clearChosenCards();
 
@@ -230,6 +243,11 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
     EventChooseCard ev;
     ev.set_effect(buf.data(), buf.size());
     ev.set_mandatory(mandatory());
+    const auto &target = e.targets[0];
+    auto targets = getTargets(target.target, target.placeType, target.place);
+    for (const auto &t: targets) {
+        ev.add_card_positions(t->pos());
+    }
     mPlayer->sendToBoth(ev);
 
     auto player = owner(e.executor);
@@ -265,6 +283,8 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
                 continue;
             }
             //TODO: add checks
+            // player, who sent the command, marks the owner of chosen cards
+            // relative to himself
             auto relativePlayerType = protoPlayerToPlayer(chooseCmd.owner());
             auto cardOwner = relativePlayerType;
             if (e.executor == asn::Player::Opponent) {
@@ -822,7 +842,14 @@ Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {
         co_return;
 
     assert(card1->zone()->name() != "stage" && card2->zone()->name() != "stage");
+    /*if (card1->zone()->name() == "stage" || card2->zone()->name() == "stage") {
+        swapWithCardOnStage(card1, card2);
+        auto stageCard = card1->zone()->name() == "stage" ? card1 : card2;
+        co_return;
+    }*/
 
+    // swap isn't swap but two moves, so
+    // won't work with clock zone because of the card limit
     auto card1Zone = card1->zone()->name();
     auto card1Pos = card1->pos();
     auto card2Pos = card2->pos();

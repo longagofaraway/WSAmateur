@@ -172,7 +172,9 @@ private:
     void stopUiInteractions();
 
     using OptionalPlace = std::optional<std::reference_wrapper<const asn::Place>>;
-    int highlightCardsForChoice(const asn::Target &target, const asn::Place &place);
+    int highlightCardsFromEvent(const EventChooseCard &event, const asn::ChooseCard &effect);
+    int highlightCardsForChoice(const asn::Target &target, const asn::Place &place,
+                                const std::optional<asn::ChooseCard> &chooseEffect = {});
     void dehighlightCards(asn::PlaceType placeType, OptionalPlace place);
     void highlightPlayableCards();
 

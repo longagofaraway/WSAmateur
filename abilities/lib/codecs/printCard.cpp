@@ -1,5 +1,7 @@
 #include "print.h"
 
+#include <cassert>
+
 using namespace asn;
 
 std::string printCard(const Card &c, bool plural, bool article, TargetMode mode) {
@@ -54,6 +56,31 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
         if (cardSpec.type == CardSpecifierType::Level) {
             const auto &level = std::get<Level>(cardSpec.specifier);
             s += "level " + std::to_string(level.value.value) + " ";
+            if (level.value.mod == NumModifier::UpTo)
+                s += "or lower ";
+            else if (level.value.mod == NumModifier::AtLeast)
+                s += "or higher ";
+        }
+    }
+
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::LevelWithMultiplier) {
+            const auto &level = std::get<LevelWithMultiplier>(cardSpec.specifier);
+            s += "level X (X is equal to ";
+            if (level.multiplier.type == MultiplierType::AddLevel) {
+                s += "the level of ";
+                const auto &multiplier = std::get<AddLevelMultiplier>(level.multiplier.specifier);
+                if (multiplier.target->type == TargetType::ChosenCards) {
+                    if (gPrintState.chosenCardsNumber.value == 1)
+                        s += "the character you chose";
+                } else {
+                    assert(false);
+                }
+                if (level.value.value != 0) {
+                    s += " " + std::to_string(level.value.value);
+                }
+                s += ") ";
+            }
             if (level.value.mod == NumModifier::UpTo)
                 s += "or lower ";
             else if (level.value.mod == NumModifier::AtLeast)

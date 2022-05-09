@@ -21,6 +21,7 @@ auto decodingWrapper(const std::string &buf, F &decodeFunction) {
     auto it = binbuf.cbegin();
     return decodeFunction(it, binbuf.end());
 }
+
 }
 
 void Player::processChooseCard(const EventChooseCard &event) {
@@ -41,11 +42,16 @@ void Player::processChooseCard(const EventChooseCard &event) {
 
     int eligibleCardsNum;
     bool fromView = effect.targets[0].placeType == asn::PlaceType::Selection;
-    if (fromView)
+
+    eligibleCardsNum = highlightCardsFromEvent(event, effect);
+    /*if (event.card_positions_size() > 0) {
+    } else if (fromView) {
         eligibleCardsNum = highlightEligibleCards(zone("view"), spec.cards.cardSpecifiers,
                                                   spec.mode, mAbilityList->ability(mAbilityList->activeId()));
-    else
-        eligibleCardsNum = highlightCardsForChoice(effect.targets[0].target, *effect.targets[0].place);
+    } else {
+        eligibleCardsNum = highlightCardsForChoice(effect.targets[0].target, *effect.targets[0].place, effect);
+    }*/
+
     if (eligibleCardsNum)
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
     processChooseCardInternal(eligibleCardsNum, fromView ? std::nullopt : OptionalPlace(*effect.targets[0].place),

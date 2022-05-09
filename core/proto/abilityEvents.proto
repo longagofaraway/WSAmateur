@@ -22,6 +22,7 @@ message EventEndResolvingAbilties {}
 message EventChooseCard {
     bytes effect = 1;
     bool mandatory = 2;
+    repeated sint32 card_positions = 3;
 }
 
 message EventMoveChoice {

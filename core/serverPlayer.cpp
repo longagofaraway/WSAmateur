@@ -307,10 +307,14 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     ServerCard *card = startZone->card(startPos);
     if (!card)
         return false;
+    if (card->type() == CardType::Climax) {
+        qDebug() << "moving climax";
+    }
+
+    // check trigger while temporary abilities like 'encore' are still present
+    checkZoneChangeTrigger(card, startZoneName, targetZoneName);
 
     if (startZoneName == "stage" || startZoneName == "climax" || startZoneName == "hand") {
-        // check trigger while temporary abilities like 'encore' are still present
-        checkZoneChangeTrigger(card, startZoneName, targetZoneName);
         // revert effects of cont abilities
         playContAbilities(card, true/*revert*/);
     }

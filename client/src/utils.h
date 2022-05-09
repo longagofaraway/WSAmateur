@@ -26,7 +26,7 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
         if (!cards[i].cardPresent())
             continue;
 
-        if (cards[i].cannotBeChosen())
+        if (readCannotBeChosen && cards[i].cannotBeChosen())
             continue;
 
         if ((mode == asn::TargetMode::FrontRow && i > 2) ||

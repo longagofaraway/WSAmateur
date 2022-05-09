@@ -167,7 +167,10 @@ std::string printAttributeGain(const AttributeGain &e) {
 std::string printChooseCard(const ChooseCard &e) {
     std::string s;
 
-    s += "choose ";
+    if (e.executor == Player::Player)
+        s += "choose ";
+    else
+        s += "your opponent chooses ";
 
     assert(e.targets.size() == 1);
     bool plural = false;
@@ -185,7 +188,7 @@ std::string printChooseCard(const ChooseCard &e) {
                 article = false;
         }
         if (target.placeType == PlaceType::SpecificPlace && target.place->zone == Zone::Stage) {
-            s += "of " + printPlayer(target.place->owner);
+            s += "of " + printPlayer(target.place->owner, e.executor);
             plural = true;
         }
         if (spec.mode == TargetMode::FrontRow)
@@ -202,7 +205,7 @@ std::string printChooseCard(const ChooseCard &e) {
     }
 
     if (target.placeType == PlaceType::SpecificPlace && target.place->zone != Zone::Stage) {
-        s += "in " + printPlayer(target.place->owner);
+        s += "in " + printPlayer(target.place->owner, e.executor);
         s += printZone(target.place->zone) + " ";
     }
 
@@ -724,12 +727,17 @@ std::string printCannotUseBackupOrEvent(const CannotUseBackupOrEvent &e) {
 std::string printSwapCards(const SwapCards &e) {
     std::string s;
 
-    s += printChooseCard(e.first) + "and ";
     auto text2 = printChooseCard(e.second);
-    text2.erase(0, 7);
+    if (e.first.targets[0].target.type != TargetType::ChosenCards) {
+        s += printChooseCard(e.first) + "and ";
+        text2.erase(0, 7);
+    }
     s += text2;
 
-    s += "and swap them ";
+    if (e.second.executor == asn::Player::Player)
+        s += "and swap them ";
+    else
+        s += "and swaps them";
 
     return s;
 }

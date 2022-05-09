@@ -1,6 +1,7 @@
 #include "player.h"
 
 #include "abilityCommands.pb.h"
+#include "abilityEvents.pb.h"
 
 #include "abilities.h"
 #include "abilityUtils.h"
@@ -20,19 +21,65 @@ auto decodingWrapper(const std::string &buf, F &decodeFunction) {
 }
 }
 
-int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place &place) {
+int Player::highlightCardsFromEvent(
+        const EventChooseCard &event,
+        const asn::ChooseCard &effect) {
+    bool fromView = effect.targets[0].placeType == asn::PlaceType::Selection;
+    CardZone *pzone;
+    bool considerCannotBeChosen = false;
+    if (fromView) {
+        pzone = zone("view");
+    } else {
+        const auto &place = *effect.targets[0].place;
+        auto player = place.owner == asn::Player::Player ? this : getOpponent();
+        pzone = player->zone(place.zone);
+        considerCannotBeChosen = (place.owner == asn::Player::Opponent) ==
+                                 (effect.executor == asn::Player::Player);
+    }
+
+    const auto &cards = pzone->cards();
+    highlightAllCards(pzone, false);
+    selectAllCards(pzone, false);
+    int eligibleCount = 0;
+
+    for (int i = 0; i < event.card_positions_size(); ++i) {
+        if (event.card_positions(i) >= cards.size()) {
+            qDebug() << "Error! wrong index from server";
+            continue;
+        }
+        int cardPos = event.card_positions(i);
+        if (!cards[cardPos].cardPresent())
+            continue;
+
+        if (considerCannotBeChosen && cards[cardPos].cannotBeChosen())
+            continue;
+
+        pzone->model().setGlow(cardPos, true);
+        eligibleCount++;
+    }
+
+    return eligibleCount;
+}
+
+int Player::highlightCardsForChoice(const asn::Target &target, const asn::Place &place,
+                                    const std::optional<asn::ChooseCard> &chooseEffect) {
     const auto &specs = target.targetSpecification->cards.cardSpecifiers;
     int eligibleCount = 0;
+    bool considerCannotBeChosen = false;
+    if (chooseEffect)
+        considerCannotBeChosen = (place.owner == asn::Player::Opponent) ==
+                                 (chooseEffect->executor == asn::Player::Player);
     if (place.owner == asn::Player::Player || place.owner == asn::Player::Both) {
         auto from = zone(place.zone);
         eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode,
-                                                mAbilityList->ability(mAbilityList->activeId()));
+                                                mAbilityList->ability(mAbilityList->activeId()),
+                                                considerCannotBeChosen);
     }
     if (place.owner == asn::Player::Opponent || place.owner == asn::Player::Both) {
         auto from = getOpponent()->zone(place.zone);
         eligibleCount += highlightEligibleCards(from, specs, target.targetSpecification->mode,
                                                 mAbilityList->ability(mAbilityList->activeId()),
-                                                true/* use CannotBeChosen */);
+                                                considerCannotBeChosen);
     }
     return eligibleCount;
 }

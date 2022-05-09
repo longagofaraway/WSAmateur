@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "basicTypes.h"
+#include "multiplier.h"
 #include "number.h"
 
 namespace asn {
@@ -22,7 +23,8 @@ enum class CardSpecifierType : uint8_t {
     TriggerIcon,
     HasMarker,
     Power,
-    StandbyTarget
+    StandbyTarget,
+    LevelWithMultiplier
 };
 
 enum class CardType : uint8_t {
@@ -58,18 +60,9 @@ struct CostSpecifier {
 struct Power {
     Number value;
 };
-
-enum class TriggerIcon : uint8_t {
-    Soul = 1,
-    Wind,
-    Bag,
-    Door,
-    Book,
-    Shot,
-    Treasure,
-    Gate,
-    Standby,
-    Choice
+struct LevelWithMultiplier {
+    Number value;
+    Multiplier multiplier;
 };
 
 struct CardSpecifier {
@@ -85,7 +78,8 @@ struct CardSpecifier {
         Color,
         CostSpecifier,
         TriggerIcon,
-        Power
+        Power,
+        LevelWithMultiplier
     > specifier;
 };
 

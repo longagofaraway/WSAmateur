@@ -17,6 +17,7 @@ CardSpecifier {
     CostSpecifier,
     TriggerIcon,
     Power,
+    LevelWithMultiplier,
     Nothing
   }
 }
@@ -34,7 +35,8 @@ enum CardSpecifierType {
   triggerIcon = 10,
   hasMarker = 11,
   power = 12,
-  standbyTarget = 13 // with level equal to or less than your level +1
+  standbyTarget = 13, // with level equal to or less than your level +1
+  levelWithMultiplier = 14
 }
 
 enum CardType {
@@ -74,4 +76,9 @@ CostSpecifier {
 
 Power {
   value Number
+}
+
+LevelWithMultiplier {
+  value Number,
+  multiplier Multiplier
 }

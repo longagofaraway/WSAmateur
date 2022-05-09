@@ -14,6 +14,7 @@
 #include "playerBuffManager.h"
 
 class ProtoAbility;
+class AbilityPlayer;
 
 std::string_view asnZoneToString(asn::Zone zone);
 QString asnZoneToReadableString(asn::Zone zone);
@@ -29,7 +30,7 @@ ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type);
 ProtoPlayerAttribute getProtoPlayerAttrType(PlayerAttrType type);
 
 bool checkNumber(const asn::Number &numObj, int n);
-bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card);
+bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card, AbilityPlayer *abilityPlayer = nullptr);
 bool checkTargetMode(asn::TargetMode mode, const ServerCard *thisCard, const ServerCard *card);
 bool isPositional(const asn::Target &t);
 bool checkPlace(const ServerCard *card, const asn::Place &place);
