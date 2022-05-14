@@ -771,6 +771,8 @@ void Player::sendSwitchPositions(int from, int to) {
 
 void Player::sendFromStageToWr(int pos) {
     auto &card = mStage->cards()[pos];
+    for (const auto &marker: card.markers())
+        createMovingCard(marker.id(), marker.qcode(), "stage", pos, "wr", -1, true, true, true);
     createMovingCard(card.id(), card.qcode(), "stage", pos, "wr", -1, true, false, true);
 }
 

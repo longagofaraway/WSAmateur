@@ -149,6 +149,7 @@ public:
     Resumable playEvent(int handIndex);
     Resumable switchPositions(const CommandSwitchStagePositions cmd);
     void switchPositions(int from, int to);
+    void swapCards(ServerCard *card1, ServerCard *card2);
     bool canPlay(ServerCard *card);
     Resumable climaxPhase();
     bool canAttack();

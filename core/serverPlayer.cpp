@@ -307,9 +307,6 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     ServerCard *card = startZone->card(startPos);
     if (!card)
         return false;
-    if (card->type() == CardType::Climax) {
-        qDebug() << "moving climax";
-    }
 
     // check trigger while temporary abilities like 'encore' are still present
     checkZoneChangeTrigger(card, startZoneName, targetZoneName);
@@ -375,12 +372,14 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     // so old stage card can still trigger
     checkZoneChangeTrigger(card.get(), startZone->name(), "stage");
 
+    std::vector<std::unique_ptr<ServerCard>> removedMarkers;
     auto currentStageCard = stage->card(targetPos);
     if (currentStageCard) {
         // check trigger while temporary abilities like 'encore' are still present
         checkZoneChangeTrigger(currentStageCard, "stage", "wr");
         // revert effects of cont abilities
         playContAbilities(currentStageCard, true);
+        removedMarkers = std::move(card->markers());
         currentStageCard->reset();
     }
 
@@ -388,6 +387,8 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     auto cardOnStage = stage->card(targetPos);
     if (startZone->name() == "hand")
         cardOnStage->setFirstTurn(true);
+
+    moveMarkersToWr(removedMarkers);
 
     EventMoveCard event;
     event.set_card_id(cardOnStage->id());
@@ -718,6 +719,23 @@ void ServerPlayer::switchPositions(int from, int to) {
         card1->buffManager()->sendChangedAttrs(oldAttrs1);
     if (card2)
         card2->buffManager()->sendChangedAttrs(oldAttrs2);
+}
+
+void ServerPlayer::swapCards(ServerCard *card1, ServerCard *card2) {
+    int card1Pos = card1->pos();
+    int card2Pos = card2->pos();
+    auto zone1 = card1->zone();
+    auto zone2 = card2->zone();
+    auto cardHolder1 = zone1->takeCard(card1->pos());
+    auto cardHolder2 = zone2->takeCard(card2->pos());
+    if (zone1->name() == "stage")
+        zone1->putOnStage(std::move(cardHolder2), card1Pos);
+    else
+        zone1->addCard(std::move(cardHolder2), card1Pos);
+    if (zone2->name() == "stage")
+        zone2->putOnStage(std::move(cardHolder1), card2Pos);
+    else
+        zone2->addCard(std::move(cardHolder1), card2Pos);
 }
 
 bool ServerPlayer::canPlay(ServerCard *card) {

@@ -828,10 +828,19 @@ Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
     co_await mPlayer->getOpponent()->takeDamage(damage, thisCard().card);
 }
 
+void swapCardsInternal(ServerCard *card1, ServerCard *card2) {
+    auto card1Zone = card1->zone()->name();
+    auto card1Pos = card1->pos();
+    auto player = card1->player();
+    player->moveCard(card1Zone, card1->pos(), card2->zone()->name(), card2->pos());
+    player->moveCard(card2->zone()->name(), card2->pos(), card1Zone, card1Pos);
+}
+
 Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {
     co_await playChooseCard(e.first);
+    if (chosenCards().size() != 1)
+        co_return;
     co_await playChooseCard(e.second, false);
-
     if (chosenCards().size() != 2)
         co_return;
 
@@ -841,21 +850,14 @@ Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {
     if (card1->id() == card2->id())
         co_return;
 
-    assert(card1->zone()->name() != "stage" && card2->zone()->name() != "stage");
-    /*if (card1->zone()->name() == "stage" || card2->zone()->name() == "stage") {
-        swapWithCardOnStage(card1, card2);
-        auto stageCard = card1->zone()->name() == "stage" ? card1 : card2;
-        co_return;
-    }*/
-
-    // swap isn't swap but two moves, so
-    // won't work with clock zone because of the card limit
-    auto card1Zone = card1->zone()->name();
-    auto card1Pos = card1->pos();
-    auto card2Pos = card2->pos();
     auto player = card1->player();
-    player->moveCard(card1Zone, card1->pos(), card2->zone()->name(), card2->pos());
-    player->moveCard(card2->zone()->name(), card2->pos(), card1Zone, card1Pos);
+    if (card1->zone()->name() == "stage" && card2->zone()->name() == "stage") {
+        player->switchPositions(card1->pos(), card2->pos());
+    } else if (card2->zone()->name() == "stage") {
+        swapCardsInternal(card2, card1);
+    } else {
+        swapCardsInternal(card1, card2);
+    }
 }
 
 void AbilityPlayer::playCannotAttack(const asn::CannotAttack &e) {
