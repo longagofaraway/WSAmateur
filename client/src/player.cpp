@@ -507,10 +507,13 @@ void Player::moveCard(const EventMoveCard &event) {
     auto deckView = zone("view");
     if (event.start_zone() == "deck" && deckView->model().count()) {
         auto deck = zone("deck");
-        if (deck->model().count() - 1 - event.start_pos() < deckView->model().count()) {
-            startPos = deck->model().count() - 1 - event.start_pos();
-            startZoneStr = "view";
-            deck->model().removeCard(event.start_pos());
+        auto &cards = deckView->model().cards();
+        for (size_t i = 0; i < cards.size(); ++i) {
+            if (cards[i].id() == event.card_id()) {
+                startPos = i;
+                startZoneStr = "view";
+                deck->model().removeCard(event.start_pos());
+            }
         }
     }
 
