@@ -100,6 +100,12 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
     }
 
     for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::State) {
+            s += printState(std::get<State>(cardSpec.specifier)) + " ";
+        }
+    }
+
+    for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::Trait) {
             s += printTrait(std::get<Trait>(cardSpec.specifier).value) + " ";
         }

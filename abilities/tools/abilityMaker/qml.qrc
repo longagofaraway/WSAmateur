@@ -89,5 +89,6 @@
         <file>qml/effects/TriggerIconGain.qml</file>
         <file>qml/conditions/CardMoved.qml</file>
         <file>qml/basicTypes/CardSpecifierNumberWithMultiplier.qml</file>
+        <file>qml/basicTypes/CardSpecifierState.qml</file>
     </qresource>
 </RCC>

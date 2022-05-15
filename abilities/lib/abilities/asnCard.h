@@ -24,7 +24,8 @@ enum class CardSpecifierType : uint8_t {
     HasMarker,
     Power,
     StandbyTarget,
-    LevelWithMultiplier
+    LevelWithMultiplier,
+    State
 };
 
 enum class CardType : uint8_t {
@@ -79,7 +80,8 @@ struct CardSpecifier {
         CostSpecifier,
         TriggerIcon,
         Power,
-        LevelWithMultiplier
+        LevelWithMultiplier,
+        State
     > specifier;
 };
 

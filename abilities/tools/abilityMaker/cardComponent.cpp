@@ -47,6 +47,9 @@ void initSpecifier(asn::CardSpecifier &spec) {
         spec.specifier = sp;
         break;
     }
+    case asn::CardSpecifierType::State:
+        spec.specifier = asn::State::Standing;
+        break;
     default:
         break;
     }
@@ -166,6 +169,13 @@ void CardComponent::onSpecifierChanged(int pos, int value) {
         connect(obj, SIGNAL(editMultiplier(int)), this, SLOT(editMultiplier(int)));
         break;
     }
+    case asn::CardSpecifierType::State: {
+        obj = createQmlObject("basicTypes/CardSpecifierState", qmlObject);
+        if (initState)
+            initComponent(pos, obj);
+        connect(obj, SIGNAL(valueChangedEx(int,int)), this, SLOT(enumSet(int,int)));
+        break;
+    }
     default:
         return;
     }
@@ -220,6 +230,9 @@ void CardComponent::enumSet(int pos, int value) {
         break;
     case asn::CardSpecifierType::LevelWithMultiplier:
         setNumModifier<asn::LevelWithMultiplier>(specifiers[pos], value);
+        break;
+    case asn::CardSpecifierType::State:
+        specifiers[pos].specifier = static_cast<asn::State>(value);
         break;
     default:
         assert(false);
@@ -312,7 +325,7 @@ namespace {
 template<typename T>
 void initComponentEnum(QQuickItem *obj, const asn::CardSpecifier &spec) {
     int value = static_cast<int>(std::get<T>(spec.specifier));
-    if constexpr (std::is_same_v<T, asn::Player>)
+    if constexpr (std::is_same_v<T, asn::Player> || std::is_same_v<T, asn::State>)
         QMetaObject::invokeMethod(obj, "setValueEx", Q_ARG(QVariant, value));
     else
         QMetaObject::invokeMethod(obj, "setValue", Q_ARG(QVariant, value));
@@ -364,6 +377,9 @@ void CardComponent::initComponent(int pos, QQuickItem *obj) {
         break;
     case asn::CardSpecifierType::LevelWithMultiplier:
         initComponentNum<asn::LevelWithMultiplier>(obj, specifiers[pos]);
+        break;
+    case asn::CardSpecifierType::State:
+        initComponentEnum<asn::State>(obj, specifiers[pos]);
         break;
     default:
         break;

@@ -73,7 +73,7 @@ public:
     const std::vector<TriggerIcon>& triggers() const override { return mInfo->triggers(); }
     const std::vector<std::string>& traits() const override { return mInfo->traits(); }
     CardType type() const override { return mType; }
-    asn::State state() const { return mState; }
+    asn::State state() const override { return mState; }
     void setState(asn::State state) { mState = state; }
     QString qstate() const;
     QString qtype() const;

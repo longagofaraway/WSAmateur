@@ -47,6 +47,9 @@ CardSpecifier decodeCardSpecifier(Iterator &it, Iterator end) {
     case CardSpecifierType::LevelWithMultiplier:
         c.specifier = decodeLevelWithMultiplier(it, end);
         break;
+    case CardSpecifierType::State:
+        c.specifier = decodeEnum<State>(it, end);
+        break;
     default:
         break;
     }

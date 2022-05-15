@@ -156,6 +156,21 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         if (c.where.owner == Player::Player)
             s += "your ";
         s += printZone(c.where.zone);
+    } else {
+        if (c.where.pos == Position::FrontRow ||
+            c.where.pos == Position::BackRow) {
+            s += "in " + printPlayer(c.where.owner);
+            switch (c.where.pos) {
+            case Position::FrontRow:
+                s += "center stage";
+                break;
+            case Position::BackRow:
+                s += "back stage";
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     if (s.back() == ' ')

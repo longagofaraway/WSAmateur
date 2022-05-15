@@ -20,16 +20,12 @@ public:
     virtual int power() const = 0;
     virtual int level() const = 0;
     virtual int cost() const = 0;
+    virtual asn::State state() const = 0;
     virtual const std::string& name() const = 0;
     virtual const std::vector<TriggerIcon>& triggers() const = 0;
     virtual const std::vector<std::string>& traits() const = 0;
     virtual CardType type() const = 0;
     virtual int playersLevel() const = 0;
-};
-
-enum StageRow {
-    CenterStage,
-    BackStage
 };
 
 struct AbilityState {
@@ -52,7 +48,6 @@ class ServerCard : public CardBase
 
     std::vector<std::unique_ptr<ServerCard>> mMarkers;
 
-    StageRow mRow;
     int mPosition;
     int mPreviousStagePosition = 0;
     int mPreviousDamage = 0;
@@ -101,7 +96,7 @@ public:
     CardType type() const override { return mCardInfo->type(); }
     char color() const { return mCardInfo->color(); }
     bool isCounter() const { return mCardInfo->isCounter(); }
-    asn::State state() const { return mState; }
+    asn::State state() const override { return mState; }
     void setState(asn::State st) { mState = st; }
     const std::vector<TriggerIcon>& triggers() const override { return mTriggerIcons; }
     void addTriggerIcon(asn::TriggerIcon icon);

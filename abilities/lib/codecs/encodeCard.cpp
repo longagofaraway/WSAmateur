@@ -45,6 +45,9 @@ void encodeCardSpecifier(const CardSpecifier &c, Buf &buf) {
     case CardSpecifierType::LevelWithMultiplier:
         encodeLevelWithMultiplier(std::get<LevelWithMultiplier>(c.specifier), buf);
         break;
+    case CardSpecifierType::State:
+        buf.push_back(static_cast<uint8_t>(std::get<State>(c.specifier)));
+        break;
     default:
         break;
     }

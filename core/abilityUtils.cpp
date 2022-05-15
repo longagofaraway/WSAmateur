@@ -193,6 +193,10 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
                 eligible = false;
             break;
         }
+        case asn::CardSpecifierType::State:
+            if (std::get<asn::State>(spec.specifier) != card.state())
+                eligible = false;
+            break;
         case asn::CardSpecifierType::Owner:
             // don't process here
             break;

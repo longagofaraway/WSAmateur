@@ -50,10 +50,6 @@ void ServerCard::reset() {
 
 void ServerCard::setPos(int pos) {
     mPosition = pos;
-    if (pos < 3)
-        mRow = CenterStage;
-    else
-        mRow = BackStage;
 }
 
 int ServerCard::pos() const {

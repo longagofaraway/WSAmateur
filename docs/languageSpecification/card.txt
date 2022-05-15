@@ -18,6 +18,7 @@ CardSpecifier {
     TriggerIcon,
     Power,
     LevelWithMultiplier,
+    State,
     Nothing
   }
 }
@@ -36,7 +37,8 @@ enum CardSpecifierType {
   hasMarker = 11,
   power = 12,
   standbyTarget = 13, // with level equal to or less than your level +1
-  levelWithMultiplier = 14
+  levelWithMultiplier = 14,
+  state = 15
 }
 
 enum CardType {
