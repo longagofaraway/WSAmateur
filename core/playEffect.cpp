@@ -246,7 +246,9 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
     const auto &target = e.targets[0];
     auto targets = getTargets(target.target, target.placeType, target.place);
     for (const auto &t: targets) {
-        ev.add_card_positions(t->pos());
+        auto card = ev.add_cards();
+        card->set_id(t->id());
+        card->set_position(t->pos());
     }
     mPlayer->sendToBoth(ev);
 

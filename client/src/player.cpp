@@ -510,7 +510,7 @@ void Player::moveCard(const EventMoveCard &event) {
         auto &cards = deckView->model().cards();
         for (size_t i = 0; i < cards.size(); ++i) {
             if (cards[i].id() == event.card_id()) {
-                startPos = i;
+                startPos = static_cast<int>(i);
                 startZoneStr = "view";
                 deck->model().removeCard(event.start_pos());
             }

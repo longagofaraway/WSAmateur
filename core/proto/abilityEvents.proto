@@ -2,6 +2,11 @@ syntax = "proto3";
 
 import "ability.proto";
 
+message CardToChoose {
+    sint32 position = 1;
+    sint32 id = 2;
+}
+
 message EventAbilityActivated {
     repeated ProtoAbility abilities = 1;
 }
@@ -22,7 +27,7 @@ message EventEndResolvingAbilties {}
 message EventChooseCard {
     bytes effect = 1;
     bool mandatory = 2;
-    repeated sint32 card_positions = 3;
+    repeated CardToChoose cards = 3;
 }
 
 message EventMoveChoice {

@@ -42,20 +42,30 @@ int Player::highlightCardsFromEvent(
     selectAllCards(pzone, false);
     int eligibleCount = 0;
 
-    for (int i = 0; i < event.card_positions_size(); ++i) {
-        if (event.card_positions(i) >= cards.size()) {
-            qDebug() << "Error! wrong index from server";
-            continue;
-        }
-        int cardPos = event.card_positions(i);
-        if (!cards[cardPos].cardPresent())
-            continue;
+    auto highlightCard = [&cards, pzone,
+            considerCannotBeChosen, &eligibleCount](int pos) {
+        if (!cards[pos].cardPresent())
+            return;
 
-        if (considerCannotBeChosen && cards[cardPos].cannotBeChosen())
-            continue;
+        if (considerCannotBeChosen && cards[pos].cannotBeChosen())
+            return;
 
-        pzone->model().setGlow(cardPos, true);
+        pzone->model().setGlow(pos, true);
         eligibleCount++;
+    };
+
+    for (int i = 0; i < event.cards_size(); ++i) {
+        auto &event_card = event.cards(i);
+        if (fromView) {
+            for (size_t i = 0; i < cards.size(); ++i) {
+                if (cards[i].id() == event_card.id()) {
+                    highlightCard(i);
+                    break;
+                }
+            }
+        } else {
+            highlightCard(event_card.position());
+        }
     }
 
     return eligibleCount;
