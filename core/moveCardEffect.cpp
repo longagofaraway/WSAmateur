@@ -87,22 +87,22 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
         ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
             mentionedCards().empty()) ||
-        (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
+        (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name())) {
+        mPerformedInFull = false;
         co_return;
-
-    if ((e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom)) {
-        auto player = owner(e.from.owner);
-        if (player->zone(e.from.zone)->count() == 0)
-            co_return;
     }
 
     if (e.target.type == asn::TargetType::BattleOpponent) {
-        if (thisCard().card->zone()->name() != "stage")
+        if (thisCard().card->zone()->name() != "stage") {
+            mPerformedInFull = false;
             co_return;
+        }
 
         auto card = mPlayer->oppositeCard(thisCard().card);
-        if (!card)
+        if (!card) {
+            mPerformedInFull = false;
             co_return;
+        }
     }
 
     std::map<int, ServerCard*> cardsToMove;
