@@ -192,6 +192,7 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             break;
         case asn::CardSpecifierType::Owner:
             // don't process here
+            metRequirements[spec.type] = true;
             break;
         default:
             assert(false);
