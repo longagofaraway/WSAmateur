@@ -59,7 +59,7 @@ int Player::highlightCardsFromEvent(
         if (fromView) {
             for (size_t i = 0; i < cards.size(); ++i) {
                 if (cards[i].id() == event_card.id()) {
-                    highlightCard(i);
+                    highlightCard(static_cast<int>(i));
                     break;
                 }
             }

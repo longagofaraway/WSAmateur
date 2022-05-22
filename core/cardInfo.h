@@ -7,6 +7,7 @@
 
 using asn::TriggerIcon;
 using asn::CardType;
+using asn::Color;
 
 class CardInfo
 {
@@ -14,7 +15,7 @@ class CardInfo
     int mPower;
     int mCost;
     int mSoul;
-    char mColor;
+    Color mColor;
     bool mCounter;
     CardType mType;
     std::string mCode;
@@ -35,8 +36,8 @@ public:
     void setCost(int cost) { mCost = cost; }
     int soul() const { return mSoul; }
     void setSoul(int soul) { mSoul = soul; }
-    char color() const { return mColor; }
-    void setColor(char color) { mColor = color; }
+    Color color() const { return mColor; }
+    void setColor(Color color) { mColor = color; }
     CardType type() const { return mType; }
     void setType(CardType type) { mType = type; }
     bool isCounter() const { return mCounter; }

@@ -44,7 +44,8 @@ Rectangle {
                 "Swap Cards", "Cannot Attack", "Char auto can't deal damage", "Opp auto can't deal damage",
                 "Can't Become Reversed", "Stock Swap", "Add Marker", "Bond", "Cannot Move", "Perform Replay",
                 "Replay", "Side Attack Without Penalty", "Standby", "Shuffle", "Put On Stage Rested",
-                "Remove Marker", "Cannot Stand", "Cannot Be Chosen", "Trigger Icon Gain"]
+                "Remove Marker", "Cannot Stand", "Cannot Be Chosen", "Trigger Icon Gain",
+                "Can Play w/o Color Requirement"]
         currentIndex: -1
         onCurrentIndexChanged: {
             effectTypeChanged(currentIndex + 1);

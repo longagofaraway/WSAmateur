@@ -148,6 +148,7 @@ private:
     void playAddMarker(const asn::AddMarker &e);
     void playRemoveMarker(const asn::RemoveMarker &e);
     void playTriggerGain(const asn::TriggerIconGain &e);
+    void playCanPlayWithoutColorRequirement(const asn::CanPlayWithoutColorRequirement &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

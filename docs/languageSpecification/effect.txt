@@ -35,6 +35,7 @@ Effect {
     CannotStand,
     CannotBeChosen,
     TriggerIconGain,
+    CanPlayWithoutColorRequirement,
     OtherEffect,
     Nothing
   }
@@ -80,6 +81,7 @@ enum EffectType {
   cannotStand = 37,
   cannotBeChosen = 38,
   triggerIconGain = 39,
+  canPlayWithoutColorRequirement = 40,
   
   otherEffect = 255
 }
@@ -342,6 +344,11 @@ CannotBeChosen {
 TriggerIconGain {
   target Target,
   triggerIcon TriggerIcon,
+  duration UInt8
+}
+
+CanPlayWithoutColorRequirement {
+  target Target,
   duration UInt8
 }
 

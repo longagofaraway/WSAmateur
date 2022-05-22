@@ -192,6 +192,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::TriggerIconGain:
         playTriggerGain(std::get<asn::TriggerIconGain>(e.effect));
         break;
+    case asn::EffectType::CanPlayWithoutColorRequirement:
+        playCanPlayWithoutColorRequirement(std::get<asn::CanPlayWithoutColorRequirement>(e.effect));
+        break;
     default:
         break;
     }
@@ -1088,6 +1091,14 @@ void AbilityPlayer::playTriggerGain(const asn::TriggerIconGain &e) {
     auto targets = getTargetsFromAllZones(e.target);
 
     TriggerIconBuff buff(e.triggerIcon, e.duration);
+    applyBuff(targets, buff);
+}
+
+void AbilityPlayer::playCanPlayWithoutColorRequirement(const asn::CanPlayWithoutColorRequirement &e) {
+    asn::Place place{asn::Position::NotSpecified, asn::Zone::Hand, asn::Player::Player};
+    auto targets = getTargets(e.target, asn::PlaceType::SpecificPlace, place);
+
+    BoolAttributeChangeEx buff(BoolAttributeType::CanPlayWithoutColorRequirement, e.duration);
     applyBuff(targets, buff);
 }
 

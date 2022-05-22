@@ -30,6 +30,7 @@ enum ProtoCardBoolAttribute {
     ProtoSideAttackWithoutPenalty = 4;
     ProtoCannotStand = 5;
     ProtoCannotBeChosen = 6;
+    ProtoPlayWithoutColorRequirement = 7;
 }
 
 enum ProtoPlayerAttribute {

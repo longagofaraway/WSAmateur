@@ -49,15 +49,36 @@ bool isEffectPlayedFromHand(const asn::EffectType &type) {
     });
 }
 
-bool checkAbilityValidForZone(const asn::ContAbility &a, const std::string &name) {
+bool checkColorReqEffectValidity(const asn::ContAbility &a, const std::string &zone) {
+    const auto &effect = std::get<asn::CanPlayWithoutColorRequirement>(a.effects[0].effect);
+    if (effect.target.type == asn::TargetType::ThisCard && zone != "hand")
+        return false;
+    if (effect.target.type != asn::TargetType::ThisCard && zone != "stage")
+        return false;
+    return true;
+}
+
+bool checkAbilityValidForZone(const asn::ContAbility &a, const std::string &zoneName) {
     if (a.effects.empty())
         return false;
     const auto effectType = a.effects[0].type;
+
+    static std::unordered_set<asn::EffectType> specialHandlingEffects{
+        asn::EffectType::EarlyPlay,
+        asn::EffectType::CannotPlay,
+        asn::EffectType::TriggerIconGain,
+        asn::EffectType::CanPlayWithoutColorRequirement
+    };
+    for (size_t i = 1; i < a.effects.size(); ++i)
+        assert(!specialHandlingEffects.contains(a.effects[i].type));
+
     if (effectType == asn::EffectType::TriggerIconGain)
-        return checkTriggerIconGainValidity(a, name);
+        return checkTriggerIconGainValidity(a, zoneName);
+    if (effectType == asn::EffectType::CanPlayWithoutColorRequirement)
+        return checkColorReqEffectValidity(a, zoneName);
     if (isEffectPlayedFromHand(effectType))
-        return name == "hand";
-    return name == "stage" || name == "climax";
+        return zoneName == "hand";
+    return zoneName == "stage" || zoneName == "climax";
 }
 }
 

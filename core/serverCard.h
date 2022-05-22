@@ -20,6 +20,7 @@ public:
     virtual int power() const = 0;
     virtual int level() const = 0;
     virtual int cost() const = 0;
+    virtual asn::Color color() const = 0;
     virtual asn::State state() const = 0;
     virtual const std::string& name() const = 0;
     virtual const std::vector<TriggerIcon>& triggers() const = 0;
@@ -69,6 +70,7 @@ class ServerCard : public CardBase
     bool mSideAttackWithoutPenalty = false;
     bool mCannotStand = false;
     bool mCannotBeChosen = false;
+    bool mCanPlayWithoutColorRequirement = false;
     bool mFirstTurn = false;
 
     CardBuffManager mBuffManager;
@@ -94,7 +96,7 @@ public:
     int power() const override { return mPower; }
     int soul() const { return mSoul; }
     CardType type() const override { return mCardInfo->type(); }
-    char color() const { return mCardInfo->color(); }
+    asn::Color color() const override { return mCardInfo->color(); }
     bool isCounter() const { return mCardInfo->isCounter(); }
     asn::State state() const override { return mState; }
     void setState(asn::State st) { mState = st; }
@@ -122,6 +124,7 @@ public:
     bool cannotMove() const { return mCannotMove; }
     bool cannotStand() const { return mCannotStand; }
     bool cannotBeChosen() const { return mCannotBeChosen; }
+    bool canPlayWithoutColorRequirement() const { return mCanPlayWithoutColorRequirement; }
     bool sideAttackWithoutPenalty() const { return mSideAttackWithoutPenalty; }
     void setFirstTurn(bool val) { mFirstTurn = val; }
     bool isFirstTurn() const { return mFirstTurn; }

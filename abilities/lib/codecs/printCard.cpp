@@ -1,5 +1,6 @@
 #include "print.h"
 
+#include <algorithm>
 #include <cassert>
 
 using namespace asn;
@@ -15,6 +16,11 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
             s += "s";
         return s;
     }
+
+    auto hasCardType = std::any_of(c.cardSpecifiers.begin(), c.cardSpecifiers.end(),
+                                   [](const CardSpecifier &spec) {
+        return spec.type == CardSpecifierType::CardType;
+    });
 
     if (!plural && article) {
         auto hasOwnerSpecifier = [](const CardSpecifier &c){ return c.type == CardSpecifierType::Owner; };
@@ -109,6 +115,20 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
         if (cardSpec.type == CardSpecifierType::Trait) {
             s += printTrait(std::get<Trait>(cardSpec.specifier).value) + " ";
         }
+    }
+
+    count = 0;
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::Color) {
+            s += printColor(std::get<Color>(cardSpec.specifier)) + " ";
+            count++;
+        }
+    }
+    if (count > 0 && !hasCardType) {
+        s += "card";
+        if (plural)
+            s += "s";
+        s += " ";
     }
 
     for (const auto &cardSpec: c.cardSpecifiers) {

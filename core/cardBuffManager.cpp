@@ -14,8 +14,9 @@ void CardBuffManager::reset() {
     mAbilityBuffs.clear();
     mBoolAttrChanges.clear();
 
+    // trigger icon works in all zones
     std::erase_if(cardBuffs, [](const std::unique_ptr<Buff> &buff) {
-        return buff->type != BuffType::TriggerIcon;
+        return buff->buffType != BuffType::TriggerIcon;
     });
 }
 
@@ -376,7 +377,7 @@ CardBuffManager::CardBuffs::iterator
 CardBuffManager::removeBuff(CardBuffs::iterator it) {
     auto removedBuff = std::move(*it);
     it = cardBuffs.erase(it);
-    removedBuff->undo(mCard);
+    removedBuff->undo(this, mCard);
     return it;
 }
 
@@ -440,4 +441,17 @@ bool CardBuffManager::hasBoolAttrChange(BoolAttributeType type) const {
     auto sameType = std::find_if(mBoolAttrChanges.begin(), mBoolAttrChanges.end(),
                                  [type](const BoolAttributeChange &el) { return el.type == type; });
     return sameType != mBoolAttrChanges.end();
+}
+
+bool CardBuffManager::hasBoolAttrChangeEx(BoolAttributeType type) const {
+    return std::any_of(cardBuffs.begin(), cardBuffs.end(),
+                                    [type](const auto &el) {
+        if (el->buffType == BuffType::BoolAttrChange) {
+            auto boolAttrBuff = dynamic_cast<BoolAttributeChangeEx*>(el.get());
+            if (boolAttrBuff && boolAttrBuff->attrType == type)
+                return true;
+        }
+        return false;
+    });
+
 }

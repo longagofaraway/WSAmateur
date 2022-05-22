@@ -40,18 +40,18 @@ asn::CardType convertType(int type) {
     }
 }
 
-char convertColor(int color) {
+asn::Color convertColor(int color) {
     switch (color) {
     case 0:
-        return 'Y';
+        return asn::Color::Yellow;
     case 1:
-        return 'G';
+        return asn::Color::Green;
     case 2:
-        return 'R';
+        return asn::Color::Red;
     case 3:
-        return 'B';
+        return asn::Color::Blue;
     case 4:
-        return 'P';
+        return asn::Color::Purple;
     default:
         throw std::runtime_error("unknown color");
     }

@@ -58,6 +58,7 @@ void Card::clear() {
     mCannotBecomeReversed = false;
     mCannotMove = false;
     mCannotBeChosen = false;
+    mCanPlayWoColorReq = false;
 }
 
 QString Card::qstate() const {

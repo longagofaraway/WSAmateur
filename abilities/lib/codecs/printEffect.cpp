@@ -874,6 +874,16 @@ std::string printTriggerIconGain(const TriggerIconGain &e) {
     return s;
 }
 
+std::string printCanPlayWithoutColorRequirement(const CanPlayWithoutColorRequirement &e) {
+    std::string s = "you may play ";
+
+    s += printTarget(e.target, true);
+    s += "from hand without meeting color requirement ";
+    s += printDuration(e.duration);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -987,6 +997,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::TriggerIconGain:
         s += printTriggerIconGain(std::get<TriggerIconGain>(e.effect));
+        break;
+    case EffectType::CanPlayWithoutColorRequirement:
+        s += printCanPlayWithoutColorRequirement(std::get<CanPlayWithoutColorRequirement>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

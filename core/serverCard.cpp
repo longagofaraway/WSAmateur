@@ -44,6 +44,7 @@ void ServerCard::reset() {
     mCannotStand = false;
     mCannotMove = false;
     mCannotBeChosen = false;
+    mCanPlayWithoutColorRequirement = false;
     mInBattle = false;
     mFirstTurn = false;
 }
@@ -139,6 +140,9 @@ void ServerCard::changeBoolAttribute(BoolAttributeType type, bool value) {
     case BoolAttributeType::CannotBeChosen:
         mCannotBeChosen = value;
         break;
+    case BoolAttributeType::CanPlayWithoutColorRequirement:
+        mCanPlayWithoutColorRequirement = value;
+        break;
     default:
         assert(false);
     }
@@ -174,6 +178,8 @@ bool ServerCard::boolAttrByType(BoolAttributeType type) const {
         return cannotStand();
     case BoolAttributeType::CannotBeChosen:
         return cannotBeChosen();
+    case BoolAttributeType::CanPlayWithoutColorRequirement:
+        return canPlayWithoutColorRequirement();
     default:
         assert(false);
         return false;

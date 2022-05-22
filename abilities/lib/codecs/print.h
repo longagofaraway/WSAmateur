@@ -28,6 +28,7 @@ std::string printPlayer(asn::Player p, asn::Player executor = asn::Player::Playe
 std::string printState(asn::State s);
 std::string printPhase(asn::Phase p);
 std::string printTriggerIcon(asn::TriggerIcon icon);
+std::string printColor(asn::Color color);
 std::string printForEachMultiplier(const asn::ForEachMultiplier &m, bool addOf = false);
 std::string printAttackType(asn::AttackType t);
 std::string printDuration(int duration);

@@ -402,24 +402,34 @@ void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice
 }
 
 void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
-    if (mStage->model().count() <= event.card_pos())
+    auto pzone = zone(event.zone());
+    if (pzone->model().count() <= event.card_pos()) {
+        qWarning() << "Failed to set bool attr " << event.attr()
+                   << " to card at pos " << event.card_pos();
         return;
+    }
     switch (event.attr()) {
     case ProtoCannotFrontAttack:
-        mStage->cards()[event.card_pos()].setCannotFrontAttack(event.value());
+        pzone->cards()[event.card_pos()].setCannotFrontAttack(event.value());
         break;
     case ProtoCannotSideAttack:
-        mStage->cards()[event.card_pos()].setCannotSideAttack(event.value());
+        pzone->cards()[event.card_pos()].setCannotSideAttack(event.value());
         break;
     case ProtoCannotBecomeReversed:
-        mStage->cards()[event.card_pos()].setCannotBecomeReversed(event.value());
+        pzone->cards()[event.card_pos()].setCannotBecomeReversed(event.value());
         break;
     case ProtoCannotMove:
-        mStage->model().setCannotMove(event.card_pos(), event.value());
+        pzone->model().setCannotMove(event.card_pos(), event.value());
         break;
     case ProtoCannotBeChosen:
-        mStage->cards()[event.card_pos()].setCannotBeChosen(event.value());
+        pzone->cards()[event.card_pos()].setCannotBeChosen(event.value());
         break;
+    case ProtoPlayWithoutColorRequirement: {
+        pzone->cards()[event.card_pos()].setCanPlayWoColorReq(event.value());
+        if (mHand->isPlayTiming())
+            highlightPlayableCards();
+        break;
+    }
     case ProtoSideAttackWithoutPenalty:
     case ProtoCannotStand:
         break;

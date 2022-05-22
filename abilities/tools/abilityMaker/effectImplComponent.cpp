@@ -249,6 +249,13 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::CanPlayWithoutColorRequirement: {
+        auto e = asn::CanPlayWithoutColorRequirement();
+        e.target = defaultTarget;
+        e.duration = 0;
+        effect = e;
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
     case asn::EffectType::StockSwap:
@@ -359,6 +366,10 @@ const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::Effect
     }
     case asn::EffectType::TriggerIconGain: {
         const auto &e = std::get<asn::TriggerIconGain>(effect);
+        return e.target;
+    }
+    case asn::EffectType::CanPlayWithoutColorRequirement: {
+        const auto &e = std::get<asn::CanPlayWithoutColorRequirement>(effect);
         return e.target;
     }
     default:
@@ -577,6 +588,11 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
+    case asn::EffectType::CanPlayWithoutColorRequirement: {
+        const auto &ef = std::get<asn::CanPlayWithoutColorRequirement>(e);
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
     default:
         break;
     }
@@ -619,6 +635,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::CannotStand, "TargetDurationEffect" },
         { asn::EffectType::CannotBeChosen, "TargetDurationEffect" },
         { asn::EffectType::TriggerIconGain, "TriggerIconGain" },
+        { asn::EffectType::CanPlayWithoutColorRequirement, "TargetDurationEffect" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -817,6 +834,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
     case asn::EffectType::CannotMove:
     case asn::EffectType::CannotBeChosen:
     case asn::EffectType::CannotStand:
+    case asn::EffectType::CanPlayWithoutColorRequirement:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
         break;
@@ -915,6 +933,11 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::EffectType::TriggerIconGain: {
         auto &e = std::get<asn::TriggerIconGain>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::CanPlayWithoutColorRequirement: {
+        auto &e = std::get<asn::CanPlayWithoutColorRequirement>(effect);
         e.target = t;
         break;
     }
@@ -1138,6 +1161,11 @@ void EffectImplComponent::onDurationChanged(int value) {
     }
     case asn::EffectType::TriggerIconGain: {
         auto &e = std::get<asn::TriggerIconGain>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::CanPlayWithoutColorRequirement: {
+        auto &e = std::get<asn::CanPlayWithoutColorRequirement>(effect);
         e.duration = value;
         break;
     }

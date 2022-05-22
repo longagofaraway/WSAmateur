@@ -2,6 +2,9 @@
 
 #include <algorithm>
 
+#include <QDebug>
+#include "cardZone.h"
+
 
 CardModel::CardModel(QObject *parent) : QAbstractListModel(parent) {
     mRoles = QVector<int>() << CodeRole << CardIdRole << GlowRole << SelectedRole << TypeRole

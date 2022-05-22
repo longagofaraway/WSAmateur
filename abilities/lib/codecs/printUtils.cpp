@@ -57,6 +57,17 @@ std::string printTriggerIcon(TriggerIcon icon) {
     }
 }
 
+std::string printColor(Color color) {
+    switch (color) {
+    case Color::Yellow: return "yellow";
+    case Color::Green: return "green";
+    case Color::Red: return "red";
+    case Color::Blue: return "blue";
+    case Color::Purple: return "purple";
+    default: throw PrintingException();
+    }
+}
+
 namespace {
 bool cardHasAttr(const Card &c) {
     for (const auto &spec: c.cardSpecifiers) {

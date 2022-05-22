@@ -21,7 +21,7 @@ class Card : public CardBase {
     bool mSelected = false;
     bool mHighlightedByAbility = false;
 
-    char mColor;
+    asn::Color mColor;
     int mLevel;
     int mCost;
     int mPower;
@@ -42,6 +42,7 @@ class Card : public CardBase {
     bool mCannotBecomeReversed = false;
     bool mCannotMove = false;
     bool mCannotBeChosen = false;
+    bool mCanPlayWoColorReq = false;
 
 public:
     Card(CardZone *zone) : mZone(zone) {}
@@ -61,7 +62,7 @@ public:
     bool selected() const { return mSelected; }
     void setGlow(bool glow) { mGlow = glow; }
     void setSelected(bool selected) { mSelected = selected; }
-    char color() const { return mColor; }
+    asn::Color color() const { return mColor; }
     int cost() const override { return mCost; }
     bool isCounter() const { return mInfo->isCounter(); }
     int level() const override { return mLevel; }
@@ -93,6 +94,8 @@ public:
     void setCannotMove(bool p) { mCannotMove = p; }
     bool cannotBeChosen() const { return mCannotBeChosen; }
     void setCannotBeChosen(bool p) { mCannotBeChosen = p; }
+    bool canPlayWoColorReq() const { return mCanPlayWoColorReq; }
+    void setCanPlayWoColorReq(bool p) { mCanPlayWoColorReq = p; }
     bool highlightedByAbility() const { return mHighlightedByAbility; }
     void setHighlightedByAbility(bool p) { mHighlightedByAbility = p; }
 

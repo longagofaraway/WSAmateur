@@ -22,9 +22,11 @@ public:
 
     void reset();
 
+    // new api
     void addBuff(const Buff &buff);
     void removeContBuff(const Buff &buff);
 
+    // old api
     void sendAttrChange(asn::AttributeType attr);
     void sendChangedAttrs(std::tuple<int, int, int> oldAttrs);
     void sendBoolAttrChange(BoolAttributeType type, bool value);
@@ -48,6 +50,8 @@ public:
 
     void endOfTurnEffectValidation();
     void validateCannotStand();
+
+    bool hasBoolAttrChangeEx(BoolAttributeType type) const;
 
 private:
     CardBuffs::iterator removeBuff(CardBuffs::iterator it);

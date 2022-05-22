@@ -747,7 +747,8 @@ bool ServerPlayer::canPlay(ServerCard *card) {
         return false;
     if (static_cast<int>(card->cost()) > zone("stock")->count())
         return false;
-    if (card->level() > 0 || card->type() == CardType::Climax) {
+    if (!card->canPlayWithoutColorRequirement() &&
+        (card->level() > 0 || card->type() == CardType::Climax)) {
         if (!zone("clock")->hasCardWithColor(card->color())
             && !zone("level")->hasCardWithColor(card->color()))
             return false;

@@ -81,7 +81,7 @@ ServerCard *ServerCardZone::topCard() {
     return mCards[mCards.size() - 1].get();
 }
 
-bool ServerCardZone::hasCardWithColor(char color) const {
+bool ServerCardZone::hasCardWithColor(asn::Color color) const {
     for (auto &card: mCards) {
         if (card->color() == color)
             return true;

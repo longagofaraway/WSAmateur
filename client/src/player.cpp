@@ -566,7 +566,8 @@ bool Player::canPlay(const Card &card) const {
         return false;
     if (card.cost() > static_cast<int>(zone("stock")->cards().size()))
         return false;
-    if (card.level() > 0 || card.type() == CardType::Climax) {
+    if (!card.canPlayWoColorReq() &&
+       (card.level() > 0 || card.type() == CardType::Climax)) {
         bool colorMatch = false;
         for (auto &clockCard: zone("clock")->cards()) {
             if (card.color() == clockCard.color()) {

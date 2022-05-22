@@ -101,80 +101,74 @@ ProtoCardAttribute attrTypeToProto(asn::AttributeType t) {
 }
 
 bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &card, AbilityPlayer *abilityPlayer) {
-    bool eligible = true;
-    bool hasNameContains = false;
-    bool nameContains = false;
-    bool hasExactName = false;
-    bool exactNameMatch = false;
+    std::unordered_map<asn::CardSpecifierType, bool> metRequirements;
     for (const auto &spec: specs) {
+        if (!metRequirements.contains(spec.type))
+            metRequirements.emplace(spec.type, false);
         switch (spec.type) {
         case asn::CardSpecifierType::CardType:
-            if (std::get<asn::CardType>(spec.specifier) != card.type())
-                eligible = false;
+            if (std::get<asn::CardType>(spec.specifier) == card.type())
+                metRequirements[spec.type] = true;
             break;
         case asn::CardSpecifierType::TriggerIcon: {
-            bool found = false;
-            for (auto triggerIcon: card.triggers()) {
-                if (triggerIcon == std::get<asn::TriggerIcon>(spec.specifier)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                eligible = false;
+            if (std::any_of(card.triggers().begin(), card.triggers().end(),
+                [&spec](TriggerIcon icon) {
+                    return icon == std::get<asn::TriggerIcon>(spec.specifier);
+            }))
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::Trait: {
-            bool found = false;
-            for (auto trait: card.traits()) {
-                if (trait == std::get<asn::Trait>(spec.specifier).value) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-                eligible = false;
+            if (std::any_of(card.traits().begin(), card.traits().end(),
+                [&spec](const std::string &trait) {
+                    return trait == std::get<asn::Trait>(spec.specifier).value;
+            }))
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::Level: {
             const auto &number = std::get<asn::Level>(spec.specifier).value;
-            if (!checkNumber(number, card.level()))
-                eligible = false;
+            if (checkNumber(number, card.level()))
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::Power: {
             const auto &number = std::get<asn::Power>(spec.specifier).value;
-            if (!checkNumber(number, card.power()))
-                eligible = false;
+            if (checkNumber(number, card.power()))
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::Cost: {
             const auto &number = std::get<asn::CostSpecifier>(spec.specifier).value;
-            if (!checkNumber(number, card.cost()))
-                eligible = false;
+            if (checkNumber(number, card.cost()))
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::ExactName: {
-            hasExactName = true;
             const auto &name = std::get<asn::ExactName>(spec.specifier).value;
             if (name == card.name())
-                exactNameMatch = true;
+                metRequirements[spec.type] = true;
+            break;
+        }
+        case asn::CardSpecifierType::Color: {
+            const auto &neededColor = std::get<asn::Color>(spec.specifier);
+            if (card.color() == neededColor)
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::NameContains: {
-            hasNameContains = true;
             const auto &name = std::get<asn::NameContains>(spec.specifier).value;
             if (card.name().find(name) != std::string::npos)
-                nameContains = true;
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::LevelHigherThanOpp:
-            if (card.playersLevel() >= card.level())
-                eligible = false;
+            if (card.playersLevel() < card.level())
+                metRequirements[spec.type] = true;
             break;
         case asn::CardSpecifierType::StandbyTarget:
-            if (card.level() > card.playersLevel() + 1)
-                eligible = false;
+            if (card.level() <= card.playersLevel() + 1)
+                metRequirements[spec.type] = true;
             break;
         case asn::CardSpecifierType::LevelWithMultiplier: {
             const auto &level = std::get<asn::LevelWithMultiplier>(spec.specifier);
@@ -182,20 +176,19 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             number.mod = level.value.mod;
             if (!abilityPlayer) {
                 qWarning() << "checking LevelWithMultiplier on client side, shoudn't happen!";
-                eligible = false;
                 break;
             }
             if (level.multiplier.type == asn::MultiplierType::AddLevel)
                 number.value = abilityPlayer->getAddLevelMultiplierValue(level.multiplier) + level.value.value;
             else
                 throw std::runtime_error("unhandled multiplier");
-            if (!checkNumber(number, card.level()))
-                eligible = false;
+            if (checkNumber(number, card.level()))
+                metRequirements[spec.type] = true;
             break;
         }
         case asn::CardSpecifierType::State:
-            if (std::get<asn::State>(spec.specifier) != card.state())
-                eligible = false;
+            if (std::get<asn::State>(spec.specifier) == card.state())
+                metRequirements[spec.type] = true;
             break;
         case asn::CardSpecifierType::Owner:
             // don't process here
@@ -205,11 +198,11 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             break;
         }
     }
-    if ((hasNameContains && !nameContains) ||
-        (hasExactName && !exactNameMatch))
-        eligible = false;
-
-    return eligible;
+    for (const auto &pair: metRequirements) {
+        if (!pair.second)
+            return false;
+    }
+    return true;
 }
 
 namespace {
@@ -323,6 +316,8 @@ ProtoCardBoolAttribute getProtoBoolAttrType(BoolAttributeType type) {
         return ProtoCannotStand;
     case BoolAttributeType::CannotBeChosen:
         return ProtoCannotBeChosen;
+    case BoolAttributeType::CanPlayWithoutColorRequirement:
+        return ProtoPlayWithoutColorRequirement;
     }
     assert(false);
     return ProtoCannotFrontAttack;

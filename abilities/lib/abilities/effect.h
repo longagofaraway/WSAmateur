@@ -239,6 +239,11 @@ struct TriggerIconGain {
     int duration;
 };
 
+struct CanPlayWithoutColorRequirement {
+    Target target;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -286,6 +291,7 @@ enum class EffectType : uint8_t {
     CannotStand,
     CannotBeChosen,
     TriggerIconGain,
+    CanPlayWithoutColorRequirement,
 
     OtherEffect = 255
 };
@@ -328,6 +334,7 @@ struct Effect {
         CannotStand,
         CannotBeChosen,
         TriggerIconGain,
+        CanPlayWithoutColorRequirement,
         OtherEffect
     > effect;
 };

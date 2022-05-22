@@ -40,7 +40,7 @@ public:
     std::unique_ptr<ServerCard> takeTopCard();
     ServerCard* card(int index);
     ServerCard* topCard();
-    bool hasCardWithColor(char color) const;
+    bool hasCardWithColor(asn::Color color) const;
     void shuffle();
     void resetPositions(int from = 0);
 };

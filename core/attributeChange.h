@@ -2,6 +2,7 @@
 
 #include "abilities.h"
 
+class CardBuffManager;
 class ServerCard;
 
 class AttributeChange {
@@ -63,7 +64,8 @@ enum class BoolAttributeType {
     CannotMove,
     SideAttackWithoutPenalty,
     CannotStand,
-    CannotBeChosen
+    CannotBeChosen,
+    CanPlayWithoutColorRequirement
 };
 
 class BoolAttributeChange {
@@ -89,9 +91,11 @@ inline bool operator==(const BoolAttributeChange &lhs, const BoolAttributeChange
 }
 
 
+// new buff system
 
 enum class BuffType {
-    TriggerIcon = 0
+    TriggerIcon = 0,
+    BoolAttrChange
 };
 
 class Buff {
@@ -102,18 +106,18 @@ public:
     int abilityId = 0;
     bool positional = false;
     int duration = 0;
-    BuffType type;
+    BuffType buffType;
 
     Buff() = default;
     Buff(BuffType type, int duration)
-        : duration(duration), type(type) {}
+        : duration(duration), buffType(type) {}
     Buff(ServerCard *source, int abilityId, BuffType type)
-        : source(source), abilityId(abilityId), type(type) {}
+        : source(source), abilityId(abilityId), buffType(type) {}
 
     virtual ~Buff() = default;
     virtual void apply(ServerCard *card) const = 0;
     virtual void update(const Buff &buff) const = 0;
-    virtual void undo(ServerCard *card) const = 0;
+    virtual void undo(CardBuffManager *buffManager, ServerCard *card) const = 0;
     virtual std::unique_ptr<Buff> clone() const = 0;
 
 protected:
@@ -121,11 +125,11 @@ protected:
 };
 
 inline bool operator==(const Buff &lhs, const Buff &rhs) {
-    return lhs.type == rhs.type && lhs.source == rhs.source &&
+    return lhs.buffType == rhs.buffType && lhs.source == rhs.source &&
         lhs.abilityId == rhs.abilityId;
 }
 inline bool operator==(const std::unique_ptr<Buff> &lhs, const Buff &rhs) {
-    return lhs->type == rhs.type && lhs->source == rhs.source &&
+    return lhs->buffType == rhs.buffType && lhs->source == rhs.source &&
         lhs->abilityId == rhs.abilityId;
 }
 
@@ -140,6 +144,21 @@ public:
         : Buff(source, abilityId, BuffType::TriggerIcon), icon(icon) {}
     void apply(ServerCard *card) const override;
     void update(const Buff &buff) const override {}
-    void undo(ServerCard *card) const override;
+    void undo(CardBuffManager *buffManager, ServerCard *card) const override;
+    std::unique_ptr<Buff> clone() const override;
+};
+
+class BoolAttributeChangeEx : public Buff {
+public:
+    BoolAttributeType attrType;
+
+    BoolAttributeChangeEx() = delete;
+    BoolAttributeChangeEx(BoolAttributeType type, int duration)
+        : Buff(BuffType::BoolAttrChange, duration), attrType(type) {}
+    BoolAttributeChangeEx(BoolAttributeType type, ServerCard *source, int abilityId)
+        : Buff(source, abilityId, BuffType::BoolAttrChange), attrType(type) {}
+    void apply(ServerCard *card) const override;
+    void update(const Buff &buff) const override {}
+    void undo(CardBuffManager *buffManager, ServerCard *card) const override;
     std::unique_ptr<Buff> clone() const override;
 };
