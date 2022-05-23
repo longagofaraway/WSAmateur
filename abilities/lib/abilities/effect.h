@@ -292,6 +292,7 @@ enum class EffectType : uint8_t {
     CannotBeChosen,
     TriggerIconGain,
     CanPlayWithoutColorRequirement,
+    ShotTriggerDamage,
 
     OtherEffect = 255
 };

@@ -82,6 +82,7 @@ enum EffectType {
   cannotBeChosen = 38,
   triggerIconGain = 39,
   canPlayWithoutColorRequirement = 40,
+  shotTrigger = 41, // just to differentiate that it's not char's effect
   
   otherEffect = 255
 }

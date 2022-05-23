@@ -307,6 +307,7 @@ Effect decodeEffect(Iterator &it, Iterator end) {
     case EffectType::ChangeState:
         e.effect = decodeChangeState(it, end);
         break;
+    case EffectType::ShotTriggerDamage:
     case EffectType::DealDamage:
         e.effect = decodeDealDamage(it, end);
         break;

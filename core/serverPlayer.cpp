@@ -317,6 +317,8 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     }
     auto markers = std::move(card->markers());
     card->reset();
+    if (card == attackingCard())
+        setAttackingCard(nullptr);
 
     auto cardPtr = startZone->takeCard(startPos);
 
@@ -887,9 +889,9 @@ Resumable ServerPlayer::performTriggerStep(int pos) {
         co_await std::suspend_always();
     checkOnTriggerReveal(card);
     for (auto trigger: card->triggers()) {
-        if (trigger == TriggerIcon::Soul)
+        if (trigger == TriggerIcon::Soul && attackingCard())
             attackingCard()->buffManager()->addAttributeBuff(asn::AttributeType::Soul, 1);
-        else
+        else if (trigger != TriggerIcon::Soul)
             co_await resolveTrigger(card, trigger);
     }
     moveCard("res", 0, "stock");

@@ -26,7 +26,7 @@ Rectangle {
 
         Column {
             id: targetColumn
-            Text { text: "Target" }
+            Text { text: "Damage Dealer" }
             Button {
                 text: "Open editor"
                 onClicked: {

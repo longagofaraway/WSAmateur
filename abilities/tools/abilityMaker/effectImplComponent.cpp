@@ -110,6 +110,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage: {
         auto e = asn::DealDamage();
         e.damageType = asn::ValueType::Raw;
@@ -408,6 +409,7 @@ const std::optional<asn::Multiplier> getMultiplier(EffectImplComponent::VarEffec
         const auto &e = std::get<asn::Look>(effect);
         return e.multiplier;
     }
+    case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage: {
         const auto &e = std::get<asn::DealDamage>(effect);
         return e.modifier;
@@ -488,6 +490,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setEffectTimes", Q_ARG(QVariant, QString::number(ef.numberOfTimes)));
         break;
     }
+    case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage: {
         const auto &ef = std::get<asn::DealDamage>(e);
         QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString::number(ef.damage)));
@@ -636,6 +639,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::CannotBeChosen, "TargetDurationEffect" },
         { asn::EffectType::TriggerIconGain, "TriggerIconGain" },
         { asn::EffectType::CanPlayWithoutColorRequirement, "TargetDurationEffect" },
+        { asn::EffectType::ShotTriggerDamage, "DealDamage" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -741,6 +745,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(effectNumChanged(QString)), this, SLOT(onNumValueChanged(QString)));
         connect(qmlObject, SIGNAL(effectTimesChanged(QString)), this, SLOT(onNumOfTimesChanged(QString)));
         break;
+    case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage:
         QMetaObject::invokeMethod(qmlObject, "setValueInput", Q_ARG(QVariant, QString("1")));
 
@@ -993,6 +998,7 @@ void EffectImplComponent::onAttrChanged(QString value) {
         e.value = val;
         break;
     }
+    case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage: {
         auto &e = std::get<asn::DealDamage>(effect);
         e.damage = val;
@@ -1491,6 +1497,7 @@ void EffectImplComponent::onValueTypeChanged(int value) {
         }
         break;
     }
+    case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage: {
         auto &e = std::get<asn::DealDamage>(effect);
         e.damageType = static_cast<asn::ValueType>(value);
@@ -1532,6 +1539,7 @@ void EffectImplComponent::multiplierReady(const asn::Multiplier &m) {
         e.multiplier = m;
         break;
     }
+    case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage: {
         auto &e = std::get<asn::DealDamage>(effect);
         e.modifier = m;

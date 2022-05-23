@@ -953,6 +953,7 @@ std::string printEffect(const Effect &e) {
     case EffectType::PerformEffect:
         s += printPerformEffect(std::get<PerformEffect>(e.effect));
         break;
+    case EffectType::ShotTriggerDamage:
     case EffectType::DealDamage:
         s += printDealDamage(std::get<DealDamage>(e.effect));
         break;

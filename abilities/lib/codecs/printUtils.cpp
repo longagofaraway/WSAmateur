@@ -131,6 +131,8 @@ std::string printTarget(const Target &t, bool plural, bool nominative, std::opti
         }
     } else if (t.type == TargetType::MentionedInTrigger) {
         s += "that character ";
+    } else if (t.type == TargetType::AttackingChar) {
+        s += "the attacking character ";
     }
 
     return s;

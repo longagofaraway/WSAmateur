@@ -382,8 +382,8 @@ std::vector<Keyword> parseKeywords(const QJsonArray &json) {
 }
 
 AutoAbility parseAutoAbility(const QJsonObject &json) {
-    if (json.contains("activatesUpTo") && !json["activatesUpTo"].isDouble())
-        throw std::runtime_error("no activatesUpTo");
+    if (json.contains("activationTimes") && !json["activationTimes"].isDouble())
+        throw std::runtime_error("no activationTimes");
     if (!json.contains("trigger") || !json["trigger"].isObject())
         throw std::runtime_error("no trigger");
     if (!json.contains("effects") || !json["effects"].isArray())
@@ -394,8 +394,8 @@ AutoAbility parseAutoAbility(const QJsonObject &json) {
         throw std::runtime_error("wrong keywords");
 
     AutoAbility a;
-    if (json.contains("activatesUpTo"))
-        a.activationTimes = json["activatesUpTo"].toInt();
+    if (json.contains("activationTimes"))
+        a.activationTimes = json["activationTimes"].toInt();
     else
         a.activationTimes = 0;
     a.trigger = parseTrigger(json["trigger"].toObject());

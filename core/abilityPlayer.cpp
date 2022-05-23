@@ -203,6 +203,9 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(
     } else if (t.type == asn::TargetType::MentionedInTrigger) {
         if (mCardFromTrigger)
             targets.push_back(mCardFromTrigger);
+    } else if (t.type == asn::TargetType::AttackingChar) {
+        if (mPlayer->attackingCard())
+            targets.push_back(mPlayer->attackingCard());
     }
     return targets;
 }

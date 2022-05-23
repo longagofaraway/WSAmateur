@@ -75,6 +75,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::DealDamage:
         co_await playDealDamage(std::get<asn::DealDamage>(e.effect));
         break;
+    case asn::EffectType::ShotTriggerDamage:
+        co_await playDealDamage(std::get<asn::DealDamage>(e.effect), true);
+        break;
     case asn::EffectType::SwapCards:
         co_await playSwapCards(std::get<asn::SwapCards>(e.effect));
         break;
@@ -761,9 +764,11 @@ Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
 
 void AbilityPlayer::playBackup(const asn::Backup &e) {
     auto opponent = mPlayer->getOpponent();
-    auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
-    if (charInBattle)
-        charInBattle->buffManager()->addAttributeBuff(asn::AttributeType::Power, e.power, 1);
+    if (opponent->attackingCard()) {
+        auto charInBattle = opponent->oppositeCard(opponent->attackingCard());
+        if (charInBattle)
+            charInBattle->buffManager()->addAttributeBuff(asn::AttributeType::Power, e.power, 1);
+    }
     mPlayer->checkOnBackup(thisCard().card);
 }
 
@@ -813,8 +818,8 @@ void AbilityPlayer::playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent
         setCannotPlayBackupOrEvent(mPlayer->getOpponent(), e.what);
 }
 
-Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e) {
-    if (mPlayer->charAutoCannotDealDamage())
+Resumable AbilityPlayer::playDealDamage(const asn::DealDamage &e, bool isShotTrigger) {
+    if (mPlayer->charAutoCannotDealDamage() && !isShotTrigger)
         co_return;
 
     int damage;

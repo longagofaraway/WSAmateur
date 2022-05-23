@@ -134,7 +134,7 @@ private:
     void playEarlyPlay();
     void playCannotPlay();
     void playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e);
-    Resumable playDealDamage(const asn::DealDamage &e);
+    Resumable playDealDamage(const asn::DealDamage &e, bool isShotTrigger = false);
     Resumable playSwapCards(const asn::SwapCards &e);
     void playCannotAttack(const asn::CannotAttack &e);
     void playCannotBecomeReversed(const asn::CannotBecomeReversed &e);

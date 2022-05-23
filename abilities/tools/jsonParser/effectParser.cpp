@@ -594,6 +594,7 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::ChangeState:
         e.effect = parseChangeState(json["effect"].toObject());
         break;
+    case EffectType::ShotTriggerDamage:
     case EffectType::DealDamage:
         e.effect = parseDealDamage(json["effect"].toObject());
         break;

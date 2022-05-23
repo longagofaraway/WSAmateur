@@ -247,6 +247,7 @@ void encodeEffect(const Effect &e, Buf &buf) {
     case EffectType::ChangeState:
         encodeChangeState(std::get<ChangeState>(e.effect), buf);
         break;
+    case EffectType::ShotTriggerDamage:
     case EffectType::DealDamage:
         encodeDealDamage(std::get<DealDamage>(e.effect), buf);
         break;

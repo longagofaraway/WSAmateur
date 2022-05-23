@@ -6,8 +6,10 @@ Trigger {
     TriggerRevealTrigger,
     OnPlayTrigger,
     OnAttackTrigger,
-    OnBeingAttackedTrigger,
     StateChangeTrigger,
+    OnBeingAttackedTrigger,
+    OnDamageCancelTrigger,
+    OnDamageTakenCancelTrigger,
     OtherTrigger,
     Nothing
   }
