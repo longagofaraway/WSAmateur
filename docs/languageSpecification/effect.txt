@@ -36,6 +36,7 @@ Effect {
     CannotBeChosen,
     TriggerIconGain,
     CanPlayWithoutColorRequirement,
+    DelayedAbility,
     OtherEffect,
     Nothing
   }
@@ -83,6 +84,7 @@ enum EffectType {
   triggerIconGain = 39,
   canPlayWithoutColorRequirement = 40,
   shotTrigger = 41, // just to differentiate that it's not char's effect
+  delayedAbility = 42,
   
   otherEffect = 255
 }
@@ -351,6 +353,12 @@ TriggerIconGain {
 CanPlayWithoutColorRequirement {
   target Target,
   duration UInt8
+}
+
+// i.e. DBG/W87-057 Act ability
+DelayedAbility {
+  ability AutoAbility,
+  duration UInt8 // ability will cease to exist after that time
 }
 
 OtherEffect {

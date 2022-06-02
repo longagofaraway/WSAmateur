@@ -198,6 +198,11 @@ void encodeCanPlayWithoutColorRequirement(const CanPlayWithoutColorRequirement &
     buf.push_back(static_cast<uint8_t>(e.duration));
 }
 
+void encodeDelayedAbility(const DelayedAbility &e, Buf &buf) {
+    encodeAutoAbility(*e.ability, buf);
+    buf.push_back(static_cast<uint8_t>(e.duration));
+}
+
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
     encodeString(e.cardCode, buf);
     buf.push_back(zzenc_8(e.effectId));
@@ -310,6 +315,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::CanPlayWithoutColorRequirement:
         encodeCanPlayWithoutColorRequirement(std::get<CanPlayWithoutColorRequirement>(e.effect), buf);
+        break;
+    case EffectType::DelayedAbility:
+        encodeDelayedAbility(std::get<DelayedAbility>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

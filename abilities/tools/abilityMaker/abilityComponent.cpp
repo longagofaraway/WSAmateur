@@ -97,6 +97,10 @@ void AbilityComponent::fixEventAbility() {
     QMetaObject::invokeMethod(qmlObject, "fixAbilityType", Q_ARG(QVariant, (int)asn::AbilityType::Event));
 }
 
+void AbilityComponent::fixAutoAbility() {
+    QMetaObject::invokeMethod(qmlObject, "fixAbilityType", Q_ARG(QVariant, (int)asn::AbilityType::Auto));
+}
+
 void AbilityComponent::addDbControls(AbilityMaker *maker) {
     dbControls = std::make_unique<DbControls>(maker, qmlObject);
 }

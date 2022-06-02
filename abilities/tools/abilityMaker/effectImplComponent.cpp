@@ -8,6 +8,7 @@
 
 #include "arrayOfEffectsComponent.h"
 #include "arrayOfAbilitiesComponent.h"
+#include "triggerImplComponent.h"
 
 void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
     auto defaultNum = asn::Number();
@@ -254,6 +255,15 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         auto e = asn::CanPlayWithoutColorRequirement();
         e.target = defaultTarget;
         e.duration = 0;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::DelayedAbility: {
+        auto e = asn::DelayedAbility();
+        e.ability = std::make_shared<asn::AutoAbility>();
+        e.ability->trigger.type = asn::TriggerType::OnZoneChange;
+        initTriggerByType(e.ability->trigger.trigger, e.ability->trigger.type);
+        e.duration = 1;
         effect = e;
         break;
     }
@@ -596,6 +606,11 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
+    case asn::EffectType::DelayedAbility: {
+        const auto &ef = std::get<asn::DelayedAbility>(e);
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        break;
+    }
     default:
         break;
     }
@@ -640,6 +655,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::TriggerIconGain, "TriggerIconGain" },
         { asn::EffectType::CanPlayWithoutColorRequirement, "TargetDurationEffect" },
         { asn::EffectType::ShotTriggerDamage, "DealDamage" },
+        { asn::EffectType::DelayedAbility, "DelayedAbility" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -833,6 +849,10 @@ void EffectImplComponent::init(QQuickItem *parent) {
     case asn::EffectType::TriggerIconGain:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(triggerIconChanged(int)), this, SLOT(onTriggerIconChanged(int)));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::DelayedAbility:
+        connect(qmlObject, SIGNAL(editAbilities()), this, SLOT(editAbilities()));
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
         break;
     case asn::EffectType::CannotBecomeReversed:
@@ -1172,6 +1192,11 @@ void EffectImplComponent::onDurationChanged(int value) {
     }
     case asn::EffectType::CanPlayWithoutColorRequirement: {
         auto &e = std::get<asn::CanPlayWithoutColorRequirement>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::DelayedAbility: {
+        auto &e = std::get<asn::DelayedAbility>(effect);
         e.duration = value;
         break;
     }
@@ -1681,12 +1706,20 @@ void EffectImplComponent::editAbilities() {
         }
         break;
     }
+    case asn::EffectType::DelayedAbility: {
+        asn::Ability ability;
+        ability.type = asn::AbilityType::Auto;
+        ability.ability = *std::get<asn::DelayedAbility>(effect).ability;
+        abilities.push_back(ability);
+    }
     default: break;
     }
 
     qmlAbilities = std::make_unique<ArrayOfAbilitiesComponent>(abilities, qmlObject);
     if (type == asn::EffectType::PerformEffect)
         qmlAbilities->fixEventAbility();
+    if (type == asn::EffectType::DelayedAbility)
+        qmlAbilities->fixAutoAbility();
 
     connect(qmlAbilities.get(), &ArrayOfAbilitiesComponent::close, this, &EffectImplComponent::destroyAbilities);
     connect(qmlAbilities.get(), &ArrayOfAbilitiesComponent::componentChanged, this, &EffectImplComponent::abilitiesReady);
@@ -1705,6 +1738,11 @@ void EffectImplComponent::abilitiesReady(const std::vector<asn::Ability> &a) {
         }
         auto &e = std::get<asn::PerformEffect>(effect);
         e.effects = ea;
+        emit componentChanged(effect);
+        return;
+    } else if (type == asn::EffectType::DelayedAbility) {
+        auto &e = std::get<asn::DelayedAbility>(effect);
+        *e.ability = std::get<asn::AutoAbility>(a[0].ability);
         emit componentChanged(effect);
         return;
     }

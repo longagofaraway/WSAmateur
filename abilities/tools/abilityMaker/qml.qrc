@@ -90,5 +90,6 @@
         <file>qml/conditions/CardMoved.qml</file>
         <file>qml/basicTypes/CardSpecifierNumberWithMultiplier.qml</file>
         <file>qml/basicTypes/CardSpecifierState.qml</file>
+        <file>qml/effects/DelayedAbility.qml</file>
     </qresource>
 </RCC>

@@ -111,6 +111,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::TriggerIconGain:
         playTriggerGain(std::get<asn::TriggerIconGain>(e.effect));
         break;
+    case asn::EffectType::DelayedAbility:
+        playDelayedAbility(std::get<asn::DelayedAbility>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -1105,6 +1108,10 @@ void AbilityPlayer::playCanPlayWithoutColorRequirement(const asn::CanPlayWithout
 
     BoolAttributeChangeEx buff(BoolAttributeType::CanPlayWithoutColorRequirement, e.duration);
     applyBuff(targets, buff);
+}
+
+void AbilityPlayer::playDelayedAbility(const asn::DelayedAbility &e) {
+    mPlayer->game()->addDelayedAbility(*e.ability, mThisCard, e.duration, mAbilityId);
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

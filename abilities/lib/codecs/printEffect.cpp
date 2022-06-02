@@ -884,6 +884,15 @@ std::string printCanPlayWithoutColorRequirement(const CanPlayWithoutColorRequire
     return s;
 }
 
+std::string printDelayedAbility(const DelayedAbility &e) {
+    std::string s;
+
+    s += printDuration(e.duration);
+    s += printAutoAbilitySimplified(*e.ability);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -1001,6 +1010,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CanPlayWithoutColorRequirement:
         s += printCanPlayWithoutColorRequirement(std::get<CanPlayWithoutColorRequirement>(e.effect));
+        break;
+    case EffectType::DelayedAbility:
+        s += printDelayedAbility(std::get<DelayedAbility>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

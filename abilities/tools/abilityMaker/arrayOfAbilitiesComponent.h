@@ -22,12 +22,14 @@ private:
     int currentPos = 0;
 
     bool onlyEventAbilities = false;
+    bool onlyAutoAbilities = false;
 
 public:
     ArrayOfAbilitiesComponent(QQuickItem *parent);
     ArrayOfAbilitiesComponent(const std::vector<asn::Ability> &ab, QQuickItem *parent);
 
     void fixEventAbility() { onlyEventAbilities = true; }
+    void fixAutoAbility() { onlyAutoAbilities = true; }
 
 signals:
     void componentChanged(const std::vector<asn::Ability> &a);

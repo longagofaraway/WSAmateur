@@ -210,6 +210,10 @@ public:
     bool hasTriggeredRuleActions() const;
     Resumable checkTiming();
 
+    void queueDelayedAbility(const asn::Ability &ability,
+                             ServerCard *card,
+                             std::string_view cardZone = "");
+
 private:
     void queueActivatedAbility(const asn::AutoAbility &ability,
                                AbilityState &abilityState,

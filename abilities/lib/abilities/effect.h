@@ -11,6 +11,7 @@
 namespace asn {
 
 struct Ability;
+struct AutoAbility;
 struct EventAbility;
 struct Effect;
 
@@ -244,6 +245,11 @@ struct CanPlayWithoutColorRequirement {
     int duration;
 };
 
+struct DelayedAbility {
+    std::shared_ptr<AutoAbility> ability;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -293,6 +299,7 @@ enum class EffectType : uint8_t {
     TriggerIconGain,
     CanPlayWithoutColorRequirement,
     ShotTriggerDamage,
+    DelayedAbility,
 
     OtherEffect = 255
 };
@@ -336,6 +343,7 @@ struct Effect {
         CannotBeChosen,
         TriggerIconGain,
         CanPlayWithoutColorRequirement,
+        DelayedAbility,
         OtherEffect
     > effect;
 };

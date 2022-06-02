@@ -157,6 +157,12 @@ void Player::activateAbilities(const EventAbilityActivated &event) {
         } else if (protoa.type() == ProtoAbilityType::ProtoGlobal) {
             a.ability = globalAbility(static_cast<GlobalAbility>(protoa.ability_id()));
             a.text = QString::fromStdString(printAbility(a.ability));
+        } else if (protoa.type() == ProtoAbilityType::ProtoDelayed) {
+            // this ability is different from what the card says
+            if (protoa.ability().empty())
+                return;
+            a.ability = decodeAbility(protoa.ability());
+            a.text = QString::fromStdString(printAbility(a.ability));
         }
         a.active = false;
         mAbilityList->addAbility(a);

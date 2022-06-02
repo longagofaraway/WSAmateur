@@ -64,6 +64,7 @@ inline bool decodeBool(Iterator &it, Iterator end) {
 
 asn::Ability decodeAbility(Iterator &it, Iterator end);
 asn::EventAbility decodeEventAbility(Iterator &it, Iterator end);
+asn::AutoAbility decodeAutoAbility(Iterator &it, Iterator end);
 asn::Effect decodeEffect(Iterator &it, Iterator end);
 asn::Trigger decodeTrigger(Iterator &it, Iterator end);
 std::string decodeString(Iterator &it, Iterator end);

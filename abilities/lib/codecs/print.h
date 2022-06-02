@@ -54,6 +54,8 @@ std::string printDrawCard(const asn::DrawCard &e);
 std::string printActivationTimes(int activationTimes);
 std::string printChangeState(const asn::ChangeState &e);
 
+std::string printAutoAbilitySimplified(const asn::AutoAbility &ability);
+
 template<typename T>
 std::string printSpecificAbility(const T &a, asn::CardType cardType) {
     std::string s;

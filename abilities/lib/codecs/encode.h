@@ -11,6 +11,7 @@ inline void toBufLE(uint32_t val, Buf &buf) {
 
 void encodeAbility(const asn::Ability &a, Buf &buf);
 void encodeEventAbility(const asn::EventAbility &a, Buf &buf);
+void encodeAutoAbility(const asn::AutoAbility &a, Buf &buf);
 void encodeTrigger(const asn::Trigger &t, Buf &buf);
 void encodeTarget(const asn::Target &t, Buf &buf);
 void encodeNumber(const asn::Number &n, Buf &buf);

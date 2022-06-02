@@ -53,6 +53,8 @@ void ArrayOfAbilitiesComponent::editAbility(int pos) {
         qmlAbility = std::make_shared<AbilityComponent>(qmlObject, pos);
     if (onlyEventAbilities)
         qmlAbility->fixEventAbility();
+    if (onlyAutoAbilities)
+        qmlAbility->fixAutoAbility();
 
     currentPos = pos;
     connect(qmlAbility.get(), &AbilityComponent::componentChanged, this, &ArrayOfAbilitiesComponent::abilityReady);

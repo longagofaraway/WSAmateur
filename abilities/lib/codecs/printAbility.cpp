@@ -29,3 +29,13 @@ std::string printActivationTimes(int activationTimes) {
 
     return s;
 }
+
+std::string printAutoAbilitySimplified(const AutoAbility &ability) {
+    std::string s;
+
+    s += printGlobalConditions(ability.effects);
+    s += printTrigger(ability.trigger);
+    s += printEffects(ability.effects);
+
+    return s;
+}

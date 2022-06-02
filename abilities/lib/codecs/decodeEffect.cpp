@@ -255,6 +255,13 @@ CanPlayWithoutColorRequirement decodeCanPlayWithoutColorRequirement(Iterator &it
     return e;
 }
 
+DelayedAbility decodeDelayedAbility(Iterator &it, Iterator end) {
+    DelayedAbility e;
+    e.ability = std::make_shared<AutoAbility>(decodeAutoAbility(it, end));
+    e.duration = decodeUInt8(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -373,6 +380,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::TriggerIconGain:
         e.effect = decodeTriggerIconGain(it, end);
+        break;
+    case EffectType::DelayedAbility:
+        e.effect = decodeDelayedAbility(it, end);
         break;
     default:
         break;

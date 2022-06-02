@@ -19,6 +19,7 @@ asn::Target parseTarget(const QJsonObject &json);
 asn::Condition parseCondition(const QJsonObject &json);
 asn::Effect parseEffect(const QJsonObject &json);
 asn::Ability parseAbility(const QJsonObject &json);
+asn::AutoAbility parseAutoAbility(const QJsonObject &json);
 
 template<typename T>
 std::vector<T> parseArray(const QJsonArray &json, T(*parseType)(const QJsonObject &json)) {

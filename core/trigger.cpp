@@ -5,6 +5,8 @@
 #include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "globalAbilities/globalAbilities.h"
+#include "serverGame.h"
+#include "triggerManager.h"
 
 Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigger) {
     EventAbilityActivated event;
@@ -56,6 +58,18 @@ void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability,
     mQueue.emplace_back(std::move(ta));
 }
 
+void ServerPlayer::queueDelayedAbility(const asn::Ability &ability,
+                                       ServerCard *card,
+                                       std::string_view cardZone) {
+     TriggeredAbility ta;
+     ta.card = CardImprint(cardZone.empty() ? card->zone()->name() : std::string(cardZone), card);
+     ta.type = ProtoDelayed;
+     ta.abilityId = 0;
+     ta.cardFromTrigger = nullptr;
+     ta.ability = ability;
+     mQueue.emplace_back(std::move(ta));
+ }
+
 void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {
     auto checkTrigger = [=, this](ServerCard *card) {
         for (int j = 0; static_cast<size_t>(j) < card->abilities().size(); ++j) {
@@ -77,8 +91,8 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
                     if (card != movedCard)
                         continue;
                     cardZone = to;
-                } else if (t.target[0].type == asn::TargetType::SpecificCards) {
-                    const auto &spec = *t.target[0].targetSpecification;
+                } else if (target.type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *target.targetSpecification;
 
                     if (!checkTargetMode(spec.mode, card, movedCard))
                         continue;
@@ -109,6 +123,8 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
     if ((to == "stage" && movedCard->zone()->name() != to) ||
         (to == "climax" && movedCard->zone()->name() == "climax"))
         checkTrigger(movedCard);
+
+    mGame->triggerManager()->zoneChangeEvent(movedCard, from, to);
 }
 
 void ServerPlayer::checkGlobalEncore(ServerCard *movedCard, std::string_view from, std::string_view to) {

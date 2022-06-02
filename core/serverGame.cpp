@@ -260,6 +260,7 @@ Resumable ServerGame::endPhase() {
 
     co_await checkTiming();
 
+    endOfTurnEffectValidation();
     turnPlayer->endOfTurnEffectValidation();
     opponent->endOfTurnEffectValidation();
     resolveAllContAbilities();
@@ -271,6 +272,7 @@ void ServerGame::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
     if (!turnPlayer || !opponent)
         return;
 
+    mTriggerManager.phaseEvent(state, phase);
     turnPlayer->checkPhaseTrigger(state, phase);
     opponent->checkPhaseTrigger(state, phase);
 }
@@ -318,4 +320,29 @@ void ServerGame::removePositionalContBuffsBySource(ServerCard *source) {
 
     turnPlayer->removePositionalContBuffsBySource(source);
     opponent->removePositionalContBuffsBySource(source);
+}
+
+void ServerGame::addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
+                                   int duration, int abilityId) {
+    auto uniqueId = makeSubscriberId(thisCard.card->id(), abilityId);
+    auto &value = delayedAbilities.emplace_back(ability, thisCard, uniqueId, duration);
+    TriggerSubscriber subscriber;
+    subscriber.ability = asn::Ability();
+    subscriber.ability.type = asn::AbilityType::Auto;
+    subscriber.ability.ability = value.ability;
+    subscriber.card = value.thisCard;
+    subscriber.uniqueId = value.uniqueId;
+    mTriggerManager.subscribe(ability.trigger.type, subscriber);
+}
+
+void ServerGame::endOfTurnEffectValidation() {
+    for (auto it = delayedAbilities.begin(); it != delayedAbilities.end();) {
+        if (!it->duration || --it->duration) {
+            ++it;
+            continue;
+        }
+
+        mTriggerManager.unsubscribe(it->ability.trigger.type, it->uniqueId);
+        it = delayedAbilities.erase(it);
+    }
 }

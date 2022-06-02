@@ -9,7 +9,9 @@
 #include <google/protobuf/message.h>
 
 #include "commands.h"
+#include "globalAbilities/delayedAbility.h"
 #include "serverPlayer.h"
+#include "triggerManager.h"
 
 class Server;
 class ServerProtocolHandler;
@@ -26,6 +28,9 @@ class ServerGame
     asn::Phase mCurrentPhase = asn::Phase::Mulligan;
 
     std::optional<Resumable> mTask;
+
+    TriggerManager mTriggerManager;
+    std::vector<DelayedAbility> delayedAbilities;
 
 public:
     ServerGame(Server *server, int id, std::string description);
@@ -69,6 +74,7 @@ public:
     Resumable encoreStep();
     Resumable endPhase();
 
+    TriggerManager* triggerManager() { return &mTriggerManager; }
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);
 
     Resumable checkTiming();
@@ -76,7 +82,11 @@ public:
 
     void resolveAllContAbilities();
     void removePositionalContBuffsBySource(ServerCard *source);
+    void addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
+                           int duration, int abilityId);
 
 private:
     void setTask(Resumable&& task) { mTask.emplace(std::move(task)); }
+
+    void endOfTurnEffectValidation();
 };

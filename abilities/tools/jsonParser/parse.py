@@ -287,6 +287,8 @@ def addStructBody(fieldType, tokens, current, cpp):
                                            fieldType == 'AddLevelMultiplier' or
                                            fieldType == 'AddTriggerNumberMultiplier'):
                 indirection = '*'
+            if memberName == 'ability' and fieldType == 'DelayedAbility':
+                indirection = '*'
                 
             code += '''\n\
     JsonRecord record{memberName};

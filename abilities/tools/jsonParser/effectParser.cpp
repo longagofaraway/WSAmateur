@@ -542,6 +542,18 @@ CanPlayWithoutColorRequirement parseCanPlayWithoutColorRequirement(const QJsonOb
     return e;
 }
 
+DelayedAbility parseDelayedAbility(const QJsonObject &json) {
+    if (!json.contains("ability") || !json["ability"].isObject())
+        throw std::runtime_error("no ability in DelayedAbility");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in DelayedAbility");
+
+    DelayedAbility e;
+    e.ability = std::make_shared<AutoAbility>(parseAutoAbility(json["ability"].toObject()));
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -657,6 +669,9 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::CanPlayWithoutColorRequirement:
         e.effect = parseCanPlayWithoutColorRequirement(json["effect"].toObject());
+        break;
+    case EffectType::DelayedAbility:
+        e.effect = parseDelayedAbility(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

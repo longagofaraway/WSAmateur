@@ -37,6 +37,7 @@ public:
 
     void removeButtons();
     void fixEventAbility();
+    void fixAutoAbility();
     void addDbControls(AbilityMaker *maker);
     void setAbility(const asn::Ability &a);
 
