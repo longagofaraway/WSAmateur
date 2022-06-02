@@ -84,6 +84,7 @@ public:
     void removePositionalContBuffsBySource(ServerCard *source);
     void addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
                            int duration, int abilityId);
+    void removeDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard, int abilityId);
 
 private:
     void setTask(Resumable&& task) { mTask.emplace(std::move(task)); }

@@ -201,6 +201,9 @@ void AbilityPlayer::playContEffect(const asn::Effect &e) {
     case asn::EffectType::CanPlayWithoutColorRequirement:
         playCanPlayWithoutColorRequirement(std::get<asn::CanPlayWithoutColorRequirement>(e.effect));
         break;
+    case asn::EffectType::DelayedAbility:
+        playDelayedAbility(std::get<asn::DelayedAbility>(e.effect));
+        break;
     default:
         break;
     }
@@ -1111,7 +1114,10 @@ void AbilityPlayer::playCanPlayWithoutColorRequirement(const asn::CanPlayWithout
 }
 
 void AbilityPlayer::playDelayedAbility(const asn::DelayedAbility &e) {
-    mPlayer->game()->addDelayedAbility(*e.ability, mThisCard, e.duration, mAbilityId);
+    if (cont() && revert())
+        mPlayer->game()->removeDelayedAbility(*e.ability, mThisCard, mAbilityId);
+    else
+        mPlayer->game()->addDelayedAbility(*e.ability, mThisCard, e.duration, mAbilityId);
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

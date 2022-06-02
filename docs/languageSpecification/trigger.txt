@@ -28,6 +28,7 @@ enum TriggerType {
   onBeingAttacked = 10,
   onDamageCancel = 11,
   onDamageTakenCancel = 12,
+  onPayingCost = 13,
   
   otherTrigger = 255
 }
