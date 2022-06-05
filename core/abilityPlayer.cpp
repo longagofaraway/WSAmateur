@@ -10,6 +10,9 @@ Resumable AbilityPlayer::payCost() {
     if (!hasCost())
         co_return;
 
+    mPlayer->game()->triggerManager()->payingCostEvent(mThisCard.card, mAbilityType);
+    co_await playTriggeredAbilities(mPlayer->helperQueue());
+
     setPayingCost(true);
     for (const auto &item: cost().items) {
         if (item.type == asn::CostType::Stock) {
@@ -68,6 +71,7 @@ void AbilityPlayer::revertContAbility(const asn::ContAbility &a) {
 
 Resumable AbilityPlayer::playAbility(const asn::Ability a) {
     setCont(false);
+    mAbilityType = a.type;
     switch(a.type) {
     case asn::AbilityType::Auto:
         co_await playAutoAbility(std::get<asn::AutoAbility>(a.ability));
@@ -80,6 +84,15 @@ Resumable AbilityPlayer::playAbility(const asn::Ability a) {
         break;
     default:
         break;
+    }
+}
+
+Resumable AbilityPlayer::playTriggeredAbilities(const std::vector<TriggeredAbility> &abilities) {
+    for (const auto &ability: abilities) {
+        AbilityPlayer abilityPlayer(mPlayer);
+        abilityPlayer.setThisCard(ability.card.card);
+        abilityPlayer.setCardFromTrigger(ability.cardFromTrigger);
+        co_await abilityPlayer.playAbility(ability.getAbility());
     }
 }
 

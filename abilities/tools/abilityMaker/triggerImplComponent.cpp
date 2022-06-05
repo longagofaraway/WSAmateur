@@ -25,6 +25,10 @@ const asn::Target& getTarget(TriggerImplComponent::VarTrigger &trigger, asn::Tri
         const auto& t = std::get<asn::OnDamageCancelTrigger>(trigger);
         return t.damageDealer;
     }
+    case asn::TriggerType::OnPayingCost: {
+        const auto& t = std::get<asn::OnPayingCostTrigger>(trigger);
+        return t.target;
+    }
     default:
         assert(false);
     }
@@ -93,6 +97,12 @@ void initTriggerByType(TriggerImplComponent::VarTrigger &trigger, asn::TriggerTy
         trigger = tr;
         break;
     }
+    case asn::TriggerType::OnPayingCost: {
+        auto tr = asn::OnPayingCostTrigger();
+        tr.abilityType = asn::AbilityType::Auto;
+        trigger = tr;
+        break;
+    }
     case asn::TriggerType::OnBackupOfThis:
     case asn::TriggerType::OnEndOfThisCardsAttack:
     case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal:
@@ -154,6 +164,11 @@ TriggerImplComponent::TriggerImplComponent(asn::TriggerType type, const VarTrigg
         QMetaObject::invokeMethod(qmlObject, "setCancelled", Q_ARG(QVariant, trImpl.cancelled));
         break;
     }
+    case asn::TriggerType::OnPayingCost: {
+        const auto &trImpl = std::get<asn::OnPayingCostTrigger>(tr);
+        QMetaObject::invokeMethod(qmlObject, "setAbilityType", Q_ARG(QVariant, static_cast<int>(trImpl.abilityType)));
+        break;
+    }
     default:
         break;
     }
@@ -169,7 +184,8 @@ void TriggerImplComponent::init(QQuickItem *parent) {
         { asn::TriggerType::OnStateChange, "StateChangeTrigger" },
         { asn::TriggerType::OnBeingAttacked, "OnBeingAttackedTrigger" },
         { asn::TriggerType::OnDamageCancel, "OnDamageCancel" },
-        { asn::TriggerType::OnDamageTakenCancel, "OnDamageCancel" }
+        { asn::TriggerType::OnDamageTakenCancel, "OnDamageCancel" },
+        { asn::TriggerType::OnPayingCost, "OnPayingCost" }
     };
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/triggers/" + components.at(type) + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
@@ -215,6 +231,10 @@ void TriggerImplComponent::init(QQuickItem *parent) {
     case asn::TriggerType::OnDamageTakenCancel:
         QMetaObject::invokeMethod(qmlObject, "hideTarget");
         connect(qmlObject, SIGNAL(cancelledChanged(bool)), this, SLOT(onBoolChanged(bool)));
+        break;
+    case asn::TriggerType::OnPayingCost:
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(abilityTypeChanged(int)), this, SLOT(setAbilityType(int)));
         break;
     default:
         break;
@@ -286,6 +306,11 @@ void TriggerImplComponent::targetReady(const asn::Target &t) {
         trig.damageDealer = t;
         break;
     }
+    case asn::TriggerType::OnPayingCost: {
+        auto &trig = std::get<asn::OnPayingCostTrigger>(trigger);
+        trig.target = t;
+        break;
+    }
     default:
         assert(false);
     }
@@ -321,6 +346,19 @@ void TriggerImplComponent::setAttackType(int index) {
     case asn::TriggerType::OnBeingAttacked: {
         auto &tr = std::get<asn::OnBeingAttackedTrigger>(trigger);
         tr.attackType = static_cast<asn::AttackType>(index);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(trigger);
+}
+
+void TriggerImplComponent::setAbilityType(int index) {
+    switch (type) {
+    case asn::TriggerType::OnPayingCost: {
+        auto &tr = std::get<asn::OnPayingCostTrigger>(trigger);
+        tr.abilityType = static_cast<asn::AbilityType>(index);
         break;
     }
     default:

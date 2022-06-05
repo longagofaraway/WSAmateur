@@ -148,6 +148,110 @@ Resumable ServerPlayer::playEventEffects(ServerCard *card) {
     mExpectedCommands = expectedCopy;
 }
 
+Resumable ServerPlayer::limitedCheckTiming() {
+    if (mHelperQueue.empty())
+        co_return;
+
+    auto expectedCopy = mExpectedCommands;
+    clearExpectedComands();
+
+    bool needEndEvent = !mHelperQueue.empty();
+    while (mHelperQueue.size()) {
+        sendActivatedAbilitiesToClient(true);
+        std::optional<uint32_t> uniqueId;
+        co_await getAbilityToPlay(uniqueId, true);
+        if (!uniqueId.has_value())
+            continue;
+
+        co_await playChosenAbility(uniqueId.value(), true);
+    }
+    if (needEndEvent)
+        sendToBoth(EventEndResolvingAbilties());
+
+    mExpectedCommands = expectedCopy;
+}
+
+
+void ServerPlayer::sendActivatedAbilitiesToClient(bool helperQueue) {
+    auto &queue = helperQueue ? mHelperQueue : mQueue;
+    EventAbilityActivated event;
+    for (size_t i = 0; i < queue.size(); ++i) {
+        if (queue[i].uniqueId != 0)
+            continue;
+        auto ab = event.add_abilities();
+        ab->set_zone(queue[i].card.zone);
+        ab->set_type(queue[i].type);
+        ab->set_card_id(queue[i].card.card->id());
+        ab->set_ability_id(queue[i].abilityId);
+        ab->set_card_code(queue[i].card.card->code());
+        if (queue[i].ability) {
+            auto enc = encodeAbility(*queue[i].ability);
+            ab->set_ability(enc.data(), enc.size());
+        }
+        queue[i].uniqueId = abilityHash(*ab);
+        ab->set_unique_id(queue[i].uniqueId);
+    }
+    if (event.abilities_size())
+        sendToBoth(event);
+}
+
+Resumable ServerPlayer::getAbilityToPlay(std::optional<uint32_t> &uniqueId, bool helperQueue) {
+    auto &queue = helperQueue ? mHelperQueue : mQueue;
+
+    int playableCount = 0;
+    for (size_t i = 0; i < queue.size(); ++i) {
+        if (canBePlayed(queue[i].card.card, queue[i].getAbility())) {
+            uniqueId = queue[i].uniqueId;
+            playableCount++;
+        }
+    }
+
+    if (playableCount > 1) {
+        clearExpectedComands();
+        addExpectedCommand(CommandPlayAbility::descriptor()->name());
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandPlayAbility>()) {
+                CommandPlayAbility choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                uniqueId = choiceCmd.unique_id();
+                break;
+            }
+        }
+    } else if (playableCount == 0) {
+        // Only abilities that cannot be played or cannot be paid for are left
+        while(queue.size()) {
+            EventAbilityResolved ev2;
+            ev2.set_unique_id(queue[0].uniqueId);
+            sendToBoth(ev2);
+            queue.erase(queue.begin());
+        }
+    }
+}
+
+Resumable ServerPlayer::playChosenAbility(uint32_t uniqueId, bool helperQueue) {
+    auto &queue = helperQueue ? mHelperQueue : mQueue;
+    for (size_t j = 0; j < queue.size(); ++j) {
+        if (queue[j].uniqueId == uniqueId) {
+            EventStartResolvingAbility evStart;
+            evStart.set_unique_id(uniqueId);
+            sendToBoth(evStart);
+
+            AbilityPlayer a(this);
+            a.setThisCard(queue[j].card);
+            a.setCardFromTrigger(queue[j].cardFromTrigger);
+            co_await a.playAbility(queue[j].getAbility());
+
+            EventAbilityResolved evEnd;
+            evEnd.set_unique_id(uniqueId);
+            sendToBoth(evEnd);
+            queue.erase(queue.begin() + j);
+
+            break;
+        }
+    }
+}
+
 Resumable ServerPlayer::checkTiming() {
     // protocol for playing abilities
     // 1. Server sends EventAbilityActivated with activated abilities. Client shows them.
@@ -179,77 +283,13 @@ Resumable ServerPlayer::checkTiming() {
             break;
         }
 
-        EventAbilityActivated event;
-        for (size_t i = 0; i < mQueue.size(); ++i) {
-            if (mQueue[i].uniqueId != 0)
-                continue;
-            auto ab = event.add_abilities();
-            ab->set_zone(mQueue[i].card.zone);
-            ab->set_type(mQueue[i].type);
-            ab->set_card_id(mQueue[i].card.card->id());
-            ab->set_ability_id(mQueue[i].abilityId);
-            ab->set_card_code(mQueue[i].card.card->code());
-            if (mQueue[i].ability) {
-                auto enc = encodeAbility(*mQueue[i].ability);
-                ab->set_ability(enc.data(), enc.size());
-            }
-            mQueue[i].uniqueId = abilityHash(*ab);
-            ab->set_unique_id(mQueue[i].uniqueId);
-        }
-        if (event.abilities_size())
-            sendToBoth(event);
-
-        uint32_t uniqueId;
-        int playableCount = 0;
-        for (size_t i = 0; i < mQueue.size(); ++i) {
-            if (canBePlayed(mQueue[i].card.card, mQueue[i].getAbility())) {
-                uniqueId = mQueue[i].uniqueId;
-                playableCount++;
-            }
-        }
-
-        if (playableCount > 1) {
-            clearExpectedComands();
-            addExpectedCommand(CommandPlayAbility::descriptor()->name());
-            while (true) {
-                auto cmd = co_await waitForCommand();
-                if (cmd.command().Is<CommandPlayAbility>()) {
-                    CommandPlayAbility choiceCmd;
-                    cmd.command().UnpackTo(&choiceCmd);
-                    uniqueId = choiceCmd.unique_id();
-                    break;
-                }
-            }
-        } else if (playableCount == 0) {
-            // Only abilities that cannot be played or cannot be paid for are left
-            while(mQueue.size()) {
-                EventAbilityResolved ev2;
-                ev2.set_unique_id(mQueue[0].uniqueId);
-                sendToBoth(ev2);
-                mQueue.erase(mQueue.begin());
-            }
+        sendActivatedAbilitiesToClient();
+        std::optional<uint32_t> uniqueId;
+        co_await getAbilityToPlay(uniqueId);
+        if (!uniqueId.has_value())
             continue;
-        }
 
-        for (size_t j = 0; j < mQueue.size(); ++j) {
-            if (mQueue[j].uniqueId == uniqueId) {
-                EventStartResolvingAbility evStart;
-                evStart.set_unique_id(uniqueId);
-                sendToBoth(evStart);
-
-                AbilityPlayer a(this);
-                a.setThisCard(mQueue[j].card);
-                a.setCardFromTrigger(mQueue[j].cardFromTrigger);
-                co_await a.playAbility(mQueue[j].getAbility());
-
-                EventAbilityResolved evEnd;
-                evEnd.set_unique_id(uniqueId);
-                sendToBoth(evEnd);
-                mQueue.erase(mQueue.begin() + j);
-
-                break;
-            }
-        }
+        co_await playChosenAbility(uniqueId.value());
     }
     sendToBoth(EventEndResolvingAbilties());
 

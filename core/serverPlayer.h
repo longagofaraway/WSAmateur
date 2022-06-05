@@ -73,7 +73,10 @@ class ServerPlayer
     bool mCharAutoCannotDealDamage = false;
     PlayerBuffManager mBuffManager;
 
+    // Queue of triggered abilities for check timing
     std::vector<TriggeredAbility> mQueue;
+    // Queue of triggered abilities to play outside of check timing
+    std::vector<TriggeredAbility> mHelperQueue;
 
     QMutex mPlayerMutex;
 
@@ -209,10 +212,15 @@ public:
     bool hasActivatedAbilities() const;
     bool hasTriggeredRuleActions() const;
     Resumable checkTiming();
+    // for abilities that should be played independent of check timing
+    // i.e. on paying cost
+    Resumable limitedCheckTiming();
 
     void queueDelayedAbility(const asn::Ability &ability,
                              ServerCard *card,
-                             std::string_view cardZone = "");
+                             std::string_view cardZone = "",
+                             bool helperQueue = false);
+    const std::vector<TriggeredAbility>& helperQueue() const { return mHelperQueue; }
 
 private:
     void queueActivatedAbility(const asn::AutoAbility &ability,
@@ -221,6 +229,10 @@ private:
                                std::string_view cardZone = "",
                                ServerCard *cardFromTrigger = nullptr);
     std::vector<ProtoTypeCard> moveMarkersToWr(std::vector<std::unique_ptr<ServerCard>> &markers);
+
+    void sendActivatedAbilitiesToClient(bool helperQueue = false);
+    Resumable getAbilityToPlay(std::optional<uint32_t> &uniqueId, bool helperQueue = false);
+    Resumable playChosenAbility(uint32_t uniqueId, bool helperQueue = false);
 
     Resumable testAction();
 };

@@ -12,6 +12,7 @@ class ServerPlayer;
 class CommandSwitchPositions;
 class CommandChooseCard;
 class Buff;
+class TriggeredAbility;
 
 struct MoveRecord {
     ServerPlayer *player;
@@ -21,6 +22,7 @@ struct MoveRecord {
 class AbilityPlayer {
     ServerPlayer *mPlayer;
 
+    asn::AbilityType mAbilityType;
     bool mIsCont = false; // ability that is being played is CONT
     bool mIsPayingCost = false; // in the process of paying cost
     bool mRevert = false; // revert effect of cont ability
@@ -110,6 +112,7 @@ private:
     void playContEffect(const asn::Effect &e);
     Resumable playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect = {});
     Resumable playEffects(const std::vector<asn::Effect> &e);
+    Resumable playTriggeredAbilities(const std::vector<TriggeredAbility> &abilities);
     Resumable playNonMandatory(const asn::NonMandatory &e);
     Resumable playChooseCard(const asn::ChooseCard &e, bool clearPrevious = true);
     Resumable playMoveCard(const asn::MoveCard &e);

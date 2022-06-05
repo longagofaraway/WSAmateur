@@ -41,6 +41,10 @@ bool checkCardMatches(ServerCard *card, const asn::Target &target, ServerCard *t
     }
     return true;
 }
+bool checkCardMatches(ServerCard *card, const asn::Target &target, ServerCard *thisCard) {
+    bool b;
+    return checkCardMatches(card, target, thisCard, b);
+}
 bool checkZone(ServerCard *card, const asn::ZoneChangeTrigger& trigger,
                 std::string_view from, std::string_view to, ServerCard *thisCard) {
     if (trigger.from != asn::Zone::NotSpecified && asnZoneToString(trigger.from) != from)
@@ -48,6 +52,15 @@ bool checkZone(ServerCard *card, const asn::ZoneChangeTrigger& trigger,
     if (trigger.to != asn::Zone::NotSpecified && asnZoneToString(trigger.to) != to)
         return false;
     return true;
+}
+template<typename T>
+std::optional<T> getTrigger(asn::TriggerType type, asn::Ability ability) {
+    if (ability.type != asn::AbilityType::Auto)
+        return std::nullopt;
+    const auto &aa = std::get<asn::AutoAbility>(ability.ability);
+    if (aa.trigger.type != type)
+        return std::nullopt;
+    return std::get<T>(aa.trigger.trigger);
 }
 }
 
@@ -68,12 +81,10 @@ void TriggerManager::zoneChangeEvent(ServerCard *movedCard, std::string_view fro
     const auto &zoneChangeSubscribers = subscribers[asn::TriggerType::OnZoneChange];
     for (const auto &subscriber: zoneChangeSubscribers) {
         auto thisCard = subscriber.card.card;
-        if (subscriber.ability.type != asn::AbilityType::Auto)
+        auto tOpt = getTrigger<asn::ZoneChangeTrigger>(asn::TriggerType::OnZoneChange, subscriber.ability);
+        if (!tOpt.has_value())
             continue;
-        const auto &aa = std::get<asn::AutoAbility>(subscriber.ability.ability);
-        if (aa.trigger.type != asn::TriggerType::OnZoneChange)
-            continue;
-        const auto &t = std::get<asn::ZoneChangeTrigger>(aa.trigger.trigger);
+        auto &t = tOpt.value();
         if (!checkZone(movedCard, t, from, to, thisCard))
             continue;
         std::string_view cardZone = movedCard->zone()->name();
@@ -117,6 +128,30 @@ void TriggerManager::phaseEvent(asn::PhaseState state, asn::Phase phase) {
             (t.player == asn::Player::Opponent && active))
             continue;
         thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard);
+    }
+}
+
+void TriggerManager::payingCostEvent(ServerCard *target, std::optional<asn::AbilityType> type) {
+    const auto &costSubscribers = subscribers[asn::TriggerType::OnPayingCost];
+    for (const auto &subscriber: costSubscribers) {
+        auto thisCard = subscriber.card.card;
+        auto tOpt = getTrigger<asn::OnPayingCostTrigger>(asn::TriggerType::OnPayingCost, subscriber.ability);
+        if (!tOpt.has_value())
+            continue;
+        auto &t = tOpt.value();
+        if (target->player()->id() != thisCard->player()->id())
+            continue;
+        if (t.target.type != asn::TargetType::SpecificCards)
+            assert(false);
+        if (!checkCardMatches(target, t.target, thisCard))
+            continue;
+        if (type.has_value()) {
+            if (type.value() != t.abilityType)
+                continue;
+            if (thisCard->type() != asn::CardType::Char)
+                continue;
+        }
+        thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "", true);
     }
 }
 

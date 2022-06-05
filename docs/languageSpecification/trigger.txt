@@ -10,6 +10,7 @@ Trigger {
     OnBeingAttackedTrigger,
     OnDamageCancelTrigger,
     OnDamageTakenCancelTrigger,
+    OnPayingCostTrigger,
     OtherTrigger,
     Nothing
   }
@@ -75,6 +76,11 @@ OnDamageCancelTrigger {
 // when the damage taken by you isn't cancelled...
 OnDamageTakenCancelTrigger {
   cancelled Bool
+}
+
+OnPayingCostTrigger {
+  abilityType AbilityType, // i.e. when paying for [Auto] of target...
+  target Target
 }
 
 OtherTrigger {

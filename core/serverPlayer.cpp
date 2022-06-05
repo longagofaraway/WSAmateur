@@ -664,6 +664,9 @@ Resumable ServerPlayer::playEvent(int handIndex) {
 
     moveCard("hand", handIndex, "res");
 
+    mGame->triggerManager()->payingCostEvent(card);
+    co_await limitedCheckTiming();
+
     for (int i = 0; i < card->cost(); ++i)
         moveCard("stock", stock->count() - 1, "wr");
 

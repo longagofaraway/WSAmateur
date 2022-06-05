@@ -25,6 +25,7 @@ public:
     void unsubscribe(asn::TriggerType type, const std::string &uniqueId);
     void zoneChangeEvent(ServerCard *movedCard, std::string_view from, std::string_view to);
     void phaseEvent(asn::PhaseState state, asn::Phase phase);
+    void payingCostEvent(ServerCard *target, std::optional<asn::AbilityType> type = std::nullopt);
 };
 
 std::string makeSubscriberId(int cardId, int abilityId);

@@ -1,5 +1,6 @@
 #include "print.h"
 
+#include <algorithm>
 #include <string>
 #include <unordered_map>
 
@@ -10,6 +11,17 @@ std::unordered_map<std::string, std::string> gOtherTriggers {
     { "KGL/S79-016", "When your opponent uses \"<b>Brainstorm</b>\" and that effect puts at least 1 climax\
  card in their waiting room, " }
 };
+
+bool hasExactName(const Target &target) {
+    if (target.type != TargetType::SpecificCards)
+        return false;
+    const auto &spec = target.targetSpecification.value();
+    const auto &cardTraits = spec.cards.cardSpecifiers;
+    return std::any_of(cardTraits.begin(), cardTraits.end(),
+                       [](const CardSpecifier &c){
+        return c.type == CardSpecifierType::ExactName;
+    });
+}
 }
 
 std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
@@ -135,6 +147,15 @@ std::string printOnDamageTakenCancelTrigger(const OnDamageTakenCancelTrigger &t)
     return s;
 }
 
+std::string printOnPayingCost(const OnPayingCostTrigger &t) {
+    std::string s = "when you pay the cost of ";
+
+    if (hasExactName(t.target))
+        s += printAbilityType(t.abilityType) + " of ";
+    s += printTarget(t.target);
+    return s;
+}
+
 std::string printOtherTrigger(const OtherTrigger &t) {
     return gOtherTriggers[t.cardCode];
 }
@@ -178,6 +199,9 @@ std::string printTrigger(const Trigger &t) {
         break;
     case TriggerType::OnDamageTakenCancel:
         s += printOnDamageTakenCancelTrigger(std::get<OnDamageTakenCancelTrigger>(t.trigger));
+        break;
+    case TriggerType::OnPayingCost:
+        s += printOnPayingCost(std::get<OnPayingCostTrigger>(t.trigger));
         break;
     case TriggerType::OtherTrigger:
         s += printOtherTrigger(std::get<OtherTrigger>(t.trigger));

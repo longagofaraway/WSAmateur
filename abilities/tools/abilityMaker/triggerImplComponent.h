@@ -44,6 +44,7 @@ private slots:
     void setOwner(int index);
     void setState(int index);
     void setAttackType(int index);
+    void setAbilityType(int index);
 
     void editCard();
     void clearCard();

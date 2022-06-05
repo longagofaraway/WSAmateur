@@ -68,6 +68,15 @@ std::string printColor(Color color) {
     }
 }
 
+std::string printAbilityType(AbilityType type) {
+    switch (type) {
+    case AbilityType::Cont: return "【CONT】";
+    case AbilityType::Auto: return "【AUTO】";
+    case AbilityType::Act: return "【ACT】";
+    default: return "";
+    }
+}
+
 namespace {
 bool cardHasAttr(const Card &c) {
     for (const auto &spec: c.cardSpecifiers) {

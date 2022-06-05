@@ -57,6 +57,15 @@ OnDamageTakenCancelTrigger decodeOnDamageTakenCancelTrigger(Iterator &it, Iterat
     return t;
 }
 
+OnPayingCostTrigger decodeOnPayingCostTrigger(Iterator &it, Iterator end) {
+    OnPayingCostTrigger t;
+
+    t.abilityType = decodeEnum<AbilityType>(it, end);
+    t.target = decodeTarget(it, end);
+
+    return t;
+}
+
 Trigger decodeTrigger(Iterator &it, Iterator end) {
     Trigger t;
 
@@ -88,6 +97,9 @@ Trigger decodeTrigger(Iterator &it, Iterator end) {
         break;
     case TriggerType::OnDamageTakenCancel:
         t.trigger = decodeOnDamageTakenCancelTrigger(it, end);
+        break;
+    case TriggerType::OnPayingCost:
+        t.trigger = decodeOnPayingCostTrigger(it, end);
         break;
     case TriggerType::OtherTrigger:
         t.trigger = OtherTrigger{ decodeString(it, end) };

@@ -60,14 +60,16 @@ void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability,
 
 void ServerPlayer::queueDelayedAbility(const asn::Ability &ability,
                                        ServerCard *card,
-                                       std::string_view cardZone) {
+                                       std::string_view cardZone,
+                                       bool helperQueue) {
      TriggeredAbility ta;
      ta.card = CardImprint(cardZone.empty() ? card->zone()->name() : std::string(cardZone), card);
      ta.type = ProtoDelayed;
      ta.abilityId = 0;
      ta.cardFromTrigger = nullptr;
      ta.ability = ability;
-     mQueue.emplace_back(std::move(ta));
+     auto &queue = helperQueue ? mHelperQueue : mQueue;
+     queue.emplace_back(std::move(ta));
  }
 
 void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_view from, std::string_view to) {

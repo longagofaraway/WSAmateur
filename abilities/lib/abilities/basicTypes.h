@@ -4,6 +4,13 @@
 
 namespace asn {
 
+enum class AbilityType : uint8_t {
+    Cont = 1,
+    Auto,
+    Act,
+    Event
+};
+
 enum class State : uint8_t {
     Standing = 1,
     Rested,

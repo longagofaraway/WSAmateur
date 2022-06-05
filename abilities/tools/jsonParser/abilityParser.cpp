@@ -275,6 +275,19 @@ OnDamageTakenCancelTrigger parseOnDamageTakenCancelTrigger(const QJsonObject &js
     return t;
 }
 
+OnPayingCostTrigger parseOnPayingCost(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in OnPayingCost");
+    if (!json.contains("abilityType") || !json["abilityType"].isDouble())
+        throw std::runtime_error("no abilityType in OnPayingCost");
+
+    OnPayingCostTrigger t;
+    t.abilityType = static_cast<AbilityType>(json["abilityType"].toInt());
+    t.target = parseTarget(json["target"].toObject());
+
+    return t;
+}
+
 OtherTrigger parseOtherTrigger(const QJsonObject &json) {
     if (!json.contains("cardCode") || !json["cardCode"].isString())
         throw std::runtime_error("no cardCode");
@@ -319,6 +332,9 @@ Trigger parseTrigger(const QJsonObject &json) {
         break;
     case TriggerType::OnDamageTakenCancel:
         t.trigger = parseOnDamageTakenCancelTrigger(json["trigger"].toObject());
+        break;
+    case TriggerType::OnPayingCost:
+        t.trigger = parseOnPayingCost(json["trigger"].toObject());
         break;
     case TriggerType::OnBackupOfThis:
     case TriggerType::OnEndOfThisCardsAttack:

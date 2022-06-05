@@ -11,13 +11,6 @@
 
 namespace asn {
 
-enum class AbilityType : uint8_t {
-    Cont = 1,
-    Auto,
-    Act,
-    Event
-};
-
 enum class AbilityItem : uint8_t {
     EndTag = 0,
     Cost,

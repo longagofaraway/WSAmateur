@@ -19,6 +19,7 @@ enum class TriggerType : uint8_t {
     OnBeingAttacked,
     OnDamageCancel,
     OnDamageTakenCancel,
+    OnPayingCost,
 
     OtherTrigger = 255
 };
@@ -88,6 +89,11 @@ struct OnDamageTakenCancelTrigger {
     bool cancelled;
 };
 
+struct OnPayingCostTrigger {
+    AbilityType abilityType;
+    Target target;
+};
+
 struct OtherTrigger {
     std::string cardCode;
 };
@@ -105,6 +111,7 @@ struct Trigger {
         OnBeingAttackedTrigger,
         OnDamageCancelTrigger,
         OnDamageTakenCancelTrigger,
+        OnPayingCostTrigger,
         OtherTrigger
     > trigger;
 };

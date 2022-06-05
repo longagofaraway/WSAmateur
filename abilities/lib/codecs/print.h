@@ -34,6 +34,7 @@ std::string printAttackType(asn::AttackType t);
 std::string printDuration(int duration);
 std::string printPlace(asn::Place place);
 std::string printFaceOrientation(asn::FaceOrientation orientation);
+std::string printAbilityType(asn::AbilityType type);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
 
 std::string printKeyword(asn::Keyword keyword);
