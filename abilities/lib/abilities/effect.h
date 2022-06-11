@@ -14,6 +14,7 @@ struct Ability;
 struct AutoAbility;
 struct EventAbility;
 struct Effect;
+struct CostSubstitution;
 
 struct TargetAndPlace {
     Target target;
@@ -250,6 +251,10 @@ struct DelayedAbility {
     int duration;
 };
 
+struct CostSubstitution {
+    std::shared_ptr<Effect> effect;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -300,6 +305,7 @@ enum class EffectType : uint8_t {
     CanPlayWithoutColorRequirement,
     ShotTriggerDamage,
     DelayedAbility,
+    CostSubstitution,
 
     OtherEffect = 255
 };
@@ -344,6 +350,7 @@ struct Effect {
         TriggerIconGain,
         CanPlayWithoutColorRequirement,
         DelayedAbility,
+        CostSubstitution,
         OtherEffect
     > effect;
 };

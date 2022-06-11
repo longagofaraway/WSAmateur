@@ -262,6 +262,12 @@ DelayedAbility decodeDelayedAbility(Iterator &it, Iterator end) {
     return e;
 }
 
+CostSubstitution decodeCostSubstitution(Iterator &it, Iterator end) {
+    CostSubstitution e;
+    e.effect = std::make_shared<Effect>(decodeEffect(it, end));
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -383,6 +389,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::DelayedAbility:
         e.effect = decodeDelayedAbility(it, end);
+        break;
+    case EffectType::CostSubstitution:
+        e.effect = decodeCostSubstitution(it, end);
         break;
     default:
         break;

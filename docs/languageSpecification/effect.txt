@@ -38,6 +38,7 @@ Effect {
     CanPlayWithoutColorRequirement,
     DelayedAbility,
     OtherEffect,
+    CostSubstitution,
     Nothing
   }
 }
@@ -85,6 +86,7 @@ enum EffectType {
   canPlayWithoutColorRequirement = 40,
   shotTrigger = 41, // just to differentiate that it's not char's effect
   delayedAbility = 42,
+  costSubstitution = 43,
   
   otherEffect = 255
 }
@@ -281,7 +283,7 @@ AddMarker {
 RemoveMarker {
   targetMarker Target,
   markerBearer Target,
-  place Place
+  place Place // where to
 }
 
 // not supported
@@ -359,6 +361,10 @@ CanPlayWithoutColorRequirement {
 DelayedAbility {
   ability AutoAbility,
   duration UInt8 // ability will cease to exist after that time
+}
+
+CostSubstitution {
+  effect Effect // perform it instead of 1 stock
 }
 
 OtherEffect {

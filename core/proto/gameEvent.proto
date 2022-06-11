@@ -40,6 +40,10 @@ message EventDeclareAttack {
     AttackType attack_type = 2;
 }
 
+message EventPlayableCards {
+    repeated sint32 hand_pos = 1;
+}
+
 message EventSetCardAttr {
     sint32 card_pos = 1;
     string zone = 2;

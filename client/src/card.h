@@ -98,6 +98,7 @@ public:
     void setCanPlayWoColorReq(bool p) { mCanPlayWoColorReq = p; }
     bool highlightedByAbility() const { return mHighlightedByAbility; }
     void setHighlightedByAbility(bool p) { mHighlightedByAbility = p; }
+    bool isMarker() const override { return false; }
 
     QString topMarker() const;
     std::vector<Card>& markers() { return mMarkers; }

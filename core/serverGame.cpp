@@ -325,12 +325,12 @@ void ServerGame::removePositionalContBuffsBySource(ServerCard *source) {
 void ServerGame::addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
                                    int duration, int abilityId) {
     auto uniqueId = makeSubscriberId(thisCard.card->id(), abilityId);
-    bool found = std::any_of(delayedAbilities.begin(), delayedAbilities.end(), [&uniqueId](const auto &delayedAbility) {
+    bool found = std::any_of(delayedAbilities_.begin(), delayedAbilities_.end(), [&uniqueId](const auto &delayedAbility) {
         return delayedAbility.uniqueId == uniqueId;
     });
     if (found)
         return;
-    auto &value = delayedAbilities.emplace_back(ability, thisCard, uniqueId, duration);
+    auto &value = delayedAbilities_.emplace_back(ability, thisCard, uniqueId, duration);
     TriggerSubscriber subscriber;
     subscriber.ability = asn::Ability();
     subscriber.ability.type = asn::AbilityType::Auto;
@@ -346,13 +346,13 @@ void ServerGame::removeDelayedAbility(const asn::AutoAbility &ability, CardImpri
 }
 
 void ServerGame::endOfTurnEffectValidation() {
-    for (auto it = delayedAbilities.begin(); it != delayedAbilities.end();) {
+    for (auto it = delayedAbilities_.begin(); it != delayedAbilities_.end();) {
         if (!it->duration || --it->duration) {
             ++it;
             continue;
         }
 
         mTriggerManager.unsubscribe(it->ability.trigger.type, it->uniqueId);
-        it = delayedAbilities.erase(it);
+        it = delayedAbilities_.erase(it);
     }
 }

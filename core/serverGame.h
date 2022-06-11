@@ -30,7 +30,7 @@ class ServerGame
     std::optional<Resumable> mTask;
 
     TriggerManager mTriggerManager;
-    std::vector<DelayedAbility> delayedAbilities;
+    std::vector<DelayedAbility> delayedAbilities_;
 
 public:
     ServerGame(Server *server, int id, std::string description);
@@ -85,6 +85,7 @@ public:
     void addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
                            int duration, int abilityId);
     void removeDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard, int abilityId);
+    const std::vector<DelayedAbility>& delayedAbilities() const { return delayedAbilities_; }
 
 private:
     void setTask(Resumable&& task) { mTask.emplace(std::move(task)); }

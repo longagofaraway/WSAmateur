@@ -54,6 +54,7 @@ std::string printMoveCard(const asn::MoveCard &e);
 std::string printDrawCard(const asn::DrawCard &e);
 std::string printActivationTimes(int activationTimes);
 std::string printChangeState(const asn::ChangeState &e);
+std::string printRemoveMarker(const asn::RemoveMarker &e);
 
 std::string printAutoAbilitySimplified(const asn::AutoAbility &ability);
 

@@ -84,3 +84,4 @@ asn::PerformEffect decodePerformEffect(Iterator &it, Iterator end);
 asn::Look decodeLook(Iterator &it, Iterator end);
 asn::RevealCard decodeRevealCard(Iterator &it, Iterator end);
 asn::ChangeState decodeChangeState(Iterator &it, Iterator end);
+asn::RemoveMarker decodeRemoveMarker(Iterator &it, Iterator end);

@@ -47,6 +47,7 @@ void ServerCard::reset() {
     mCanPlayWithoutColorRequirement = false;
     mInBattle = false;
     mFirstTurn = false;
+    mIsMarker = false;
 }
 
 void ServerCard::setPos(int pos) {
@@ -77,6 +78,7 @@ int ServerCard::playersLevel() const {
 
 ServerCard* ServerCard::addMarker(std::unique_ptr<ServerCard> &&card) {
     card->setPos(mPosition);
+    card->setIsMarker(true);
     return mMarkers.emplace_back(std::move(card)).get();
 }
 

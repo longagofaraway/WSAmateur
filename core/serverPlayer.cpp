@@ -526,6 +526,7 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
     co_await mGame->checkTiming();
 
     sendToBoth(EventMainPhase());
+    sendPlayableCards();
 
     clearExpectedComands();
     addExpectedCommand(CommandPlayCard::descriptor()->name());
@@ -546,6 +547,8 @@ Resumable ServerPlayer::playCard(const CommandPlayCard cmd) {
         co_await playClimax(cmd.hand_pos());
     else if (cardPtr->type() == CardType::Event)
         co_await playEvent(cmd.hand_pos());
+
+    sendPlayableCards();
 }
 
 Resumable ServerPlayer::playCounter(const CommandPlayCounter cmd) {
@@ -664,10 +667,14 @@ Resumable ServerPlayer::playEvent(int handIndex) {
 
     moveCard("hand", handIndex, "res");
 
+    if (card->cost() > stock->count())
+        mForcedCostReduction = card->cost() - stock->count();
     mGame->triggerManager()->payingCostEvent(card);
     co_await limitedCheckTiming();
 
-    for (int i = 0; i < card->cost(); ++i)
+    int cost = card->cost() - costReduction();
+    resetCostReduction();
+    for (int i = 0; i < cost; ++i)
         moveCard("stock", stock->count() - 1, "wr");
 
     co_await playEventEffects(card);
@@ -750,7 +757,8 @@ bool ServerPlayer::canPlay(ServerCard *card) {
         return false;
     if (card->level() > mLevel)
         return false;
-    if (static_cast<int>(card->cost()) > zone("stock")->count())
+    int stockAvailable = zone("stock")->count() + stockCostSubstitution(card);
+    if (static_cast<int>(card->cost()) > stockAvailable)
         return false;
     if (!card->canPlayWithoutColorRequirement() &&
         (card->level() > 0 || card->type() == CardType::Climax)) {
@@ -759,6 +767,25 @@ bool ServerPlayer::canPlay(ServerCard *card) {
             return false;
     }
     return true;
+}
+
+bool ServerPlayer::canPlayCounter(ServerCard *card) {
+    if (!card->isCounter())
+        return false;
+    if (card->level() > mLevel)
+        return false;
+    if (card->type() == CardType::Char) {
+        // TODO: move the check from client to the server side
+    } else if (card->type() == CardType::Event) {
+        if (mCannotPlayEvents)
+            return false;
+        int stockAvailable = zone("stock")->count() + stockCostSubstitution(card);
+        if (card->cost() > stockAvailable)
+            return false;
+        return true;
+    }
+
+    return false;
 }
 
 Resumable ServerPlayer::climaxPhase() {
@@ -879,7 +906,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
     co_await mGame->checkTiming();
 
     if (attackType() == FrontAttack)
-        mGame->opponentOfPlayer(mId)->counterStep();
+        co_await mGame->opponentOfPlayer(mId)->counterStep();
     else
         co_await mGame->continueFromDamageStep();
 }
@@ -900,12 +927,17 @@ Resumable ServerPlayer::performTriggerStep(int pos) {
     moveCard("res", 0, "stock");
 }
 
-void ServerPlayer::counterStep() {
+Resumable ServerPlayer::counterStep() {
+    mGame->setPhase(asn::Phase::CounterStep);
+
     addExpectedCommand(CommandTakeDamage::descriptor()->name());
     addExpectedCommand(CommandPlayCounter::descriptor()->name());
     sendToBoth(EventCounterStep());
 
     mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::CounterStep);
+    co_await mGame->checkTiming();
+
+    sendPlayableCards();
 }
 
 Resumable ServerPlayer::damageStep() {
@@ -1142,6 +1174,8 @@ Resumable ServerPlayer::processPlayActCmd(const CommandPlayAct cmd) {
     mQueue.push_back(ta);
 
     co_await mGame->checkTiming();
+
+    sendPlayableCards();
 }
 
 void ServerPlayer::reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone){
@@ -1298,6 +1332,50 @@ void ServerPlayer::sendPlayerAttrChange(PlayerAttrType type, bool value) {
     event.set_attr(getProtoPlayerAttrType(type));
     event.set_value(value);
     sendToBoth(event);
+}
+
+int ServerPlayer::stockCostSubstitution(ServerCard *card) {
+    int result = 0;
+    auto &abilities = mGame->delayedAbilities();
+    for (const auto &delayedAbility: abilities) {
+        if (delayedAbility.thisCard.card->player()->id() != mId)
+            continue;
+        const auto &ability = delayedAbility.ability;
+        if (ability.trigger.type != asn::TriggerType::OnPayingCost)
+            continue;
+        const auto &trigger = std::get<asn::OnPayingCostTrigger>(ability.trigger.trigger);
+        if (!checkCardMatches(card, trigger.target, delayedAbility.thisCard.card))
+            continue;
+        if (ability.effects.empty())
+            continue;
+        const auto &effect = ability.effects.front();
+        if (effect.type != asn::EffectType::CostSubstitution)
+            continue;
+        const auto &costEffect = std::get<asn::CostSubstitution>(effect.effect);
+        if (!costEffect.effect)
+            continue;
+        AbilityPlayer abilityPlayer(this);
+        abilityPlayer.setThisCard(delayedAbility.thisCard);
+        result += abilityPlayer.timesCanBePerformed(*costEffect.effect);
+    }
+    return result;
+}
+
+void ServerPlayer::sendPlayableCards() {
+    if (mGame->phase() != asn::Phase::MainPhase &&
+        mGame->phase() != asn::Phase::CounterStep)
+        return;
+    EventPlayableCards event;
+    for (int i = 0; i < zone(asn::Zone::Hand)->count(); ++i) {
+        auto card = zone(asn::Zone::Hand)->card(i);
+        if (mGame->phase() == asn::Phase::CounterStep) {
+            if (canPlayCounter(card))
+                event.add_hand_pos(i);
+        } else if (canPlay(card)) {
+            event.add_hand_pos(i);
+        }
+    }
+    sendGameEvent(event);
 }
 
 asn::Ability TriggeredAbility::getAbility() const {

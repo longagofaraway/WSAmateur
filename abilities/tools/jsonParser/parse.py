@@ -289,6 +289,8 @@ def addStructBody(fieldType, tokens, current, cpp):
                 indirection = '*'
             if memberName == 'ability' and fieldType == 'DelayedAbility':
                 indirection = '*'
+            if memberName == 'effect' and fieldType == 'CostSubstitution':
+                indirection = '*'
                 
             code += '''\n\
     JsonRecord record{memberName};

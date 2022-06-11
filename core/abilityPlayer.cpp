@@ -2,6 +2,8 @@
 
 #include <numeric>
 
+#include <QDebug>
+
 #include "abilityUtils.h"
 #include "serverPlayer.h"
 #include "serverGame.h"
@@ -16,7 +18,10 @@ Resumable AbilityPlayer::payCost() {
     setPayingCost(true);
     for (const auto &item: cost().items) {
         if (item.type == asn::CostType::Stock) {
-            for (int i = 0; i < std::get<asn::StockCost>(item.costItem).value; ++i)
+            int cost = std::get<asn::StockCost>(item.costItem).value - mPlayer->costReduction();
+            if (cost < 0) cost = 0;
+            mPlayer->resetCostReduction();
+            for (int i = 0; i < cost; ++i)
                 mPlayer->moveCard("stock", mPlayer->zone("stock")->count() - 1, "wr");
         } else {
             co_await playEffect(std::get<asn::Effect>(item.costItem));
@@ -67,6 +72,26 @@ void AbilityPlayer::revertContAbility(const asn::ContAbility &a) {
     setRevert(true);
     for (const auto &effect: a.effects)
         playContEffect(effect);
+}
+
+int AbilityPlayer::timesCanBePerformed(const asn::Effect &effect) {
+    if (effect.type == asn::EffectType::RemoveMarker) {
+        const auto &markerEffect = std::get<asn::RemoveMarker>(effect.effect);
+        assert(markerEffect.markerBearer.type == asn::TargetType::ThisCard);
+        if (mThisCard.zone != mThisCard.card->zone()->name())
+            return 0;
+        int numberOfTimes = 0;
+        for (const auto &marker: thisCard().card->markers()) {
+            if (!checkCardMatches(marker.get(), markerEffect.targetMarker, thisCard().card))
+                continue;
+            numberOfTimes++;
+        }
+        // assume 1 each time
+        return numberOfTimes;
+    } else {
+        qWarning() << "effect" << static_cast<int>(effect.type) << "in timesCanBePerformed is not supported";
+    }
+    return 0;
 }
 
 Resumable AbilityPlayer::playAbility(const asn::Ability a) {
@@ -192,6 +217,7 @@ std::vector<ServerCard*> AbilityPlayer::getTargets(
                     targets.push_back(card.card);
             }
         } else if (placeType == asn::PlaceType::SpecificPlace) {
+            assert(place->owner != asn::Player::Both);
             auto player = owner(place->owner);
             auto pzone = player->zone(place->zone);
             for (int i = 0; i < pzone->count(); ++i) {

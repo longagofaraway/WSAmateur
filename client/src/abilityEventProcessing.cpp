@@ -4,6 +4,7 @@
 
 #include "abilityEvents.pb.h"
 #include "abilityCommands.pb.h"
+#include "gameEvent.pb.h"
 
 #include "abilityUtils.h"
 #include "cardZone.h"
@@ -44,13 +45,6 @@ void Player::processChooseCard(const EventChooseCard &event) {
     bool fromView = effect.targets[0].placeType == asn::PlaceType::Selection;
 
     eligibleCardsNum = highlightCardsFromEvent(event, effect);
-    /*if (event.card_positions_size() > 0) {
-    } else if (fromView) {
-        eligibleCardsNum = highlightEligibleCards(zone("view"), spec.cards.cardSpecifiers,
-                                                  spec.mode, mAbilityList->ability(mAbilityList->activeId()));
-    } else {
-        eligibleCardsNum = highlightCardsForChoice(effect.targets[0].target, *effect.targets[0].place, effect);
-    }*/
 
     if (eligibleCardsNum)
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
@@ -86,11 +80,16 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
     if (mOpponent)
         return;
 
-    auto effect = decodingWrapper(event.effect(), decodeMoveCard);
-    assert(effect.executor == asn::Player::Player);
-    assert(!event.mandatory());
+    std::string effectText;
+    if (event.effect_type() == static_cast<int>(asn::EffectType::RemoveMarker)) {
+        auto effect = decodingWrapper(event.effect(), decodeRemoveMarker);
+        effectText = printRemoveMarker(effect) + '?';
+    } else if (event.effect_type() == static_cast<int>(asn::EffectType::RemoveMarker)) {
+        auto effect = decodingWrapper(event.effect(), decodeMoveCard);
+        assert(effect.executor == asn::Player::Player);
+        effectText = printMoveCard(effect) + '?';
+    }
 
-    auto effectText = printMoveCard(effect) + '?';
     effectText[0] = std::toupper(effectText[0]);
     std::vector<QString> data { "Yes", "No" };
     auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
@@ -456,4 +455,15 @@ void Player::processRuleActionChoice() {
     auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
     choiceDlg->setData("Choose what to perform first", data);
     mChoiceDialog = std::move(choiceDlg);
+}
+
+void Player::processPlayableCards(const EventPlayableCards &event) {
+    const auto &cards = mHand->cards();
+    for (int i = 0; i < event.hand_pos_size(); ++i) {
+        if (static_cast<size_t>(event.hand_pos(i)) > cards.size()) {
+            qWarning() << "EventPlayableCards out of bounds card";
+            break;
+        }
+        mHand->model().setGlow(event.hand_pos(i), true);
+    }
 }

@@ -31,6 +31,7 @@ void encodePerformEffect(const asn::PerformEffect &e, Buf &buf);
 void encodeLook(const asn::Look &e, Buf &buf);
 void encodeRevealCard(const asn::RevealCard &e, Buf &buf);
 void encodeChangeState(const asn::ChangeState &e, Buf &buf);
+void encodeRemoveMarker(const asn::RemoveMarker &e, Buf &buf);
 
 template<typename T>
 void encodeArray(const std::vector<T> &array, Buf &buf, void(*encodeType)(const T&, Buf&)) {

@@ -307,6 +307,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         processRuleActionChoice();
     } else if (event->event().Is<EventPlayerLeft>()) {
         mGame->playerLeft();
+    } else if (event->event().Is<EventPlayableCards>()) {
+        EventPlayableCards ev;
+        event->event().UnpackTo(&ev);
+        processPlayableCards(ev);
     }
 }
 

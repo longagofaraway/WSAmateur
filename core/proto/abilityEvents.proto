@@ -31,8 +31,8 @@ message EventChooseCard {
 }
 
 message EventMoveChoice {
-    bytes effect = 1;
-    bool mandatory = 2;
+    sint32 effect_type = 1;
+    bytes effect = 2;
 }
 
 message EventMoveTargetChoice {

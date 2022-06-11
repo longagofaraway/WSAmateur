@@ -160,8 +160,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         }
 
         EventMoveChoice ev;
+        ev.set_effect_type(static_cast<int>(asn::EffectType::MoveCard));
         ev.set_effect(buf.data(), buf.size());
-        ev.set_mandatory(mandatory());
         executor->sendToBoth(ev);
 
         executor->clearExpectedComands();
@@ -380,5 +380,58 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         if (e.from.zone == asn::Zone::Deck || e.to[toZoneIndex].zone == asn::Zone::Clock ||
             player->zone("deck")->count() == 0)
             co_await player->checkRefreshAndLevelUp();
+    }
+}
+
+Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
+    auto targetStageCards = getTargets(e.markerBearer);
+    if (targetStageCards.empty())
+        co_return;
+
+    // no choice for now
+    assert(targetStageCards.size() == 1);
+    auto markerBearer = targetStageCards.front();
+
+    if (!mandatory()) {
+        // TODO: same block as in playMoveCard
+        std::vector<uint8_t> buf;
+        encodeRemoveMarker(e, buf);
+
+        EventMoveChoice ev;
+        ev.set_effect_type(static_cast<int>(asn::EffectType::RemoveMarker));
+        ev.set_effect(buf.data(), buf.size());
+        mPlayer->sendToBoth(ev);
+
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
+        // TODO: check for legitimacy of cancel
+        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
+
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandCancelEffect>()) {
+                setCanceled(true);
+                break;
+            } else if (cmd.command().Is<CommandChoice>()) {
+                CommandChoice choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                // 0 is yes, 'yes' will be the first choice on client's side
+                int choice = choiceCmd.choice();
+                if (choice) {
+                    setCanceled(true);
+                }
+                break;
+            }
+        }
+        mPlayer->clearExpectedComands();
+    }
+    if (canceled())
+        co_return;
+
+
+    if (e.targetMarker.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *e.targetMarker.targetSpecification;
+        for (int i = 0; i < spec.number.value; ++i)
+            mPlayer->removeTopMarker(markerBearer, e.place);
     }
 }

@@ -203,6 +203,10 @@ void encodeDelayedAbility(const DelayedAbility &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.duration));
 }
 
+void encodeCostSubstitution(const CostSubstitution &e, Buf &buf) {
+    encodeEffect(*e.effect, buf);
+}
+
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
     encodeString(e.cardCode, buf);
     buf.push_back(zzenc_8(e.effectId));
@@ -318,6 +322,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::DelayedAbility:
         encodeDelayedAbility(std::get<DelayedAbility>(e.effect), buf);
+        break;
+    case EffectType::CostSubstitution:
+        encodeCostSubstitution(std::get<CostSubstitution>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

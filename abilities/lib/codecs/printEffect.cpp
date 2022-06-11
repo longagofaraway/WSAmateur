@@ -888,7 +888,20 @@ std::string printDelayedAbility(const DelayedAbility &e) {
     std::string s;
 
     s += printDuration(e.duration);
+    if (s.size() > 0) {
+        s.pop_back();
+        s += ", ";
+    }
     s += printAutoAbilitySimplified(*e.ability);
+
+    return s;
+}
+
+std::string printCostSubstitution(const CostSubstitution &e) {
+    std::string s = "you may ";
+
+    s += printEffect(*e.effect);
+    s += " in place of 1 stock ";
 
     return s;
 }
@@ -1013,6 +1026,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::DelayedAbility:
         s += printDelayedAbility(std::get<DelayedAbility>(e.effect));
+        break;
+    case EffectType::CostSubstitution:
+        s += printCostSubstitution(std::get<CostSubstitution>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

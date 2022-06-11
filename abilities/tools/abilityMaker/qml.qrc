@@ -93,5 +93,6 @@
         <file>qml/effects/DelayedAbility.qml</file>
         <file>qml/basicTypes/AbilityType.qml</file>
         <file>qml/triggers/OnPayingCost.qml</file>
+        <file>qml/effects/CostSubstitution.qml</file>
     </qresource>
 </RCC>

@@ -103,7 +103,7 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         playAddMarker(std::get<asn::AddMarker>(e.effect));
         break;
     case asn::EffectType::RemoveMarker:
-        playRemoveMarker(std::get<asn::RemoveMarker>(e.effect));
+        co_await playRemoveMarker(std::get<asn::RemoveMarker>(e.effect));
         break;
     case asn::EffectType::CannotBeChosen:
         playCannotBeChosen(std::get<asn::CannotBeChosen>(e.effect));
@@ -113,6 +113,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         break;
     case asn::EffectType::DelayedAbility:
         playDelayedAbility(std::get<asn::DelayedAbility>(e.effect));
+        break;
+    case asn::EffectType::CostSubstitution:
+        co_await playCostSubstitution(std::get<asn::CostSubstitution>(e.effect));
         break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
@@ -1049,13 +1052,13 @@ void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     if (targetStageCards.empty())
         return;
     auto targetStageCard = targetStageCards.front();
+    auto player = targetStageCard->player();
 
-    auto player = owner(e.from.owner);
-    auto pzone = player->zone(e.from.zone);
     if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::Top &&
         e.from.zone == asn::Zone::Deck) {
         const auto &spec = *e.target.targetSpecification;
         assert(spec.number.mod == asn::NumModifier::ExactMatch);
+        auto pzone = player->zone(e.from.zone);
 
         for (int i = 0; i < spec.number.value; ++i) {
             auto card = pzone->topCard();
@@ -1075,26 +1078,11 @@ void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
         return card1->pos() > card2->pos();
     });
     for (auto target: targets) {
-        player->addMarker(pzone, target->pos(), targetStageCard->pos(), e.orientation);
+        auto zone = target->zone();
+        player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation);
 
-        if (e.from.zone == asn::Zone::Deck && pzone->count() == 0)
+        if (e.from.zone == asn::Zone::Deck && target->zone()->count() == 0)
             player->refresh();
-    }
-}
-
-void AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
-    auto targetStageCards = getTargets(e.markerBearer);
-    if (targetStageCards.empty())
-        return;
-
-    // no choice for now
-    assert(targetStageCards.size() == 1);
-    auto markerBearer = targetStageCards.front();
-
-    if (e.targetMarker.type == asn::TargetType::SpecificCards) {
-        const auto &spec = *e.targetMarker.targetSpecification;
-        for (int i = 0; i < spec.number.value; ++i)
-            mPlayer->removeTopMarker(markerBearer, e.place);
     }
 }
 
@@ -1118,6 +1106,33 @@ void AbilityPlayer::playDelayedAbility(const asn::DelayedAbility &e) {
         mPlayer->game()->removeDelayedAbility(*e.ability, mThisCard, mAbilityId);
     else
         mPlayer->game()->addDelayedAbility(*e.ability, mThisCard, e.duration, mAbilityId);
+}
+
+Resumable AbilityPlayer::playCostSubstitution(const asn::CostSubstitution &e) {
+    if (e.effect->type != asn::EffectType::RemoveMarker) {
+        assert(false);
+        co_return;
+    }
+
+    const auto &effect = std::get<asn::RemoveMarker>(e.effect->effect);
+    auto targetStageCards = getTargets(effect.markerBearer);
+    if (targetStageCards.empty())
+        co_return;
+
+    // no choice for now
+    assert(targetStageCards.size() == 1);
+    auto markerBearer = targetStageCards.front();
+    setCanceled(false);
+    int cardsMoved = 0;
+    while (markerBearer->markers().size() > 0) {
+        setMandatory(mPlayer->forcedCostReduction() > 0);
+        co_await playRemoveMarker(effect);
+        if (canceled())
+            break;
+        cardsMoved++;
+        mPlayer->reduceForcedCostReduction();
+    }
+    mPlayer->reduceNextCost(cardsMoved);
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {

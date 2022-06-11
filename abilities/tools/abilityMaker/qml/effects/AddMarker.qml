@@ -7,6 +7,7 @@ Rectangle {
     id: effectImpl
 
     signal editTarget()
+    signal editPlace()
     signal editDestination()
     signal faceOrientationChanged(int value)
 
@@ -36,6 +37,17 @@ Rectangle {
                 text: "Open editor"
                 onClicked: {
                     editTarget();
+                }
+            }
+        }
+
+        Column {
+            id: from
+            Text { text: "From" }
+            Button {
+                text: "Open editor"
+                onClicked: {
+                    editPlace();
                 }
             }
         }

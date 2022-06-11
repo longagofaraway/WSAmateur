@@ -12,7 +12,7 @@ class ServerPlayer;
 class CommandSwitchPositions;
 class CommandChooseCard;
 class Buff;
-class TriggeredAbility;
+struct TriggeredAbility;
 
 struct MoveRecord {
     ServerPlayer *player;
@@ -65,6 +65,8 @@ public:
     Resumable playAbility(const asn::Ability a);
     void playContAbility(const asn::ContAbility &a, bool &active);
     void revertContAbility(const asn::ContAbility &a);
+
+    int timesCanBePerformed(const asn::Effect &effect);
 
 private:
     ServerPlayer* owner(asn::Player player) const;
@@ -149,10 +151,11 @@ private:
     void playSideAttackWithoutPenalty(const asn::SideAttackWithoutPenalty &e);
     Resumable playPutOnStageRested(const asn::PutOnStageRested &e);
     void playAddMarker(const asn::AddMarker &e);
-    void playRemoveMarker(const asn::RemoveMarker &e);
+    Resumable playRemoveMarker(const asn::RemoveMarker &e);
     void playTriggerGain(const asn::TriggerIconGain &e);
     void playCanPlayWithoutColorRequirement(const asn::CanPlayWithoutColorRequirement &e);
     void playDelayedAbility(const asn::DelayedAbility &e);
+    Resumable playCostSubstitution(const asn::CostSubstitution &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

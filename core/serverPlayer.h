@@ -73,6 +73,9 @@ class ServerPlayer
     bool mCharAutoCannotDealDamage = false;
     PlayerBuffManager mBuffManager;
 
+    int mForcedCostReduction = 0;
+    int mNextCostReduction = 0;
+
     // Queue of triggered abilities for check timing
     std::vector<TriggeredAbility> mQueue;
     // Queue of triggered abilities to play outside of check timing
@@ -154,6 +157,7 @@ public:
     void switchPositions(int from, int to);
     void swapCards(ServerCard *card1, ServerCard *card2);
     bool canPlay(ServerCard *card);
+    bool canPlayCounter(ServerCard *card);
     Resumable climaxPhase();
     bool canAttack();
     Resumable endOfAttack();
@@ -163,7 +167,7 @@ public:
     Resumable declareAttack(const CommandDeclareAttack cmd);
     Resumable triggerStep(int pos);
     Resumable performTriggerStep(int pos);
-    void counterStep();
+    Resumable counterStep();
     Resumable damageStep();
     Resumable levelUp();
     Resumable encoreStep();
@@ -178,6 +182,12 @@ public:
     void reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone);
     Resumable takeDamage(int damage, ServerCard *card);
     Resumable checkRefreshAndLevelUp();
+
+    void reduceNextCost(int costReduction) { mNextCostReduction += costReduction; }
+    void resetCostReduction() { mNextCostReduction = 0; mForcedCostReduction = 0; }
+    int costReduction() const { return mNextCostReduction; }
+    int forcedCostReduction() const { return mForcedCostReduction; }
+    void reduceForcedCostReduction() { mForcedCostReduction--; }
 
     void removePositionalContBuffsBySource(ServerCard *card);
     void setCardState(ServerCard *card, asn::State state);
@@ -233,6 +243,8 @@ private:
     void sendActivatedAbilitiesToClient(bool helperQueue = false);
     Resumable getAbilityToPlay(std::optional<uint32_t> &uniqueId, bool helperQueue = false);
     Resumable playChosenAbility(uint32_t uniqueId, bool helperQueue = false);
+    int stockCostSubstitution(ServerCard *card);
+    void sendPlayableCards();
 
     Resumable testAction();
 };

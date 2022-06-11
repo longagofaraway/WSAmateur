@@ -44,6 +44,7 @@ class EventSetCardBoolAttr;
 class EventSetPlayerAttr;
 class EventRevealFromHand;
 class EventAddMarker;
+class EventPlayableCards;
 class ProtoTypeCard;
 
 class Game;
@@ -214,6 +215,7 @@ private:
     void processRevealFromHand(const EventRevealFromHand &event);
     void processRuleActionChoice();
     void processAddMarker(const EventAddMarker &event);
+    void processPlayableCards(const EventPlayableCards &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t,

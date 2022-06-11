@@ -27,6 +27,7 @@ public:
     virtual const std::vector<std::string>& traits() const = 0;
     virtual CardType type() const = 0;
     virtual int playersLevel() const = 0;
+    virtual bool isMarker() const = 0;
 };
 
 struct AbilityState {
@@ -72,6 +73,7 @@ class ServerCard : public CardBase
     bool mCannotBeChosen = false;
     bool mCanPlayWithoutColorRequirement = false;
     bool mFirstTurn = false;
+    bool mIsMarker = false;
 
     CardBuffManager mBuffManager;
 
@@ -106,6 +108,8 @@ public:
     const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
     int playersLevel() const override;
     asn::FaceOrientation faceOrientation() const { return mFaceOrientation; }
+    bool isMarker() const override { return mIsMarker; }
+    void setIsMarker(bool value) { mIsMarker = value; }
 
     bool hasMarkers() const { return mMarkers.size(); }
     std::vector<std::unique_ptr<ServerCard>>& markers() { return mMarkers; }

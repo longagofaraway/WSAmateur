@@ -106,10 +106,14 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
         if (!metRequirements.contains(spec.type))
             metRequirements.emplace(spec.type, false);
         switch (spec.type) {
-        case asn::CardSpecifierType::CardType:
-            if (std::get<asn::CardType>(spec.specifier) == card.type())
+        case asn::CardSpecifierType::CardType: {
+            const auto &type = std::get<asn::CardType>(spec.specifier);
+            if (type == asn::CardType::Marker)
+                metRequirements[spec.type] = true;
+            else if (std::get<asn::CardType>(spec.specifier) == card.type())
                 metRequirements[spec.type] = true;
             break;
+        }
         case asn::CardSpecifierType::TriggerIcon: {
             if (std::any_of(card.triggers().begin(), card.triggers().end(),
                 [&spec](TriggerIcon icon) {
@@ -237,6 +241,38 @@ bool checkTargetMode(asn::TargetMode mode, const ServerCard *thisCard, const Ser
         return isFrontRow(card->pos()) && thisCard != card;
     }
 
+    return true;
+}
+
+bool checkCardMatches(ServerCard *card, const asn::Target &target, ServerCard *thisCard) {
+    if (target.type == asn::TargetType::ThisCard) {
+        if (thisCard != card)
+            return false;
+    } else if (target.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *target.targetSpecification;
+
+        if (!checkTargetMode(spec.mode, thisCard, card))
+            return false;
+
+        if (!checkCard(spec.cards.cardSpecifiers, *card))
+            return false;
+
+        bool ownerMatched = true;
+        for (const auto &spec: spec.cards.cardSpecifiers) {
+            if (spec.type != asn::CardSpecifierType::Owner)
+                continue;
+            auto player = std::get<asn::Player>(spec.specifier);
+            if (player == asn::Player::Player &&
+                card->player()->id() != thisCard->player()->id())
+                ownerMatched = false;
+            else if (player == asn::Player::Opponent &&
+                card->player()->id() == thisCard->player()->id())
+                ownerMatched = false;
+            break;
+        }
+    } else {
+        assert(false);
+    }
     return true;
 }
 

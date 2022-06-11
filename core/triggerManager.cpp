@@ -7,44 +7,6 @@
 #include "serverPlayer.h"
 
 namespace {
-bool checkCardMatches(ServerCard *card, const asn::Target &target, ServerCard *thisCard,
-                      bool &targetThisCard) {
-    targetThisCard = false;
-    if (target.type == asn::TargetType::ThisCard) {
-        if (thisCard != card)
-            return false;
-        targetThisCard = true;
-    } else if (target.type == asn::TargetType::SpecificCards) {
-        const auto &spec = *target.targetSpecification;
-
-        if (!checkTargetMode(spec.mode, thisCard, card))
-            return false;
-
-        if (!checkCard(spec.cards.cardSpecifiers, *card))
-            return false;
-
-        bool ownerMatched = true;
-        for (const auto &spec: spec.cards.cardSpecifiers) {
-            if (spec.type != asn::CardSpecifierType::Owner)
-                continue;
-            auto player = std::get<asn::Player>(spec.specifier);
-            if (player == asn::Player::Player &&
-                card->player()->id() != thisCard->player()->id())
-                ownerMatched = false;
-            else if (player == asn::Player::Opponent &&
-                card->player()->id() == thisCard->player()->id())
-                ownerMatched = false;
-            break;
-        }
-    } else {
-        assert(false);
-    }
-    return true;
-}
-bool checkCardMatches(ServerCard *card, const asn::Target &target, ServerCard *thisCard) {
-    bool b;
-    return checkCardMatches(card, target, thisCard, b);
-}
 bool checkZone(ServerCard *card, const asn::ZoneChangeTrigger& trigger,
                 std::string_view from, std::string_view to, ServerCard *thisCard) {
     if (trigger.from != asn::Zone::NotSpecified && asnZoneToString(trigger.from) != from)
@@ -90,10 +52,9 @@ void TriggerManager::zoneChangeEvent(ServerCard *movedCard, std::string_view fro
         std::string_view cardZone = movedCard->zone()->name();
         bool found = false;
         for (const auto &target: t.target) {
-            bool targetThisCard = false;
-            if (checkCardMatches(movedCard, target, thisCard, targetThisCard)) {
+            if (checkCardMatches(movedCard, target, thisCard)) {
                 found = true;
-                if (targetThisCard)
+                if (target.type == asn::TargetType::ThisCard && thisCard == movedCard)
                     cardZone = to;
                 break;
             }

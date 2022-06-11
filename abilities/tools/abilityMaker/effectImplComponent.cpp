@@ -267,6 +267,11 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::CostSubstitution: {
+        auto e = asn::CostSubstitution();
+        effect = e;
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
     case asn::EffectType::StockSwap:
@@ -656,6 +661,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::CanPlayWithoutColorRequirement, "TargetDurationEffect" },
         { asn::EffectType::ShotTriggerDamage, "DealDamage" },
         { asn::EffectType::DelayedAbility, "DelayedAbility" },
+        { asn::EffectType::CostSubstitution, "CostSubstitution" },
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -854,6 +860,9 @@ void EffectImplComponent::init(QQuickItem *parent) {
     case asn::EffectType::DelayedAbility:
         connect(qmlObject, SIGNAL(editAbilities()), this, SLOT(editAbilities()));
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::CostSubstitution:
+        connect(qmlObject, SIGNAL(editEffects()), this, SLOT(editEffectsField()));
         break;
     case asn::EffectType::CannotBecomeReversed:
     case asn::EffectType::CannotMove:
@@ -1583,7 +1592,8 @@ void EffectImplComponent::onOrderChanged(int value) {
 }
 
 void EffectImplComponent::editEffectsField() {
-    std::vector<asn::Effect> *eff = nullptr;
+    std::vector<asn::Effect> stubEffects;
+    std::vector<asn::Effect> *eff = &stubEffects;
     switch (type) {
     case asn::EffectType::NonMandatory:
         eff = &std::get<asn::NonMandatory>(effect).effect;
@@ -1591,6 +1601,12 @@ void EffectImplComponent::editEffectsField() {
     case asn::EffectType::FlipOver:
         eff = &std::get<asn::FlipOver>(effect).effect;
         break;
+    case asn::EffectType::CostSubstitution: {
+        const auto &eff = std::get<asn::CostSubstitution>(effect);
+        if (eff.effect)
+            stubEffects.push_back(*eff.effect);
+        break;
+    }
     default: assert(false);
     }
 
@@ -1646,6 +1662,12 @@ void EffectImplComponent::effectsReady(const std::vector<asn::Effect> &effects) 
     case asn::EffectType::FlipOver: {
         auto &e = std::get<asn::FlipOver>(effect);
         e.effect = effects;
+        break;
+    }
+    case asn::EffectType::CostSubstitution: {
+        auto &e = std::get<asn::CostSubstitution>(effect);
+        if (effects.size() > 0)
+            e.effect = std::make_shared<asn::Effect>(effects[0]);
         break;
     }
     default: assert(false);
