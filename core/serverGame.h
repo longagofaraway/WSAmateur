@@ -83,9 +83,10 @@ public:
     void resolveAllContAbilities();
     void removePositionalContBuffsBySource(ServerCard *source);
     void addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
-                           int duration, int abilityId);
+                           int duration, int abilityId, bool isShotTrigger);
     void removeDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard, int abilityId);
     const std::vector<DelayedAbility>& delayedAbilities() const { return delayedAbilities_; }
+    void clearShotTrigger();
 
 private:
     void setTask(Resumable&& task) { mTask.emplace(std::move(task)); }

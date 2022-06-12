@@ -1102,10 +1102,11 @@ void AbilityPlayer::playCanPlayWithoutColorRequirement(const asn::CanPlayWithout
 }
 
 void AbilityPlayer::playDelayedAbility(const asn::DelayedAbility &e) {
+    bool isShotTrigger = mTriggerIcon.has_value() && mTriggerIcon.value() == asn::TriggerIcon::Shot;
     if (cont() && revert())
         mPlayer->game()->removeDelayedAbility(*e.ability, mThisCard, mAbilityId);
     else
-        mPlayer->game()->addDelayedAbility(*e.ability, mThisCard, e.duration, mAbilityId);
+        mPlayer->game()->addDelayedAbility(*e.ability, mThisCard, e.duration, mAbilityId, isShotTrigger);
 }
 
 Resumable AbilityPlayer::playCostSubstitution(const asn::CostSubstitution &e) {

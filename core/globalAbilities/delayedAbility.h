@@ -9,4 +9,5 @@ struct DelayedAbility {
     CardImprint thisCard;
     std::string uniqueId;
     int duration;
+    bool isShotTrigger;
 };

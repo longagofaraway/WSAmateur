@@ -323,14 +323,13 @@ void ServerGame::removePositionalContBuffsBySource(ServerCard *source) {
 }
 
 void ServerGame::addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
-                                   int duration, int abilityId) {
+                                   int duration, int abilityId, bool isShotTrigger) {
     auto uniqueId = makeSubscriberId(thisCard.card->id(), abilityId);
-    bool found = std::any_of(delayedAbilities_.begin(), delayedAbilities_.end(), [&uniqueId](const auto &delayedAbility) {
+    if(std::any_of(delayedAbilities_.begin(), delayedAbilities_.end(), [&uniqueId](const auto &delayedAbility) {
         return delayedAbility.uniqueId == uniqueId;
-    });
-    if (found)
+    }))
         return;
-    auto &value = delayedAbilities_.emplace_back(ability, thisCard, uniqueId, duration);
+    auto &value = delayedAbilities_.emplace_back(ability, thisCard, uniqueId, duration, isShotTrigger);
     TriggerSubscriber subscriber;
     subscriber.ability = asn::Ability();
     subscriber.ability.type = asn::AbilityType::Auto;
@@ -343,6 +342,16 @@ void ServerGame::addDelayedAbility(const asn::AutoAbility &ability, CardImprint 
 void ServerGame::removeDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard, int abilityId) {
     auto uniqueId = makeSubscriberId(thisCard.card->id(), abilityId);
     mTriggerManager.unsubscribe(ability.trigger.type, uniqueId);
+    std::erase_if(delayedAbilities_, [&uniqueId](const auto &elem){ return elem.uniqueId == uniqueId; });
+}
+
+void ServerGame::clearShotTrigger() {
+    auto it = std::find_if(delayedAbilities_.begin(), delayedAbilities_.end(), [](const auto &elem){ return elem.isShotTrigger; });
+    while (it != delayedAbilities_.end()) {
+        mTriggerManager.unsubscribe(it->ability.trigger.type, it->uniqueId);
+        delayedAbilities_.erase(it);
+        it = std::find_if(delayedAbilities_.begin(), delayedAbilities_.end(), [](const auto &elem){ return elem.isShotTrigger; });
+    }
 }
 
 void ServerGame::endOfTurnEffectValidation() {

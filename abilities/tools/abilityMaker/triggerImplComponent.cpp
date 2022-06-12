@@ -5,6 +5,10 @@
 namespace {
 const asn::Target& getTarget(TriggerImplComponent::VarTrigger &trigger, asn::TriggerType type) {
     switch (type) {
+    case asn::TriggerType::OnZoneChange: {
+        const auto& t = std::get<asn::ZoneChangeTrigger>(trigger);
+        return t.target.at(0);
+    }
     case asn::TriggerType::OnPlay: {
         const auto& t = std::get<asn::OnPlayTrigger>(trigger);
         return t.target;

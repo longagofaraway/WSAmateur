@@ -27,20 +27,20 @@ std::optional<T> getTrigger(asn::TriggerType type, asn::Ability ability) {
 }
 
 void TriggerManager::subscribe(asn::TriggerType type, TriggerSubscriber subscriber) {
-    subscribers[type].push_back(subscriber);
+    subscribers_[type].push_back(subscriber);
 }
 
 void TriggerManager::unsubscribe(asn::TriggerType type, const std::string &uniqueId) {
-    if (!subscribers.contains(type))
+    if (!subscribers_.contains(type))
         return;
 
-    std::erase_if(subscribers[type], [uniqueId](const TriggerSubscriber &sub) {
+    std::erase_if(subscribers_[type], [uniqueId](const TriggerSubscriber &sub) {
         return sub.uniqueId == uniqueId;
     });
 }
 
 void TriggerManager::zoneChangeEvent(ServerCard *movedCard, std::string_view from, std::string_view to) {
-    const auto &zoneChangeSubscribers = subscribers[asn::TriggerType::OnZoneChange];
+    const auto &zoneChangeSubscribers = subscribers_[asn::TriggerType::OnZoneChange];
     for (const auto &subscriber: zoneChangeSubscribers) {
         auto thisCard = subscriber.card.card;
         auto tOpt = getTrigger<asn::ZoneChangeTrigger>(asn::TriggerType::OnZoneChange, subscriber.ability);
@@ -64,7 +64,7 @@ void TriggerManager::zoneChangeEvent(ServerCard *movedCard, std::string_view fro
 }
 
 void TriggerManager::phaseEvent(asn::PhaseState state, asn::Phase phase) {
-    const auto &phaseSubscribers = subscribers[asn::TriggerType::OnPhaseEvent];
+    const auto &phaseSubscribers = subscribers_[asn::TriggerType::OnPhaseEvent];
     for (const auto &subscriber: phaseSubscribers) {
         auto thisCard = subscriber.card.card;
         if (subscriber.ability.type != asn::AbilityType::Auto)
@@ -93,7 +93,7 @@ void TriggerManager::phaseEvent(asn::PhaseState state, asn::Phase phase) {
 }
 
 void TriggerManager::payingCostEvent(ServerCard *target, std::optional<asn::AbilityType> type) {
-    const auto &costSubscribers = subscribers[asn::TriggerType::OnPayingCost];
+    const auto &costSubscribers = subscribers_[asn::TriggerType::OnPayingCost];
     for (const auto &subscriber: costSubscribers) {
         auto thisCard = subscriber.card.card;
         auto tOpt = getTrigger<asn::OnPayingCostTrigger>(asn::TriggerType::OnPayingCost, subscriber.ability);
@@ -113,6 +113,22 @@ void TriggerManager::payingCostEvent(ServerCard *target, std::optional<asn::Abil
                 continue;
         }
         thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "", true);
+    }
+}
+
+void TriggerManager::damageCancelEvent(ServerCard *attCard, bool cancelled) {
+    const auto &damageCancelSubscribers = subscribers_[asn::TriggerType::OnDamageCancel];
+    for (const auto &subscriber: damageCancelSubscribers) {
+        auto thisCard = subscriber.card.card;
+        auto tOpt = getTrigger<asn::OnDamageCancelTrigger>(asn::TriggerType::OnDamageCancel, subscriber.ability);
+        if (!tOpt.has_value())
+            continue;
+        auto &t = tOpt.value();
+        if (t.cancelled != cancelled)
+            continue;
+        if (!checkCardMatches(attCard, t.damageDealer, thisCard))
+            continue;
+        thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "");
     }
 }
 

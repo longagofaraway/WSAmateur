@@ -9,6 +9,9 @@
 #include "triggerManager.h"
 
 Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigger) {
+    if (trigger == asn::TriggerIcon::Shot && !attackingCard())
+        co_return;
+
     EventAbilityActivated event;
     auto ab = event.add_abilities();
     ab->set_zone("res");
@@ -25,7 +28,10 @@ Resumable ServerPlayer::resolveTrigger(ServerCard *card, asn::TriggerIcon trigge
     sendToBoth(evStart);
 
     AbilityPlayer a(this);
-    a.setThisCard(CardImprint("res", card));
+    if (trigger == asn::TriggerIcon::Shot)
+        a.setThisCard(CardImprint("stage", attackingCard()));
+    else
+        a.setThisCard(CardImprint("res", card));
     a.setTriggerIcon(trigger);
     co_await a.playAbility(triggerAbility(trigger));
 

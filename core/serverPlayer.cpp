@@ -1288,6 +1288,8 @@ Resumable ServerPlayer::takeDamage(int damage, ServerCard *attacker) {
     attacker->setPreviousDamage(damage);
     getOpponent()->checkOnDamageCancel(attacker, cancelled);
     checkOnDamageTakenCancel(cancelled);
+    mGame->triggerManager()->damageCancelEvent(attacker, cancelled);
+    mGame->clearShotTrigger();
 }
 
 Resumable ServerPlayer::checkRefreshAndLevelUp() {
