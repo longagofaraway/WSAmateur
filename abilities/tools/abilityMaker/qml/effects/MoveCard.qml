@@ -9,6 +9,8 @@ Rectangle {
     signal editTarget()
     signal editFrom()
     signal editTo()
+    signal editTo2()
+    signal addDestination()
     signal orderChanged(int value)
     signal executorChanged(int value)
 
@@ -60,6 +62,23 @@ Rectangle {
                 text: "Open editor"
                 onClicked: {
                     editTo();
+                }
+            }
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "+"
+            }
+            Button {
+                property bool created: false
+                text: "Add Destination"
+                onClicked: {
+                    if (!created) {
+                        addDestination();
+                        text = "Open Editor";
+                        created = true;
+                    } else {
+                        editTo2();
+                    }
                 }
             }
         }

@@ -33,6 +33,8 @@ private:
     std::unique_ptr<ArrayOfEffectsComponent> qmlEffects;
     std::unique_ptr<ArrayOfAbilitiesComponent> qmlAbilities;
 
+    int currentCardIndex = 0;
+
 public:
     EffectImplComponent(asn::EffectType type, QQuickItem *parent);
     EffectImplComponent(asn::EffectType type, const VarEffect &e, QQuickItem *parent);
@@ -55,6 +57,8 @@ private slots:
 
     void editPlace(std::optional<asn::Place> place = {});
     void editTo();
+    void editTo2();
+    void addDestination();
     void destroyPlace();
     void placeReady(const asn::Place &p);
     void placeToReady(const asn::Place &p);

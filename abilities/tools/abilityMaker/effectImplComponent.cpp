@@ -10,15 +10,14 @@
 #include "arrayOfAbilitiesComponent.h"
 #include "triggerImplComponent.h"
 
+namespace {
+const asn::Place defaultPlace{asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Player};
+}
+
 void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
     auto defaultNum = asn::Number();
     defaultNum.mod = asn::NumModifier::ExactMatch;
     defaultNum.value = 1;
-
-    auto defaultPlace = asn::Place();
-    defaultPlace.owner = asn::Player::Player;
-    defaultPlace.pos = asn::Position::NotSpecified;
-    defaultPlace.zone = asn::Zone::Stage;
 
     auto defaultTarget = asn::Target();
     defaultTarget.type = asn::TargetType::ThisCard;
@@ -730,6 +729,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(editFrom()), this, SLOT(editPlace()));
         connect(qmlObject, SIGNAL(editTo()), this, SLOT(editTo()));
+        connect(qmlObject, SIGNAL(editTo2()), this, SLOT(editTo2()));
+        connect(qmlObject, SIGNAL(addDestination()), this, SLOT(addDestination()));
         connect(qmlObject, SIGNAL(orderChanged(int)), this, SLOT(onOrderChanged(int)));
         connect(qmlObject, SIGNAL(executorChanged(int)), this, SLOT(onPlayerChanged(int)));
         break;
@@ -1229,6 +1230,19 @@ void EffectImplComponent::editPlace(std::optional<asn::Place> place) {
 void EffectImplComponent::editTo() {
     auto &e = std::get<asn::MoveCard>(effect);
     editPlace(e.to[0]);
+    currentCardIndex = 0;
+}
+
+void EffectImplComponent::editTo2() {
+    auto &e = std::get<asn::MoveCard>(effect);
+    editPlace(e.to[1]);
+    currentCardIndex = 1;
+}
+
+void EffectImplComponent::addDestination() {
+    auto &e = std::get<asn::MoveCard>(effect);
+    e.to.push_back(defaultPlace);
+    emit componentChanged(effect);
 }
 
 void EffectImplComponent::destroyPlace() {
@@ -1280,7 +1294,7 @@ void EffectImplComponent::placeReady(const asn::Place &p) {
 
 void EffectImplComponent::placeToReady(const asn::Place &p) {
     auto &e = std::get<asn::MoveCard>(effect);
-    e.to[0] = p;
+    e.to[currentCardIndex] = p;
     emit componentChanged(effect);
 }
 
