@@ -626,6 +626,34 @@ Resumable AbilityPlayer::playPerformEffect(const asn::PerformEffect &e) {
     for (int i = 0; i < e.numberOfTimes; ++i)
         for (const auto &a: e.effects)
             co_await playEventAbility(a);
+
+    if (e.numberOfTimes != 0)
+        co_return;
+
+    int choice = 0;
+    while (choice == 0) {
+        for (const auto &a: e.effects)
+            co_await playEventAbility(a);
+
+        EventTextChoice event;
+        event.set_header("Repeat the effect?");
+        event.add_choices("Yes");
+        event.add_choices("No");
+        mPlayer->sendGameEvent(event);
+
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
+
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandChoice>()) {
+                CommandChoice choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                choice = choiceCmd.choice();
+                break;
+            }
+        }
+    }
 }
 
 void AbilityPlayer::playMoveWrToDeck(const asn::MoveWrToDeck &e) {

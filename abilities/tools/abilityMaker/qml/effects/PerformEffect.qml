@@ -59,6 +59,17 @@ Rectangle {
                 }
             }
         }
+
+        CheckBox {
+            id: repeatCheckbox
+            text: "Repeat as many times as you want"
+            checked: false
+            onCheckedChanged: {
+                effectTimes.enabled = !checked;
+                setEffectTimes(0);
+                effectTimesChanged("0");
+            }
+        }
     }
 
     function setEffectNum(value) {
@@ -67,5 +78,9 @@ Rectangle {
 
     function setEffectTimes(value) {
         effectTimes.setValue(value);
+    }
+
+    function setRepeat() {
+        repeatCheckbox.checked = true;
     }
 }

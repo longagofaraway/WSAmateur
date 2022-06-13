@@ -502,6 +502,8 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         const auto &ef = std::get<asn::PerformEffect>(e);
         QMetaObject::invokeMethod(qmlObject, "setEffectNum", Q_ARG(QVariant, QString::number(ef.numberOfEffects)));
         QMetaObject::invokeMethod(qmlObject, "setEffectTimes", Q_ARG(QVariant, QString::number(ef.numberOfTimes)));
+        if (ef.numberOfTimes == 0)
+            QMetaObject::invokeMethod(qmlObject, "setRepeat");
         break;
     }
     case asn::EffectType::ShotTriggerDamage:

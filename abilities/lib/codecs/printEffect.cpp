@@ -624,6 +624,10 @@ std::string printCannotPlay() {
 std::string printPerformEffect(const PerformEffect &e) {
     std::string s;
 
+    int numberOfTimes = e.numberOfTimes;
+    if (e.numberOfTimes == 0)
+        numberOfTimes  = 1;
+
     if (e.numberOfEffects < static_cast<int>(e.effects.size())) {
         s += "choose " + std::to_string(e.numberOfEffects) + " of the following " + std::to_string(e.effects.size()) + " effects and perform ";
         if (e.numberOfEffects == 1)
@@ -635,18 +639,24 @@ std::string printPerformEffect(const PerformEffect &e) {
         s += "perform the following effect";
         if (e.numberOfEffects > 1)
             s += "s";
-        if (e.numberOfTimes == 2)
+        if (numberOfTimes == 2)
             s += " twice";
-        else if (e.numberOfTimes == 3)
+        else if (numberOfTimes == 3)
             s += " three times";
         s += ".";
     }
 
     for (const auto &ab: e.effects) {
-        s += "<br>\"";
+        if (e.effects.size() > 1)
+            s += "<br>\"";
+        else s += " \"";
         s += printSpecificAbility(ab, CardType::Char);
         s += "\"";
     }
+    s += " ";
+
+    if (e.numberOfTimes == 0)
+        s += "You may perform this effect as many times as you want ";
 
     return s;
 }

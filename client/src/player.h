@@ -6,6 +6,8 @@
 
 #include <google/protobuf/message.h>
 
+#include "abilityEvents.pb.h"
+
 #include "activatedAbilities.h"
 #include "cardZone.h"
 #include "choiceDialog.h"
@@ -19,31 +21,10 @@ class EventSwitchStagePositions;
 class EventDeclareAttack;
 class EventSetCardAttr;
 class EventSetCardState;
-class EventAbilityActivated;
-class EventChooseCard;
-class EventPlayAbility;
-class EventMoveChoice;
-class EventDrawChoice;
-class EventStartResolvingAbility;
-class EventSearchCard;
-class EventMoveDestinationChoice;
-class EventMoveDestinationIndexChoice;
-class EventMoveTargetChoice;
-class EventAbilityChoice;
-class EventEffectChoice;
-class EventAbilityGain;
-class EventRemoveAbility;
-class EventLook;
-class EventReveal;
-class EventRevealTopDeck;
-class EventLookTopDeck;
-class EventSetCannotPlay;
 class EventSetCardStateChoice;
 class EventSetCardStateTargetChoice;
 class EventSetCardBoolAttr;
 class EventSetPlayerAttr;
-class EventRevealFromHand;
-class EventAddMarker;
 class EventPlayableCards;
 class ProtoTypeCard;
 
@@ -214,8 +195,8 @@ private:
     void processSetCardBoolAttr(const EventSetCardBoolAttr &event);
     void processRevealFromHand(const EventRevealFromHand &event);
     void processRuleActionChoice();
-    void processAddMarker(const EventAddMarker &event);
     void processPlayableCards(const EventPlayableCards &event);
+    void processTextChoice(const EventTextChoice &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t,

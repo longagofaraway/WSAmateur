@@ -7,7 +7,6 @@
 
 #include "ability.pb.h"
 #include "abilityCommands.pb.h"
-#include "abilityEvents.pb.h"
 #include "cardAttribute.pb.h"
 #include "gameCommand.pb.h"
 #include "gameEvent.pb.h"
@@ -311,6 +310,10 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventPlayableCards ev;
         event->event().UnpackTo(&ev);
         processPlayableCards(ev);
+    } else if (event->event().Is<EventTextChoice>()) {
+        EventTextChoice ev;
+        event->event().UnpackTo(&ev);
+        processTextChoice(ev);
     }
 }
 

@@ -467,3 +467,12 @@ void Player::processPlayableCards(const EventPlayableCards &event) {
         mHand->model().setGlow(event.hand_pos(i), true);
     }
 }
+
+void Player::processTextChoice(const EventTextChoice &event) {
+    std::vector<QString> data;
+    for (int i = 0; i < event.choices_size(); ++i)
+        data.push_back(QString::fromStdString(event.choices(i)));
+    auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
+    choiceDlg->setData(QString::fromStdString(event.header()), data);
+    mChoiceDialog = std::move(choiceDlg);
+}

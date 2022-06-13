@@ -137,3 +137,8 @@ message EventRevealFromHand {
     sint32 hand_pos = 1;
     string code = 2;
 }
+
+message EventTextChoice {
+    string header = 1;
+    repeated string choices = 2;
+}
