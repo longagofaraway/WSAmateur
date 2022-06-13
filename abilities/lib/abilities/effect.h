@@ -255,6 +255,10 @@ struct CostSubstitution {
     std::shared_ptr<Effect> effect;
 };
 
+struct StockSwap {
+    Zone zone;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -351,6 +355,7 @@ struct Effect {
         CanPlayWithoutColorRequirement,
         DelayedAbility,
         CostSubstitution,
+        StockSwap,
         OtherEffect
     > effect;
 };

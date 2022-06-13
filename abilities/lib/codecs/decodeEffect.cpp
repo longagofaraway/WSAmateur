@@ -268,6 +268,12 @@ CostSubstitution decodeCostSubstitution(Iterator &it, Iterator end) {
     return e;
 }
 
+StockSwap decodeStockSwap(Iterator &it, Iterator end) {
+    StockSwap e;
+    e.zone = decodeEnum<Zone>(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -392,6 +398,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::CostSubstitution:
         e.effect = decodeCostSubstitution(it, end);
+        break;
+    case EffectType::StockSwap:
+        e.effect = decodeStockSwap(it, end);
         break;
     default:
         break;

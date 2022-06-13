@@ -271,9 +271,14 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::StockSwap: {
+        auto e = asn::StockSwap();
+        e.zone = asn::Zone::WaitingRoom;
+        effect = e;
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
-    case asn::EffectType::StockSwap:
     case asn::EffectType::Standby:
     case asn::EffectType::CannotPlay:
     case asn::EffectType::CharAutoCannotDealDamage:
@@ -617,6 +622,11 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
         break;
     }
+    case asn::EffectType::StockSwap: {
+        const auto &ef = std::get<asn::StockSwap>(e);
+        QMetaObject::invokeMethod(qmlObject, "setZone", Q_ARG(QVariant, (int)ef.zone));
+        break;
+    }
     default:
         break;
     }
@@ -663,12 +673,12 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::ShotTriggerDamage, "DealDamage" },
         { asn::EffectType::DelayedAbility, "DelayedAbility" },
         { asn::EffectType::CostSubstitution, "CostSubstitution" },
+        { asn::EffectType::StockSwap, "StockSwap" }
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
         asn::EffectType::EarlyPlay,
         asn::EffectType::TriggerCheckTwice,
-        asn::EffectType::StockSwap,
         asn::EffectType::Standby,
         asn::EffectType::CannotPlay,
         asn::EffectType::CharAutoCannotDealDamage
@@ -874,6 +884,10 @@ void EffectImplComponent::init(QQuickItem *parent) {
     case asn::EffectType::CanPlayWithoutColorRequirement:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
+    case asn::EffectType::StockSwap:
+        QMetaObject::invokeMethod(qmlObject, "setZone", Q_ARG(QVariant, QString("2")));
+        connect(qmlObject, SIGNAL(zoneChanged(int)), this, SLOT(onZoneChanged(int)));
         break;
     default:
         break;
@@ -1364,6 +1378,11 @@ void EffectImplComponent::onZoneChanged(int value) {
     switch (type) {
     case asn::EffectType::Shuffle: {
         auto &e = std::get<asn::Shuffle>(effect);
+        e.zone = static_cast<asn::Zone>(value);
+        break;
+    }
+    case asn::EffectType::StockSwap: {
+        auto &e = std::get<asn::StockSwap>(effect);
         e.zone = static_cast<asn::Zone>(value);
         break;
     }

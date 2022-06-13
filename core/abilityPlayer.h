@@ -145,7 +145,7 @@ private:
     void playCannotBecomeReversed(const asn::CannotBecomeReversed &e);
     void playCannotBeChosen(const asn::CannotBeChosen &e);
     void playOpponentAutoCannotDealDamage(const asn::OpponentAutoCannotDealDamage &e);
-    void playStockSwap();
+    void playStockSwap(const asn::StockSwap &e);
     void playCannotMove(const asn::CannotMove &e);
     void playCannotStand(const asn::CannotStand &e);
     void playSideAttackWithoutPenalty(const asn::SideAttackWithoutPenalty &e);

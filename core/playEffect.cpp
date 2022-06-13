@@ -91,7 +91,7 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         playOpponentAutoCannotDealDamage(std::get<asn::OpponentAutoCannotDealDamage>(e.effect));
         break;
     case asn::EffectType::StockSwap:
-        playStockSwap();
+        playStockSwap(std::get<asn::StockSwap>(e.effect));
         break;
     case asn::EffectType::SideAttackWithoutPenalty:
         playSideAttackWithoutPenalty(std::get<asn::SideAttackWithoutPenalty>(e.effect));
@@ -998,12 +998,16 @@ void AbilityPlayer::playOpponentAutoCannotDealDamage(const asn::OpponentAutoCann
     }
 }
 
-void AbilityPlayer::playStockSwap() {
+void AbilityPlayer::playStockSwap(const asn::StockSwap &e) {
     auto opponent = mPlayer->getOpponent();
     auto stock = opponent->zone("stock");
     int stockCount = stock->count();
+    auto toZone = opponent->zone(e.zone);
     while (stock->count())
-        opponent->moveCard("stock", stock->count() - 1, "wr");
+        opponent->moveCard("stock", stock->count() - 1, toZone->name());
+
+    if (e.zone == asn::Zone::Deck)
+        toZone->shuffle();
 
     for (int i = 0; i < stockCount; ++i)
         opponent->moveTopDeck("stock");

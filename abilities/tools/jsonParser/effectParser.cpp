@@ -554,6 +554,15 @@ DelayedAbility parseDelayedAbility(const QJsonObject &json) {
     return e;
 }
 
+StockSwap parseStockSwap(const QJsonObject &json) {
+    if (!json.contains("zone") || !json["zone"].isDouble())
+        throw std::runtime_error("no zone in StockSwap");
+
+    StockSwap e;
+    e.zone = static_cast<Zone>(json["zone"].toInt());
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -673,11 +682,13 @@ Effect parseEffect(const QJsonObject &json) {
     case EffectType::DelayedAbility:
         e.effect = parseDelayedAbility(json["effect"].toObject());
         break;
+    case EffectType::StockSwap:
+        e.effect = parseStockSwap(json["effect"].toObject());
+        break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:
     case EffectType::CannotPlay:
     case EffectType::CharAutoCannotDealDamage:
-    case EffectType::StockSwap:
     case EffectType::Standby:
         break;
     case EffectType::OtherEffect:

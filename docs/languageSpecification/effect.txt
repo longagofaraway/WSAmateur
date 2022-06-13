@@ -39,6 +39,7 @@ Effect {
     DelayedAbility,
     OtherEffect,
     CostSubstitution,
+    StockSwap,
     Nothing
   }
 }
@@ -365,6 +366,10 @@ DelayedAbility {
 
 CostSubstitution {
   effect Effect // perform it instead of 1 stock
+}
+
+StockSwap {
+  zone Zone // where to put stock
 }
 
 OtherEffect {

@@ -207,6 +207,10 @@ void encodeCostSubstitution(const CostSubstitution &e, Buf &buf) {
     encodeEffect(*e.effect, buf);
 }
 
+void encodeStockSwap(const StockSwap &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.zone));
+}
+
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
     encodeString(e.cardCode, buf);
     buf.push_back(zzenc_8(e.effectId));
@@ -325,6 +329,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::CostSubstitution:
         encodeCostSubstitution(std::get<CostSubstitution>(e.effect), buf);
+        break;
+    case EffectType::StockSwap:
+        encodeStockSwap(std::get<StockSwap>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

@@ -94,5 +94,6 @@
         <file>qml/basicTypes/AbilityType.qml</file>
         <file>qml/triggers/OnPayingCost.qml</file>
         <file>qml/effects/CostSubstitution.qml</file>
+        <file>qml/effects/StockSwap.qml</file>
     </qresource>
 </RCC>
