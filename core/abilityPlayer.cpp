@@ -147,7 +147,8 @@ int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
     const auto &tspec = specifier.target->targetSpecification.value();
 
     if (specifier.placeType == asn::PlaceType::SpecificPlace) {
-        auto pzone = mPlayer->zone(specifier.place->zone);
+        auto player = owner(specifier.place->owner);
+        auto pzone = player->zone(specifier.place->zone);
         for (int i = 0; i < pzone->count(); ++i) {
             if (checkTarget(tspec, pzone->card(i)))
                 cardCount++;
