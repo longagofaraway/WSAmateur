@@ -7,7 +7,7 @@
 #include "costComponent.h"
 #include "dbControls.h"
 #include "arrayOfEffectsComponent.h"
-#include "triggerComponent.h"
+#include "arrayOfTriggersComponent.h"
 
 class AbilityMaker;
 
@@ -15,9 +15,8 @@ class AbilityComponent : public BaseComponent
 {
     Q_OBJECT
 private:
-    std::unique_ptr<TriggerComponent> qmlTrigger;
-    bool triggerSet = false;
-    asn::Trigger trigger;
+    std::unique_ptr<ArrayOfTriggersComponent> qmlTriggers;
+    std::vector<asn::Trigger> triggers;
 
     asn::AbilityType type;
     int activationTimes = 0;
@@ -49,9 +48,9 @@ public slots:
     void setActivationTimes(int times);
     void setKeywords(QVariant keywordList);
 
-    void editTrigger();
-    void triggerReady(const asn::Trigger &t);
-    void destroyTrigger();
+    void editTriggers();
+    void triggersReady(const std::vector<asn::Trigger> &t);
+    void destroyTriggers();
 
     void editEffects();
     void effectsReady(const std::vector<asn::Effect> &e);
@@ -77,7 +76,7 @@ T AbilityComponent::constructSpecificAbility() {
     T ability;
     if constexpr (std::is_same_v<T, asn::AutoAbility>) {
         ability.activationTimes = activationTimes;
-        ability.trigger = trigger;
+        ability.triggers = triggers;
         ability.cost = cost;
     }
     ability.keywords = keywords;

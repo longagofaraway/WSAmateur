@@ -1,0 +1,38 @@
+{
+    "type": 4,
+    "ability": {
+        "keywords": [],
+        "effects": [{
+            "type": 42,
+            "cond": {
+                "type": 0
+            },
+            "effect": {
+                "ability": {
+                    "activationTimes": 0,
+                    "keywords": [],
+                    "triggers": [{
+                        "type": 11,
+                        "trigger": {
+                            "damageDealer": {
+                                "type": 1
+                            },
+                            "cancelled": true
+                        }
+                    }],
+                    "effects": [{
+                        "type": 41,
+                        "cond": {
+                            "type": 0
+                        },
+                        "effect": {
+                            "damageType": 1,
+                            "damage": 1
+                        }
+                    }]
+                },
+                "duration": 1
+            }
+        }]
+    }
+}

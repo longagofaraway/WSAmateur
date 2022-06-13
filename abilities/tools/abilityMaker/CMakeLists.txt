@@ -9,6 +9,8 @@ set(abilityMakerSources
     arrayOfConditionsComponent.cpp
     arrayOfEffectsComponent.h
     arrayOfEffectsComponent.cpp
+    arrayOfTriggersComponent.h
+    arrayOfTriggersComponent.cpp
     baseComponent.h
     baseComponent.cpp
     cardComponent.h

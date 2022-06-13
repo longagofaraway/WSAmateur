@@ -46,7 +46,7 @@ AutoAbility {
     Cost,
     Nothing
   },
-  trigger Trigger,
+  triggers Array of Trigger,
   effects Array of Effect
 }
 

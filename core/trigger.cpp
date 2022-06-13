@@ -85,38 +85,41 @@ void ServerPlayer::checkZoneChangeTrigger(ServerCard *movedCard, std::string_vie
             if (a.ability.type != asn::AbilityType::Auto)
                 continue;
             const auto &aa = std::get<asn::AutoAbility>(a.ability.ability);
-            if (aa.trigger.type != asn::TriggerType::OnZoneChange)
-                continue;
-            const auto &t = std::get<asn::ZoneChangeTrigger>(aa.trigger.trigger);
-            if (t.from != asn::Zone::NotSpecified && asnZoneToString(t.from) != from)
-                continue;
-            if (t.to != asn::Zone::NotSpecified && asnZoneToString(t.to) != to)
-                continue;
-            std::string_view cardZone = card->zone()->name();
-            bool found = false;
-            for (const auto &target: t.target) {
-                if (target.type == asn::TargetType::ThisCard) {
-                    if (card != movedCard)
-                        continue;
-                    cardZone = to;
-                } else if (target.type == asn::TargetType::SpecificCards) {
-                    const auto &spec = *target.targetSpecification;
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnZoneChange)
+                    continue;
+                const auto &t = std::get<asn::ZoneChangeTrigger>(trigger.trigger);
+                if (t.from != asn::Zone::NotSpecified && asnZoneToString(t.from) != from)
+                    continue;
+                if (t.to != asn::Zone::NotSpecified && asnZoneToString(t.to) != to)
+                    continue;
+                std::string_view cardZone = card->zone()->name();
+                bool found = false;
+                for (const auto &target: t.target) {
+                    if (target.type == asn::TargetType::ThisCard) {
+                        if (card != movedCard)
+                            continue;
+                        cardZone = to;
+                    } else if (target.type == asn::TargetType::SpecificCards) {
+                        const auto &spec = *target.targetSpecification;
 
-                    if (!checkTargetMode(spec.mode, card, movedCard))
-                        continue;
+                        if (!checkTargetMode(spec.mode, card, movedCard))
+                            continue;
 
-                    if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
-                        continue;
-                } else {
-                    assert(false);
+                        if (!checkCard(spec.cards.cardSpecifiers, *movedCard))
+                            continue;
+                    } else {
+                        assert(false);
+                    }
+                    found = true;
+                    break;
                 }
-                found = true;
+                if (!found)
+                    continue;
+
+                queueActivatedAbility(aa, a, card, cardZone, movedCard);
                 break;
             }
-            if (!found)
-                continue;
-
-            queueActivatedAbility(aa, a, card, cardZone, movedCard);
         }
     };
 
@@ -151,24 +154,27 @@ void ServerPlayer::checkOnAttack(ServerCard *attCard) {
         for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
             if (abs[i].ability.type != asn::AbilityType::Auto)
                 continue;
-            const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-            if (autoab.trigger.type != asn::TriggerType::OnAttack)
-                continue;
-            const auto &trig = std::get<asn::OnAttackTrigger>(autoab.trigger.trigger);
-            if (trig.target.type == asn::TargetType::ThisCard) {
-                if (card != attCard)
+            const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnAttack)
                     continue;
-            } else if (trig.target.type == asn::TargetType::SpecificCards) {
-                const auto &spec = *trig.target.targetSpecification;
+                const auto &trig = std::get<asn::OnAttackTrigger>(trigger.trigger);
+                if (trig.target.type == asn::TargetType::ThisCard) {
+                    if (card != attCard)
+                        continue;
+                } else if (trig.target.type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *trig.target.targetSpecification;
 
-                if (!checkTargetMode(spec.mode, card, attCard))
-                    continue;
+                    if (!checkTargetMode(spec.mode, card, attCard))
+                        continue;
 
-                if (!checkCard(spec.cards.cardSpecifiers, *attCard))
-                    continue;
+                    if (!checkCard(spec.cards.cardSpecifiers, *attCard))
+                        continue;
+                }
+
+                queueActivatedAbility(aa, abs[i], attCard, "", attCard);
+                break;
             }
-
-            queueActivatedAbility(autoab, abs[i], attCard, "", attCard);
         }
     };
 
@@ -191,25 +197,28 @@ void ServerPlayer::checkOnBeingAttacked(ServerCard *attackTarget, asn::AttackTyp
             if (abs[i].ability.type != asn::AbilityType::Auto)
                 continue;
             const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
-            if (aa.trigger.type != asn::TriggerType::OnBeingAttacked)
-                continue;
-            const auto &trig = std::get<asn::OnBeingAttackedTrigger>(aa.trigger.trigger);
-            if (trig.attackType != attackType)
-                continue;
-            if (trig.target.type == asn::TargetType::ThisCard) {
-                if (card != attackTarget)
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnBeingAttacked)
                     continue;
-            } else if (trig.target.type == asn::TargetType::SpecificCards) {
-                const auto &spec = *trig.target.targetSpecification;
+                const auto &trig = std::get<asn::OnBeingAttackedTrigger>(trigger.trigger);
+                if (trig.attackType != attackType)
+                    continue;
+                if (trig.target.type == asn::TargetType::ThisCard) {
+                    if (card != attackTarget)
+                        continue;
+                } else if (trig.target.type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *trig.target.targetSpecification;
 
-                if (!checkTargetMode(spec.mode, card, attackTarget))
-                    continue;
+                    if (!checkTargetMode(spec.mode, card, attackTarget))
+                        continue;
 
-                if (!checkCard(spec.cards.cardSpecifiers, *attackTarget))
-                    continue;
+                    if (!checkCard(spec.cards.cardSpecifiers, *attackTarget))
+                        continue;
+                }
+
+                queueActivatedAbility(aa, abs[i], card, card->zone()->name(), attackTarget);
+                break;
             }
-
-            queueActivatedAbility(aa, abs[i], card, card->zone()->name(), attackTarget);
         }
     };
 
@@ -229,24 +238,27 @@ void ServerPlayer::checkPhaseTrigger(asn::PhaseState state, asn::Phase phase) {
         for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
             if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
-            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
-            if (autoab.trigger.type != asn::TriggerType::OnPhaseEvent)
-                continue;
-            // do not activate alarm if the card is on the stage
-            // (otherwise ability is shown for a brief moment, but the condition is not met)
-            // also prevent activating non alarm abilities from top clock
-            bool alarm = std::any_of(autoab.keywords.begin(), autoab.keywords.end(),
-                            [](asn::Keyword k){ return k == asn::Keyword::Alarm; });
-            if (alarm != topClock)
-                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[j].ability.ability);
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnPhaseEvent)
+                    continue;
+                // do not activate alarm if the card is on the stage
+                // (otherwise ability is shown for a brief moment, but the condition is not met)
+                // also prevent activating non alarm abilities from top clock
+                bool alarm = std::any_of(aa.keywords.begin(), aa.keywords.end(),
+                                [](asn::Keyword k){ return k == asn::Keyword::Alarm; });
+                if (alarm != topClock)
+                    continue;
 
-            const auto &trig = std::get<asn::PhaseTrigger>(autoab.trigger.trigger);
-            if (trig.phase != phase || (trig.state != state && phase != asn::Phase::EndPhase) ||
-                (trig.player == asn::Player::Player && !mActive) ||
-                (trig.player == asn::Player::Opponent && mActive))
-                continue;
+                const auto &trig = std::get<asn::PhaseTrigger>(trigger.trigger);
+                if (trig.phase != phase || (trig.state != state && phase != asn::Phase::EndPhase) ||
+                    (trig.player == asn::Player::Player && !mActive) ||
+                    (trig.player == asn::Player::Opponent && mActive))
+                    continue;
 
-            queueActivatedAbility(autoab, abs[j], card);
+                queueActivatedAbility(aa, abs[j], card);
+                break;
+            }
         }
     };
 
@@ -270,11 +282,14 @@ void ServerPlayer::checkOnBackup(ServerCard *card) {
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
         if (abs[i].ability.type != asn::AbilityType::Auto)
             continue;
-        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (autoab.trigger.type != asn::TriggerType::OnBackupOfThis)
-            continue;
+        const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnBackupOfThis)
+                continue;
 
-        queueActivatedAbility(autoab, abs[i], card);
+            queueActivatedAbility(aa, abs[i], card);
+            break;
+        }
     }
 }
 
@@ -289,14 +304,17 @@ void ServerPlayer::checkOnTriggerReveal(ServerCard *revealedCard) {
         for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
             if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
-            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
-            if (autoab.trigger.type != asn::TriggerType::OnTriggerReveal)
-                continue;
-            const auto &trig = std::get<asn::TriggerRevealTrigger>(autoab.trigger.trigger);
-            if (!checkCard(trig.card.cardSpecifiers, *revealedCard))
-                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[j].ability.ability);
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnTriggerReveal)
+                    continue;
+                const auto &trig = std::get<asn::TriggerRevealTrigger>(trigger.trigger);
+                if (!checkCard(trig.card.cardSpecifiers, *revealedCard))
+                    continue;
 
-            queueActivatedAbility(autoab, abs[j], card);
+                queueActivatedAbility(aa, abs[j], card);
+                break;
+            }
         }
     }
 }
@@ -313,15 +331,18 @@ void ServerPlayer::checkOtherTrigger(const std::string &code) {
             if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
 
-            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
-            if (autoab.trigger.type != asn::TriggerType::OtherTrigger)
-                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[j].ability.ability);
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OtherTrigger)
+                    continue;
 
-            const auto &trig = std::get<asn::OtherTrigger>(autoab.trigger.trigger);
-            if (code != trig.cardCode)
-                continue;
+                const auto &trig = std::get<asn::OtherTrigger>(trigger.trigger);
+                if (code != trig.cardCode)
+                    continue;
 
-            queueActivatedAbility(autoab, abs[j], card);
+                queueActivatedAbility(aa, abs[j], card);
+                break;
+            }
         }
     }
 }
@@ -371,17 +392,19 @@ void ServerPlayer::triggerOnEndOfCardsAttack(ServerCard *card) {
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
         if (abs[i].ability.type != asn::AbilityType::Auto)
             continue;
-        const auto &actab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (actab.trigger.type != asn::TriggerType::OnEndOfThisCardsAttack)
-            continue;
+        const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnEndOfThisCardsAttack)
+                continue;
 
-        TriggeredAbility a;
-        a.card = CardImprint(card->zone()->name(), card);
-        a.type = ProtoCard;
-        a.abilityId = abs[i].id;
-        mQueue.push_back(a);
+            TriggeredAbility a;
+            a.card = CardImprint(card->zone()->name(), card);
+            a.type = ProtoCard;
+            a.abilityId = abs[i].id;
+            mQueue.push_back(a);
 
-        return;
+            break;
+        }
     }
 }
 
@@ -397,11 +420,14 @@ void ServerPlayer::triggerOnOppCharPlacedByStandby() {
             if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
 
-            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
-            if (autoab.trigger.type != asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal)
-                continue;
+            const auto &aa = std::get<asn::AutoAbility>(abs[j].ability.ability);
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal)
+                    continue;
 
-            queueActivatedAbility(autoab, abs[j], card);
+                queueActivatedAbility(aa, abs[j], card);
+                break;
+            }
         }
     }
 }
@@ -411,17 +437,20 @@ void ServerPlayer::checkOnReversed(ServerCard *card) {
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
         if (abs[i].ability.type != asn::AbilityType::Auto)
             continue;
-        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (autoab.trigger.type != asn::TriggerType::OnStateChange)
-            continue;
-        const auto &trigger = std::get<asn::StateChangeTrigger>(autoab.trigger.trigger);
-        if (trigger.state != asn::State::Reversed)
-            continue;
-        const auto &target = trigger.target;
-        if (target.type != asn::TargetType::ThisCard)
-            continue;
+        const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnStateChange)
+                continue;
+            const auto &t = std::get<asn::StateChangeTrigger>(trigger.trigger);
+            if (t.state != asn::State::Reversed)
+                continue;
+            const auto &target = t.target;
+            if (target.type != asn::TargetType::ThisCard)
+                continue;
 
-        queueActivatedAbility(autoab, abs[i], card);
+            queueActivatedAbility(aa, abs[i], card);
+            break;
+        }
     }
 }
 
@@ -430,19 +459,22 @@ void ServerPlayer::checkOnBattleOpponentReversed(ServerCard *thisCard, ServerCar
     for (int i = 0; i < static_cast<int>(abs.size()); ++i) {
         if (abs[i].ability.type != asn::AbilityType::Auto)
             continue;
-        const auto &autoab = std::get<asn::AutoAbility>(abs[i].ability.ability);
-        if (autoab.trigger.type != asn::TriggerType::OnStateChange)
-            continue;
-        const auto &trig = std::get<asn::StateChangeTrigger>(autoab.trigger.trigger);
-        if (trig.state != asn::State::Reversed)
-            continue;
-        if (trig.target.type != asn::TargetType::BattleOpponent)
-            continue;
-        const auto &spec = trig.target.targetSpecification.value();
-        if (!checkCard(spec.cards.cardSpecifiers, *battleOpp))
-            continue;
+        const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnStateChange)
+                continue;
+            const auto &trig = std::get<asn::StateChangeTrigger>(trigger.trigger);
+            if (trig.state != asn::State::Reversed)
+                continue;
+            if (trig.target.type != asn::TargetType::BattleOpponent)
+                continue;
+            const auto &spec = trig.target.targetSpecification.value();
+            if (!checkCard(spec.cards.cardSpecifiers, *battleOpp))
+                continue;
 
-        queueActivatedAbility(autoab, abs[i], thisCard);
+            queueActivatedAbility(aa, abs[i], thisCard);
+            break;
+        }
     }
 }
 
@@ -457,23 +489,26 @@ void ServerPlayer::checkOnPlayTrigger(ServerCard *playedCard) {
         for (int j = 0; j < static_cast<int>(abs.size()); ++j) {
             if (abs[j].ability.type != asn::AbilityType::Auto)
                 continue;
-            const auto &autoab = std::get<asn::AutoAbility>(abs[j].ability.ability);
-            if (autoab.trigger.type != asn::TriggerType::OnPlay)
-                continue;
-            const auto &trig = std::get<asn::OnPlayTrigger>(autoab.trigger.trigger);
-            if (trig.target.type == asn::TargetType::ThisCard) {
-                if (card != playedCard)
+            const auto &aa = std::get<asn::AutoAbility>(abs[j].ability.ability);
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnPlay)
                     continue;
-            } else if (trig.target.type == asn::TargetType::SpecificCards) {
-                const auto &spec = *trig.target.targetSpecification;
-                if (!checkTargetMode(spec.mode, card, playedCard))
-                    continue;
+                const auto &trig = std::get<asn::OnPlayTrigger>(trigger.trigger);
+                if (trig.target.type == asn::TargetType::ThisCard) {
+                    if (card != playedCard)
+                        continue;
+                } else if (trig.target.type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *trig.target.targetSpecification;
+                    if (!checkTargetMode(spec.mode, card, playedCard))
+                        continue;
 
-                if (!checkCard(spec.cards.cardSpecifiers, *playedCard))
-                    continue;
+                    if (!checkCard(spec.cards.cardSpecifiers, *playedCard))
+                        continue;
+                }
+
+                queueActivatedAbility(aa, abs[j], card, "", playedCard);
+                break;
             }
-
-            queueActivatedAbility(autoab, abs[j], card, "", playedCard);
         }
     }
 }
@@ -485,25 +520,28 @@ void ServerPlayer::checkOnDamageCancel(ServerCard *attCard, bool cancelled) {
             if (abs[i].ability.type != asn::AbilityType::Auto)
                 continue;
             const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
-            if (aa.trigger.type != asn::TriggerType::OnDamageCancel)
-                continue;
-            const auto &trig = std::get<asn::OnDamageCancelTrigger>(aa.trigger.trigger);
-            if (trig.cancelled != cancelled)
-                continue;
-            if (trig.damageDealer.type == asn::TargetType::ThisCard) {
-                if (card != attCard)
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnDamageCancel)
                     continue;
-            } else if (trig.damageDealer.type == asn::TargetType::SpecificCards) {
-                const auto &spec = *trig.damageDealer.targetSpecification;
+                const auto &trig = std::get<asn::OnDamageCancelTrigger>(trigger.trigger);
+                if (trig.cancelled != cancelled)
+                    continue;
+                if (trig.damageDealer.type == asn::TargetType::ThisCard) {
+                    if (card != attCard)
+                        continue;
+                } else if (trig.damageDealer.type == asn::TargetType::SpecificCards) {
+                    const auto &spec = *trig.damageDealer.targetSpecification;
 
-                if (!checkTargetMode(spec.mode, card, attCard))
-                    continue;
+                    if (!checkTargetMode(spec.mode, card, attCard))
+                        continue;
 
-                if (!checkCard(spec.cards.cardSpecifiers, *attCard))
-                    continue;
+                    if (!checkCard(spec.cards.cardSpecifiers, *attCard))
+                        continue;
+                }
+
+                queueActivatedAbility(aa, abs[i], card, card->zone()->name(), attCard);
+                break;
             }
-
-            queueActivatedAbility(aa, abs[i], card, card->zone()->name(), attCard);
         }
     };
 
@@ -524,13 +562,16 @@ void ServerPlayer::checkOnDamageTakenCancel(bool cancelled) {
             if (abs[i].ability.type != asn::AbilityType::Auto)
                 continue;
             const auto &aa = std::get<asn::AutoAbility>(abs[i].ability.ability);
-            if (aa.trigger.type != asn::TriggerType::OnDamageTakenCancel)
-                continue;
-            const auto &trig = std::get<asn::OnDamageTakenCancelTrigger>(aa.trigger.trigger);
-            if (trig.cancelled != cancelled)
-                continue;
+            for (const auto &trigger: aa.triggers) {
+                if (trigger.type != asn::TriggerType::OnDamageTakenCancel)
+                    continue;
+                const auto &trig = std::get<asn::OnDamageTakenCancelTrigger>(trigger.trigger);
+                if (trig.cancelled != cancelled)
+                    continue;
 
-            queueActivatedAbility(aa, abs[i], card);
+                queueActivatedAbility(aa, abs[i], card);
+                break;
+            }
         }
     };
 

@@ -44,11 +44,10 @@ AbilityComponent::AbilityComponent(const asn::Ability &a, QQuickItem *parent, in
 }
 
 void AbilityComponent::init() {
-    trigger.type = asn::TriggerType::NotSpecified;
     connect(qmlObject, SIGNAL(setAbilityType(int)), this, SLOT(setAbilityType(int)));
     connect(qmlObject, SIGNAL(setActivationTimes(int)), this, SLOT(setActivationTimes(int)));
     connect(qmlObject, SIGNAL(setKeywords(QVariant)), this, SLOT(setKeywords(QVariant)));
-    connect(qmlObject, SIGNAL(editTrigger()), this, SLOT(editTrigger()));
+    connect(qmlObject, SIGNAL(editTriggers()), this, SLOT(editTriggers()));
     connect(qmlObject, SIGNAL(editEffects()), this, SLOT(editEffects()));
     connect(qmlObject, SIGNAL(editCost()), this, SLOT(editCost()));
 
@@ -67,8 +66,7 @@ void AbilityComponent::initAbility(const asn::Ability &a) {
         const auto &aa = std::get<asn::AutoAbility>(a.ability);
         effects = aa.effects;
         keywords = aa.keywords;
-        trigger = aa.trigger;
-        triggerSet = true;
+        triggers = aa.triggers;
         cost = aa.cost;
         activationTimes = aa.activationTimes;
         break;
@@ -130,24 +128,20 @@ void AbilityComponent::setKeywords(QVariant keywordList) {
     emit componentChanged(constructAbility());
 }
 
-void AbilityComponent::editTrigger() {
-    if (triggerSet)
-        qmlTrigger = std::make_unique<TriggerComponent>(trigger, qmlObject);
-    else
-        qmlTrigger = std::make_unique<TriggerComponent>(qmlObject);
+void AbilityComponent::editTriggers() {
+    qmlTriggers = std::make_unique<ArrayOfTriggersComponent>(triggers, qmlObject);
 
-    connect(qmlTrigger.get(), &TriggerComponent::componentChanged, this, &AbilityComponent::triggerReady);
-    connect(qmlTrigger.get(), &TriggerComponent::close, this, &AbilityComponent::destroyTrigger);
+    connect(qmlTriggers.get(), &ArrayOfTriggersComponent::componentChanged, this, &AbilityComponent::triggersReady);
+    connect(qmlTriggers.get(), &ArrayOfTriggersComponent::close, this, &AbilityComponent::destroyTriggers);
 }
 
-void AbilityComponent::triggerReady(const asn::Trigger &t) {
-    triggerSet = true;
-    trigger = t;
+void AbilityComponent::triggersReady(const std::vector<asn::Trigger> &t) {
+    triggers = t;
     emit componentChanged(constructAbility());
 }
 
-void AbilityComponent::destroyTrigger() {
-    qmlTrigger.reset();
+void AbilityComponent::destroyTriggers() {
+    qmlTriggers.reset();
 }
 
 void AbilityComponent::destroyEffects() {

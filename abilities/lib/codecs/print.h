@@ -45,6 +45,7 @@ std::string printCost(const asn::Cost &c);
 std::string printEffect(const asn::Effect &e);
 std::string printEffects(const std::vector<asn::Effect> &effects);
 std::string printTrigger(const asn::Trigger &t);
+std::string printTriggers(const std::vector<asn::Trigger> &triggers);
 std::string printTarget(const asn::Target &t, bool plural = false, bool nominative = false,
                         std::optional<bool> optArticle = {});
 std::string printTargetAndPlace(const asn::Target &t, const asn::Place &p);
@@ -93,7 +94,7 @@ std::string printSpecificAbility(const T &a, asn::CardType cardType) {
         prefixLen = s.size();
         s += printGlobalConditions(a.effects);
 
-        s += printTrigger(a.trigger);
+        s += printTriggers(a.triggers);
     }
 
     bool isBackup = false;

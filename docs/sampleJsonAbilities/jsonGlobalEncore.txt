@@ -2,7 +2,7 @@
     "type": 2,
     "ability": {
         "keywords": [1],
-        "trigger": {
+        "triggers": [{
             "type": 1,
             "trigger": {
                 "target": [{
@@ -11,7 +11,7 @@
                 "from": 1,
                 "to": 2
             }
-        },
+        }],
         "cost": {
             "items": [{
                 "type": 1,

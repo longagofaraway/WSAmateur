@@ -400,8 +400,8 @@ std::vector<Keyword> parseKeywords(const QJsonArray &json) {
 AutoAbility parseAutoAbility(const QJsonObject &json) {
     if (json.contains("activationTimes") && !json["activationTimes"].isDouble())
         throw std::runtime_error("no activationTimes");
-    if (!json.contains("trigger") || !json["trigger"].isObject())
-        throw std::runtime_error("no trigger");
+    if (!json.contains("triggers") || !json["triggers"].isArray())
+        throw std::runtime_error("no triggers");
     if (!json.contains("effects") || !json["effects"].isArray())
         throw std::runtime_error("no effects");
     if (json.contains("cost") && !json["cost"].isObject())
@@ -414,7 +414,7 @@ AutoAbility parseAutoAbility(const QJsonObject &json) {
         a.activationTimes = json["activationTimes"].toInt();
     else
         a.activationTimes = 0;
-    a.trigger = parseTrigger(json["trigger"].toObject());
+    a.triggers = parseArray(json["triggers"].toArray(), parseTrigger);
     a.effects = parseArray(json["effects"].toArray(), parseEffect);
     if (json.contains("cost"))
         a.cost = parseCost(json["cost"].toObject());

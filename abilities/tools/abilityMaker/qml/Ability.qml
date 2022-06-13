@@ -11,7 +11,7 @@ Rectangle {
     signal setAbilityType(int type)
     signal setActivationTimes(int times)
     signal setKeywords(var keywords)
-    signal editTrigger()
+    signal editTriggers()
     signal editCost()
     signal editEffects()
 
@@ -108,7 +108,7 @@ Rectangle {
         anchors { top: rootCombo.bottom; left: keywords.right; topMargin: 10; leftMargin: 10 }
 
         Component.onCompleted: {
-            trigger.editTrigger.connect(ability.editTrigger);
+            trigger.editTriggers.connect(ability.editTriggers);
         }
     }
 

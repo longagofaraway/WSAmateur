@@ -21,8 +21,8 @@ private:
     std::unique_ptr<TriggerImplComponent> qmlTriggerImpl;
 
 public:
-    TriggerComponent(QQuickItem *parent);
-    TriggerComponent(const asn::Trigger &trigger, QQuickItem *parent);
+    TriggerComponent(QQuickItem *parent, int position);
+    TriggerComponent(const asn::Trigger &trigger, QQuickItem *parent, int position);
     ~TriggerComponent();
 
 signals:

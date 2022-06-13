@@ -260,8 +260,6 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     case asn::EffectType::DelayedAbility: {
         auto e = asn::DelayedAbility();
         e.ability = std::make_shared<asn::AutoAbility>();
-        e.ability->trigger.type = asn::TriggerType::OnZoneChange;
-        initTriggerByType(e.ability->trigger.trigger, e.ability->trigger.type);
         e.duration = 1;
         effect = e;
         break;

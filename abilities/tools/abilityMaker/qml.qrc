@@ -95,5 +95,7 @@
         <file>qml/triggers/OnPayingCost.qml</file>
         <file>qml/effects/CostSubstitution.qml</file>
         <file>qml/effects/StockSwap.qml</file>
+        <file>qml/ArrayOfTriggers.qml</file>
+        <file>qml/triggers/TriggerButton.qml</file>
     </qresource>
 </RCC>

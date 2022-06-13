@@ -4,18 +4,18 @@ import QtQuick.Controls 2.12
 Column {
     id: trigger
 
-    signal editTrigger()
+    signal editTriggers()
 
     enabled: false
 
     Text {
-        text: "Trigger:"
+        text: "Triggers:"
     }
 
     Button {
         text: "Open editor"
         onClicked: {
-            editTrigger();
+            editTriggers();
         }
     }
 }

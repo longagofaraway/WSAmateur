@@ -36,13 +36,13 @@ AutoAbility decodeAutoAbility(Iterator &it, Iterator end) {
             a.activationTimes = decodeEnum<int>(it, end);
             break;
         case AbilityItem::Keyword:
-            a.keywords = decodeArray<Keyword>(it, end, decodeEnum<Keyword>/*decodeKeyword*/);
+            a.keywords = decodeArray<Keyword>(it, end, decodeEnum<Keyword>);
             break;
         case AbilityItem::Cost:
             a.cost = decodeCost(it, end);
             break;
         case AbilityItem::Trigger:
-            a.trigger = decodeTrigger(it, end);
+            a.triggers = decodeArray<Trigger>(it, end, decodeTrigger);
             break;
         case AbilityItem::Effect:
             a.effects = decodeArray<Effect>(it, end, decodeEffect);

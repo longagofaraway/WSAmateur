@@ -1343,22 +1343,25 @@ int ServerPlayer::stockCostSubstitution(ServerCard *card) {
         if (delayedAbility.thisCard.card->player()->id() != mId)
             continue;
         const auto &ability = delayedAbility.ability;
-        if (ability.trigger.type != asn::TriggerType::OnPayingCost)
-            continue;
-        const auto &trigger = std::get<asn::OnPayingCostTrigger>(ability.trigger.trigger);
-        if (!checkCardMatches(card, trigger.target, delayedAbility.thisCard.card))
-            continue;
-        if (ability.effects.empty())
-            continue;
-        const auto &effect = ability.effects.front();
-        if (effect.type != asn::EffectType::CostSubstitution)
-            continue;
-        const auto &costEffect = std::get<asn::CostSubstitution>(effect.effect);
-        if (!costEffect.effect)
-            continue;
-        AbilityPlayer abilityPlayer(this);
-        abilityPlayer.setThisCard(delayedAbility.thisCard);
-        result += abilityPlayer.timesCanBePerformed(*costEffect.effect);
+        for (const auto &trigger: ability.triggers) {
+            if (trigger.type != asn::TriggerType::OnPayingCost)
+                continue;
+            const auto &t = std::get<asn::OnPayingCostTrigger>(trigger.trigger);
+            if (!checkCardMatches(card, t.target, delayedAbility.thisCard.card))
+                continue;
+            if (ability.effects.empty())
+                continue;
+            const auto &effect = ability.effects.front();
+            if (effect.type != asn::EffectType::CostSubstitution)
+                continue;
+            const auto &costEffect = std::get<asn::CostSubstitution>(effect.effect);
+            if (!costEffect.effect)
+                continue;
+            AbilityPlayer abilityPlayer(this);
+            abilityPlayer.setThisCard(delayedAbility.thisCard);
+            result += abilityPlayer.timesCanBePerformed(*costEffect.effect);
+            break;
+        }
     }
     return result;
 }

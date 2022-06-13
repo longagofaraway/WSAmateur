@@ -38,7 +38,7 @@ struct AutoAbility {
     int activationTimes;
     std::vector<Keyword> keywords;
     std::optional<Cost> cost;
-    Trigger trigger;
+    std::vector<Trigger> triggers;
     std::vector<Effect> effects;
 };
 

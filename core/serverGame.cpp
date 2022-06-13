@@ -336,19 +336,19 @@ void ServerGame::addDelayedAbility(const asn::AutoAbility &ability, CardImprint 
     subscriber.ability.ability = value.ability;
     subscriber.card = value.thisCard;
     subscriber.uniqueId = value.uniqueId;
-    mTriggerManager.subscribe(ability.trigger.type, subscriber);
+    mTriggerManager.subscribe(ability.triggers.front().type, subscriber);
 }
 
 void ServerGame::removeDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard, int abilityId) {
     auto uniqueId = makeSubscriberId(thisCard.card->id(), abilityId);
-    mTriggerManager.unsubscribe(ability.trigger.type, uniqueId);
+    mTriggerManager.unsubscribe(ability.triggers.front().type, uniqueId);
     std::erase_if(delayedAbilities_, [&uniqueId](const auto &elem){ return elem.uniqueId == uniqueId; });
 }
 
 void ServerGame::clearShotTrigger() {
     auto it = std::find_if(delayedAbilities_.begin(), delayedAbilities_.end(), [](const auto &elem){ return elem.isShotTrigger; });
     while (it != delayedAbilities_.end()) {
-        mTriggerManager.unsubscribe(it->ability.trigger.type, it->uniqueId);
+        mTriggerManager.unsubscribe(it->ability.triggers.front().type, it->uniqueId);
         delayedAbilities_.erase(it);
         it = std::find_if(delayedAbilities_.begin(), delayedAbilities_.end(), [](const auto &elem){ return elem.isShotTrigger; });
     }
@@ -361,7 +361,7 @@ void ServerGame::endOfTurnEffectValidation() {
             continue;
         }
 
-        mTriggerManager.unsubscribe(it->ability.trigger.type, it->uniqueId);
+        mTriggerManager.unsubscribe(it->ability.triggers.front().type, it->uniqueId);
         it = delayedAbilities_.erase(it);
     }
 }

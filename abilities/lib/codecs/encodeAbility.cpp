@@ -35,7 +35,7 @@ void encodeAutoAbility(const AutoAbility &a, Buf &buf) {
     }
 
     buf.push_back(static_cast<uint8_t>(AbilityItem::Trigger));
-    encodeTrigger(a.trigger, buf);
+    encodeArray(a.triggers, buf, encodeTrigger);
 
     buf.push_back(static_cast<uint8_t>(AbilityItem::Effect));
     encodeArray(a.effects, buf, encodeEffect);

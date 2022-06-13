@@ -15,15 +15,6 @@ bool checkZone(ServerCard *card, const asn::ZoneChangeTrigger& trigger,
         return false;
     return true;
 }
-template<typename T>
-std::optional<T> getTrigger(asn::TriggerType type, asn::Ability ability) {
-    if (ability.type != asn::AbilityType::Auto)
-        return std::nullopt;
-    const auto &aa = std::get<asn::AutoAbility>(ability.ability);
-    if (aa.trigger.type != type)
-        return std::nullopt;
-    return std::get<T>(aa.trigger.trigger);
-}
 }
 
 void TriggerManager::subscribe(asn::TriggerType type, TriggerSubscriber subscriber) {
@@ -43,23 +34,28 @@ void TriggerManager::zoneChangeEvent(ServerCard *movedCard, std::string_view fro
     const auto &zoneChangeSubscribers = subscribers_[asn::TriggerType::OnZoneChange];
     for (const auto &subscriber: zoneChangeSubscribers) {
         auto thisCard = subscriber.card.card;
-        auto tOpt = getTrigger<asn::ZoneChangeTrigger>(asn::TriggerType::OnZoneChange, subscriber.ability);
-        if (!tOpt.has_value())
+        if (subscriber.ability.type != asn::AbilityType::Auto)
             continue;
-        auto &t = tOpt.value();
-        if (!checkZone(movedCard, t, from, to, thisCard))
-            continue;
-        std::string_view cardZone = movedCard->zone()->name();
-        bool found = false;
-        for (const auto &target: t.target) {
-            if (checkCardMatches(movedCard, target, thisCard)) {
-                found = true;
-                if (target.type == asn::TargetType::ThisCard && thisCard == movedCard)
-                    cardZone = to;
-                break;
+        const auto &aa = std::get<asn::AutoAbility>(subscriber.ability.ability);
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnZoneChange)
+                continue;
+            const auto &t = std::get<asn::ZoneChangeTrigger>(trigger.trigger);
+            if (!checkZone(movedCard, t, from, to, thisCard))
+                continue;
+            std::string_view cardZone = movedCard->zone()->name();
+            bool found = false;
+            for (const auto &target: t.target) {
+                if (checkCardMatches(movedCard, target, thisCard)) {
+                    found = true;
+                    if (target.type == asn::TargetType::ThisCard && thisCard == movedCard)
+                        cardZone = to;
+                    break;
+                }
             }
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, cardZone);
+            break;
         }
-        thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, cardZone);
     }
 }
 
@@ -70,25 +66,28 @@ void TriggerManager::phaseEvent(asn::PhaseState state, asn::Phase phase) {
         if (subscriber.ability.type != asn::AbilityType::Auto)
             continue;
         const auto &aa = std::get<asn::AutoAbility>(subscriber.ability.ability);
-        if (aa.trigger.type != asn::TriggerType::OnPhaseEvent)
-            continue;
-        // do not activate alarm if the card is on the stage
-        // (otherwise ability is shown for a brief moment, but the condition is not met)
-        // also prevent activating non alarm abilities from top clock
-        bool alarm = std::any_of(aa.keywords.begin(), aa.keywords.end(),
-                        [](asn::Keyword k){ return k == asn::Keyword::Alarm; });
-        bool topClock = (thisCard->zone()->name() == "clock") &&
-                        (thisCard->pos() + 1 == thisCard->zone()->count());
-        if (alarm != topClock)
-            continue;
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnPhaseEvent)
+                continue;
+            // do not activate alarm if the card is on the stage
+            // (otherwise ability is shown for a brief moment, but the condition is not met)
+            // also prevent activating non alarm abilities from top clock
+            bool alarm = std::any_of(aa.keywords.begin(), aa.keywords.end(),
+                            [](asn::Keyword k){ return k == asn::Keyword::Alarm; });
+            bool topClock = (thisCard->zone()->name() == "clock") &&
+                            (thisCard->pos() + 1 == thisCard->zone()->count());
+            if (alarm != topClock)
+                continue;
 
-        bool active = thisCard->player()->active();
-        const auto &t = std::get<asn::PhaseTrigger>(aa.trigger.trigger);
-        if (t.phase != phase || (t.state != state && phase != asn::Phase::EndPhase) ||
-            (t.player == asn::Player::Player && !active) ||
-            (t.player == asn::Player::Opponent && active))
-            continue;
-        thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard);
+            bool active = thisCard->player()->active();
+            const auto &t = std::get<asn::PhaseTrigger>(trigger.trigger);
+            if (t.phase != phase || (t.state != state && phase != asn::Phase::EndPhase) ||
+                (t.player == asn::Player::Player && !active) ||
+                (t.player == asn::Player::Opponent && active))
+                continue;
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard);
+            break;
+        }
     }
 }
 
@@ -96,23 +95,28 @@ void TriggerManager::payingCostEvent(ServerCard *target, std::optional<asn::Abil
     const auto &costSubscribers = subscribers_[asn::TriggerType::OnPayingCost];
     for (const auto &subscriber: costSubscribers) {
         auto thisCard = subscriber.card.card;
-        auto tOpt = getTrigger<asn::OnPayingCostTrigger>(asn::TriggerType::OnPayingCost, subscriber.ability);
-        if (!tOpt.has_value())
+        if (subscriber.ability.type != asn::AbilityType::Auto)
             continue;
-        auto &t = tOpt.value();
-        if (target->player()->id() != thisCard->player()->id())
-            continue;
-        if (t.target.type != asn::TargetType::SpecificCards)
-            assert(false);
-        if (!checkCardMatches(target, t.target, thisCard))
-            continue;
-        if (type.has_value()) {
-            if (type.value() != t.abilityType)
+        const auto &aa = std::get<asn::AutoAbility>(subscriber.ability.ability);
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnPayingCost)
                 continue;
-            if (thisCard->type() != asn::CardType::Char)
+            const auto &t = std::get<asn::OnPayingCostTrigger>(trigger.trigger);
+            if (target->player()->id() != thisCard->player()->id())
                 continue;
+            if (t.target.type != asn::TargetType::SpecificCards)
+                assert(false);
+            if (!checkCardMatches(target, t.target, thisCard))
+                continue;
+            if (type.has_value()) {
+                if (type.value() != t.abilityType)
+                    continue;
+                if (thisCard->type() != asn::CardType::Char)
+                    continue;
+            }
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "", true);
+            break;
         }
-        thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "", true);
     }
 }
 
@@ -120,15 +124,20 @@ void TriggerManager::damageCancelEvent(ServerCard *attCard, bool cancelled) {
     const auto &damageCancelSubscribers = subscribers_[asn::TriggerType::OnDamageCancel];
     for (const auto &subscriber: damageCancelSubscribers) {
         auto thisCard = subscriber.card.card;
-        auto tOpt = getTrigger<asn::OnDamageCancelTrigger>(asn::TriggerType::OnDamageCancel, subscriber.ability);
-        if (!tOpt.has_value())
+        if (subscriber.ability.type != asn::AbilityType::Auto)
             continue;
-        auto &t = tOpt.value();
-        if (t.cancelled != cancelled)
-            continue;
-        if (!checkCardMatches(attCard, t.damageDealer, thisCard))
-            continue;
-        thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "");
+        const auto &aa = std::get<asn::AutoAbility>(subscriber.ability.ability);
+        for (const auto &trigger: aa.triggers) {
+            if (trigger.type != asn::TriggerType::OnDamageCancel)
+                continue;
+            const auto &t = std::get<asn::OnDamageCancelTrigger>(trigger.trigger);
+            if (t.cancelled != cancelled)
+                continue;
+            if (!checkCardMatches(attCard, t.damageDealer, thisCard))
+                continue;
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "");
+            break;
+        }
     }
 }
 

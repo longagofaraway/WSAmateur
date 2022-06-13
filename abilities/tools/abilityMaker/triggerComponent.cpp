@@ -2,13 +2,13 @@
 
 #include <QQmlContext>
 
-TriggerComponent::TriggerComponent(QQuickItem *parent)
-    : BaseComponent("Trigger", parent, "trigger") {
+TriggerComponent::TriggerComponent(QQuickItem *parent, int position)
+    : BaseComponent("Trigger", parent, "trigger" + QString::number(position)) {
     init(parent);
 }
 
-TriggerComponent::TriggerComponent(const asn::Trigger &trigger, QQuickItem *parent)
-    : BaseComponent("Trigger", parent, "trigger") {
+TriggerComponent::TriggerComponent(const asn::Trigger &trigger, QQuickItem *parent, int position)
+    : BaseComponent("Trigger", parent, "trigger" + QString::number(position)) {
     init(parent);
     initTrigger(trigger);
 }
