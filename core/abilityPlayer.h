@@ -172,6 +172,7 @@ private:
     bool evaluateConditionRevealedCard(const asn::ConditionRevealCard &c);
     bool evaluateConditionPlayersLevel(const asn::ConditionPlayersLevel &c);
     bool evaluateConditionCardMoved(const asn::ConditionCardMoved &c);
+    bool evaluateConditionPerformedInFull();
 
     void applyBuff(std::vector<ServerCard*> &targets, Buff &buff);
     void sendLookCard(ServerCard *card);

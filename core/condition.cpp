@@ -33,6 +33,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionDuringCardsFirstTurn();
     case asn::ConditionType::CardMoved:
         return evaluateConditionCardMoved(std::get<asn::ConditionCardMoved>(c.cond));
+    case asn::ConditionType::PerformedInFull:
+        return evaluateConditionPerformedInFull();
     default:
         assert(false);
         return false;
@@ -199,4 +201,8 @@ bool AbilityPlayer::evaluateConditionCardMoved(const asn::ConditionCardMoved &c)
             return true;
     }
     return false;
+}
+
+bool AbilityPlayer::evaluateConditionPerformedInFull() {
+    return mPerformedInFull;
 }

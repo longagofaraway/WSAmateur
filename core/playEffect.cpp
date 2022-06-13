@@ -672,12 +672,17 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
     if (e.target.type == asn::TargetType::ThisCard) {
         if (thisCard().zone != thisCard().card->zone()->name())
             co_return;
+        if (thisCard().card->state() == e.state)
+            co_return;
         mPlayer->setCardState(thisCard().card, e.state);
+        mPerformedInFull = true;
     } else if (e.target.type == asn::TargetType::ChosenCards) {
         for (const auto &card: chosenCards()) {
             auto player = owner(card.opponent ? asn::Player::Opponent : asn::Player::Player);
             player->setCardState(card.card, e.state);
         }
+        if (!chosenCards().empty())
+            mPerformedInFull = true;
     } else if (e.target.type == asn::TargetType::BattleOpponent ||
                e.target.type == asn::TargetType::OppositeThis) {
         auto targets = getTargets(e.target);
@@ -712,15 +717,17 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
             mPlayer->clearExpectedComands();
         }
 
-        if (confirmed)
+        if (confirmed) {
             card->player()->setCardState(card, e.state);
+            mPerformedInFull = true;
+        }
     } else if (e.target.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.target.targetSpecification;
 
         auto targets = getTargets(e.target);
         std::erase_if(targets, [&e](auto card) { return card->state() == e.state; });
         assert(spec.number.mod == asn::NumModifier::ExactMatch);
-        if (spec.number.value > targets.size())
+        if (targets.empty())
             co_return;
 
         if (!mandatory() || spec.number.value < targets.size()) {
@@ -743,20 +750,24 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
                     if (cmd.command().Is<CommandCancelEffect>() && !mandatory()) {
                         setCanceled(true);
                         canceled = true;
+                        mPerformedInFull = false;
                         break;
                     } else if (cmd.command().Is<CommandChooseCard>()) {
                         CommandChooseCard chooseCmd;
                         cmd.command().UnpackTo(&chooseCmd);
                         auto chosenCards = processCommandChooseCard(chooseCmd);
-                        if (chosenCards.size() != 1)
-                            continue;
+                        int stateChanged = 0;
+                        for (const auto &chosenCard: chosenCards) {
+                            auto card = chosenCard.second;
+                            if (card->state() == e.state)
+                                continue;
 
-                        auto card = chosenCards.begin()->second;
-                        if (card->state() == e.state)
-                            continue;
-
-                        auto player = card->player();
-                        player->setCardState(card, e.state);
+                            auto player = card->player();
+                            player->setCardState(card, e.state);
+                            stateChanged++;
+                        }
+                        if (stateChanged == spec.number.value)
+                            mPerformedInFull = true;
                         break;
                     }
                 }
@@ -770,6 +781,8 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
             for (auto target: targets) {
                 target->player()->setCardState(target, e.state);
             }
+            if (spec.number.value == targets.size())
+                mPerformedInFull = true;
         }
     } else {
         assert(false);

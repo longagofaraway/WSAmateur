@@ -282,6 +282,10 @@ std::string printConditionCardMoved(const ConditionCardMoved &c) {
     return s;
 }
 
+std::string printConditionPerformedInFull() {
+    return "if you do, ";
+}
+
 std::string printCondition(const Condition &c, bool skipGlobalConditions) {
     std::string s;
 
@@ -324,6 +328,9 @@ std::string printCondition(const Condition &c, bool skipGlobalConditions) {
         break;
     case ConditionType::CardMoved:
         s += printConditionCardMoved(std::get<ConditionCardMoved>(c.cond));
+        break;
+    case ConditionType::PerformedInFull:
+        s += printConditionPerformedInFull();
         break;
     default:
         break;
