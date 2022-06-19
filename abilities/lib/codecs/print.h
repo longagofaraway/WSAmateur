@@ -11,6 +11,7 @@ struct PrintState {
     bool abilityChainingSecond = false;
     bool mandatory = true;
     asn::AbilityType type = asn::AbilityType::Cont;
+    std::string doubleZoneChangeTrigger;
 
     PrintState() = default;
     PrintState(const asn::Number &num1, const asn::Number &num2)

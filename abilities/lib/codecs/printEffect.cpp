@@ -80,22 +80,6 @@ std::string printEffects(const std::vector<Effect> &effects) {
     return s;
 }
 
-std::string printTriggers(const std::vector<asn::Trigger> &triggers) {
-    std::string s;
-
-    for (size_t i = 0; i < triggers.size(); ++i) {
-        if (i > 0 && s.size() > 2) {
-            s.pop_back();
-            s.pop_back();
-            s += " or ";
-        }
-
-        s += printTrigger(triggers[i]);
-    }
-
-    return s;
-}
-
 std::string printAttributeGain(const AttributeGain &e) {
     std::string res;
 

@@ -6,6 +6,8 @@
 
 using namespace asn;
 
+extern PrintState gPrintState;
+
 namespace {
 std::unordered_map<std::string, std::string> gOtherTriggers {
     { "KGL/S79-016", "When your opponent uses \"<b>Brainstorm</b>\" and that effect puts at least 1 climax\
@@ -22,6 +24,41 @@ bool hasExactName(const Target &target) {
         return c.type == CardSpecifierType::ExactName;
     });
 }
+
+bool triggersOnMoveToTheSamePlace(const std::vector<asn::Trigger> &triggers) {
+    if (!(triggers[0].type == asn::TriggerType::OnZoneChange &&
+        triggers[0].type == triggers[1].type))
+        return false;
+    const auto &trigger = std::get<asn::ZoneChangeTrigger>(triggers[1].trigger);
+
+    gPrintState.doubleZoneChangeTrigger = printZone(trigger.from);
+    return true;
+}
+}
+
+std::string printTriggers(const std::vector<asn::Trigger> &triggers) {
+    std::string s;
+
+    for (size_t i = 0; i < triggers.size(); ++i) {
+        if (i > 0 && s.size() > 2) {
+            s.pop_back();
+            s.pop_back();
+            s += " or ";
+        }
+
+        bool needToBreak = false;
+        if (triggers.size() >= 2 && i == 0) {
+            if (triggersOnMoveToTheSamePlace(triggers)) {
+                needToBreak = true;
+            }
+        }
+
+        s += printTrigger(triggers[i]);
+        if (needToBreak)
+            break;
+    }
+
+    return s;
 }
 
 std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
@@ -47,6 +84,9 @@ std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
             s += "the stage";
         else
             s += "your " + printZone(t.from);
+    }
+    if (!gPrintState.doubleZoneChangeTrigger.empty()) {
+        s += " or " + gPrintState.doubleZoneChangeTrigger;
     }
 
     s += ", ";
