@@ -922,6 +922,16 @@ std::string printCostSubstitution(const CostSubstitution &e) {
     return s;
 }
 
+std::string printSkipPhase(const SkipPhase &e) {
+    std::string s = "end the attack and continue to ";
+
+    if (e.skipUntil == Phase::AttackDeclarationStep)
+        s += "next ";
+    s += printPhase(e.skipUntil) + " ";
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -1045,6 +1055,9 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::CostSubstitution:
         s += printCostSubstitution(std::get<CostSubstitution>(e.effect));
+        break;
+    case EffectType::SkipPhase:
+        s += printSkipPhase(std::get<SkipPhase>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

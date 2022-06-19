@@ -26,6 +26,7 @@ class ServerGame
     std::string mDescription;
     std::unordered_map<int, std::unique_ptr<ServerPlayer>> mPlayers;
     asn::Phase mCurrentPhase = asn::Phase::Mulligan;
+    std::optional<asn::Phase> mSkipUntil;
 
     std::optional<Resumable> mTask;
 
@@ -71,8 +72,11 @@ public:
     void setPhase(asn::Phase phase) { mCurrentPhase = phase; }
     Resumable continueFromDamageStep();
     Resumable battleStep();
+    Resumable continueFromEndPhase();
     Resumable encoreStep();
     Resumable endPhase();
+
+    void setSkipUntil(asn::Phase skipUntil) { mSkipUntil = skipUntil; }
 
     TriggerManager* triggerManager() { return &mTriggerManager; }
     void checkPhaseTrigger(asn::PhaseState state, asn::Phase phase);

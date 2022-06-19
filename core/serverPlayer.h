@@ -160,7 +160,7 @@ public:
     bool canPlayCounter(ServerCard *card);
     Resumable climaxPhase();
     bool canAttack();
-    Resumable endOfAttack();
+    Resumable endOfAttack(bool forced = false);
     Resumable startAttackPhase();
     Resumable startOfAttackPhase();
     void attackDeclarationStep();

@@ -162,6 +162,13 @@ Resumable ServerGame::continueFromDamageStep() {
     if (!attPlayer || !defPlayer)
         co_return;
 
+    if (mSkipUntil.has_value() && *mSkipUntil == asn::Phase::EndPhase) {
+        co_await attPlayer->endOfAttack(true/*forced*/);
+        mSkipUntil.reset();
+        co_await continueFromEndPhase();
+        co_return;
+    }
+
     attPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     defPlayer->sendPhaseEvent(asn::Phase::DamageStep);
     co_await defPlayer->damageStep();
@@ -235,6 +242,14 @@ Resumable ServerGame::encoreStep() {
 
     co_await turnPlayer->encoreStep();
     co_await opponent->encoreStep();
+    co_await continueFromEndPhase();
+}
+
+Resumable ServerGame::continueFromEndPhase() {
+    auto turnPlayer = activePlayer();
+    auto opponent = opponentOfPlayer(turnPlayer->id());
+    if (!turnPlayer || !opponent)
+        co_return;
 
     co_await endPhase();
     turnPlayer->setActive(false);

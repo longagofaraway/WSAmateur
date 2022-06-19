@@ -207,6 +207,10 @@ void encodeCostSubstitution(const CostSubstitution &e, Buf &buf) {
     encodeEffect(*e.effect, buf);
 }
 
+void encodeSkipPhase(const SkipPhase &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.skipUntil));
+}
+
 void encodeStockSwap(const StockSwap &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.zone));
 }
@@ -332,6 +336,9 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::StockSwap:
         encodeStockSwap(std::get<StockSwap>(e.effect), buf);
+        break;
+    case EffectType::SkipPhase:
+        encodeSkipPhase(std::get<SkipPhase>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

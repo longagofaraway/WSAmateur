@@ -242,14 +242,30 @@ std::string printKeywords(const std::vector<Keyword> &keywords) {
 
 std::string printPhase(Phase p) {
     switch (p) {
-    case Phase::AttackPhase:
-        return "attack phase";
-    case Phase::ClimaxPhase:
-        return "climax phase";
+    case Phase::StandPhase:
+        return "stand phase";
     case Phase::DrawPhase:
         return "draw phase";
+    case Phase::MainPhase:
+        return "main phase";
+    case Phase::ClimaxPhase:
+        return "climax phase";
+    case Phase::AttackPhase:
+        return "attack phase";
+    case Phase::AttackDeclarationStep:
+        return "attack declaration step";
+    case Phase::TriggerStep:
+        return "trigger step";
+    case Phase::CounterStep:
+        return "counter step";
+    case Phase::DamageStep:
+        return "damage step";
+    case Phase::BattleStep:
+        return "battle step";
     case Phase::EncoreStep:
         return "encore step";
+    case Phase::EndPhase:
+        return "end step";
     default:
         break;
     }

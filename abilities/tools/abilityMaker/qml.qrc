@@ -97,5 +97,6 @@
         <file>qml/effects/StockSwap.qml</file>
         <file>qml/ArrayOfTriggers.qml</file>
         <file>qml/triggers/TriggerButton.qml</file>
+        <file>qml/effects/SkipPhase.qml</file>
     </qresource>
 </RCC>

@@ -201,7 +201,7 @@ void ServerPlayer::checkOnBeingAttacked(ServerCard *attackTarget, asn::AttackTyp
                 if (trigger.type != asn::TriggerType::OnBeingAttacked)
                     continue;
                 const auto &trig = std::get<asn::OnBeingAttackedTrigger>(trigger.trigger);
-                if (trig.attackType != attackType)
+                if (trig.attackType != asn::AttackType::Any && trig.attackType != attackType)
                     continue;
                 if (trig.target.type == asn::TargetType::ThisCard) {
                     if (card != attackTarget)

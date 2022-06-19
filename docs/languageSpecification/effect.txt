@@ -37,9 +37,10 @@ Effect {
     TriggerIconGain,
     CanPlayWithoutColorRequirement,
     DelayedAbility,
-    OtherEffect,
     CostSubstitution,
     StockSwap,
+    SkipPhase,
+    OtherEffect,
     Nothing
   }
 }
@@ -88,6 +89,7 @@ enum EffectType {
   shotTrigger = 41, // just to differentiate that it's not char's effect
   delayedAbility = 42,
   costSubstitution = 43,
+  skipPhase = 44,
   
   otherEffect = 255
 }
@@ -370,6 +372,10 @@ CostSubstitution {
 
 StockSwap {
   zone Zone // where to put stock
+}
+
+SkipPhase {
+  skipUntil Phase
 }
 
 OtherEffect {

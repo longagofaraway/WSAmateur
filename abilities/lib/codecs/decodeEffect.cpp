@@ -274,6 +274,12 @@ StockSwap decodeStockSwap(Iterator &it, Iterator end) {
     return e;
 }
 
+SkipPhase decodeSkipPhase(Iterator &it, Iterator end) {
+    SkipPhase e;
+    e.skipUntil = decodeEnum<Phase>(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -401,6 +407,9 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::StockSwap:
         e.effect = decodeStockSwap(it, end);
+        break;
+    case EffectType::SkipPhase:
+        e.effect = decodeSkipPhase(it, end);
         break;
     default:
         break;

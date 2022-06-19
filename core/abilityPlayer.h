@@ -156,6 +156,7 @@ private:
     void playCanPlayWithoutColorRequirement(const asn::CanPlayWithoutColorRequirement &e);
     void playDelayedAbility(const asn::DelayedAbility &e);
     Resumable playCostSubstitution(const asn::CostSubstitution &e);
+    void playSkipPhase(const asn::SkipPhase &e);
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
 

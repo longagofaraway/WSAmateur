@@ -275,6 +275,12 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::SkipPhase: {
+        auto e = asn::SkipPhase();
+        e.skipUntil = asn::Phase::EndPhase;
+        effect = e;
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
     case asn::EffectType::Standby:
@@ -625,6 +631,11 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setZone", Q_ARG(QVariant, (int)ef.zone));
         break;
     }
+    case asn::EffectType::SkipPhase: {
+        const auto &ef = std::get<asn::SkipPhase>(e);
+        QMetaObject::invokeMethod(qmlObject, "setPhase", Q_ARG(QVariant, (int)ef.skipUntil));
+        break;
+    }
     default:
         break;
     }
@@ -671,7 +682,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::ShotTriggerDamage, "DealDamage" },
         { asn::EffectType::DelayedAbility, "DelayedAbility" },
         { asn::EffectType::CostSubstitution, "CostSubstitution" },
-        { asn::EffectType::StockSwap, "StockSwap" }
+        { asn::EffectType::StockSwap, "StockSwap" },
+        { asn::EffectType::SkipPhase, "SkipPhase" }
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -886,6 +898,10 @@ void EffectImplComponent::init(QQuickItem *parent) {
     case asn::EffectType::StockSwap:
         QMetaObject::invokeMethod(qmlObject, "setZone", Q_ARG(QVariant, QString("2")));
         connect(qmlObject, SIGNAL(zoneChanged(int)), this, SLOT(onZoneChanged(int)));
+        break;
+    case asn::EffectType::SkipPhase:
+        QMetaObject::invokeMethod(qmlObject, "setPhase", Q_ARG(QVariant, QString("8")));
+        connect(qmlObject, SIGNAL(phaseChanged(int)), this, SLOT(onPhaseChanged(int)));
         break;
     default:
         break;
@@ -1395,6 +1411,19 @@ void EffectImplComponent::onPositionChanged(int value) {
     case asn::EffectType::PutOnStageRested: {
         auto &e = std::get<asn::PutOnStageRested>(effect);
         e.to = static_cast<asn::Position>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onPhaseChanged(int value) {
+    switch (type) {
+    case asn::EffectType::SkipPhase: {
+        auto &e = std::get<asn::SkipPhase>(effect);
+        e.skipUntil = static_cast<asn::Phase>(value);
         break;
     }
     default:

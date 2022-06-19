@@ -563,6 +563,15 @@ StockSwap parseStockSwap(const QJsonObject &json) {
     return e;
 }
 
+SkipPhase parseSkipPhase(const QJsonObject &json) {
+    if (!json.contains("skipUntil") || !json["SkipPhase"].isDouble())
+        throw std::runtime_error("no skipUntil in SkipPhase");
+
+    SkipPhase e;
+    e.skipUntil = static_cast<Phase>(json["skipUntil"].toInt());
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -684,6 +693,9 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::StockSwap:
         e.effect = parseStockSwap(json["effect"].toObject());
+        break;
+    case EffectType::SkipPhase:
+        e.effect = parseSkipPhase(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

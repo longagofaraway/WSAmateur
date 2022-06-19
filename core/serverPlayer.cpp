@@ -959,12 +959,14 @@ Resumable ServerPlayer::damageStep() {
     co_await mGame->checkTiming();
 }
 
-Resumable ServerPlayer::endOfAttack() {
+Resumable ServerPlayer::endOfAttack(bool forced) {
     auto attCard = attackingCard();
-    if (attCard)
-        triggerOnEndOfCardsAttack(attCard);
+    if (!forced) {
+        if (attCard)
+            triggerOnEndOfCardsAttack(attCard);
 
-    co_await mGame->checkTiming();
+        co_await mGame->checkTiming();
+    }
 
     if (attackType() == AttackType::FrontAttack) {
         if (attCard)

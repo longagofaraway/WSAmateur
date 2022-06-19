@@ -69,6 +69,24 @@ enum class PlaceType : uint8_t {
     LastMovedCards
 };
 
+enum class Phase {
+    NotSpecified = 0,
+    Mulligan = 1,
+    StandPhase = 2,
+    DrawPhase = 3,
+    ClockPhase = 4,
+    MainPhase = 5,
+    ClimaxPhase = 6,
+    AttackPhase = 7,
+    EndPhase = 8,
+    AttackDeclarationStep = 9,
+    TriggerStep = 10,
+    CounterStep = 11,
+    DamageStep = 12,
+    BattleStep = 13,
+    EncoreStep = 14
+};
+
 enum class FaceOrientation : uint8_t {
     FaceUp = 1,
     FaceDown

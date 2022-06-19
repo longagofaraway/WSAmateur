@@ -259,6 +259,10 @@ struct StockSwap {
     Zone zone;
 };
 
+struct SkipPhase {
+    Phase skipUntil;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -310,6 +314,7 @@ enum class EffectType : uint8_t {
     ShotTriggerDamage,
     DelayedAbility,
     CostSubstitution,
+    SkipPhase,
 
     OtherEffect = 255
 };
@@ -356,6 +361,7 @@ struct Effect {
         DelayedAbility,
         CostSubstitution,
         StockSwap,
+        SkipPhase,
         OtherEffect
     > effect;
 };

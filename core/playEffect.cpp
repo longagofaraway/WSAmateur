@@ -117,6 +117,9 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
     case asn::EffectType::CostSubstitution:
         co_await playCostSubstitution(std::get<asn::CostSubstitution>(e.effect));
         break;
+    case asn::EffectType::SkipPhase:
+        playSkipPhase(std::get<asn::SkipPhase>(e.effect));
+        break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
         break;
@@ -1179,6 +1182,10 @@ Resumable AbilityPlayer::playCostSubstitution(const asn::CostSubstitution &e) {
         mPlayer->reduceForcedCostReduction();
     }
     mPlayer->reduceNextCost(cardsMoved);
+}
+
+void AbilityPlayer::playSkipPhase(const asn::SkipPhase &e) {
+    mPlayer->game()->setSkipUntil(e.skipUntil);
 }
 
 Resumable AbilityPlayer::playOtherEffect(const asn::OtherEffect &e) {
