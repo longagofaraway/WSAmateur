@@ -99,7 +99,7 @@ public:
     Q_INVOKABLE void playActAbility(int index);
     Q_INVOKABLE void sendPlayCounter(int handId);
     Q_INVOKABLE void addCard(int id, QString code, QString zoneName, int targetPos = -1);
-    Q_INVOKABLE void interactWithDeck();
+    Q_INVOKABLE void interactWithDeck(bool isOpponent);
     Q_INVOKABLE void cardInserted(QString startZone, QString targetZone);
     Q_INVOKABLE void createMarkerView(int index);
 
@@ -180,8 +180,10 @@ private:
     void processRemoveAbility(const EventRemoveAbility &event);
     void processLook(const EventLook &event);
     void processReveal(const EventReveal &event);
-    void processLookRevealCommon(asn::EffectType nextEffectType, const std::string &nextEffectBuf);
-    void processLookRevealNextCard(asn::EffectType type);
+    void processLookRevealCommon(asn::EffectType nextEffectType,
+                                 const std::string &nextEffectBuf,
+                                 bool opponent = false);
+    void processLookRevealNextCard(asn::EffectType type, bool isOpponent = false);
     void revealTopDeck(const EventRevealTopDeck &event);
     void lookTopDeck(const EventLookTopDeck &event);
     void doneChoosing();

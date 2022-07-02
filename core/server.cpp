@@ -153,6 +153,13 @@ void Server::sendDatabase(ServerProtocolHandler *client) {
     client->sendSessionEvent(event);
 }
 
+void Server::sendImageLinks(ServerProtocolHandler *client) {
+    auto data = CardDatabase::imageLinksData();
+    EventImageLinks event;
+    event.set_image_links(data);
+    client->sendSessionEvent(event);
+}
+
 void Server::addLobbySubscriber(ServerProtocolHandler *client) {
     QWriteLocker locker(&mSubscribersLock);
     mLobbySubscribers.emplace(client);

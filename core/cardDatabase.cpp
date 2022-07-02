@@ -11,20 +11,24 @@
 #include <QVariant>
 
 namespace {
-QString getDbPath() {
+QDir getAppDataDir() {
     QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir path(appData);
     path.cdUp();
     path.cd("WSAmateur");
-    return path.filePath("cards.db");
+    return path;
+}
+
+QString getDbPath() {
+    return getAppDataDir().filePath("cards.db");
 }
 
 bool dbExists() {
-    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir path(appData);
-    path.cdUp();
-    path.cd("WSAmateur");
-    return path.exists("cards.db");
+    return getAppDataDir().exists("cards.db");
+}
+
+QString getImageLinksPath() {
+    return getAppDataDir().filePath("cardImageLinks.json");
 }
 
 asn::CardType convertType(int type) {
@@ -170,6 +174,20 @@ void parseReferences(CardInfo *info, QVariant blob) {
 
     info->setReferences(res);
 }
+
+std::string loadFile(const std::string &filePath) {
+    std::ifstream file(filePath, std::ios::in|std::ios::binary|std::ios::ate);
+    if (!file.is_open())
+        return {};
+
+    auto size = file.tellg();
+    std::string buf(size, '\0');
+    file.seekg(0, std::ios::beg);
+    file.read(buf.data(), size);
+    file.close();
+
+    return buf;
+}
 }
 
 CardDatabase::CardDatabase() {
@@ -230,17 +248,11 @@ void CardDatabase::update(const std::string &newDb) {
 }
 
 std::string CardDatabase::fileData() const {
-    std::ifstream file(getDbPath().toStdString(), std::ios::in|std::ios::binary|std::ios::ate);
-    if (!file.is_open())
-        return {};
+    return loadFile(getDbPath().toStdString());
+}
 
-    auto size = file.tellg();
-    std::string buf(size, '\0');
-    file.seekg(0, std::ios::beg);
-    file.read(buf.data(), size);
-    file.close();
-
-    return buf;
+std::string CardDatabase::imageLinksData() {
+    return loadFile(getImageLinksPath().toStdString());
 }
 
 void CardDatabase::fillCache() {

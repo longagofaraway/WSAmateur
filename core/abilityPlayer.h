@@ -157,8 +157,10 @@ private:
     void playDelayedAbility(const asn::DelayedAbility &e);
     Resumable playCostSubstitution(const asn::CostSubstitution &e);
     void playSkipPhase(const asn::SkipPhase &e);
+
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
+    Resumable playW87_53();
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);

@@ -61,6 +61,7 @@ public:
     int maxClientInactivityTime() const;
     void sendServerIdentification(ServerProtocolHandler *client);
     void sendDatabase(ServerProtocolHandler *client);
+    void sendImageLinks(ServerProtocolHandler *client);
     void addLobbySubscriber(ServerProtocolHandler *client);
     void addClientToPlayQueue(ServerProtocolHandler *client);
     void removeClientFromPlayQueue(ServerProtocolHandler *client);

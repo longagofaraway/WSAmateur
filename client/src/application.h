@@ -11,6 +11,7 @@ class Game;
 class Lobby;
 class EventServerHandshake;
 class EventDatabase;
+class EventImageLinks;
 class Updater;
 class PublicServers;
 
@@ -25,12 +26,8 @@ private:
     PublicServers *publicServers = nullptr;
     Updater *updater = nullptr;
 
-    enum class InitPhase {
-        ImageFileLinks,
-        Username,
-        Done
-    };
-    InitPhase initPhase = InitPhase::ImageFileLinks;
+    bool dbIsUpToDate = true;
+    bool imageLinksAreUpToDate = true;
 
 public:
     WSApplication();
@@ -68,13 +65,16 @@ private slots:
 private:
     void processHandshake(const EventServerHandshake &event);
     void updateDatabase(const EventDatabase &event);
+    void updateImageLinks(const EventImageLinks &event);
     void sendDatabaseRequest();
-    void enterLobby();
+    void sendImageLinksRequest();
+    void tryEnterLobby();
     void gameJoined(const EventGameJoined &event);
-    void userIdenditification();
+    void userIdentification();
     void connectToServer();
     bool checkImageLinksFile();
     bool checkUsername();
+    bool clientIsUpToDate() const;
 
     void startUpdater(const std::string& neededVersion);
 };

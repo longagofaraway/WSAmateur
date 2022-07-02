@@ -15,6 +15,7 @@ set(coreSources
     moveCardEffect.cpp
     playAbility.cpp
     playEffect.cpp
+    playHardcodedEffect.cpp
     playerBuffManager.cpp
     server.cpp
     serverCard.cpp
@@ -52,6 +53,8 @@ set(coreSources
     globalAbilities/delayedAbility.h
     globalAbilities/globalAbilities.h
     globalAbilities/globalAbilities.cpp
+    hardcodedEffects/S79/20.cpp
+    hardcodedEffects/W87/53.cpp
     ${VERSION_STRING_CPP}
     )
 

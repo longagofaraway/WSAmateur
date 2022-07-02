@@ -52,17 +52,8 @@ void WSApplication::startInitialization() {
 }
 
 void WSApplication::initialization() {
-    if (initPhase == InitPhase::ImageFileLinks) {
-        if (!checkImageLinksFile())
-            return;
-        initPhase = InitPhase::Username;
-    }
-
-    if (initPhase == InitPhase::Username) {
-        if (!checkUsername())
-            return;
-        initPhase = InitPhase::Done;
-    }
+    if (!checkUsername())
+        return;
 
     connectToServer();
 }
@@ -111,11 +102,10 @@ void WSApplication::gameEnded() {
 bool WSApplication::checkImageLinksFile() {
     QFile imageLinksFile(paths::imageLinksPath());
     if (!imageLinksFile.exists()) {
-        emit imageLinksFileNotFound();
         return false;
     }
 
-    if (!ImageLinks::get().setData(paths::imageLinksPath())) {
+    if (!ImageLinks::get().loadFile(paths::imageLinksPath())) {
         emit imageLinksFileNotFound();
         return false;
     }
@@ -131,6 +121,10 @@ bool WSApplication::checkUsername() {
     return true;
 }
 
+bool WSApplication::clientIsUpToDate() const {
+    return dbIsUpToDate && imageLinksAreUpToDate;
+}
+
 void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> event) {
     if (event->event().Is<EventServerHandshake>()) {
         EventServerHandshake ev;
@@ -140,6 +134,10 @@ void WSApplication::processSessionEvent(const std::shared_ptr<SessionEvent> even
         EventDatabase ev;
         event->event().UnpackTo(&ev);
         updateDatabase(ev);
+    } else if (event->event().Is<EventImageLinks>()) {
+        EventImageLinks ev;
+        event->event().UnpackTo(&ev);
+        updateImageLinks(ev);
     }
 }
 
@@ -156,7 +154,7 @@ void WSApplication::gameJoined(const EventGameJoined &event) {
     emit startGame();
 }
 
-void WSApplication::userIdenditification() {
+void WSApplication::userIdentification() {
     CommandUserIdentification cmd;
     cmd.set_name(SettingsManager::get().getUsername().toStdString());
     client->sendSessionCommand(cmd);
@@ -203,11 +201,14 @@ void WSApplication::processHandshake(const EventServerHandshake &event) {
 
         auto &cardDb = CardDatabase::get();
         if (!cardDb.initialized() || cardDb.version() != event.database_version()) {
+            dbIsUpToDate = false;
             sendDatabaseRequest();
-        } else {
-            userIdenditification();
-            enterLobby();
         }
+        if (ImageLinks::get().version() != event.image_links_version()) {
+            imageLinksAreUpToDate = false;
+            sendImageLinksRequest();
+        }
+        tryEnterLobby();
     } catch (const std::exception &e) {
         qDebug() << e.what();
         emit error(QString::fromStdString(e.what()));
@@ -223,15 +224,29 @@ void WSApplication::updateDatabase(const EventDatabase &event) {
         emit error("Database update error");
         return;
     }
-    userIdenditification();
-    enterLobby();
+    tryEnterLobby();
+}
+
+void WSApplication::updateImageLinks(const EventImageLinks &event) {
+    auto image_links = event.image_links();
+    if (!ImageLinks::get().update(image_links)) {
+        emit error("File with image links cannot be updated");
+        return;
+    }
 }
 
 void WSApplication::sendDatabaseRequest() {
     client->sendSessionCommand(CommandGetDatabase());
 }
 
-void WSApplication::enterLobby() {
+void WSApplication::sendImageLinksRequest() {
+    client->sendSessionCommand(CommandGetImageLinks());
+}
+
+void WSApplication::tryEnterLobby() {
+    if (!clientIsUpToDate())
+        return;
+    userIdentification();
     emit loadLobby();
 }
 

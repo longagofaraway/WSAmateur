@@ -29,6 +29,8 @@ public:
     void update(const std::string &newDb);
     std::string fileData() const;
 
+    static std::string imageLinksData();
+
 private:
     void fillCache();
     void readVersion();

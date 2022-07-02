@@ -175,6 +175,7 @@ void AbilityPlayer::sendLookCard(ServerCard *card) {
 
     privateEvent.set_card_id(card->id());
     privateEvent.set_code(card->code());
+    privateEvent.set_is_opponent(card->player()->id() != mPlayer->id());
     mPlayer->sendGameEvent(privateEvent);
     mPlayer->game()->sendPublicEvent(publicEvent, mPlayer->id());
 

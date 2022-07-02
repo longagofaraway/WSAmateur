@@ -243,8 +243,10 @@ void Player::processLook(const EventLook &event) {
     if (mOpponent)
         return;
 
-    activeAbility().effect = decodingWrapper(event.effect(), decodeLook);
-    processLookRevealCommon(static_cast<asn::EffectType>(event.next_effect_type()), event.next_effect());
+    auto lookEffect = decodingWrapper(event.effect(), decodeLook);
+    activeAbility().effect = lookEffect;
+    processLookRevealCommon(static_cast<asn::EffectType>(event.next_effect_type()),
+                            event.next_effect(), lookEffect.place.owner == asn::Player::Opponent);
 }
 
 void Player::processReveal(const EventReveal &event) {
@@ -255,7 +257,10 @@ void Player::processReveal(const EventReveal &event) {
     processLookRevealCommon(static_cast<asn::EffectType>(event.next_effect_type()), event.next_effect());
 }
 
-void Player::processLookRevealCommon(asn::EffectType nextEffectType, const std::string &nextEffectBuf) {
+void Player::processLookRevealCommon(
+        asn::EffectType nextEffectType,
+        const std::string &nextEffectBuf,
+        bool opponent) {
     if (nextEffectType == asn::EffectType::MoveCard) {
         auto nextEffect = decodingWrapper(nextEffectBuf, decodeMoveCard);
         if (nextEffect.order == asn::Order::Any)
@@ -267,15 +272,25 @@ void Player::processLookRevealCommon(asn::EffectType nextEffectType, const std::
             activeAbility().nextEffect = choose;
     }
 
-    zone("deck")->visualItem()->setProperty("mGlow", true);
+    CardZone *pzone;
+    if (opponent)
+        pzone = getOpponent()->zone("deck");
+    else
+        pzone = zone("deck");
+    pzone->visualItem()->setProperty("mGlow", true);
     mAbilityList->activateCancel(mAbilityList->activeId(), true);
 }
 
-void Player::processLookRevealNextCard(asn::EffectType type) {
+void Player::processLookRevealNextCard(asn::EffectType type, bool isOpponent) {
     if (mOpponent || !mAbilityList->count())
         return;
 
-    auto view = zone("view");
+    Player *player;
+    if (isOpponent)
+        player = getOpponent();
+    else
+        player = this;
+    auto view = player->zone("view");
 
     auto &activeAbility_ = activeAbility();
     auto &effect = activeAbility_.effect;
@@ -297,9 +312,9 @@ void Player::processLookRevealNextCard(asn::EffectType type) {
     }
 
     if (view->model().count() + 1 < numCards)
-        zone("deck")->visualItem()->setProperty("mGlow", true);
+        player->zone("deck")->visualItem()->setProperty("mGlow", true);
     else
-        zone("deck")->visualItem()->setProperty("mGlow", false);
+        player->zone("deck")->visualItem()->setProperty("mGlow", false);
 
     if (std::holds_alternative<asn::MoveCard>(activeAbility_.nextEffect)) {
         mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");
@@ -327,14 +342,19 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 }
 
 void Player::lookTopDeck(const EventLookTopDeck &event) {
+    Player *player;
+    if (event.is_opponent())
+        player = getOpponent();
+    else
+        player = this;
     auto view = zone("view");
     view->visualItem()->setProperty("mViewMode", Game::LookMode);
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(400);
-    createMovingCard(event.card_id(), code, "deck", 0, "view", -1, false, true, true);
+    player->createMovingCard(event.card_id(), code, "deck", 0, "view", -1, false, true, true);
 
-    processLookRevealNextCard(asn::EffectType::Look);
+    processLookRevealNextCard(asn::EffectType::Look, event.is_opponent());
 }
 
 void Player::setCannotPlay(const EventSetCannotPlay &event) {

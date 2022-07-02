@@ -14,7 +14,9 @@ std::unordered_map<std::string, std::string> gOtherEffects {
     { "KGL/S79-020-3", "Both players reveal the top card of their deck. If your revealed card's level is higher than \
 opponent's revealed card's level, choose 1 " + printTrait("Shuchiin") + " character from your waiting room and \
 return it to hand. If opponent's revealed card's level is higher, opponent chooses 1 of their characters, \
-and that character gets +5000 power until end of turn" }
+and that character gets +5000 power until end of turn" },
+    { "DBG/S87-053-2", "look at up to 2 cards from the top of your opponent's deck, choose up to 2 characters with sum \
+of levels X or less (X equals to the number of differently named events in your memory) "}
 };
 
 bool canChain(EffectType type) {

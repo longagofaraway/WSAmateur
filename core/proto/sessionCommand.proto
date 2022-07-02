@@ -9,6 +9,7 @@ message SessionCommand {
 message CommandPing {}
 
 message CommandGetDatabase {}
+message CommandGetImageLinks {}
 
 message CommandUserIdentification {
     string name = 1;

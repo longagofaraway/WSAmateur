@@ -40,7 +40,7 @@ Card {
         onExited: deckOverlay.opacity = 0
         onClicked: {
             if (mGlow) {
-                gGame.player.interactWithDeck();
+                gGame.player.interactWithDeck(opponent);
             }
         }
     }

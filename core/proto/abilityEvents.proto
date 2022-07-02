@@ -64,6 +64,7 @@ message EventLook {
 message EventLookTopDeck {
     sint32 card_id = 1;
     string code = 2;
+    bool is_opponent = 3;
 }
 
 message EventReveal {
