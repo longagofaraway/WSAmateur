@@ -281,6 +281,10 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::OtherEffect: {
+        effect = asn::OtherEffect();
+        break;
+    }
     case asn::EffectType::TriggerCheckTwice:
     case asn::EffectType::EarlyPlay:
     case asn::EffectType::Standby:
@@ -636,6 +640,12 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setPhase", Q_ARG(QVariant, (int)ef.skipUntil));
         break;
     }
+    case asn::EffectType::OtherEffect: {
+        const auto &ef = std::get<asn::OtherEffect>(e);
+        QMetaObject::invokeMethod(qmlObject, "setCardCode", Q_ARG(QVariant, QString::fromStdString(ef.cardCode)));
+        QMetaObject::invokeMethod(qmlObject, "setEffectId", Q_ARG(QVariant, QString::number(ef.effectId)));
+        break;
+    }
     default:
         break;
     }
@@ -683,7 +693,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::DelayedAbility, "DelayedAbility" },
         { asn::EffectType::CostSubstitution, "CostSubstitution" },
         { asn::EffectType::StockSwap, "StockSwap" },
-        { asn::EffectType::SkipPhase, "SkipPhase" }
+        { asn::EffectType::SkipPhase, "SkipPhase" },
+        { asn::EffectType::OtherEffect, "OtherEffect" }
     };
 
     std::unordered_set<asn::EffectType> readyComponents {
@@ -903,6 +914,10 @@ void EffectImplComponent::init(QQuickItem *parent) {
         QMetaObject::invokeMethod(qmlObject, "setPhase", Q_ARG(QVariant, QString("8")));
         connect(qmlObject, SIGNAL(phaseChanged(int)), this, SLOT(onPhaseChanged(int)));
         break;
+    case asn::EffectType::OtherEffect:
+        connect(qmlObject, SIGNAL(cardCodeChanged(QString)), this, SLOT(cardCodeChanged(QString)));
+        connect(qmlObject, SIGNAL(effectIdChanged(QString)), this, SLOT(onAttrChanged(QString)));
+        break;
     default:
         break;
     }
@@ -1069,6 +1084,11 @@ void EffectImplComponent::onAttrChanged(QString value) {
         e.power = val;
         break;
     }
+    case asn::EffectType::OtherEffect: {
+        auto &e = std::get<asn::OtherEffect>(effect);
+        e.effectId = val;
+        break;
+    }
     default:
         assert(false);
     }
@@ -1170,6 +1190,19 @@ void EffectImplComponent::chooseTwoReady(const asn::ChooseCard &e) {
 void EffectImplComponent::onTriggerIconChanged(int value) {
     auto &eff = std::get<asn::TriggerIconGain>(effect);
     eff.triggerIcon = static_cast<asn::TriggerIcon>(value);
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::cardCodeChanged(QString code) {
+    switch (type) {
+    case asn::EffectType::OtherEffect: {
+        auto &e = std::get<asn::OtherEffect>(effect);
+        e.cardCode = code.toStdString();
+        break;
+    }
+    default:
+        assert(false);
+    }
     emit componentChanged(effect);
 }
 

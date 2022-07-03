@@ -117,6 +117,8 @@ private slots:
 
     void onTriggerIconChanged(int value);
 
+    void cardCodeChanged(QString code);
+
 private:
     void init(QQuickItem *parent);
 };

@@ -1,5 +1,13 @@
 #include "effectComponent.h"
 
+namespace {
+asn::EffectType getEffectTypeFromComboBox(int index, QString text) {
+    if (text == "Other Effect")
+        return asn::EffectType::OtherEffect;
+    return static_cast<asn::EffectType>(index);
+}
+}
+
 EffectComponent::EffectComponent(QQuickItem *parent, int position)
     : BaseComponent("Effect", parent, "effect " + QString::number(position)) {
     init();
@@ -12,7 +20,7 @@ EffectComponent::EffectComponent(const asn::Effect &e, QQuickItem *parent, int p
 }
 
 void EffectComponent::init() {
-    connect(qmlObject, SIGNAL(effectTypeChanged(int)), this, SLOT(setEffectType(int)));
+    connect(qmlObject, SIGNAL(effectTypeChanged(int,QString)), this, SLOT(setEffectType(int,QString)));
 
     connect(this, SIGNAL(passEffectType(int)), qmlObject, SIGNAL(incomingEffectType(int)));
 }
@@ -36,9 +44,9 @@ asn::Effect EffectComponent::constructEffect() {
     return e;
 }
 
-void EffectComponent::setEffectType(int index) {
+void EffectComponent::setEffectType(int index, QString text) {
     bool needImpl = true;
-    type = static_cast<asn::EffectType>(index);
+    type = getEffectTypeFromComboBox(index, text);
 
     if (initializing) {
         if (needImpl)

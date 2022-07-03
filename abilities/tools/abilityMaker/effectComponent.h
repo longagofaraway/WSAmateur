@@ -30,7 +30,7 @@ signals:
     void passEffectType(int type);
 
 private slots:
-    void setEffectType(int index);
+    void setEffectType(int index, QString text);
     void onEffectChanged(const VarEffect &e);
 
 private:

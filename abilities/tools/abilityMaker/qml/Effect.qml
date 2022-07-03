@@ -4,7 +4,7 @@ import QtQuick.Controls 2.12
 Rectangle {
     id: effect
 
-    signal effectTypeChanged(int index)
+    signal effectTypeChanged(int index, string text)
     signal componentReady()
     signal cancel()
 
@@ -46,10 +46,10 @@ Rectangle {
                 "Replay", "Side Attack Without Penalty", "Standby", "Shuffle", "Put On Stage Rested",
                 "Remove Marker", "Cannot Stand", "Cannot Be Chosen", "Trigger Icon Gain",
                 "Can Play w/o Color Requirement", "Shot Trigger Damage", "Delayed Ability",
-                "Cost Substitution", "Skip Phase"]
+                "Cost Substitution", "Skip Phase", "Other Effect"]
         currentIndex: -1
         onCurrentIndexChanged: {
-            effectTypeChanged(currentIndex + 1);
+            effectTypeChanged(currentIndex + 1, textAt(currentIndex));
         }
     }
 
