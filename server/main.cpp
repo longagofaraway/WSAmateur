@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 
 #include "cardDatabase.h"
+#include "imageLinks.h"
 #include "networkConnectionManager.h"
 #include "server.h"
 #include "serverLogger.h"
@@ -34,8 +35,12 @@ int main(int argc, char *argv[]) {
         // init db
         CardDatabase::get().init();
     } catch (const std::exception &e) {
-        qDebug() << e.what();
+        qWarning() << e.what();
         throw;
+    }
+
+    if (!ImageLinks::get().loadFile()){
+        qWarning() << "couldn't load image links file";
     }
 
     initLogger();

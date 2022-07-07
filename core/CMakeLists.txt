@@ -11,6 +11,7 @@ set(coreSources
     condition.cpp
     connectionManager.cpp
     deckList.cpp
+    imageLinks.cpp
     lookRevealEffects.cpp
     moveCardEffect.cpp
     playAbility.cpp
@@ -39,6 +40,7 @@ set(coreSources
     connectionManager.h
     coroutineTask.h
     deckList.h
+    imageLinks.h
     playerBuffManager.h
     networkUtils.h
     server.h

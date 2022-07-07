@@ -11,6 +11,7 @@
 
 #include "globalAbilities/globalAbilities.h"
 #include "cardDatabase.h"
+#include "imageLinks.h"
 
 #include <QDebug>
 
@@ -143,6 +144,7 @@ void Server::sendServerIdentification(ServerProtocolHandler *client) {
     event.set_version(VERSION_STRING);
     event.set_database_version(CardDatabase::get().version());
     event.set_client_id(client->id());
+    event.set_image_links_version(ImageLinks::get().version());
     client->sendSessionEvent(event);
 }
 

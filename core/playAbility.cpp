@@ -1,5 +1,7 @@
 #include <array>
 
+#include <unordered_set>
+
 #include "abilityEvents.pb.h"
 #include "abilityCommands.pb.h"
 

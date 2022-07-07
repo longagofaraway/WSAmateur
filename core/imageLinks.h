@@ -21,6 +21,7 @@ public:
     std::optional<QString> imageLink(const std::string& code);
     bool setData(QString filePath);
     bool loadFile(QString filePath);
+    bool loadFile();
     bool update(const std::string &data);
     int version() const { return version_; }
 

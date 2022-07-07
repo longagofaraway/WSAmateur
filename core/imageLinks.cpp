@@ -1,12 +1,26 @@
 #include "imageLinks.h"
 
+#include <QDir>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QStandardPaths>
 #include <QUrl>
 
-#include "filesystemPaths.h"
+namespace {
+QDir getAppDataDir() {
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir path(appData);
+    path.cdUp();
+    path.cd("WSAmateur");
+    return path;
+}
+
+QString imageLinksPath() {
+    return getAppDataDir().filePath("cardImageLinks.json");
+}
+}
 
 ImageLinks::ImageLinks() {}
 
@@ -26,13 +40,17 @@ bool ImageLinks::setData(QString filePath) {
     if (!loadData(filePath, data))
         return false;
 
-    QFile localImageFile(paths::imageLinksPath());
+    QFile localImageFile(imageLinksPath());
     if (!localImageFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return false;
 
     localImageFile.write(data);
     localImageFile.close();
     return true;
+}
+
+bool ImageLinks::loadFile() {
+    return loadFile(imageLinksPath());
 }
 
 bool ImageLinks::loadFile(QString filePath) {
@@ -79,7 +97,7 @@ bool ImageLinks::loadData(QString filePath, QByteArray &data) {
 }
 
 bool ImageLinks::update(const std::string &newData) {
-    QFile file(paths::imageLinksPath());
+    QFile file(imageLinksPath());
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
         return false;
 
@@ -91,5 +109,5 @@ bool ImageLinks::update(const std::string &newData) {
         return false;
 
     QByteArray buf;
-    return loadData(paths::imageLinksPath(), buf);
+    return loadData(imageLinksPath(), buf);
 }

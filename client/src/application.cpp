@@ -54,6 +54,7 @@ void WSApplication::startInitialization() {
 void WSApplication::initialization() {
     if (!checkUsername())
         return;
+    checkImageLinksFile();
 
     connectToServer();
 }
@@ -106,7 +107,6 @@ bool WSApplication::checkImageLinksFile() {
     }
 
     if (!ImageLinks::get().loadFile(paths::imageLinksPath())) {
-        emit imageLinksFileNotFound();
         return false;
     }
     return true;
@@ -224,6 +224,7 @@ void WSApplication::updateDatabase(const EventDatabase &event) {
         emit error("Database update error");
         return;
     }
+    dbIsUpToDate = true;
     tryEnterLobby();
 }
 
@@ -233,6 +234,8 @@ void WSApplication::updateImageLinks(const EventImageLinks &event) {
         emit error("File with image links cannot be updated");
         return;
     }
+    imageLinksAreUpToDate = true;
+    tryEnterLobby();
 }
 
 void WSApplication::sendDatabaseRequest() {

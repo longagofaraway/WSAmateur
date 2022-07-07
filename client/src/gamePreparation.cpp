@@ -65,5 +65,3 @@ void GamePreparation::sendReady() {
 void GamePreparation::componentComplete() {
     QQuickItem::componentComplete();
 }
-
-
