@@ -84,7 +84,7 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
     if (event.effect_type() == static_cast<int>(asn::EffectType::RemoveMarker)) {
         auto effect = decodingWrapper(event.effect(), decodeRemoveMarker);
         effectText = printRemoveMarker(effect) + '?';
-    } else if (event.effect_type() == static_cast<int>(asn::EffectType::RemoveMarker)) {
+    } else if (event.effect_type() == static_cast<int>(asn::EffectType::MoveCard)) {
         auto effect = decodingWrapper(event.effect(), decodeMoveCard);
         assert(effect.executor == asn::Player::Player);
         effectText = printMoveCard(effect) + '?';
