@@ -175,6 +175,8 @@ ListView {
                         destroyCardInfo();
                         stage.encoreCharacter(mIndex);
                     } else if (model.glow) {
+                        if (model.selected && !gGame().getPlayer().hasActivatedAbilities())
+                            return;
                         model.selected = !model.selected;
                         gGame.getPlayer().chooseCardOrPosition(model.index, "stage", stage.opponent);
                     } else if (!opponent && mStageCard !== null) {

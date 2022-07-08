@@ -107,7 +107,7 @@ public:
 
     void resetChoiceDialog();
 
-    bool hasActivatedAbilities() const { return mAbilityList->count(); }
+    Q_INVOKABLE bool hasActivatedAbilities() const { return mAbilityList->count(); }
     ActivatedAbility& activeAbility() { return mAbilityList->ability(mAbilityList->activeId()); }
 
     std::vector<std::string> cardReferences(const std::string &code) const;
