@@ -331,6 +331,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventTextChoice ev;
         event->event().UnpackTo(&ev);
         processTextChoice(ev);
+    } else if (event->event().Is<EventConfirmationRequest>()) {
+        processConfirmationRequest();
     }
 }
 

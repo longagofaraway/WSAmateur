@@ -34,6 +34,7 @@ struct ActivatedAbility {
     bool cancelBtnActive = false;
     QString playBtnText;
     QString cancelBtnText;
+    bool awaitingConfirmation = false;
 
     ChoiceType choiceType = ChoiceType::Card;
     std::variant<std::monostate,

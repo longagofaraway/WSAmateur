@@ -4,6 +4,9 @@
 
 #include <QDebug>
 
+#include "abilityEvents.pb.h"
+#include "abilityCommands.pb.h"
+
 #include "abilityUtils.h"
 #include "serverPlayer.h"
 #include "serverGame.h"
@@ -379,4 +382,20 @@ bool AbilityPlayer::canBePlayed(const asn::Ability &a) {
     }
 
     return true;
+}
+
+Resumable AbilityPlayer::waitForPlayerConfirmation() {
+    if (mentionedCards().empty())
+        co_return;
+
+    mPlayer->clearExpectedComands();
+    mPlayer->addExpectedCommand(CommandPlayEffect::descriptor()->name());
+
+    mPlayer->sendToBoth(EventConfirmationRequest());
+
+    while (true) {
+        auto cmd = co_await waitForCommand();
+        if (cmd.command().Is<CommandPlayEffect>())
+            break;
+    }
 }

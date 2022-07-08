@@ -207,6 +207,10 @@ void Player::playAbility(int index) {
     if (ab.active) {
         mAbilityList->activatePlay(index, false);
         mAbilityList->activateCancel(index, false);
+        if (ab.awaitingConfirmation) {
+            sendGameCommand(CommandPlayEffect());
+            return;
+        }
         if (std::holds_alternative<asn::Look>(ab.effect) ||
             std::holds_alternative<asn::RevealCard>(ab.effect)) {
             if (std::holds_alternative<asn::MoveCard>(ab.nextEffect)) {

@@ -201,6 +201,7 @@ private:
     void processRuleActionChoice();
     void processPlayableCards(const EventPlayableCards &event);
     void processTextChoice(const EventTextChoice &event);
+    void processConfirmationRequest();
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t,

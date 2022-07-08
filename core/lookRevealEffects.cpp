@@ -18,6 +18,23 @@ std::vector<uint8_t> encodeNextEffect(const asn::Effect &nextEffect) {
         encodeChooseCard(std::get<asn::ChooseCard>(nextEffect.effect), nextBuf);
     return nextBuf;
 }
+
+bool shouldRequestConfirmation(const std::optional<asn::Effect> &nextEffect) {
+    // shoud we wait for player's reaction after revealing cards?
+    // if he will be choosing, then he will have enough time
+    // otherwise we should wait for his reaction
+    if (!nextEffect.has_value())
+        return true;
+
+    if (nextEffect->type == asn::EffectType::ChooseCard)
+        return false;
+    if (nextEffect->type == asn::EffectType::MoveCard) {
+        const auto &effect = std::get<asn::MoveCard>(nextEffect->effect);
+        if (effect.order == asn::Order::Any)
+            return false;
+    }
+    return true;
+}
 }
 
 Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards,
@@ -41,6 +58,7 @@ Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards
         }
     }
 
+    bool confirmationRequired = false;
     while (true) {
         auto cmd = co_await waitForCommand();
         if (cmd.command().Is<CommandCancelEffect>()) {
@@ -49,8 +67,10 @@ Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards
                 mLastCommand = cmd;
             break;
         } else if (cmd.command().Is<CommandNextTopDeck>()) {
-            if (numCards == static_cast<int>(mMentionedCards.size()))
+            if (numCards == static_cast<int>(mMentionedCards.size())) {
+                confirmationRequired = true;
                 break;
+            }
 
             auto card = deck->card(deck->count() - 1 - static_cast<int>(mMentionedCards.size()));
             if (!card)
@@ -62,8 +82,10 @@ Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards
                 sendRevealCard(card);
 
             if (static_cast<size_t>(deck->count()) <= mMentionedCards.size() ||
-                mMentionedCards.size() == static_cast<size_t>(numCards))
+                mMentionedCards.size() == static_cast<size_t>(numCards)) {
+                confirmationRequired = true;
                 break;
+            }
         } else if (cmd.command().Is<CommandChooseCard>() ||
                    cmd.command().Is<CommandMoveInOrder>() ||
                    cmd.command().Is<CommandConfirmMove>()) {
@@ -74,6 +96,9 @@ Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards
             break;
         }
     }
+
+    if (confirmationRequired && shouldRequestConfirmation(nextEffect))
+        co_await waitForPlayerConfirmation();
 }
 
 Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
@@ -104,6 +129,8 @@ Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
                 auto card = deck->card(deck->count() - i - 1);
                 sendRevealCard(card);
             }
+            if (shouldRequestConfirmation(nextEffect))
+                co_await waitForPlayerConfirmation();
         } else {
             assert(false);
         }
@@ -166,6 +193,8 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
 
             sendLookCard(card);
         }
+        if (shouldRequestConfirmation(nextEffect))
+            co_await waitForPlayerConfirmation();
     }
 }
 

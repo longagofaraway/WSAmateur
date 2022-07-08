@@ -1082,58 +1082,6 @@ Resumable AbilityPlayer::playPutOnStageRested(const asn::PutOnStageRested &e) {
     co_return;
 }
 
-void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
-    if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
-        ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
-            mentionedCards().empty()) ||
-        (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
-        return;
-
-    if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified
-        && e.target.targetSpecification->mode != asn::TargetMode::All) {
-        // todo: implement choice of marker
-        assert(false);
-    }
-
-    // TODO: add choice of target stage cards
-    auto targetStageCards = getTargets(e.destination);
-    if (targetStageCards.empty())
-        return;
-    auto targetStageCard = targetStageCards.front();
-    auto player = targetStageCard->player();
-
-    if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::Top &&
-        e.from.zone == asn::Zone::Deck) {
-        const auto &spec = *e.target.targetSpecification;
-        assert(spec.number.mod == asn::NumModifier::ExactMatch);
-        auto pzone = player->zone(e.from.zone);
-
-        for (int i = 0; i < spec.number.value; ++i) {
-            auto card = pzone->topCard();
-            if (!card)
-                break;
-
-            player->addMarker(pzone, pzone->count() - 1, targetStageCard->pos(), e.orientation);
-            if (pzone->count() == 0)
-                player->refresh();
-        }
-        return;
-    }
-
-    // TODO: won't work with TargetType::SpecificCards
-    auto targets = getTargets(e.target);
-    std::sort(targets.begin(), targets.end(), [](const ServerCard *card1, const ServerCard * card2) {
-        return card1->pos() > card2->pos();
-    });
-    for (auto target: targets) {
-        auto zone = target->zone();
-        player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation);
-
-        if (e.from.zone == asn::Zone::Deck && target->zone()->count() == 0)
-            player->refresh();
-    }
-}
-
 void AbilityPlayer::playTriggerGain(const asn::TriggerIconGain &e) {
     auto targets = getTargetsFromAllZones(e.target);
 

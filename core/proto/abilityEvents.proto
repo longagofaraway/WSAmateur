@@ -143,3 +143,5 @@ message EventTextChoice {
     string header = 1;
     repeated string choices = 2;
 }
+
+message EventConfirmationRequest {}

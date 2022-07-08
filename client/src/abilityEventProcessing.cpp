@@ -487,3 +487,12 @@ void Player::processTextChoice(const EventTextChoice &event) {
     choiceDlg->setData(QString::fromStdString(event.header()), data);
     mChoiceDialog = std::move(choiceDlg);
 }
+
+void Player::processConfirmationRequest() {
+    if (mOpponent || !mAbilityList->count())
+        return;
+
+    mAbilityList->activatePlay(mAbilityList->activeId(), true, "OK");
+    auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
+    activatedAbility.awaitingConfirmation = true;
+}
