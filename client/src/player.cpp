@@ -113,6 +113,13 @@ Player* Player::getOpponent() const {
     return mGame->opponent();
 }
 
+Player* Player::getOpponent(bool isOpponent) {
+    if (isOpponent)
+        return getOpponent();
+    else
+        return this;
+}
+
 CardZone* Player::zone(std::string_view name) const {
     if (!mZones.count(name))
         return nullptr;
@@ -122,6 +129,16 @@ CardZone* Player::zone(std::string_view name) const {
 
 CardZone *Player::zone(asn::Zone zone_) const {
     return zone(asnZoneToString(zone_));
+}
+
+CardZone *Player::getViewWithCards() {
+    // we suppose only one view is open
+    // either your's or opponent's
+    auto pzone = zone("view");
+    if (pzone->cards().size() > 0)
+        return pzone;
+    else
+        return getOpponent(!mOpponent)->zone("view");
 }
 
 void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {

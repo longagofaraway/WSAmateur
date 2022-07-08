@@ -261,10 +261,12 @@ void Player::processLookRevealCommon(
         asn::EffectType nextEffectType,
         const std::string &nextEffectBuf,
         bool opponent) {
+    Player *owner = getOpponent(opponent);
+
     if (nextEffectType == asn::EffectType::MoveCard) {
         auto nextEffect = decodingWrapper(nextEffectBuf, decodeMoveCard);
         if (nextEffect.order == asn::Order::Any)
-            zone("view")->visualItem()->setProperty("mDragEnabled", true);
+            owner->zone("view")->visualItem()->setProperty("mDragEnabled", true);
         activeAbility().nextEffect = nextEffect;
     } else if (nextEffectType == asn::EffectType::ChooseCard) {
         auto choose = decodingWrapper(nextEffectBuf, decodeChooseCard);
@@ -272,24 +274,17 @@ void Player::processLookRevealCommon(
             activeAbility().nextEffect = choose;
     }
 
-    CardZone *pzone;
+    owner->zone("deck")->visualItem()->setProperty("mGlow", true);
     if (opponent)
-        pzone = getOpponent()->zone("deck");
-    else
-        pzone = zone("deck");
-    pzone->visualItem()->setProperty("mGlow", true);
+        owner->zone("view")->visualItem()->setProperty("overlapsWithAbilities", true);
     mAbilityList->activateCancel(mAbilityList->activeId(), true);
 }
 
-void Player::processLookRevealNextCard(asn::EffectType type, bool isOpponent) {
+void Player::processLookRevealNextCard(asn::EffectType type, bool isOwnerOpponent) {
     if (mOpponent || !mAbilityList->count())
         return;
 
-    Player *player;
-    if (isOpponent)
-        player = getOpponent();
-    else
-        player = this;
+    auto player = getOpponent(isOwnerOpponent);
     auto view = player->zone("view");
 
     auto &activeAbility_ = activeAbility();
@@ -342,12 +337,8 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 }
 
 void Player::lookTopDeck(const EventLookTopDeck &event) {
-    Player *player;
-    if (event.is_opponent())
-        player = getOpponent();
-    else
-        player = this;
-    auto view = zone("view");
+    auto player = getOpponent(event.is_opponent());
+    auto view = player->zone("view");
     view->visualItem()->setProperty("mViewMode", Game::LookMode);
 
     QString code = QString::fromStdString(event.code());

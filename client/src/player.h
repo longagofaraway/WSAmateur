@@ -71,12 +71,14 @@ public:
     void setDeck(const std::string &deck);
     void setDeck(const DeckList &deck);
     Player* getOpponent() const;
+    Player* getOpponent(bool isOpponent);
     bool deckSet() const { return mDeckSet; }
 
     int id() const { return mId; }
     int level() const { return mLevel; }
     CardZone* zone(std::string_view name) const;
     CardZone* zone(asn::Zone zone_) const;
+    CardZone* getViewWithCards();
 
     void processGameEvent(const std::shared_ptr<GameEvent> event);
     void sendGameCommand(const google::protobuf::Message &command);
@@ -183,7 +185,7 @@ private:
     void processLookRevealCommon(asn::EffectType nextEffectType,
                                  const std::string &nextEffectBuf,
                                  bool opponent = false);
-    void processLookRevealNextCard(asn::EffectType type, bool isOpponent = false);
+    void processLookRevealNextCard(asn::EffectType type, bool isOwnerOpponent = false);
     void revealTopDeck(const EventRevealTopDeck &event);
     void lookTopDeck(const EventLookTopDeck &event);
     void doneChoosing();
@@ -205,6 +207,7 @@ private:
                                         asn::Zone from_zone = asn::Zone::Stage) const;
     void fillReferenceCache();
     void setDeckInternal();
+    void cardInserted(QString startZone, QString targetZone, bool opponentsCard);
 
     void toggleZoneView(const asn::Place &place, bool open);
 

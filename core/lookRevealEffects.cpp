@@ -171,11 +171,12 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
 
 void AbilityPlayer::sendLookCard(ServerCard *card) {
     EventLookTopDeck privateEvent;
-    EventLookTopDeck publicEvent;
+    privateEvent.set_is_opponent(card->player()->id() != mPlayer->id());
+
+    EventLookTopDeck publicEvent(privateEvent);
 
     privateEvent.set_card_id(card->id());
     privateEvent.set_code(card->code());
-    privateEvent.set_is_opponent(card->player()->id() != mPlayer->id());
     mPlayer->sendGameEvent(privateEvent);
     mPlayer->game()->sendPublicEvent(publicEvent, mPlayer->id());
 

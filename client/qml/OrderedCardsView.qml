@@ -14,6 +14,7 @@ Rectangle {
     property CardModel mModel: innerModel
     property bool mDragEnabled: false
     property int markerStagePos
+    property bool overlapsWithAbilities: false
 
     signal deleteMarkerView(int pos)
 
@@ -27,7 +28,12 @@ Rectangle {
         }
     }
 
-    x: opponent ? (root.width * 0.12) : (root.width * 0.89 - width)
+    x: {
+        let offset = opponent ? (root.width * 0.12) : (root.width * 0.89 - width);
+        if (opponent && overlapsWithAbilities)
+            offset += root.width * 0.16;
+        return offset;
+    }
     y: root.height / 2 + height * (opponent ? -1 : 0);
     z: 150
     width: Math.max(350, listView.x * 2 + listView.contentWidth)

@@ -28,7 +28,7 @@ int Player::highlightCardsFromEvent(
     CardZone *pzone;
     bool considerCannotBeChosen = false;
     if (fromView) {
-        pzone = zone("view");
+        pzone = getViewWithCards();
     } else {
         const auto &place = *effect.targets[0].place;
         auto player = place.owner == asn::Player::Player ? this : getOpponent();
@@ -121,12 +121,12 @@ void Player::processChooseCardInternal(int eligibleCount, OptionalPlace place, b
 void Player::sendChooseCard(const asn::ChooseCard &e) {
     CardZone *from;
     if (e.targets[0].placeType == asn::PlaceType::Selection) {
-        from = zone("view");
+        from = getViewWithCards();
     } else {
         if (e.targets[0].place->owner == asn::Player::Player)
             from = zone(e.targets[0].place->zone);
         else if (e.targets[0].place->owner == asn::Player::Opponent)
-            from = mGame->opponent()->zone(e.targets[0].place->zone);
+            from = getOpponent()->zone(e.targets[0].place->zone);
         else
             throw std::runtime_error("shouldn't happen");
     }
@@ -136,12 +136,14 @@ void Player::sendChooseCard(const asn::ChooseCard &e) {
     if (zoneName == "deckView" || zoneName == "view")
         zoneName = "deck";
     cmd.set_zone(zoneName);
-    cmd.set_owner(e.targets[0].place->owner == asn::Player::Player ? ProtoPlayer : ProtoOpponent);
+    cmd.set_owner(from->player() == this ? ProtoPlayer : ProtoOpponent);
+
+    auto actualZone = from->player()->zone(zoneName);
     const auto &cards = from->cards();
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
             if (from->name() == "view")
-                cmd.add_positions(from->model().count() - 1 - i);
+                cmd.add_positions(actualZone->model().count() - 1 - i);
             else
                 cmd.add_positions(i);
         }
@@ -170,7 +172,7 @@ void Player::sendChooseCard(const asn::SearchCard &e) {
 
 void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
     if (placeType == asn::PlaceType::Selection) {
-        auto from = zone("view");
+        auto from = getViewWithCards();
         highlightAllCards(from, false);
         selectAllCards(from, false);
         return;
@@ -210,7 +212,7 @@ void Player::playAbility(int index) {
             if (std::holds_alternative<asn::MoveCard>(ab.nextEffect)) {
                 const auto &moveEffect = std::get<asn::MoveCard>(ab.nextEffect);
                 if (moveEffect.order == asn::Order::Any) {
-                    auto view = zone("view");
+                    auto view = getViewWithCards();
                     view->visualItem()->setProperty("mDragEnabled", false);
                     QVariant codesv;
                     QMetaObject::invokeMethod(view->visualItem(), "getCardOrder", Q_RETURN_ARG(QVariant, codesv));
@@ -274,6 +276,7 @@ void Player::doneChoosing() {
     } else if (std::holds_alternative<asn::Look>(effect) ||
                std::holds_alternative<asn::RevealCard>(effect)) {
         zone("deck")->visualItem()->setProperty("mGlow", false);
+        getOpponent()->zone("deck")->visualItem()->setProperty("mGlow", false);
         if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
             auto &ef = std::get<asn::ChooseCard>(a.nextEffect);
             dehighlightCards(ef.targets[0].placeType, ef.targets[0].place ? OptionalPlace(*ef.targets[0].place) : std::nullopt);
@@ -322,13 +325,8 @@ void Player::chooseCardOrPosition(int index, QString qzone, bool opponent) {
 }
 
 void Player::chooseCard(int, QString qzone, bool opponent) {
-    CardZone *pzone;
-    if (!opponent)
-        pzone = zone(qzone.toStdString());
-    else
-        pzone = mGame->opponent()->zone(qzone.toStdString());
+    auto pzone = getOpponent(opponent)->zone(qzone.toStdString());
 
-    // someday we'll need to count selected and highlighted in all needed zones
     int selected = pzone->numOfSelectedCards();
     int highlighted = pzone->numOfHighlightedCards();
 
@@ -385,7 +383,7 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
     for (int i = 0; i < static_cast<int>(cards.size()); ++i) {
         if (cards[i].selected()) {
             if (qzone == "view")
-                cmd.add_positions(zone("deck")->model().count() - 1 - i);
+                cmd.add_positions(getOpponent(opponent)->zone("deck")->model().count() - 1 - i);
             else
                 cmd.add_positions(i);
         }
@@ -592,10 +590,18 @@ void Player::interactWithDeck(bool isOpponent) {
 }
 
 void Player::cardInserted(QString startZone, QString targetZone) {
+    if (mOpponent) {
+        getOpponent()->cardInserted(startZone, targetZone, mOpponent);
+        return;
+    }
+    cardInserted(startZone, targetZone, mOpponent);
+}
+
+void Player::cardInserted(QString startZone, QString targetZone, bool isOpponentsCard) {
     if (mOpponent)
         return;
 
-    if (startZone == "stock" && targetZone == "wr") {
+    if (!isOpponentsCard && (startZone == "stock" || targetZone == "stock")) {
         // stock changed, update info
         if (!mResolvingAbilities && mGame->phase() == asn::Phase::MainPhase)
             highlightPlayableCards();
@@ -613,7 +619,8 @@ void Player::cardInserted(QString startZone, QString targetZone) {
                 if (chooseEffect.targets[0].target.type == asn::TargetType::SpecificCards) {
                     const auto &spec = *chooseEffect.targets[0].target.targetSpecification;
                     if (chooseEffect.targets[0].placeType == asn::PlaceType::Selection) {
-                        auto from = zone("view");
+                        auto owner = getOpponent(isOpponentsCard);
+                        auto from = owner->zone("view");
                         int count = highlightEligibleCards(from, spec.cards.cardSpecifiers, spec.mode, a);
 
                         asn::NumModifier mod = asn::NumModifier::ExactMatch;

@@ -45,7 +45,7 @@ Resumable AbilityPlayer::playW87_53() {
     asn::Look look;
     look.number = asn::Number{asn::NumModifier::UpTo, numCards};
     look.valueType = asn::ValueType::Raw;
-    look.place = asn::Place{asn::Position::Top, asn::Zone::Deck, asn::Player::Player};
+    look.place = asn::Place{asn::Position::Top, asn::Zone::Deck, asn::Player::Opponent};
     std::vector<uint8_t> buf;
     encodeLook(look, buf);
 
@@ -79,6 +79,7 @@ Resumable AbilityPlayer::playW87_53() {
 
     bool repeatSendEffect = false;
     std::optional<GameCommand> chooseCmd;
+    mPlayer->sendToBoth(ev);
     while (true) {
         if (repeatSendEffect) {
             mPlayer->sendToBoth(ev);
@@ -115,7 +116,7 @@ Resumable AbilityPlayer::playW87_53() {
     clearChosenCards();
 
     EventChooseCard chooseEvent;
-    chooseEvent.set_effect(buf.data(), buf.size());
+    chooseEvent.set_effect(nextBuf.data(), nextBuf.size());
     chooseEvent.set_mandatory(mandatory());
     auto targets = getTargets(target, tp.placeType, tp.place);
     for (const auto &t: targets) {
