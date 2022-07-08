@@ -135,7 +135,8 @@ private:
     void playTriggerCheckTwice();
     Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {});
     Resumable playLookRevealCommon(asn::EffectType type, int numCards,
-                                   const std::optional<asn::Effect> &nextEffect);
+                                   const std::optional<asn::Effect> &nextEffect,
+                                   asn::Player zoneOwner = asn::Player::Player);
     void playEarlyPlay();
     void playCannotPlay();
     void playCannotUseBackupOrEvent(const asn::CannotUseBackupOrEvent &e);

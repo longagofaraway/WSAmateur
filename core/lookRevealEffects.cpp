@@ -21,8 +21,9 @@ std::vector<uint8_t> encodeNextEffect(const asn::Effect &nextEffect) {
 }
 
 Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards,
-                                              const std::optional<asn::Effect> &nextEffect) {
-    auto deck = mPlayer->zone("deck");
+                                              const std::optional<asn::Effect> &nextEffect,
+                                              asn::Player zoneOwner) {
+    auto deck = owner(zoneOwner)->zone("deck");
 
     mPlayer->clearExpectedComands();
     mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
@@ -130,10 +131,9 @@ Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
 }
 
 Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect) {
-    assert(e.place.owner == asn::Player::Player);
     assert(e.place.zone == asn::Zone::Deck);
     clearMentionedCards();
-    auto deck = mPlayer->zone("deck");
+    auto deck = owner(e.place.owner)->zone("deck");
     if (!deck->count())
         co_return;
 
@@ -157,7 +157,7 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
         }
         mPlayer->sendToBoth(ev);
 
-        co_await playLookRevealCommon(asn::EffectType::Look, numCards, nextEffect);
+        co_await playLookRevealCommon(asn::EffectType::Look, numCards, nextEffect, e.place.owner);
     } else {
         for (int i = 0; i < numCards && i < deck->count(); ++i) {
             auto card = deck->card(deck->count() - 1 - i);
