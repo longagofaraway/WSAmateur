@@ -467,8 +467,7 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
         *event.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
     }
 
-    if ((startZone->type() == ZoneType::HiddenZone || startZone->type() == ZoneType::PrivateZone)
-        && faceOrientation == asn::FaceOrientation::FaceUp) {
+    if (faceOrientation == asn::FaceOrientation::FaceUp) {
         event.set_code(card->code());
         event.set_card_id(card->id());
     }

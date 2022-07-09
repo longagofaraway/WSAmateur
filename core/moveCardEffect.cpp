@@ -192,7 +192,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     if (moveCanceled)
         co_return;
 
-    if (e.target.type == asn::TargetType::MentionedCards && e.order == asn::Order::Any) {
+    if (e.target.type == asn::TargetType::MentionedCards && e.order == asn::Order::Any &&
+            e.to[0].zone == asn::Zone::Deck) {
         // coming here from look effect
         assert(e.to.size() == 1);
         while (true) {
@@ -311,9 +312,18 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 co_await getStagePosition(toIndex, e);
             }
         }
-    }
-    if (e.to[toZoneIndex].pos == asn::Position::Bottom)
+    } else if (e.to[toZoneIndex].pos == asn::Position::Bottom) {
         toIndex = 0;
+    } else if (e.to[toZoneIndex].zone == asn::Zone::Deck && e.target.type == asn::TargetType::ChosenCards
+               && chosenCards().size() > 0 && chosenCards().front().card->zone()->name() == "deck") {
+        // when we are looking at the top cards of the deck and moving some of them
+        // back on top of the deck, mentioned cards will remain on top of the deck
+        auto player = owner(e.to[toZoneIndex].owner);
+        if (mentionedCards().size() > 0 && mentionedCards().front().card->player() == player) {
+            // -1 - excluding moved card itself
+            toIndex = player->zone(e.to[toZoneIndex].zone)->count() - 1 - mentionedCards().size();
+        }
+    }
 
     ServerPlayer *player = mPlayer;
     if (e.target.type == asn::TargetType::ChosenCards) {
