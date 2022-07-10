@@ -26,6 +26,7 @@ class EventSetCardStateTargetChoice;
 class EventSetCardBoolAttr;
 class EventSetPlayerAttr;
 class EventPlayableCards;
+class EventEndMoveLog;
 class ProtoTypeCard;
 
 class Game;
@@ -51,6 +52,7 @@ private:
     std::unique_ptr<ActivatedAbilities> mAbilityList;
     std::unique_ptr<ChoiceDialogBase> mChoiceDialog;
     std::unordered_map<int, std::unique_ptr<CardZone>> mMarkerViews;
+    std::unique_ptr<CardZone> mMoveLog;
 
     int mLevel = 0;
     int mAttackingPos = 0;
@@ -202,6 +204,8 @@ private:
     void processPlayableCards(const EventPlayableCards &event);
     void processTextChoice(const EventTextChoice &event);
     void processConfirmationRequest();
+    void processStartMoveLog();
+    void processEndMoveLog(const EventEndMoveLog &event);
 
     const Card& correspondingCard(const ActivatedAbility &abilityDescriptor);
     std::vector<const Card*> getTargets(const Card &thisCard, const asn::Target &t,
@@ -211,6 +215,8 @@ private:
     void cardInserted(QString startZone, QString targetZone, bool opponentsCard);
 
     void toggleZoneView(const asn::Place &place, bool open);
+    void addCardToLogView(QString code, CardZone *targetZone);
+    void deleteMoveLog();
 
 public slots:
     void sendSwitchPositions(int from, int to);

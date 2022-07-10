@@ -5,6 +5,7 @@
 #include "abilityEvents.pb.h"
 #include "abilityCommands.pb.h"
 #include "moveCommands.pb.h"
+#include "moveEvents.pb.h"
 
 #include "abilityUtils.h"
 #include "codecs/encode.h"
@@ -18,6 +19,37 @@ bool isStandbyTarget(const asn::Target &target) {
     const auto &spec = target.targetSpecification.value();
     return std::any_of(spec.cards.cardSpecifiers.begin(), spec.cards.cardSpecifiers.end(),
                        [](const auto &cardSpec) { return cardSpec.type == asn::CardSpecifierType::StandbyTarget; });
+}
+
+bool shoulLogMoveOnClient(const asn::MoveCard &e) {
+    // player will see the whole move in another window and confirm it
+    // otherwise it is difficult to see, what cards were moved
+    if (e.target.type == asn::TargetType::SpecificCards &&
+        (e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom) &&
+        e.from.zone == asn::Zone::Deck && e.to[0].zone == asn::Zone::WaitingRoom)
+        return true;
+    return false;
+}
+
+void sendStartLog(ServerPlayer *player) {
+    player->sendToBoth(EventStartMoveLog());
+}
+
+Resumable endMoveLog(ServerPlayer *player) {
+    player->clearExpectedComands();
+    player->addExpectedCommand(CommandPlayEffect::descriptor()->name());
+
+    player->sendToBoth(EventEndMoveLog());
+
+    while (true) {
+        auto cmd = co_await waitForCommand();
+        if (cmd.command().Is<CommandPlayEffect>())
+            break;
+    }
+
+    EventEndMoveLog event;
+    event.set_is_confirmed(true);
+    player->sendToBoth(event);
 }
 
 }
@@ -64,6 +96,10 @@ Resumable AbilityPlayer::moveFromTop(const asn::MoveCard &e, int toZoneIndex, in
     if (!isPayingCost())
         clearLastMovedCards();
 
+    bool clientLogEnabled = shoulLogMoveOnClient(e);
+    if (clientLogEnabled)
+        sendStartLog(mPlayer);
+
     int movedCount = 0;
     for (int i = 0; i < spec.number.value; ++i) {
         auto card = (e.from.pos == asn::Position::Top) ? pzone->topCard() : pzone->card(0);
@@ -81,6 +117,9 @@ Resumable AbilityPlayer::moveFromTop(const asn::MoveCard &e, int toZoneIndex, in
     if ((spec.number.mod == asn::NumModifier::AtLeast || spec.number.mod == asn::NumModifier::ExactMatch) &&
         movedCount < spec.number.value)
         mPerformedInFull = false;
+
+    if (clientLogEnabled)
+        co_await endMoveLog(mPlayer);
 }
 
 Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
@@ -391,6 +430,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
             player->zone("deck")->count() == 0)
             co_await player->checkRefreshAndLevelUp();
     }
+
 }
 
 void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {

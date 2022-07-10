@@ -384,7 +384,7 @@ bool AbilityPlayer::canBePlayed(const asn::Ability &a) {
     return true;
 }
 
-Resumable AbilityPlayer::waitForPlayerConfirmation() {
+Resumable AbilityPlayer::waitForPlayerLookConfirmation() {
     if (mentionedCards().empty())
         co_return;
 

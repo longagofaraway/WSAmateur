@@ -333,6 +333,12 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         processTextChoice(ev);
     } else if (event->event().Is<EventConfirmationRequest>()) {
         processConfirmationRequest();
+    } else if (event->event().Is<EventStartMoveLog>()) {
+        processStartMoveLog();
+    } else if (event->event().Is<EventEndMoveLog>()) {
+        EventEndMoveLog ev;
+        event->event().UnpackTo(&ev);
+        processEndMoveLog(ev);
     }
 }
 
@@ -539,6 +545,8 @@ void Player::moveCard(const EventMoveCard &event) {
             deck->model().removeCard(event.start_pos());
         }
     }
+
+    addCardToLogView(code, targetZone);
 
     createMovingCard(event.card_id(), code, startZoneStr, startPos, event.target_zone(), event.target_pos(), false, dontFinishAction);
 }
@@ -862,6 +870,19 @@ void Player::deleteMarkerView(int index) {
     auto &markerView = mMarkerViews.at(index);
     markerView->visualItem()->deleteLater();
     mMarkerViews.erase(index);
+}
+
+void Player::addCardToLogView(QString code, CardZone *targetZone) {
+    if (!mMoveLog)
+        return;
+    mMoveLog->model().addCard(0, code.toStdString(), targetZone);
+}
+
+void Player::deleteMoveLog() {
+    if (!mMoveLog)
+        return;
+    mMoveLog->visualItem()->deleteLater();
+    mMoveLog.reset();
 }
 
 void Player::testAction()

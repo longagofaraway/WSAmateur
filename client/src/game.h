@@ -114,7 +114,8 @@ public:
     enum ViewMode {
         RevealMode,
         LookMode,
-        MarkerMode
+        MarkerMode,
+        LastMovedCardsMode
     };
     Q_ENUM(ViewMode)
 

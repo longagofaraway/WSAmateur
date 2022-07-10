@@ -193,7 +193,7 @@ private:
     std::vector<ServerCard *> getTargetsFromAllZones(const asn::Target &t);
     bool checkTarget(const asn::TargetSpecificCards &spec, ServerCard *card);
     bool findChooseTargetsAutomatically(const asn::ChooseCard &e);
-    Resumable waitForPlayerConfirmation();
+    Resumable waitForPlayerLookConfirmation();
 
     void logMove(ServerPlayer *player, asn::Zone toZone);
 

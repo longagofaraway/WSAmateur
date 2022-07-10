@@ -57,6 +57,8 @@ Rectangle {
                 return "Looking";
             case Game.MarkerMode:
                 return "Markers";
+            case Game.LastMovedCardsMode:
+                return "Milled Cards";
             }
         }
         font.family: "Futura Bk BT"
@@ -259,6 +261,11 @@ Rectangle {
             cardsView.y = yCoord - cardsView.height - 20;
         else
             cardsView.y = yCoord + cardImg.height + 20
+    }
+
+    function centerView() {
+        cardsView.x = root.width / 2 - cardsView.width / 2;
+        cardsView.y = root.height / 2 - cardsView.height / 2;
     }
 
     function clear() { clearAnim.start(); }

@@ -5,9 +5,11 @@
 #include "abilityEvents.pb.h"
 #include "abilityCommands.pb.h"
 #include "gameEvent.pb.h"
+#include "moveEvents.pb.h"
 
 #include "abilityUtils.h"
 #include "cardZone.h"
+#include "commonCardZone.h"
 #include "game.h"
 #include "hand.h"
 #include "stage.h"
@@ -489,6 +491,27 @@ void Player::processTextChoice(const EventTextChoice &event) {
 }
 
 void Player::processConfirmationRequest() {
+    if (mOpponent || !mAbilityList->count())
+        return;
+
+    mAbilityList->activatePlay(mAbilityList->activeId(), true, "OK");
+    auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
+    activatedAbility.awaitingConfirmation = true;
+}
+
+void Player::processStartMoveLog() {
+    mMoveLog = std::make_unique<CommonCardZone>(this, mGame, "view");
+
+    QMetaObject::invokeMethod(mMoveLog->visualItem(), "centerView");
+    mMoveLog->visualItem()->setProperty("mViewMode", Game::LastMovedCardsMode);
+}
+
+void Player::processEndMoveLog(const EventEndMoveLog &event) {
+    if (event.is_confirmed()) {
+        deleteMoveLog();
+        return;
+    }
+
     if (mOpponent || !mAbilityList->count())
         return;
 

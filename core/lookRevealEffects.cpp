@@ -98,7 +98,7 @@ Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards
     }
 
     if (confirmationRequired && shouldRequestConfirmation(nextEffect))
-        co_await waitForPlayerConfirmation();
+        co_await waitForPlayerLookConfirmation();
 }
 
 Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
@@ -130,7 +130,7 @@ Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
                 sendRevealCard(card);
             }
             if (shouldRequestConfirmation(nextEffect))
-                co_await waitForPlayerConfirmation();
+                co_await waitForPlayerLookConfirmation();
         } else {
             assert(false);
         }
@@ -194,7 +194,7 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
             sendLookCard(card);
         }
         if (shouldRequestConfirmation(nextEffect))
-            co_await waitForPlayerConfirmation();
+            co_await waitForPlayerLookConfirmation();
     }
 }
 

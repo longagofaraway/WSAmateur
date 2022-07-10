@@ -34,3 +34,8 @@ message EventSwitchStagePositions {
 }
 
 message EventClockToWr {}
+
+message EventStartMoveLog {}
+message EventEndMoveLog {
+    bool is_confirmed = 1;
+}
