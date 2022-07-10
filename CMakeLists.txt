@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(WSAmateur VERSION 0.1.1)
+project(WSAmateur VERSION 0.2.0)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
