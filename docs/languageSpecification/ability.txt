@@ -26,7 +26,8 @@ enum Keyword {
   replay = 8,
   alarm = 9,
   change = 10,
-  assist = 11
+  assist = 11,
+  memory = 12
 }
 
 // for binary encoding

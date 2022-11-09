@@ -47,7 +47,9 @@ Column {
     }
 
     ComboBox {
-        model: ["Encore", "CxCombo", "Brainstorm", "Backup", "Experience", "Resonance", "Bond", "Replay", "Alarm", "Change", "Assist"]
+        model: ["Encore", "CxCombo", "Brainstorm", "Backup", "Experience", "Resonance", "Bond",
+                "Replay", "Alarm", "Change", "Assist", "Memory"
+        ]
         currentIndex: -1
         onCurrentIndexChanged: {
             if (currentIndex === -1)

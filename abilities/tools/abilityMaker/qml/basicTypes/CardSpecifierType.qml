@@ -8,7 +8,8 @@ ComboBox {
     model: ["Card type", "Owner", "Trait", "Exact name", "Name contains",
             "Level", "Level > player's level", "Color", "Cost",
             "Trigger icon", "Has marker", "Power", "Standby target",
-            "LevelWithMultiplier", "State"]
+            "LevelWithMultiplier", "State",
+            "SumOfLevelsLessThanDiffNamedEventsInMemory"]
     onCurrentIndexChanged: valueChanged(position, currentIndex + 1)
     currentIndex: -1
 

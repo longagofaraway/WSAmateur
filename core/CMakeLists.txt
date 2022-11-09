@@ -56,7 +56,6 @@ set(coreSources
     globalAbilities/globalAbilities.h
     globalAbilities/globalAbilities.cpp
     hardcodedEffects/S79/20.cpp
-    hardcodedEffects/W87/53.cpp
     ${VERSION_STRING_CPP}
     )
 

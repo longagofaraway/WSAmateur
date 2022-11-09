@@ -11,6 +11,18 @@
 #include "serverPlayer.h"
 #include "serverGame.h"
 
+namespace {
+int numOfDifferentlyNamedEvents(ServerPlayer *player) {
+    auto zone = player->zone(asn::Zone::Memory);
+    std::set<std::string> names;
+    for (int i = 0; i < zone->count(); ++i) {
+        auto card = zone->card(i);
+        names.insert(card->name());
+    }
+    return static_cast<int>(names.size());
+}
+}
+
 Resumable AbilityPlayer::payCost() {
     if (!hasCost())
         co_return;
@@ -398,4 +410,15 @@ Resumable AbilityPlayer::waitForPlayerLookConfirmation() {
         if (cmd.command().Is<CommandPlayEffect>())
             break;
     }
+}
+
+bool AbilityPlayer::areChosenCardsValid(const CommandChooseCard& cmd, ServerCardZone* zone) {
+    int sumOfLevels{0};
+    for (int i = cmd.positions_size() - 1; i >= 0; --i) {
+        auto card = zone->card(cmd.positions(i));
+        if (!card)
+            break;
+        sumOfLevels += card->level();
+    }
+    return sumOfLevels <= numOfDifferentlyNamedEvents(mPlayer);
 }

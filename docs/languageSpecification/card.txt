@@ -38,7 +38,8 @@ enum CardSpecifierType {
   power = 12,
   standbyTarget = 13, // with level equal to or less than your level +1
   levelWithMultiplier = 14,
-  state = 15
+  state = 15, // stand, rested, reversed
+  sum of levels less than number of differently named events in memory = 16, // aka Hina finisher
 }
 
 enum CardType {

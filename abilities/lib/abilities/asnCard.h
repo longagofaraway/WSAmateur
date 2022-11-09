@@ -25,7 +25,8 @@ enum class CardSpecifierType : uint8_t {
     Power,
     StandbyTarget,
     LevelWithMultiplier,
-    State
+    State,
+    SumOfLevelsLessThanDiffNamedEventsInMemory
 };
 
 enum class CardType : uint8_t {

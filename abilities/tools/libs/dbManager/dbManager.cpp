@@ -5,6 +5,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
+#include <QDebug>
 
 #include "filesystemPaths.h"
 
@@ -70,10 +71,12 @@ void popAbilityFromArray(QByteArray &data) {
 void setAbilitiesToDb(QString code, QByteArray data) {
     QSqlQuery insert;
     insert.prepare("UPDATE cards SET abilities = (:abilities) WHERE code like (:code) || '%'");
-    insert.bindValue(":code", code);
     insert.bindValue(":abilities", data);
-    if (!insert.exec())
+    insert.bindValue(":code", code);
+    if (!insert.exec()) {
+        qWarning() << insert.lastError().text();
         throw std::runtime_error(insert.lastError().text().toStdString());
+    }
 }
 
 QByteArray getAbilitiesForCard(QString code) {

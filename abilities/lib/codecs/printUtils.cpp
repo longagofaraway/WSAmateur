@@ -226,6 +226,8 @@ std::string printKeyword(Keyword keyword) {
         return "Replay";
     case Keyword::Resonance:
         return "Resonance";
+    case Keyword::Memory:
+        return "Memory";
     default:
         return "";
     }

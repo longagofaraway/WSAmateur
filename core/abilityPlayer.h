@@ -12,6 +12,7 @@ class ServerPlayer;
 class CommandSwitchPositions;
 class CommandChooseCard;
 class Buff;
+class ServerCardZone;
 struct TriggeredAbility;
 
 struct MoveRecord {
@@ -161,7 +162,6 @@ private:
 
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();
-    Resumable playW87_53();
 
     bool evaluateCondition(const asn::Condition &c);
     bool evaluateConditionIsCard(const asn::ConditionIsCard &c);
@@ -194,6 +194,7 @@ private:
     bool checkTarget(const asn::TargetSpecificCards &spec, ServerCard *card);
     bool findChooseTargetsAutomatically(const asn::ChooseCard &e);
     Resumable waitForPlayerLookConfirmation();
+    bool areChosenCardsValid(const CommandChooseCard& cmd, ServerCardZone* zone);
 
     void logMove(ServerPlayer *player, asn::Zone toZone);
 

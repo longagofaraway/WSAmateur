@@ -268,7 +268,6 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
         card->set_id(t->id());
         card->set_position(t->pos());
     }
-    mPlayer->sendToBoth(ev);
 
     auto player = owner(e.executor);
     player->clearExpectedComands();
@@ -276,7 +275,12 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
     // TODO: check for legitimacy of cancel
     player->addExpectedCommand(CommandCancelEffect::descriptor()->name());
 
+    bool repeat_effect{true};
     while (true) {
+        if (repeat_effect) {
+            mPlayer->sendToBoth(ev);
+            repeat_effect = false;
+        }
         GameCommand cmd;
         if (mLastCommand) {
             cmd = *mLastCommand;
@@ -317,6 +321,10 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
             auto pzone = owner(cardOwner)->zone(chooseCmd.zone());
             if (!pzone)
                 break;
+            if (!areChosenCardsValid(chooseCmd, pzone)) {
+                repeat_effect = true;
+                continue;
+            }
             for (int i = chooseCmd.positions_size() - 1; i >= 0; --i) {
                 auto card = pzone->card(chooseCmd.positions(i));
                 if (!card)

@@ -21,14 +21,14 @@ set(languageSpec
 list(TRANSFORM languageSpec PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)
 
 add_custom_command(
-    OUTPUT gen_cpp.cpp gen_cpp.h
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/parse.py ${languageSpec}
-    DEPENDS ${languageSpec} parse.py
+    OUTPUT gen_serializer.cpp gen_serializer.h
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/ability_serializer.py ${languageSpec}
+    DEPENDS ${languageSpec} ability_serializer.py
     VERBATIM)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_executable(jsonParser WIN32 ${jsonParserSources} gen_cpp.cpp gen_cpp.h)
+add_executable(jsonParser WIN32 ${jsonParserSources} gen_serializer.cpp gen_serializer.h)
 
 target_include_directories(jsonParser
     PRIVATE

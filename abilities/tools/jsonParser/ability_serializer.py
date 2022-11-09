@@ -1,5 +1,3 @@
-from operator import truediv
-
 import sys
 
 def readFileWithoutComments(f):
@@ -342,7 +340,7 @@ std::string serializeAbility(const Ability& field) {
 }
 '''
 
-gencpp = open('gen_cpp.cpp', 'wt')
+gencpp = open('gen_serializer.cpp', 'wt')
 gencpp.write(cpp.headers)
 gencpp.write('\n\n')
 gencpp.write(cpp.declarations)
@@ -352,23 +350,6 @@ gencpp.write('\n\n')
 gencpp.write(cpp.definitions)
 gencpp.close()
 
-genhpp = open('gen_cpp.h', 'wt')
+genhpp = open('gen_serializer.h', 'wt')
 genhpp.write(cpp.hpp)
 genhpp.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#400*3+680*2+980*2+400+780*3+300*4+400*4+300*3+500*2+300*4+400*4+300*4+150*4+400

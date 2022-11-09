@@ -16,7 +16,7 @@
 
 #include "dbManager.h"
 
-#include "gen_cpp.h"
+#include "gen_serializer.h"
 
 using namespace asn;
 

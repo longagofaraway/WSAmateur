@@ -195,6 +195,7 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
                 metRequirements[spec.type] = true;
             break;
         case asn::CardSpecifierType::Owner:
+        case asn::CardSpecifierType::SumOfLevelsLessThanDiffNamedEventsInMemory:
             // don't process here
             metRequirements[spec.type] = true;
             break;

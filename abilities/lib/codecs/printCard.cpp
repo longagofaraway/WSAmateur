@@ -189,6 +189,12 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
             s += "with level equal to or less than your level +1 ";
     }
 
+    for (const auto &cardSpec: c.cardSpecifiers) {
+        if (cardSpec.type == CardSpecifierType::SumOfLevelsLessThanDiffNamedEventsInMemory)
+            s += "with sum of levels X or less from among them (X equals the number of events with "
+            "different names in your memory) ";
+    }
+
     if (s[s.size() - 1] == ' ')
         s.pop_back();
 
