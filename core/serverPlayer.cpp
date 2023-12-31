@@ -202,7 +202,7 @@ Resumable ServerPlayer::startTurn() {
     mGame->checkPhaseTrigger(asn::PhaseState::Start, asn::Phase::DrawPhase);
     co_await mGame->checkTiming();
 
-    drawCards(1);
+    co_await drawCards(1);
     co_await mGame->checkTiming();
 
     mGame->setPhase(asn::Phase::ClockPhase);
@@ -269,15 +269,15 @@ Resumable ServerPlayer::mulligan(const CommandMulligan cmd) {
             ids.push_back(cmd.ids(i));
 
         moveCards("hand", ids, "wr");
-        drawCards(static_cast<int>(ids.size()));
+        co_await drawCards(static_cast<int>(ids.size()));
     }
     mMulliganFinished = true;
     co_await mGame->endMulligan();
 }
 
-void ServerPlayer::drawCards(int number) {
+Resumable ServerPlayer::drawCards(int number) {
     for (int i = 0; i < number; ++i)
-        moveTopDeck("hand");
+        co_await moveTopDeck("hand");
 }
 
 void ServerPlayer::moveCards(std::string_view startZoneName, const std::vector<int> &cardPositions, std::string_view targetZoneName) {
@@ -409,12 +409,11 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     return true;
 }
 
-void ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
+Resumable ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
     auto deck = zone("deck");
     moveCard("deck", deck->count() - 1, targetZoneName);
 
-    if (deck->count() == 0)
-        refresh();
+    co_await checkRefreshAndLevelUp();
 }
 
 std::vector<ProtoTypeCard> ServerPlayer::moveMarkersToWr(std::vector<std::unique_ptr<ServerCard>> &markers) {
@@ -515,7 +514,7 @@ Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {
         moveCard("hand", cmd.card_pos(), "clock");
         if (zone("clock")->count() >= 7)
             co_await levelUp();
-        drawCards(2);
+        co_await drawCards(2);
     }
 
     co_await mGame->checkTiming();
@@ -911,7 +910,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
 }
 
 Resumable ServerPlayer::performTriggerStep(int pos) {
-    moveTopDeck("res");
+    co_await moveTopDeck("res");
     auto card = zone("res")->card(0);
     // end of game
     if (!card)
@@ -987,6 +986,10 @@ Resumable ServerPlayer::endOfAttack(bool forced) {
 }
 
 Resumable ServerPlayer::levelUp() {
+    auto clock = zone("clock");
+    if (clock->count() < 7)
+        co_return;
+
     clearExpectedComands();
 
     if (zone("level")->count() == 3) {
@@ -1003,10 +1006,6 @@ Resumable ServerPlayer::levelUp() {
     CommandLevelUp lvlCmd;
     cmd.command().UnpackTo(&lvlCmd);
     if (lvlCmd.clock_pos() > 6)
-        co_return;
-
-    auto clock = zone("clock");
-    if (clock->count() < 7)
         co_return;
 
     if (!moveCard("clock", lvlCmd.clock_pos(), "level"))
@@ -1115,16 +1114,16 @@ void ServerPlayer::clearClimaxZone() {
         moveCard("climax", 0, "wr");
 }
 
-void ServerPlayer::refresh() {
+Resumable ServerPlayer::refresh() {
     int count = zone("wr")->count();
     if (!count) {
         sendEndGame(false);
-        return;
+        co_return;
     }
     moveWrToDeck();
     sendToBoth(EventRefresh());
 
-    triggerRuleAction(RuleAction::RefreshPoint);
+    co_await moveTopDeck("clock");
 }
 
 void ServerPlayer::moveWrToDeck() {
@@ -1268,7 +1267,7 @@ Resumable ServerPlayer::takeDamage(int damage, ServerCard *attacker) {
     auto resZone = zone("res");
     bool cancelled = false;
     for (int i = 0; i < damage; ++i) {
-        moveTopDeck("res");
+        co_await moveTopDeck("res");
         auto card = resZone->topCard();
         // it should be the end of the game since deck AND wr is empty
         // or some unrecoverable error, so halt execution
@@ -1315,17 +1314,17 @@ Resumable ServerPlayer::checkRefreshAndLevelUp() {
         clearExpectedComands();
 
         if (choice == 0) {
-            refresh();
+            co_await refresh();
             co_await levelUp();
         } else {
             co_await levelUp();
-            refresh();
+            co_await refresh();
         }
         co_return;
     }
 
     if (needRefresh)
-        refresh();
+        co_await refresh();
     if (needLevelUp)
         co_await levelUp();
 }

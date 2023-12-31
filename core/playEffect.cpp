@@ -91,7 +91,7 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         playOpponentAutoCannotDealDamage(std::get<asn::OpponentAutoCannotDealDamage>(e.effect));
         break;
     case asn::EffectType::StockSwap:
-        playStockSwap(std::get<asn::StockSwap>(e.effect));
+        co_await playStockSwap(std::get<asn::StockSwap>(e.effect));
         break;
     case asn::EffectType::SideAttackWithoutPenalty:
         playSideAttackWithoutPenalty(std::get<asn::SideAttackWithoutPenalty>(e.effect));
@@ -100,7 +100,7 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         co_await playPutOnStageRested(std::get<asn::PutOnStageRested>(e.effect));
         break;
     case asn::EffectType::AddMarker:
-        playAddMarker(std::get<asn::AddMarker>(e.effect));
+        co_await playAddMarker(std::get<asn::AddMarker>(e.effect));
         break;
     case asn::EffectType::RemoveMarker:
         co_await playRemoveMarker(std::get<asn::RemoveMarker>(e.effect));
@@ -380,7 +380,7 @@ Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
         while (true) {
             auto cmd = co_await waitForCommand();
             if (cmd.command().Is<CommandPlayEffect>()) {
-                mPlayer->moveTopDeck("hand");
+                co_await mPlayer->moveTopDeck("hand");
                 cardsDrawn++;
 
                 if (cardsDrawn >= e.value.value)
@@ -421,7 +421,7 @@ Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
     if (!confirmed)
         co_return;
     for (int i = 0; i < e.value.value; ++i)
-        mPlayer->moveTopDeck("hand");
+        co_await mPlayer->moveTopDeck("hand");
 }
 
 void AbilityPlayer::playAttributeGain(const asn::AttributeGain &e) {
@@ -803,7 +803,7 @@ Resumable AbilityPlayer::playChangeState(const asn::ChangeState &e) {
 Resumable AbilityPlayer::playFlipOver(const asn::FlipOver &e) {
     assert(e.number.mod == asn::NumModifier::ExactMatch);
     for (int i = 0; i < e.number.value; ++i)
-        mPlayer->moveTopDeck("res");
+        co_await mPlayer->moveTopDeck("res");
 
     auto res = mPlayer->zone("res");
     int count = 0, climaxCount = 0;
@@ -1009,7 +1009,7 @@ void AbilityPlayer::playOpponentAutoCannotDealDamage(const asn::OpponentAutoCann
     }
 }
 
-void AbilityPlayer::playStockSwap(const asn::StockSwap &e) {
+Resumable AbilityPlayer::playStockSwap(const asn::StockSwap &e) {
     auto opponent = mPlayer->getOpponent();
     auto stock = opponent->zone("stock");
     int stockCount = stock->count();
@@ -1021,7 +1021,7 @@ void AbilityPlayer::playStockSwap(const asn::StockSwap &e) {
         toZone->shuffle();
 
     for (int i = 0; i < stockCount; ++i)
-        opponent->moveTopDeck("stock");
+        co_await opponent->moveTopDeck("stock");
 }
 
 void AbilityPlayer::playCannotMove(const asn::CannotMove &e) {

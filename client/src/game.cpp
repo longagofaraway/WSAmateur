@@ -202,15 +202,19 @@ void Game::processGameEventFromQueue() {
     if (!mPlayer)
         return;
 
-    auto event = mEventQueue.front();
-    mEventQueue.pop_front();
-    if (mPlayer->id() == event->player_id())
-        mPlayer->processGameEvent(event);
-    else if (mOpponent)
-        mOpponent->processGameEvent(event);
+    try {
+        auto event = mEventQueue.front();
+        mEventQueue.pop_front();
+        if (mPlayer->id() == event->player_id())
+            mPlayer->processGameEvent(event);
+        else if (mOpponent)
+            mOpponent->processGameEvent(event);
 
-    if (!mEventQueue.empty())
-        QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
+        if (!mEventQueue.empty())
+            QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
+    } catch (const std::exception& ex) {
+        emit endGamePrematurely(QString("Error occurred: ") + ex.what(), "start");
+    }
 }
 
 void Game::cardMoveFinished() {

@@ -147,12 +147,12 @@ private:
     void playCannotBecomeReversed(const asn::CannotBecomeReversed &e);
     void playCannotBeChosen(const asn::CannotBeChosen &e);
     void playOpponentAutoCannotDealDamage(const asn::OpponentAutoCannotDealDamage &e);
-    void playStockSwap(const asn::StockSwap &e);
+    Resumable playStockSwap(const asn::StockSwap &e);
     void playCannotMove(const asn::CannotMove &e);
     void playCannotStand(const asn::CannotStand &e);
     void playSideAttackWithoutPenalty(const asn::SideAttackWithoutPenalty &e);
     Resumable playPutOnStageRested(const asn::PutOnStageRested &e);
-    void playAddMarker(const asn::AddMarker &e);
+    Resumable playAddMarker(const asn::AddMarker &e);
     Resumable playRemoveMarker(const asn::RemoveMarker &e);
     void playTriggerGain(const asn::TriggerIconGain &e);
     void playCanPlayWithoutColorRequirement(const asn::CanPlayWithoutColorRequirement &e);

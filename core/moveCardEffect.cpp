@@ -433,12 +433,12 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
 
 }
 
-void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
+Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
         ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
             mentionedCards().empty()) ||
         (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
-        return;
+        co_return;
 
     if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified
         && e.target.targetSpecification->mode != asn::TargetMode::All) {
@@ -449,7 +449,7 @@ void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     // TODO: add choice of target stage cards
     auto targetStageCards = getTargets(e.destination);
     if (targetStageCards.empty())
-        return;
+        co_return;
     auto targetStageCard = targetStageCards.front();
     auto player = targetStageCard->player();
 
@@ -466,9 +466,9 @@ void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
 
             player->addMarker(pzone, pzone->count() - 1, targetStageCard->pos(), e.orientation);
             if (pzone->count() == 0)
-                player->refresh();
+                co_await player->refresh();
         }
-        return;
+        co_return;
     }
 
     // TODO: won't work with TargetType::SpecificCards
@@ -481,7 +481,7 @@ void AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
         player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation);
 
         if (e.from.zone == asn::Zone::Deck && target->zone()->count() == 0)
-            player->refresh();
+            co_await player->refresh();
     }
 }
 

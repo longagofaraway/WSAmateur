@@ -1,5 +1,7 @@
 #include <QCoreApplication>
 
+#include <version_string.h>
+
 #include "cardDatabase.h"
 #include "imageLinks.h"
 #include "networkConnectionManager.h"
@@ -29,6 +31,11 @@ void myMessageOutput(QtMsgType /*type*/, const QMessageLogContext &, const QStri
 }
 
 int main(int argc, char *argv[]) {
+    if (argc == 2 && std::string(argv[1]) == "-v") {
+        std::cout << "running varsion" << VERSION_STRING;
+        return 0;
+    }
+
     QCoreApplication app(argc, argv);
 
     try {

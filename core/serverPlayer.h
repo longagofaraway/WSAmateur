@@ -138,12 +138,12 @@ public:
     Resumable startTurn();
     void dealStartingHand();
     Resumable mulligan(const CommandMulligan cmd);
-    void drawCards(int number);
+    Resumable drawCards(int number);
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardPositions, std::string_view targetZoneName);
     bool moveCard(std::string_view startZoneName, int startPos, std::string_view targetZoneName, int targetPos = -1,
                   bool reveal = false, bool enableGlobEncore = true);
     bool moveCardToStage(ServerCardZone *startZone, int startPos, ServerCardZone *targetZone, int targetPos);
-    void moveTopDeck(std::string_view targetZoneName);
+    Resumable moveTopDeck(std::string_view targetZoneName);
     void addMarker(ServerCardZone *startZone, int startPos,
                    int targetPos, asn::FaceOrientation faceOrientation);
     void removeTopMarker(ServerCard *markerBearer, const asn::Place &place);
@@ -174,7 +174,7 @@ public:
     Resumable encoreCharacter(const CommandEncoreCharacter cmd);
     Resumable discardDownTo7();
     void clearClimaxZone();
-    void refresh();
+    Resumable refresh();
     void moveWrToDeck();
     void sendPhaseEvent(asn::Phase phase);
     void sendEndGame(bool victory);
