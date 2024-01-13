@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include <QSettings>
 
 class SettingsManager
@@ -16,7 +18,8 @@ public:
     QString getUsername();
     void setUsername(QString username);
     bool hasUsername();
-    bool localGameEnabled() ;
+    bool localGameEnabled();
+    std::optional<QString> localGameDeckName();
 
 private:
     void setValue(QVariant value, QString name, QString group);

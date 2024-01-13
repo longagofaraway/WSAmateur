@@ -7,6 +7,7 @@
 #include "deckUtils.h"
 #include "game.h"
 #include "imageLoader.h"
+#include "settingsManager.h"
 
 GamePreparation::GamePreparation() {}
 
@@ -20,6 +21,13 @@ void GamePreparation::init(Game *game_) {
     connect(game, &Game::opponentDeckSet, this, &GamePreparation::setOpponentDeck);
 
     game->preGameLoaded();
+
+    auto &settingsManager = SettingsManager::get();
+    const auto &deckName = settingsManager.localGameDeckName();
+    if (settingsManager.localGameEnabled() && deckName.has_value()) {
+        sendDeck(deckName.value());
+        setReady();
+    }
 }
 
 void GamePreparation::sendDeck(QString deckName) {

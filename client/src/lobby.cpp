@@ -3,6 +3,8 @@
 #include "lobbyCommand.pb.h"
 #include "lobbyEvent.pb.h"
 
+#include "settingsManager.h"
+
 Lobby::Lobby() {
 
 }
@@ -48,29 +50,39 @@ void Lobby::processLobbyEvent(const std::shared_ptr<LobbyEvent> event) {
 }
 
 void Lobby::lobbyInfoReceived(EventLobbyInfo &event) {
-    auto repeatedUserInfo = event .mutable_user_info();
+    auto repeatedUserInfo = event.mutable_user_info();
     std::vector<UserInfo> userInfo(repeatedUserInfo->begin(), repeatedUserInfo->end());
     model.update(std::move(userInfo));
     emit userCountChanged(event.user_count());
-    return;
-    // for testing purposes
-    static bool gameStarted = false;
-    if (gameStarted)
-        return;
-    gameStarted = true;
 
-    if (!event.user_info_size()) {
-        client->sendLobbyCommand(CommandEnterQueue());
-        return;
+    auto &settingsManager = SettingsManager::get();
+    if (settingsManager.localGameEnabled()) {
+        if (isLocalGameStarted)
+            return;
+
+        isLocalGameStarted = true;
+
+        if (!event.user_info_size()) {
+            client->sendLobbyCommand(CommandEnterQueue());
+            return;
+        }
+
+        CommandInviteToPlay cmd;
+        cmd.set_user_id(event.user_info(0).id());
+        client->sendLobbyCommand(cmd);
     }
-
-    CommandInviteToPlay cmd;
-    cmd.set_user_id(event.user_info(0).id());
-    client->sendLobbyCommand(cmd);
 }
 
 void Lobby::playerInviteReceived(const EventInvitedToPlay &event) {
+    auto &settingsManager = SettingsManager::get();
+
     inviteQueue.push_back(event.user_info());
+
+    if (settingsManager.localGameEnabled()) {
+        acceptInvite();
+        return;
+    }
+
     if (!isInvited) {
         isInvited = true;
         auto &name = inviteQueue.front().name();
@@ -151,8 +163,11 @@ void Lobby::refuseInvite() {
 }
 
 void Lobby::acceptInvite() {
-    auto inviter = inviteQueue.front();
-    inviteQueue.pop_front();
+    std::optional<UserInfo> inviter;
+    if (!inviteQueue.empty()) {
+        inviter = inviteQueue.front();
+        inviteQueue.pop_front();
+    }
 
     while (inviteQueue.size()) {
         CommandDeclineInvite cmd;
@@ -163,7 +178,9 @@ void Lobby::acceptInvite() {
         inviteQueue.pop_front();
     }
 
-    CommandAcceptInvite cmd;
-    cmd.set_inviter_id(inviter.id());
-    client->sendLobbyCommand(cmd);
+    if (inviter) {
+        CommandAcceptInvite cmd;
+        cmd.set_inviter_id(inviter.value().id());
+        client->sendLobbyCommand(cmd);
+    }
 }

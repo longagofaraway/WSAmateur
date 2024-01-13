@@ -20,6 +20,7 @@ private:
     Client *client;
     std::deque<UserInfo> inviteQueue;
     bool isInvited = false;
+    bool isLocalGameStarted = false;
 
 public:
     Lobby();

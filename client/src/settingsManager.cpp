@@ -8,6 +8,7 @@ const QString kUsername = "username";
 
 const QString kDeveloper = "developer";
 const QString kLocalGameEnabled = "localgame";
+const QString kLocalGameDeck = "localgamedeck";
 }
 
 SettingsManager::SettingsManager(QString settingsPath)
@@ -33,6 +34,13 @@ bool SettingsManager::hasUsername() {
 
 bool SettingsManager::localGameEnabled() {
     return hasValue(kLocalGameEnabled, kDeveloper);
+}
+
+std::optional<QString> SettingsManager::localGameDeckName() {
+    if (hasValue(kLocalGameDeck, kDeveloper)) {
+        return getValue(kLocalGameDeck, kDeveloper).toString();
+    }
+    return std::nullopt;
 }
 
 void SettingsManager::setValue(QVariant value, QString name, QString group) {

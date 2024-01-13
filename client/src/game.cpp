@@ -91,16 +91,6 @@ void Game::addOpponent(const PlayerInfo &info) {
     mOpponent = std::make_unique<Player>(info.id(), this, true);
     mOpponent->setDeck(info.deck());
     emit opponentDeckSet(info.deck());
-
-    // for testing
-    /*mPlayer->setDeck(gDeck);
-    CommandSetDeck cmd;
-    cmd.set_deck(gDeck);
-    mClient->sendGameCommand(cmd);
-
-    CommandReadyToStart readyCmd;
-    readyCmd.set_ready(true);
-    mClient->sendGameCommand(readyCmd);*/
 }
 
 void Game::processGameInfo(const GameInfo &game_info) {

@@ -59,7 +59,8 @@ Card {
     }
 
     function setupMoveToZone() {
-        if (targetZone === "reveal") {
+        if (targetZone === "reveal") { //||
+                //(targetZone === "hand" && startZone === "wr")) {
             toX = opponent ? root.width * 0.15 : root.width * 0.75;
             toY = opponent ? root.height * 0.3 : root.height * 0.6;
             let szone = gGame.getZone(startZone, opponent);
