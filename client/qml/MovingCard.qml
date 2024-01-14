@@ -80,6 +80,7 @@ Card {
             return;
         }
 
+        let szone = gGame.getZone(startZone, opponent);
         let tzone = gGame.getZone(targetZone, opponent);
         if (targetPos == -1) {
             toX = tzone.getXForNewCard(targetPos);
@@ -112,6 +113,12 @@ Card {
                 toImg = code;
                 if (targetZone === "hand") drawingMove.start();
                 else flippingMove.start();
+            }
+        } else if (!szone.hidden && targetZone === "hand") {
+            if (opponent) {
+                oppRevealAndTake.start();
+            } else {
+                revealAndTake.start();
             }
         } else {
             straightMove.start();
@@ -226,7 +233,7 @@ Card {
             NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
             NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
         }
-        PauseAnimation { duration: 500 }
+        PauseAnimation { duration: 900 }
         ParallelAnimation {
             NumberAnimation { target: movingCard; property: "x"; to: playerRevealAnim.backX; duration: 300; }
             NumberAnimation { target: movingCard; property: "y"; to: playerRevealAnim.backY; duration: 300; }
@@ -247,7 +254,7 @@ Card {
                 NumberAnimation { target: yRot; property: "angle"; from: -90; to: 0; duration: 100; }
             }
         }
-        PauseAnimation { duration: 800 }
+        PauseAnimation { duration: 900 }
         ParallelAnimation {
             NumberAnimation { target: movingCard; property: "x"; to: oppRevealAnim.backX; duration: 200 }
             NumberAnimation { target: movingCard; property: "y"; to: oppRevealAnim.backY; duration: 200 }
@@ -258,5 +265,42 @@ Card {
             }
         }
         ScriptAction { script: completeAction() }
+    }
+
+    SequentialAnimation {
+        id: revealAndTake
+        property real revealX: opponent ? root.width * 0.15 : root.width * 0.75
+        property real revealY: opponent ? root.height * 0.3 : root.height * 0.6;
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: revealAndTake.revealX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: revealAndTake.revealY; duration: 300; }
+        }
+        PauseAnimation { duration: 900 }
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
+        }
+        ScriptAction { script: finishMove() }
+    }
+
+    SequentialAnimation {
+        id: oppRevealAndTake
+        property real revealX: opponent ? root.width * 0.15 : root.width * 0.75
+        property real revealY: opponent ? root.height * 0.3 : root.height * 0.6;
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: oppRevealAndTake.revealX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: oppRevealAndTake.revealY; duration: 300; }
+        }
+        PauseAnimation { duration: 900 }
+        ParallelAnimation {
+            NumberAnimation { target: movingCard; property: "x"; to: toX; duration: 300; }
+            NumberAnimation { target: movingCard; property: "y"; to: toY; duration: 300; }
+            SequentialAnimation {
+                NumberAnimation { target: yRot; property: "angle"; from: 0; to: 90; duration: 100; }
+                PropertyAction { target: movingCard; property: "mSource"; value: "cardback" }
+                NumberAnimation { target: yRot; property: "angle"; from: -90; to: 0; duration: 100; }
+            }
+        }
+        ScriptAction { script: finishMove() }
     }
 }
