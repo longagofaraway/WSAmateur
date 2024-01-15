@@ -321,7 +321,7 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
             auto pzone = owner(cardOwner)->zone(chooseCmd.zone());
             if (!pzone)
                 break;
-            if (!areChosenCardsValid(chooseCmd, pzone)) {
+            if (!areChosenCardsValid(e, chooseCmd, pzone)) {
                 repeat_effect = true;
                 continue;
             }

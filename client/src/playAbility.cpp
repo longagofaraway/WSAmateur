@@ -38,8 +38,8 @@ int Player::highlightCardsFromEvent(
     }
 
     const auto &cards = pzone->cards();
-    highlightAllCards(pzone, false);
-    selectAllCards(pzone, false);
+    dehighlightAllCards(pzone);
+    deselectAllCards(pzone);
     int eligibleCount = 0;
 
     auto highlightCard = [&cards, pzone,
@@ -173,8 +173,8 @@ void Player::sendChooseCard(const asn::SearchCard &e) {
 void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
     if (placeType == asn::PlaceType::Selection) {
         auto from = getViewWithCards();
-        highlightAllCards(from, false);
-        selectAllCards(from, false);
+        dehighlightAllCards(from);
+        deselectAllCards(from);
         return;
     }
     toggleZoneView(place->get(), false);
@@ -182,13 +182,13 @@ void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
         return;
     if (place->get().owner == asn::Player::Player || place->get().owner == asn::Player::Both) {
         auto from = zone(place->get().zone);
-        highlightAllCards(from, false);
-        selectAllCards(from, false);
+        dehighlightAllCards(from);
+        deselectAllCards(from);
     }
     if (place->get().owner == asn::Player::Opponent || place->get().owner == asn::Player::Both) {
         auto from = getOpponent()->zone(place->get().zone);
-        highlightAllCards(from, false);
-        selectAllCards(from, false);
+        dehighlightAllCards(from);
+        deselectAllCards(from);
     }
 }
 

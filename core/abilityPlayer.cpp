@@ -21,6 +21,23 @@ int numOfDifferentlyNamedEvents(ServerPlayer *player) {
     }
     return static_cast<int>(names.size());
 }
+
+bool hasHinaCondition(const asn::ChooseCard &e) {
+    for (const auto &target: e.targets) {
+        if (target.target.type != asn::TargetType::SpecificCards) {
+            continue;
+        }
+        const auto &spec = *target.target.targetSpecification;
+        for (const auto& cardSpecifier: spec.cards.cardSpecifiers) {
+            if (cardSpecifier.type ==
+                    asn::CardSpecifierType::SumOfLevelsLessThanDiffNamedEventsInMemory) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 }
 
 Resumable AbilityPlayer::payCost() {
@@ -412,7 +429,11 @@ Resumable AbilityPlayer::waitForPlayerLookConfirmation() {
     }
 }
 
-bool AbilityPlayer::areChosenCardsValid(const CommandChooseCard& cmd, ServerCardZone* zone) {
+bool AbilityPlayer::checkHinaCondition(const asn::ChooseCard &e, const CommandChooseCard& cmd, ServerCardZone* zone) {
+    if (!hasHinaCondition(e)) {
+        return true;
+    }
+
     int sumOfLevels{0};
     for (int i = cmd.positions_size() - 1; i >= 0; --i) {
         auto card = zone->card(cmd.positions(i));
@@ -421,4 +442,8 @@ bool AbilityPlayer::areChosenCardsValid(const CommandChooseCard& cmd, ServerCard
         sumOfLevels += card->level();
     }
     return sumOfLevels <= numOfDifferentlyNamedEvents(mPlayer);
+}
+
+bool AbilityPlayer::areChosenCardsValid(const asn::ChooseCard &e, const CommandChooseCard& cmd, ServerCardZone* zone) {
+    return checkHinaCondition(e, cmd, zone);
 }

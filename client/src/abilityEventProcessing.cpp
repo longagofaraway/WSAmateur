@@ -145,7 +145,7 @@ void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexCh
                 stage->model().setGlow(i, true);
         }
     } else if (effect.to[0].zone == asn::Zone::Stage && effect.to[0].pos == asn::Position::NotSpecified) {
-        highlightAllCards(stage, true);
+        highlightAllCards(stage);
     }
 }
 

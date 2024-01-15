@@ -194,7 +194,9 @@ private:
     bool checkTarget(const asn::TargetSpecificCards &spec, ServerCard *card);
     bool findChooseTargetsAutomatically(const asn::ChooseCard &e);
     Resumable waitForPlayerLookConfirmation();
-    bool areChosenCardsValid(const CommandChooseCard& cmd, ServerCardZone* zone);
+
+    bool checkHinaCondition(const asn::ChooseCard &e, const CommandChooseCard& cmd, ServerCardZone* zone);
+    bool areChosenCardsValid(const asn::ChooseCard &e, const CommandChooseCard& cmd, ServerCardZone* zone);
 
     void logMove(ServerPlayer *player, asn::Zone toZone);
 

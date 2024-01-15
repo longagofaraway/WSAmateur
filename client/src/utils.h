@@ -9,8 +9,10 @@ struct ActivatedAbility;
 class CardZone;
 
 asn::Ability decodeAbility(const std::string &buf);
-void highlightAllCards(CardZone *zone, bool highlight);
-void selectAllCards(CardZone *zone, bool select);
+void highlightAllCards(CardZone *zone);
+void dehighlightAllCards(CardZone *zone);
+void selectAllCards(CardZone *zone);
+void deselectAllCards(CardZone *zone);
 int getForEachMultiplierValue(Player *player, int thisCardId, const asn::Multiplier &multiplier);
 
 template<typename T>
@@ -19,8 +21,8 @@ int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier>
                            bool readCannotBeChosen) {
     int eligibleCount = 0;
     const auto &cards = zone->cards();
-    highlightAllCards(zone, false);
-    selectAllCards(zone, false);
+    dehighlightAllCards(zone);
+    deselectAllCards(zone);
 
     for (int i = 0; i < zone->model().count(); ++i) {
         if (!cards[i].cardPresent())

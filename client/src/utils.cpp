@@ -3,12 +3,8 @@
 #include "codecs/decode.h"
 #include "player.h"
 
-asn::Ability decodeAbility(const std::string &buf) {
-    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
-    auto it = binbuf.cbegin();
-    return decodeAbility(it, binbuf.end());
-}
 
+namespace {
 void highlightAllCards(CardZone *zone, bool highlight) {
     for (int i = 0; i < zone->model().count(); ++i)
         zone->model().setGlow(i, highlight);
@@ -16,6 +12,26 @@ void highlightAllCards(CardZone *zone, bool highlight) {
 void selectAllCards(CardZone *zone, bool select) {
     for (int i = 0; i < zone->model().count(); ++i)
         zone->model().setSelected(i, select);
+}
+}
+
+asn::Ability decodeAbility(const std::string &buf) {
+    std::vector<uint8_t> binbuf(buf.begin(), buf.end());
+    auto it = binbuf.cbegin();
+    return decodeAbility(it, binbuf.end());
+}
+
+void highlightAllCards(CardZone *zone) {
+    highlightAllCards(zone, true);
+}
+void dehighlightAllCards(CardZone *zone) {
+    highlightAllCards(zone, false);
+}
+void selectAllCards(CardZone *zone) {
+    selectAllCards(zone, true);
+}
+void deselectAllCards(CardZone *zone) {
+    selectAllCards(zone, false);
 }
 
 int highlightEligibleCards(CardZone *zone, const std::vector<asn::CardSpecifier> &specs,
