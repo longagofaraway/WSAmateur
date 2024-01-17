@@ -54,8 +54,11 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     }
     case asn::EffectType::Look: {
         auto e = asn::Look();
+        auto place = defaultPlace;
+        place.pos = asn::Position::Top;
+        place.zone = asn::Zone::Deck;
         e.number = defaultNum;
-        e.place = defaultPlace;
+        e.place = place;
         e.valueType = asn::ValueType::Raw;
         effect = e;
         break;
@@ -489,6 +492,14 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
 
         QMetaObject::invokeMethod(qmlObject, "setOrder", Q_ARG(QVariant, (int)ef.order));
         QMetaObject::invokeMethod(qmlObject, "setExecutor", Q_ARG(QVariant, (int)ef.executor));
+        break;
+    }
+    case asn::EffectType::RevealCard: {
+        const auto &ef = std::get<asn::RevealCard>(e);
+
+        QMetaObject::invokeMethod(qmlObject, "setRevealType", Q_ARG(QVariant, (int)ef.type));
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)ef.number.mod));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(ef.number.value)));
         break;
     }
     case asn::EffectType::Look: {

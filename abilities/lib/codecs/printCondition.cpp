@@ -10,7 +10,8 @@ bool isPartOfAndOr = false;
 bool firstInHaveCardChain = true;
 std::unordered_set<ConditionType> globalConditionTypes {
     ConditionType::DuringTurn,
-    ConditionType::DuringCardsFirstTurn
+    ConditionType::DuringCardsFirstTurn,
+    ConditionType::InBattleWithThis
 };
 
 bool haveCardChain(int current, std::vector<Condition> vc) {
@@ -124,13 +125,15 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         else if (c.who == Player::Opponent)
             s += "your opponent has ";
 
-        if (c.howMany.value == 1 && c.excludingThis) {
+        if (c.howMany.value == 1 && c.excludingThis &&
+                c.howMany.mod != NumModifier::UpTo) {
             s += "another ";
         } else if (c.howMany.value == 0 && c.excludingThis) {
             plural = true;
             s += "no other ";
         } else {
-            if (!(c.where.zone == Zone::Stage && c.howMany.value == 1)) {
+            if (!(c.where.zone == Zone::Stage && c.howMany.value == 1 &&
+                  c.howMany.mod != NumModifier::UpTo)) {
                 plural = true;
                 s += std::to_string(c.howMany.value) + " ";
             } else {
@@ -210,7 +213,7 @@ std::string printConditionAnd(const ConditionAnd &c) {
 }
 
 std::string printConditionInBatteWithThis() {
-    return "in battles involving this card, ";
+    return "during this card's battle, ";
 }
 
 std::string printConditionSumOfLevels(const ConditionSumOfLevels &c) {
@@ -352,6 +355,7 @@ std::string printGlobalConditions(const asn::Condition &condition) {
     }
     case asn::ConditionType::DuringTurn:
     case asn::ConditionType::DuringCardsFirstTurn:
+    case asn::ConditionType::InBattleWithThis:
         return printCondition(condition);
     }
     return s;

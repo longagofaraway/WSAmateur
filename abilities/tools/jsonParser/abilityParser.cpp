@@ -39,7 +39,7 @@ AddLevelMultiplier parseAddLevelMultiplier(const QJsonObject &json) {
 AddTriggerNumberMultiplier parseAddTriggerNumberMultiplier(const QJsonObject &json) {
     if (!json.contains("target") || !json["target"].isObject())
         throw std::runtime_error("no target in AddTriggerNumberMultiplier");
-    if (!json.contains("triggerIcon") || !json["triggerIcon"].isObject())
+    if (!json.contains("triggerIcon") || !json["triggerIcon"].isDouble())
         throw std::runtime_error("no triggerIcon in AddTriggerNumberMultiplier");
 
     AddTriggerNumberMultiplier m;
@@ -61,6 +61,8 @@ Multiplier parseMultiplier(const QJsonObject &json) {
         m.specifier = parseForEachMultiplier(json["specifier"].toObject());
     else if (m.type == MultiplierType::AddLevel)
         m.specifier = parseAddLevelMultiplier(json["specifier"].toObject());
+    else if (m.type == MultiplierType::AddTriggerNumber)
+        m.specifier = parseAddTriggerNumberMultiplier(json["specifier"].toObject());
 
     return m;
 }

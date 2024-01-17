@@ -110,14 +110,19 @@ std::string printTarget(const Target &t, bool plural, bool nominative, std::opti
         if (spec.mode == TargetMode::AllOther && spec.number.value != 1) {
             plural = true;
             article = false;
+        } else if (spec.mode == TargetMode::InFrontOfThis) {
+            plural = true;
+            s += "all of your ";
         }
 
         if (optArticle)
             article = optArticle.value();
         s += printCard(spec.cards, plural, article, spec.mode) + " ";
 
+        if (spec.mode == TargetMode::InFrontOfThis)
+            s += "in front of this card ";
         // it's for multiplier
-        if (spec.mode == TargetMode::FrontRowOther)
+        else if (spec.mode == TargetMode::FrontRowOther)
             s += "in the center stage ";
         else if (spec.mode == TargetMode::BackRowOther)
             s += "in the back stage ";

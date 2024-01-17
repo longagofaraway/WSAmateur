@@ -49,12 +49,14 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
         s += "other ";
 
     int count = 0;
+    bool hasExactName = false;
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::ExactName) {
             if (count)
                 s += "or ";
             s += "\"" + std::get<ExactName>(cardSpec.specifier).value + "\" ";
             count++;
+            hasExactName = true;
         }
     }
 
@@ -131,8 +133,10 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
         s += " ";
     }
 
+    bool hasCardTypeSpecifier = false;
     for (const auto &cardSpec: c.cardSpecifiers) {
         if (cardSpec.type == CardSpecifierType::CardType) {
+            hasCardTypeSpecifier = true;
             switch (std::get<CardType>(cardSpec.specifier)) {
             case CardType::Char:
                 s += "character";
@@ -159,6 +163,12 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
                 s += 's';
             s += " ";
         }
+    }
+    if (!hasCardTypeSpecifier && !hasExactName) {
+        s += "card";
+        if (plural)
+            s += "s";
+        s += " ";
     }
 
     for (const auto &cardSpec: c.cardSpecifiers) {

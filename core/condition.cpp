@@ -70,8 +70,7 @@ bool AbilityPlayer::evaluateConditionIsCard(const asn::ConditionIsCard &c) {
             for (int i = 0; i < stage->count(); ++i)
                 if (stage->card(i) && !checkCard(c.neededCard[0].cardSpecifiers, *stage->card(i)))
                     verified = false;
-            if (verified)
-                return true;
+            return verified;
         }
     } else if (c.target.type == asn::TargetType::BattleOpponent ||
                c.target.type == asn::TargetType::OppositeThis) {

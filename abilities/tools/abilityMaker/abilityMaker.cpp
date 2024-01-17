@@ -24,7 +24,12 @@ AbilityMaker::~AbilityMaker() {
 }
 
 void AbilityMaker::setAbility(const asn::Ability &a) {
+    ability_ = a;
     qmlAbility->setAbility(a);
+
+    auto str = printAbility(a);
+    auto descr = QString::fromStdString(printAbility(a));
+    QMetaObject::invokeMethod(this, "setDescription", Q_ARG(QVariant, descr));
 }
 
 void AbilityMaker::statusLinePush(QString dir) {

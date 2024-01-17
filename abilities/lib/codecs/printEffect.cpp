@@ -314,10 +314,17 @@ std::string printMoveCard(const MoveCard &e) {
 
     if (e.target.type == TargetType::RestOfTheCards) {
         s += "the rest ";
-    } else if (e.target.type == TargetType::ChosenCards || e.target.type == TargetType::LastMovedCards) {
+    } else if (e.target.type == TargetType::ChosenCards) {
         if ((gPrintState.chosenCardsNumber.mod == NumModifier::ExactMatch ||
             gPrintState.chosenCardsNumber.mod == NumModifier::UpTo) &&
             gPrintState.chosenCardsNumber.value == 1) {
+            s += "it ";
+        } else {
+            s += "them ";
+        }
+        gPrintState.lastMovedCardsNumber = gPrintState.chosenCardsNumber.value;
+    } else if (e.target.type == TargetType::LastMovedCards) {
+        if (gPrintState.lastMovedCardsNumber == 1) {
             s += "it ";
         } else {
             s += "them ";
@@ -374,11 +381,15 @@ std::string printMoveCard(const MoveCard &e) {
             s += "or ";
 
         if (e.to[i].pos == Position::EmptySlotBackRow)
-            return s + "to an empty slot in the back stage ";
+            return s + "to an open position of " + printPlayer(e.to[i].owner) + "back stage ";
         else if (e.to[i].pos == Position::EmptySlotFrontRow)
-            return s + "to an empty slot in the center stage ";
+            return s + "to an open position of " + printPlayer(e.to[i].owner) + "center stage ";
         else if (e.to[i].pos == Position::EmptySlot)
-            return s + "to an empty slot of " + printPlayer(e.to[i].owner) + "stage ";
+            return s + "to an open position of " + printPlayer(e.to[i].owner) + "stage ";
+        else if  (e.to[i].pos == Position::BackRow)
+            return s + "to any position of " + printPlayer(e.to[i].owner) + "back stage ";
+        else if  (e.to[i].pos == Position::FrontRow)
+            return s + "to any position of " + printPlayer(e.to[i].owner) + "center stage ";
         else if (e.to[i].pos == Position::SlotThisWasIn ||
                  e.to[i].pos == Position::SlotThisWasInRested ||
                  e.to[i].pos == Position::SlotTargetWasIn) {
@@ -402,6 +413,8 @@ std::string printMoveCard(const MoveCard &e) {
                 s += "on the top of ";
             else if (e.to[i].pos == Position::Bottom)
                 s += "on the bottom of ";
+            else
+                s += "into ";
         } else {
             s += "into ";
         }
@@ -740,7 +753,8 @@ std::string printSwapCards(const SwapCards &e) {
     auto text2 = printChooseCard(e.second);
     if (e.first.targets[0].target.type != TargetType::ChosenCards) {
         s += printChooseCard(e.first) + "and ";
-        text2.erase(0, 7);
+        if (text2.starts_with("choose "))
+            text2.erase(0, 7);
     }
     s += text2;
 
@@ -884,7 +898,12 @@ std::string printTriggerIconGain(const TriggerIconGain &e) {
     std::string s;
 
     s += printTarget(e.target);
-    s += "get " + printTriggerIcon(e.triggerIcon) + " trigger icon in all zones ";
+    s += "get";
+    if (e.target.type == TargetType::ThisCard)
+        s += "s";
+    s += " ";
+
+    s += printTriggerIcon(e.triggerIcon) + " trigger icon in all zones ";
     s += printDuration(e.duration);
 
     return s;

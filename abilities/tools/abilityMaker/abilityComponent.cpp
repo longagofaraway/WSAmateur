@@ -16,7 +16,8 @@ asn::Keyword stringToKeyword(const QString &s) {
                                                   {"Replay", asn::Keyword::Replay},
                                                   {"Alarm", asn::Keyword::Alarm},
                                                   {"Change", asn::Keyword::Change},
-                                                  {"Assist", asn::Keyword::Assist}};
+                                                  {"Assist", asn::Keyword::Assist},
+                                                  {"Memory", asn::Keyword::Memory}};
     return map[s.toStdString()];
 }
 QString keywordsToString(const std::vector<asn::Keyword> &k) {

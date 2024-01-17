@@ -371,6 +371,7 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
         } else if (item.type == asn::EffectType::RevealCard) {
             const auto &e = std::get<asn::RevealCard>(item.effect);
             assert(e.number.value == 1);
+            assert(e.type == asn::RevealType::FromHand);
             auto hand = mPlayer->zone("hand");
             for (int i = 0; i < hand->count(); ++i)
                 if (checkCard(e.card->cardSpecifiers, *hand->card(i)))
@@ -386,6 +387,8 @@ bool AbilityPlayer::canBePayed(const asn::CostItem &c) {
             if (markers.size() < spec.number.value)
                 return false;
 
+            return true;
+        } else if (item.type == asn::EffectType::Shuffle) {
             return true;
         } else {
             assert(false);
