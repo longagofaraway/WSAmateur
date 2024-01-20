@@ -37,5 +37,7 @@ enum TargetMode {
   frontRow = 4,
   backRow = 5,
   frontRowOther = 6,
-  backRowOther = 7
+  backRowOther = 7,
+  frontRowMiddlePosition = 8,
+  frontRowMiddlePositionOther = 9
 }

@@ -76,17 +76,33 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
             const auto &level = std::get<LevelWithMultiplier>(cardSpec.specifier);
             s += "level X (X is equal to ";
             if (level.multiplier.type == MultiplierType::AddLevel) {
-                s += "the level of ";
                 const auto &multiplier = std::get<AddLevelMultiplier>(level.multiplier.specifier);
                 if (multiplier.target->type == TargetType::ChosenCards) {
+                    s += "the level of ";
                     if (gPrintState.chosenCardsNumber.value == 1)
                         s += "the character you chose";
+                } else if (multiplier.target->type == TargetType::LastMovedCards) {
+                    if (gPrintState.lastMovedCardsNumber == 1) {
+                        s += "the level of that card";
+                    } else {
+                        s += "the sum of the levels of those cards";
+                    }
                 } else {
                     assert(false);
                 }
-                if (level.value.value != 0) {
+                if (level.value.value > 0) {
+                    s += " +" + std::to_string(level.value.value);
+                } else if (level.value.value < 0) {
                     s += " " + std::to_string(level.value.value);
                 }
+                s += ") ";
+            } else if (level.multiplier.type == MultiplierType::ForEach) {
+                s += "the number of ";
+                const auto &multiplier = std::get<ForEachMultiplier>(level.multiplier.specifier);
+                if (multiplier.target)
+                    s += printTarget(*multiplier.target, true);
+                if (multiplier.placeType == asn::PlaceType::SpecificPlace)
+                    s += " in " + printPlace(multiplier.place.value());
                 s += ") ";
             }
             if (level.value.mod == NumModifier::UpTo)

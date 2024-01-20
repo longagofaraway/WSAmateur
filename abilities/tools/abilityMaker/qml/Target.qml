@@ -85,7 +85,8 @@ Rectangle {
         ComboBox {
             id: tagetModeCombo
             model: ["Not specified", "All", "All other", "In front of this",
-                    "Front row", "Back row", "Front row other", "Back row other"]
+                    "Front row", "Back row", "Front row other", "Back row other",
+                    "Front row middle position", "Front row middle other"]
             onCurrentIndexChanged: targetModeChanged(currentIndex)
         }
     }

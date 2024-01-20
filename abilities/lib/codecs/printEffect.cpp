@@ -98,16 +98,23 @@ std::string printAttributeGain(const AttributeGain &e) {
         case TargetType::SpecificCards: {
             const auto &spec = *e.target.targetSpecification;
             bool plural = false;
+            bool article = true;
             if (spec.mode == TargetMode::All || spec.mode == TargetMode::AllOther) {
                 plural = true;
                 res += "all of ";
             } else if (spec.mode == TargetMode::InFrontOfThis) {
                 plural = true;
                 res += "all of your ";
+            } else if (spec.mode == TargetMode::FrontRowMiddlePositionOther) {
+                article = false;
+                res += "your other ";
             }
-            res += printCard(spec.cards, plural, true, spec.mode);
-            if (spec.mode == TargetMode::InFrontOfThis)
+            res += printCard(spec.cards, plural, article, spec.mode);
+            if (spec.mode == TargetMode::InFrontOfThis) {
                 res += " in front of this card";
+            } else if (spec.mode == TargetMode::FrontRowMiddlePositionOther) {
+                res += " in the middle position of your center stage";
+            }
             res += " get";
             if (!plural)
                 res += "s";
@@ -408,15 +415,13 @@ std::string printMoveCard(const MoveCard &e) {
             s += "on ";
             if (e.to[i].pos == Position::NotSpecified)
                 s += "any position of ";
-        } else if (e.to[i].zone == Zone::Deck) {
+        } else {
             if (e.to[i].pos == Position::Top)
                 s += "on the top of ";
             else if (e.to[i].pos == Position::Bottom)
                 s += "on the bottom of ";
             else
                 s += "into ";
-        } else {
-            s += "into ";
         }
         if (e.to[i].owner == Player::Player)
             s += "your ";

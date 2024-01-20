@@ -30,7 +30,9 @@ enum class TargetMode : uint8_t {
     FrontRow,
     BackRow,
     FrontRowOther,
-    BackRowOther
+    BackRowOther,
+    FrontRowMiddlePosition,
+    FrontRowMiddlePositionOther
 };
 
 struct TargetSpecificCards {
