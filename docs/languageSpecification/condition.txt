@@ -11,7 +11,8 @@ Condition {
     ConditionPlayersLevel,
     ConditionAnd,
     ConditionOr,
-    ConditionCardMoved
+    ConditionCardMoved,
+    ConditionHasMarkers
   }
 }
 
@@ -33,7 +34,8 @@ enum ConditionType {
 
   // i.e. rest one of your chars, if you do...
   // you probably need to use NonMandatory effect or PayCost
-  performedInFull = 14, 
+  performedInFull = 14,
+  hasMarkers = 15
 }
 
 ConditionAnd {
@@ -94,3 +96,9 @@ ConditionCardMoved {
 }
 // Look at up to 4, take 1 in hand.
 // If you put a card into hand this way...
+
+
+ConditionHasMarkers {
+    target Target,
+    number Number
+}

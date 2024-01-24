@@ -18,10 +18,14 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
     defaultPlace.pos = asn::Position::NotSpecified;
     defaultPlace.zone = asn::Zone::Stage;
 
+    auto defaultTarget = asn::Target();
+    defaultTarget.type = asn::TargetType::ThisCard;
+
     switch (type) {
     case asn::ConditionType::IsCard: {
         auto c = asn::ConditionIsCard();
         c.neededCard.push_back(asn::Card());
+        c.target = defaultTarget;
         condition = c;
         break;
     }
@@ -38,6 +42,7 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
     case asn::ConditionType::CardsLocation: {
         auto c = asn::ConditionCardsLocation();
         c.place = defaultPlace;
+        c.target = defaultTarget;
         condition = c;
         break;
     }
@@ -84,6 +89,14 @@ void initConditionByType(ConditionImplComponent::VarCondition &condition, asn::C
         c.player = asn::Player::Player;
         c.from = asn::Zone::NotSpecified;
         c.to = asn::Zone::Hand;
+        condition = c;
+        break;
+    }
+    case asn::ConditionType::HasMarkers: {
+        auto c = asn::ConditionHasMarkers();
+        c.number = defaultNum;
+        c.number.mod = asn::NumModifier::UpTo;
+        c.target = defaultTarget;
         condition = c;
         break;
     }
@@ -201,6 +214,14 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
         QMetaObject::invokeMethod(qmlObject, "setTo", Q_ARG(QVariant, (int)cond.to));
         break;
     }
+    case asn::ConditionType::HasMarkers: {
+        const auto &cond = std::get<asn::ConditionHasMarkers>(c);
+        target = cond.target;
+        targetSet = true;
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)cond.number.mod));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.number.value)));
+        break;
+    }
     default:
         break;
     }
@@ -224,6 +245,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         { asn::ConditionType::DuringTurn, "DuringTurn" },
         { asn::ConditionType::PlayersLevel, "PlayersLevel" },
         { asn::ConditionType::CardMoved, "CardMoved" },
+        { asn::ConditionType::HasMarkers, "HasMarkers" },
     };
 
     std::unordered_set<asn::ConditionType> readyComponents {
@@ -316,6 +338,14 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(fromChanged(int)), this, SLOT(onZoneFromChanged(int)));
         connect(qmlObject, SIGNAL(toChanged(int)), this, SLOT(onZoneToChanged(int)));
         break;
+    case asn::ConditionType::HasMarkers:
+        QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)asn::NumModifier::UpTo));
+        QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(1)));
+
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(numModifierChanged(int)), this, SLOT(onNumModifierChanged(int)));
+        connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+        break;
     default: break;
     }
 }
@@ -346,6 +376,11 @@ void ConditionImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::ConditionType::CardsLocation: {
         auto &c = std::get<asn::ConditionCardsLocation>(condition);
+        c.target = target;
+        break;
+    }
+    case asn::ConditionType::HasMarkers: {
+        auto &c = std::get<asn::ConditionHasMarkers>(condition);
         c.target = target;
         break;
     }
@@ -512,6 +547,11 @@ void ConditionImplComponent::onNumModifierChanged(int value) {
         c.value.mod = static_cast<asn::NumModifier>(value);
         break;
     }
+    case asn::ConditionType::HasMarkers: {
+        auto &c = std::get<asn::ConditionHasMarkers>(condition);
+        c.number.mod = static_cast<asn::NumModifier>(value);
+        break;
+    }
     default:
         assert(false);
     }
@@ -549,6 +589,11 @@ void ConditionImplComponent::onNumValueChanged(QString value) {
     case asn::ConditionType::PlayersLevel: {
         auto &c = std::get<asn::ConditionPlayersLevel>(condition);
         c.value.value = val;
+        break;
+    }
+    case asn::ConditionType::HasMarkers: {
+        auto &c = std::get<asn::ConditionHasMarkers>(condition);
+        c.number.value = val;
         break;
     }
     default:

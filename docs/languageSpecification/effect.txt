@@ -366,6 +366,9 @@ DelayedAbility {
   duration UInt8 // ability will cease to exist after that time
 }
 
+// do not add NonMandatory here
+// ability always presumes you can choose
+// number of markers to move
 CostSubstitution {
   effect Effect // perform it instead of 1 stock
 }

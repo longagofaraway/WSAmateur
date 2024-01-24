@@ -110,6 +110,10 @@ std::string printTarget(const Target &t, bool plural, bool nominative, std::opti
         if (spec.mode == TargetMode::AllOther && spec.number.value != 1) {
             plural = true;
             article = false;
+        } else if (spec.mode == TargetMode::All) {
+            plural = true;
+            article = false;
+            s += "all of ";
         } else if (spec.mode == TargetMode::InFrontOfThis) {
             plural = true;
             s += "all of your ";

@@ -19,7 +19,7 @@ struct ConditionOr {
     std::vector<Condition> cond;
 };
 
-struct ConditionIsCard{
+struct ConditionIsCard {
     Target target;
     std::vector<Card> neededCard; // array here instead of ORing conditions
 };
@@ -66,6 +66,11 @@ struct ConditionCardMoved {
     Zone to;
 };
 
+struct ConditionHasMarkers {
+    Target target;
+    Number number;
+};
+
 enum class ConditionType : uint8_t {
     NoCondition = 0,
     IsCard,
@@ -81,7 +86,8 @@ enum class ConditionType : uint8_t {
     PlayersLevel,
     DuringCardsFirstTurn,
     CardMoved,
-    PerformedInFull
+    PerformedInFull,
+    HasMarkers
 };
 
 struct Condition {
@@ -98,7 +104,8 @@ struct Condition {
         ConditionPlayersLevel,
         ConditionAnd,
         ConditionOr,
-        ConditionCardMoved
+        ConditionCardMoved,
+        ConditionHasMarkers
     > cond;
 };
 

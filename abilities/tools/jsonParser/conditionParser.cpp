@@ -106,6 +106,19 @@ ConditionDuringTurn parseConditionDuringTurn(const QJsonObject &json) {
     return c;
 }
 
+ConditionHasMarkers parseConditionHasMarkers(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in ConditionHasMarkers");
+    if (!json.contains("number") || !json["number"].isObject())
+        throw std::runtime_error("no number in ConditionHasMarkers");
+
+    ConditionHasMarkers c;
+    c.target = parseTarget(json["target"].toObject());
+    c.number = parseNumber(json["number"].toObject());
+
+    return c;
+}
+
 Condition parseCondition(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no condition type");
@@ -142,6 +155,9 @@ Condition parseCondition(const QJsonObject &json) {
         break;
     case ConditionType::PlayersLevel:
         c.cond = parseNumberType<ConditionPlayersLevel>(json["cond"].toObject());
+        break;
+    case ConditionType::HasMarkers:
+        c.cond = parseConditionHasMarkers(json["cond"].toObject());
         break;
     case ConditionType::InBattleWithThis:
     case ConditionType::NoCondition:

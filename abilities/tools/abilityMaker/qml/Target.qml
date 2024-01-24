@@ -52,7 +52,7 @@ Rectangle {
         ComboBox {
             id: typeCombo
             model: ["This card", "Chosen cards", "Specific card", "Rest of the cards",
-                    "Battle opponent", "Mentioned cards", "Character in battle",
+                    "Battle opponent", "Revealed/Looked at", "Character in battle",
                     "Character opposite this", "Last moved card", "Mentioned in trigger",
                     "Attacking character"]
             currentIndex: -1

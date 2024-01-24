@@ -2,6 +2,8 @@
 
 #include <random>
 
+#include <QDebug>
+
 #include "serverProtocolHandler.h"
 
 #include "gameEvent.pb.h"
@@ -11,7 +13,6 @@
 
 #include "server.h"
 
-#include <QDebug>
 
 ServerGame::ServerGame(Server *server, int id, std::string description)
     : mServer(server), mId(id), mNextPlayerId(0), mDescription(description) {}

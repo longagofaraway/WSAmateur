@@ -32,6 +32,11 @@ void encodeConditionCardMoved(const ConditionCardMoved &c, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(c.to));
 }
 
+void encodeConditionHasMarkers(const ConditionHasMarkers &c, Buf &buf) {
+    encodeTarget(c.target, buf);
+    encodeNumber(c.number, buf);
+}
+
 void encodeCondition(const Condition &c, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(c.type));
     switch (c.type) {
@@ -67,6 +72,9 @@ void encodeCondition(const Condition &c, Buf &buf) {
         break;
     case ConditionType::CardMoved:
         encodeConditionCardMoved(std::get<ConditionCardMoved>(c.cond), buf);
+        break;
+    case ConditionType::HasMarkers:
+        encodeConditionHasMarkers(std::get<ConditionHasMarkers>(c.cond), buf);
         break;
     default:
         break;

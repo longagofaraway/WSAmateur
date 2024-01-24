@@ -18,7 +18,7 @@ Rectangle {
     Text {
         id: label
         anchors.horizontalCenter: triggerImpl.horizontalCenter
-        text: "On Battle Opponent Reversed"
+        text: "On Paying Cost"
         font.pointSize: 12
     }
 

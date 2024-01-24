@@ -56,6 +56,7 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
         return s;
     }
 
+    bool plural = false;
     bool article = true;
     if (c.target.type == TargetType::ThisCard) {
         s += "this card is ";
@@ -69,8 +70,9 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
         s += "that card is ";
     } else if (c.target.type == TargetType::SpecificCards) {
         if (c.target.targetSpecification->mode == TargetMode::All) {
+            plural = true;
             s += "all of ";
-            s += printCard(c.target.targetSpecification->cards, true);
+            s += printCard(c.target.targetSpecification->cards, plural);
             s += " are ";
             article = false;
         }
@@ -82,7 +84,7 @@ std::string printConditionIsCard(const ConditionIsCard &c) {
     for (size_t i = 0; i < c.neededCard.size(); ++i) {
         if (i)
             s += " or ";
-        s += printCard(c.neededCard[i], false, article);
+        s += printCard(c.neededCard[i], plural, article);
     }
 
     s += ", ";
@@ -289,6 +291,26 @@ std::string printConditionPerformedInFull() {
     return "if you do, ";
 }
 
+std::string printConditionHasMarkers(const ConditionHasMarkers &c) {
+    std::string s = "if ";
+    s += printTarget(c.target);
+    s += "has ";
+    if (c.number.value == 0 &&
+            (c.number.mod == NumModifier::ExactMatch ||
+             c.number.mod == NumModifier::UpTo)) {
+        s +="no markers";
+    } else {
+        s += std::to_string(c.number.value);
+        if (c.number.mod == NumModifier::UpTo)
+            s += " or less ";
+        else if (c.number.mod == NumModifier::AtLeast)
+            s += " or more ";
+        s += "markers";
+    }
+    s += ", ";
+    return s;
+}
+
 std::string printCondition(const Condition &c, bool skipGlobalConditions) {
     std::string s;
 
@@ -334,6 +356,9 @@ std::string printCondition(const Condition &c, bool skipGlobalConditions) {
         break;
     case ConditionType::PerformedInFull:
         s += printConditionPerformedInFull();
+        break;
+    case ConditionType::HasMarkers:
+        s += printConditionHasMarkers(std::get<ConditionHasMarkers>(c.cond));
         break;
     default:
         break;

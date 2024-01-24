@@ -1,5 +1,7 @@
 #include "serverPlayer.h"
 
+#include <QDebug>
+
 #include "abilityPlayer.h"
 #include "abilityUtils.h"
 #include "serverGame.h"
@@ -35,6 +37,8 @@ bool AbilityPlayer::evaluateCondition(const asn::Condition &c) {
         return evaluateConditionCardMoved(std::get<asn::ConditionCardMoved>(c.cond));
     case asn::ConditionType::PerformedInFull:
         return evaluateConditionPerformedInFull();
+    case asn::ConditionType::HasMarkers:
+        return evaluateConditionHasMarkers(std::get<asn::ConditionHasMarkers>(c.cond));
     default:
         assert(false);
         return false;
@@ -204,4 +208,24 @@ bool AbilityPlayer::evaluateConditionCardMoved(const asn::ConditionCardMoved &c)
 
 bool AbilityPlayer::evaluateConditionPerformedInFull() {
     return mPerformedInFull;
+}
+
+bool AbilityPlayer::evaluateConditionHasMarkers(const asn::ConditionHasMarkers &c) {
+    auto targets = getTargets(c.target);
+
+    if (targets.empty()) {
+        qInfo() << "ConditionHasMarkers found no targets";
+        return false;
+    }
+
+    if (targets.size() > 1) {
+        qInfo() << "ConditionHasMarkers found >1 targets";
+    }
+
+    for (const auto& target: targets) {
+        if (!checkNumber(c.number, static_cast<int>(target->markers().size())))
+            return false;
+    }
+
+    return true;
 }

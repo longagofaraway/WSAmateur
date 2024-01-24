@@ -50,6 +50,13 @@ ConditionCardMoved decodeConditionCardMoved(Iterator &it, Iterator end) {
     return c;
 }
 
+ConditionHasMarkers decodeConditionHasMarkers(Iterator &it, Iterator end) {
+    ConditionHasMarkers c;
+    c.target = decodeTarget(it, end);
+    c.number = decodeNumber(it, end);
+    return c;
+}
+
 Condition decodeCondition(Iterator &it, Iterator end) {
     Condition c;
 
@@ -87,6 +94,9 @@ Condition decodeCondition(Iterator &it, Iterator end) {
         break;
     case ConditionType::CardMoved:
         c.cond = decodeConditionCardMoved(it, end);
+        break;
+    case ConditionType::HasMarkers:
+        c.cond = decodeConditionHasMarkers(it, end);
         break;
     default:
         break;

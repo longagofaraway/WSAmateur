@@ -383,6 +383,11 @@ std::string printMoveCard(const MoveCard &e) {
         s += "that character ";
     }
 
+    if (e.to.size() > 1 && e.to[0].zone == Zone::Deck && e.to[1].zone == Zone::Deck &&
+            e.to[0].owner == Player::Player) {
+        s += "on the top or the bottom of your ";
+        s += printZone(e.to[0].zone) + " ";
+    } else {
     for (size_t i = 0; i < e.to.size(); ++i) {
         if (i)
             s += "or ";
@@ -436,6 +441,7 @@ std::string printMoveCard(const MoveCard &e) {
 
         if (e.order == Order::Any)
             s += "in any order ";
+    }
     }
 
     return s;
@@ -872,7 +878,14 @@ std::string printRemoveMarker(const RemoveMarker &e) {
     s += printTarget(e.targetMarker);
     s += "from underneath ";
     s += printTarget(e.markerBearer);
-    s += "into " + printPlace(e.place) + " ";
+    if (e.place.zone == Zone::Stage) {
+        s += "on ";
+        if (e.place.pos == Position::NotSpecified)
+            s += "any position of ";
+    } else {
+        s += "into ";
+    }
+    s += printPlace(e.place) + " ";
 
     return s;
 }
@@ -927,10 +940,12 @@ std::string printCanPlayWithoutColorRequirement(const CanPlayWithoutColorRequire
 std::string printDelayedAbility(const DelayedAbility &e) {
     std::string s;
 
-    s += printDuration(e.duration);
-    if (s.size() > 0) {
-        s.pop_back();
-        s += ", ";
+    if (!(e.ability->triggers[0].type == TriggerType::OnPhaseEvent)) {
+        s += printDuration(e.duration);
+        if (s.size() > 0) {
+            s.pop_back();
+            s += ", ";
+        }
     }
     s += printAutoAbilitySimplified(*e.ability);
 
