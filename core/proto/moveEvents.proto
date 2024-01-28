@@ -19,6 +19,7 @@ message EventMoveCard {
     string target_zone = 5;
     sint32 target_pos = 6;
     repeated ProtoTypeCard markers = 7;
+    sint32 marker_pos = 8;
 }
 
 message EventPlayCard {

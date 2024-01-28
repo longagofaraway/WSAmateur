@@ -45,7 +45,8 @@ struct ActivatedAbility {
                  asn::Look,
                  asn::ChangeState,
                  asn::DrawCard,
-                 asn::RevealCard> effect;
+                 asn::RevealCard,
+                 asn::RemoveMarker> effect;
     std::variant<std::monostate,
                  asn::MoveCard,
                  asn::ChooseCard> nextEffect;

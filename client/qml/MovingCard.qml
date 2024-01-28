@@ -13,6 +13,7 @@ Card {
     property int startPos: 0
     property string targetZone
     property int targetPos: 0
+    property int markerPos: 0
     signal moveFinished()
 
     property real toX
@@ -34,7 +35,7 @@ Card {
     function removeCard() {
         let szone = gGame.getZone(startZone, opponent);
         if (startZone == "marker")
-            szone.removeMarker(startPos);
+            szone.removeMarker(startPos, markerPos);
         else
             szone.removeCard(startPos);
     }

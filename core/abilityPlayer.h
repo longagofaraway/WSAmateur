@@ -184,6 +184,8 @@ private:
     void sendRevealCard(ServerCard *card);
     std::map<int, ServerCard*> processCommandChooseCard(const CommandChooseCard &cmd);
     Resumable getStagePosition(int &position, const asn::MoveCard &e);
+    Resumable getStagePosition(int &position, const asn::RemoveMarker &e);
+    Resumable getStagePosition(int &position, std::vector<uint8_t> &buf, asn::EffectType effectType, asn::Player executor);
     Resumable moveFromTop(const asn::MoveCard &e, int toZoneIndex, int toIndex);
     void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type);
     int getForEachMultiplierValue(const asn::Multiplier &m);

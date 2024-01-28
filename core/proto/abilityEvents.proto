@@ -48,6 +48,7 @@ message EventMoveDestinationChoice {
 message EventMoveDestinationIndexChoice {
     bytes effect = 1;
     bool mandatory = 2;
+    sint32 effect_type = 3;
 }
 
 message EventDrawChoice {

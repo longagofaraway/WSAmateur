@@ -143,10 +143,14 @@ public:
     bool moveCard(std::string_view startZoneName, int startPos, std::string_view targetZoneName, int targetPos = -1,
                   bool reveal = false, bool enableGlobEncore = true);
     bool moveCardToStage(ServerCardZone *startZone, int startPos, ServerCardZone *targetZone, int targetPos);
+    bool moveCardToStage(std::unique_ptr<ServerCard> card, const std::string &startZoneName,
+                         int startPos, ServerCardZone *stage, int targetPos,
+                         std::optional<int> markerPos = {});
     Resumable moveTopDeck(std::string_view targetZoneName);
     void addMarker(ServerCardZone *startZone, int startPos,
                    int targetPos, asn::FaceOrientation faceOrientation);
-    void removeTopMarker(ServerCard *markerBearer, const asn::Place &place);
+    void removeMarker(ServerCard *markerBearer, int markerPos, const asn::Place &place,
+                      int targetPos = -1);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard cmd);
     Resumable playCounter(const CommandPlayCounter cmd);

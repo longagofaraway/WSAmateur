@@ -115,6 +115,7 @@ public:
     std::vector<std::unique_ptr<ServerCard>>& markers() { return mMarkers; }
     ServerCard* addMarker(std::unique_ptr<ServerCard> &&card);
     std::unique_ptr<ServerCard> takeTopMarker();
+    std::unique_ptr<ServerCard> takeMarker(int index);
 
     bool cannotPlay() const { return mCannotPlay; }
     void setCannotPlay(bool val) { mCannotPlay = val; }

@@ -359,6 +359,7 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     return true;
 }
 
+
 bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, ServerCardZone *stage, int targetPos) {
     if (targetPos >= 5)
         return false;
@@ -367,12 +368,18 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     if (!card)
         return false;
 
+    return moveCardToStage(std::move(card), startZone->name(), startPos, stage, targetPos);
+}
+
+bool ServerPlayer::moveCardToStage(std::unique_ptr<ServerCard> card, const std::string &startZoneName,
+                                   int startPos, ServerCardZone *stage, int targetPos,
+                                   std::optional<int> markerPos) {
     card->reset();
 
     // first, the card is placed on stage,
     // then if another card is already present on stage in the same place, it is removed by Rule Action
     // so old stage card can still trigger
-    checkZoneChangeTrigger(card.get(), startZone->name(), "stage");
+    checkZoneChangeTrigger(card.get(), startZoneName, "stage");
 
     std::vector<std::unique_ptr<ServerCard>> removedMarkers;
     auto currentStageCard = stage->card(targetPos);
@@ -387,7 +394,7 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
 
     auto oldStageCard = stage->putOnStage(std::move(card), targetPos);
     auto cardOnStage = stage->card(targetPos);
-    if (startZone->name() == "hand")
+    if (startZoneName == "hand")
         cardOnStage->setFirstTurn(true);
 
     moveMarkersToWr(removedMarkers);
@@ -395,10 +402,13 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     EventMoveCard event;
     event.set_card_id(cardOnStage->id());
     event.set_code(cardOnStage->code());
-    event.set_start_zone(startZone->name());
+    event.set_start_zone(startZoneName);
     event.set_start_pos(startPos);
     event.set_target_zone(stage->name());
     event.set_target_pos(targetPos);
+    if (markerPos.has_value()) {
+        event.set_marker_pos(markerPos.value());
+    }
     sendToBoth(event);
 
     if (oldStageCard)
@@ -476,15 +486,23 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
     mGame->resolveAllContAbilities();
 }
 
-void ServerPlayer::removeTopMarker(ServerCard *markerBearer, const asn::Place &place) {
-    auto marker = markerBearer->takeTopMarker();
-    if (!marker)
+void ServerPlayer::removeMarker(ServerCard *markerBearer, int markerPos,
+                                const asn::Place &place, int targetPos) {
+    auto markerPtr = markerBearer->takeMarker(markerPos);
+    if (!markerPtr)
         return;
-    auto faceOrientation = marker->faceOrientation();
-    marker->reset();
+
     std::string targetZoneName = std::string(asnZoneToString(place.zone));
     auto pzone = zone(targetZoneName);
-    auto card = pzone->addCard(std::move(marker));
+
+    if (place.zone == asn::Zone::Stage) {
+        moveCardToStage(std::move(markerPtr), "marker", markerBearer->pos(), pzone, targetPos, markerPos);
+        return;
+    }
+
+    auto faceOrientation = markerPtr->faceOrientation();
+    markerPtr->reset();
+    auto card = pzone->addCard(std::move(markerPtr));
 
     EventMoveCard eventPublic;
     eventPublic.set_start_zone("marker");
@@ -499,8 +517,8 @@ void ServerPlayer::removeTopMarker(ServerCard *markerBearer, const asn::Place &p
 
     EventMoveCard eventPrivate(eventPublic);
     if (faceOrientation == asn::FaceOrientation::FaceDown && pzone->type() == ZoneType::PrivateZone) {
-        eventPublic.set_card_id(card->id());
-        eventPublic.set_code(card->code());
+        eventPrivate.set_card_id(card->id());
+        eventPrivate.set_code(card->code());
     }
 
     sendGameEvent(eventPrivate);

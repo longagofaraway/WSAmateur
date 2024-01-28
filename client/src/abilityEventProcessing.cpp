@@ -119,32 +119,43 @@ void Player::processMoveDestinationChoice(const EventMoveDestinationChoice &even
 }
 
 void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexChoice &event) {
-    auto effect = decodingWrapper(event.effect(), decodeMoveCard);
-    if ((mOpponent && effect.executor == asn::Player::Player) ||
-        (!mOpponent && effect.executor == asn::Player::Opponent))
-        return;
-
-    assert(effect.to.size() == 1);
     auto &a = mAbilityList->ability(mAbilityList->activeId());
-    a.effect = effect;
+    asn::Place place{};
+    if (static_cast<asn::EffectType>(event.effect_type()) == asn::EffectType::MoveCard) {
+        auto effect = decodingWrapper(event.effect(), decodeMoveCard);
+        if ((mOpponent && effect.executor == asn::Player::Player) ||
+            (!mOpponent && effect.executor == asn::Player::Opponent))
+            return;
+        assert(effect.to.size() == 1);
+        a.effect = effect;
+        place = effect.to.at(0);
+    } else if (static_cast<asn::EffectType>(event.effect_type()) == asn::EffectType::RemoveMarker) {
+        auto effect = decodingWrapper(event.effect(), decodeRemoveMarker);
+        a.effect = effect;
+        place = effect.place;
+    } else {
+        qWarning() << "met unknown effect in dest index choice";
+        return;
+    }
+
     a.choiceType = ChoiceType::DestinationIndex;
-    auto player = effect.to[0].owner == asn::Player::Opponent ? getOpponent() : this;
+    auto player = place.owner == asn::Player::Opponent ? getOpponent() : this;
     auto stage = player->zone("stage");
-    if (effect.to[0].pos == asn::Position::EmptySlotFrontRow) {
+    if (place.pos == asn::Position::EmptySlotFrontRow) {
         for (int i = 0; i < 3; ++i) {
             if (!stage->cards()[i].cardPresent())
                 stage->model().setGlow(i, true);
         }
-    } if (effect.to[0].pos == asn::Position::EmptySlotBackRow) {
+    } if (place.pos == asn::Position::EmptySlotBackRow) {
         // highlight all row, because otherwise the move will be either auto-performed or auto-declined
         stage->model().setGlow(3, true);
         stage->model().setGlow(4, true);
-    } else if (effect.to[0].pos == asn::Position::EmptySlot) {
+    } else if (place.pos == asn::Position::EmptySlot) {
         for (int i = 0; i < stage->model().count(); ++i) {
             if (!stage->cards()[i].cardPresent())
                 stage->model().setGlow(i, true);
         }
-    } else if (effect.to[0].zone == asn::Zone::Stage && effect.to[0].pos == asn::Position::NotSpecified) {
+    } else if (place.zone == asn::Zone::Stage && place.pos == asn::Position::NotSpecified) {
         highlightAllCards(stage);
     }
 }
@@ -333,7 +344,7 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(600);
-    createMovingCard(event.card_id(), code, "deck", 0, "view", -1, false, true, true);
+    createMovingCard(event.card_id(), code, "deck", 0, "view", -1, 1, false, true, true);
 
     processLookRevealNextCard(asn::EffectType::RevealCard);
 }
@@ -345,7 +356,7 @@ void Player::lookTopDeck(const EventLookTopDeck &event) {
 
     QString code = QString::fromStdString(event.code());
     mGame->pause(400);
-    player->createMovingCard(event.card_id(), code, "deck", 0, "view", -1, false, true, true);
+    player->createMovingCard(event.card_id(), code, "deck", 0, "view", -1, -1, false, true, true);
 
     processLookRevealNextCard(asn::EffectType::Look, event.is_opponent());
 }
@@ -457,7 +468,7 @@ void Player::processRevealFromHand(const EventRevealFromHand &event) {
 
     auto &card = mHand->cards()[handPos];
     std::string code = event.code();
-    createMovingCard(card.id(), QString::fromStdString(code), "hand", handPos, "reveal", -1, false, false, true);
+    createMovingCard(card.id(), QString::fromStdString(code), "hand", handPos, "reveal", -1, -1, false, false, true);
 }
 
 void Player::processRuleActionChoice() {

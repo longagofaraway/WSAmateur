@@ -91,6 +91,16 @@ std::unique_ptr<ServerCard> ServerCard::takeTopMarker() {
     return card;
 }
 
+std::unique_ptr<ServerCard> ServerCard::takeMarker(int index) {
+    if (static_cast<size_t>(index) >= mMarkers.size())
+        return {};
+
+    auto card = std::move(mMarkers[index]);
+    mMarkers.erase(mMarkers.begin() + index);
+    return card;
+}
+
+
 int ServerCard::addAbility(const asn::Ability &a) {
     int id = generateAbilitiId();
     AbilityState s(a, id);

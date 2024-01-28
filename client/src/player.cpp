@@ -474,7 +474,7 @@ void Player::setInitialHand(const EventInitialHand &event) {
 }
 
 void Player::createMovingCard(int id, const QString &code, const std::string &startZone, int startPos,
-                              const std::string &targetZone, int targetPos, bool isUiAction,
+                              const std::string &targetZone, int targetPos, int markerPos, bool isUiAction,
                               bool dontFinishAction, bool noDelete) {
     if (isUiAction)
         mGame->startUiAction();
@@ -521,8 +521,8 @@ void Player::moveCard(const EventMoveCard &event) {
     if (code.isEmpty()) {
         if (event.start_zone() == "marker") {
             auto &markers = cards[event.start_pos()].markers();
-            if (!markers.empty())
-                code = markers.back().qcode();
+            if (event.marker_pos() < markers.size())
+                code = markers[event.marker_pos()].qcode();
         } else {
             code = cards[event.start_pos()].qcode();
         }
@@ -548,7 +548,8 @@ void Player::moveCard(const EventMoveCard &event) {
 
     addCardToLogView(code, targetZone);
 
-    createMovingCard(event.card_id(), code, startZoneStr, startPos, event.target_zone(), event.target_pos(), false, dontFinishAction);
+    createMovingCard(event.card_id(), code, startZoneStr, startPos, event.target_zone(),
+                     event.target_pos(), event.marker_pos(), false, dontFinishAction);
 }
 
 void Player::playCard(const EventPlayCard &event) {
@@ -699,7 +700,7 @@ void Player::moveClockToWr() {
         if (i == 5)
             dontFinishAction = false;
         auto &card = clock->cards()[0];
-        createMovingCard(card.id(), card.qcode(), "clock", 0, "wr", -1, false, dontFinishAction);
+        createMovingCard(card.id(), card.qcode(), "clock", 0, "wr", -1, -1, false, dontFinishAction);
     }
 }
 
@@ -807,8 +808,8 @@ void Player::sendSwitchPositions(int from, int to) {
 void Player::sendFromStageToWr(int pos) {
     auto &card = mStage->cards()[pos];
     for (const auto &marker: card.markers())
-        createMovingCard(marker.id(), marker.qcode(), "stage", pos, "wr", -1, true, true, true);
-    createMovingCard(card.id(), card.qcode(), "stage", pos, "wr", -1, true, false, true);
+        createMovingCard(marker.id(), marker.qcode(), "stage", pos, "wr", -1, -1, true, true, true);
+    createMovingCard(card.id(), card.qcode(), "stage", pos, "wr", -1, -1, true, false, true);
 }
 
 void Player::resetChoiceDialog() {
@@ -892,7 +893,7 @@ void Player::testAction()
     //QTimer::singleShot(1000, this, [this]() { createMovingCard(1, "IMC/W43-046", "deck", 0, "level", 0); });
     //QMetaObject::invokeMethod(zone("view")->visualItem(), "getCardOrder");
 
-    //createMovingCard("IMC/W43-046", "hand", 1, "wr", 0, true, false, true);
+    //createMovingCard("IMC/W43-046", "hand", 1, "wr", 0, -1, true, false, true);
     //QMetaObject::invokeMethod(zone("stage")->visualItem(), "getCardPos", Q_ARG(QVariant, 1));
 }
 

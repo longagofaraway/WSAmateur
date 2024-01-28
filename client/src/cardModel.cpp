@@ -78,14 +78,15 @@ void CardModel::removeCard(int row) {
     emit countChanged();
 }
 
-void CardModel::removeMarker(int row) {
+void CardModel::removeMarker(int row, int markerPos) {
     if (static_cast<size_t>(row) >= mCards.size())
         return;
 
     auto &card = mCards.at(row);
     auto &markers = card.markers();
-    if (!markers.empty())
-        markers.pop_back();
+    if (static_cast<size_t>(markerPos) >= markers.size())
+        return;
+    markers.erase(markers.begin() + markerPos);
 
     auto modelIndex = index(row);
     emit dataChanged(modelIndex, modelIndex, { TopMarkerRole });

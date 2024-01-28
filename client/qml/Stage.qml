@@ -68,5 +68,5 @@ Item {
     function addMarker(id, code, pos) { mModel.addMarker(pos, id, code); }
 
     function removeCard(pos) { mStagePlaces[pos].removeCard(pos); }
-    function removeMarker(pos) { mModel.removeMarker(pos); }
+    function removeMarker(pos, markerPos) { mModel.removeMarker(pos, markerPos); }
 }

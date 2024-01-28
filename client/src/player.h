@@ -121,8 +121,8 @@ public:
 
 private:
     void createMovingCard(int id, const QString &code, const std::string &startZone, int startPos,
-                          const std::string &targetZone, int targetPos = 0, bool isUiAction = false,
-                          bool dontFinishAction = false, bool noDelete = false);
+                          const std::string &targetZone, int targetPos = 0, int markerPos = 0,
+                          bool isUiAction = false, bool dontFinishAction = false, bool noDelete = false);
     void moveCard(int id, const std::string &code,
                   const std::string &startZoneName, int startPos,
                   const std::string &targetZoneName, int targetPos,

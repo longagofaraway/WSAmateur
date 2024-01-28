@@ -58,15 +58,27 @@ void AbilityPlayer::logMove(ServerPlayer *player, asn::Zone toZone) {
     mMoveLog.push_back({player, toZone});
 }
 
+Resumable AbilityPlayer::getStagePosition(int &position, const asn::RemoveMarker &e) {
+    std::vector<uint8_t> buf;
+    encodeRemoveMarker(e, buf);
+    co_await getStagePosition(position, buf, asn::EffectType::RemoveMarker, asn::Player::Player);
+}
+
 Resumable AbilityPlayer::getStagePosition(int &position, const asn::MoveCard &e) {
     std::vector<uint8_t> buf;
     encodeMoveCard(e, buf);
+    co_await getStagePosition(position, buf, asn::EffectType::MoveCard, e.executor);
+}
+
+Resumable AbilityPlayer::getStagePosition(int &position, std::vector<uint8_t> &buf,
+                                          asn::EffectType effectType, asn::Player executor) {
     EventMoveDestinationIndexChoice ev;
     ev.set_effect(buf.data(), buf.size());
     ev.set_mandatory(true);
+    ev.set_effect_type(static_cast<int>(effectType));
     mPlayer->sendToBoth(ev);
 
-    auto player = owner(e.executor);
+    auto player = owner(executor);
     player->clearExpectedComands();
     player->addExpectedCommand(CommandChoice::descriptor()->name());
 
@@ -485,6 +497,7 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     }
 }
 
+// user can't choose markers to remove atm
 Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
     auto targetStageCards = getTargets(e.markerBearer);
     if (targetStageCards.empty())
@@ -530,10 +543,34 @@ Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
     if (canceled())
         co_return;
 
-
     if (e.targetMarker.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.targetMarker.targetSpecification;
-        for (int i = 0; i < spec.number.value; ++i)
-            mPlayer->removeTopMarker(markerBearer, e.place);
+        int count{0};
+        const auto &markers = markerBearer->markers();
+        for (size_t i = markers.size()-1; i >= 0; --i) {
+            if (!markers[i])
+                continue;
+            if (markers[i]->faceOrientation() == asn::FaceOrientation::FaceDown &&
+                    spec.cards.cardSpecifiers.size() > 0) {
+                // maybe we should allow some card filters for face down markers
+                continue;
+            }
+            if (checkTarget(spec, markers[i].get())) {
+                int position{-1};
+                if (e.place.zone == asn::Zone::Stage) {
+                    if (e.place.pos != asn::Position::NotSpecified) {
+                        qWarning() << "remove marker got not NotSpecified stage pos";
+                        continue;
+                    }
+                    co_await getStagePosition(position, e);
+                }
+                mPlayer->removeMarker(markerBearer, i, e.place, position);
+                count++;
+            }
+            if (count >= spec.number.value)
+                break;
+        }
+    } else {
+        qWarning() << "remove marker got not SpecificCards type";
     }
 }
