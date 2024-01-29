@@ -66,6 +66,7 @@ void ServerPlayer::queueActivatedAbility(const asn::AutoAbility &ability,
 
 void ServerPlayer::queueDelayedAbility(const asn::Ability &ability,
                                        ServerCard *card,
+                                       const AbilityContext &context,
                                        std::string_view cardZone,
                                        bool helperQueue) {
      TriggeredAbility ta;
@@ -74,6 +75,7 @@ void ServerPlayer::queueDelayedAbility(const asn::Ability &ability,
      ta.abilityId = 0;
      ta.cardFromTrigger = nullptr;
      ta.ability = ability;
+     ta.context = context;
      auto &queue = helperQueue ? mHelperQueue : mQueue;
      queue.emplace_back(std::move(ta));
  }

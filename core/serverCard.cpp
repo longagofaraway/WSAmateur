@@ -79,6 +79,7 @@ int ServerCard::playersLevel() const {
 ServerCard* ServerCard::addMarker(std::unique_ptr<ServerCard> &&card) {
     card->setPos(mPosition);
     card->setIsMarker(true);
+    card->setZone(zone());
     return mMarkers.emplace_back(std::move(card)).get();
 }
 

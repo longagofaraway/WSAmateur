@@ -28,6 +28,7 @@ set(coreSources
     serverUser.cpp
     trigger.cpp
     triggerManager.cpp
+    abilityContext.h
     abilityPlayer.h
     abilityUtils.h
     attributeChange.h

@@ -13,6 +13,7 @@
 
 #include <abilities.h>
 
+#include "abilityContext.h"
 #include "cardImprint.h"
 #include "coroutineTask.h"
 #include "commands.h"
@@ -47,6 +48,7 @@ struct TriggeredAbility {
     uint32_t uniqueId = 0;
     std::optional<asn::Ability> ability;
     ServerCard *cardFromTrigger = nullptr;
+    AbilityContext context;
 
     asn::Ability getAbility() const;
 };
@@ -149,8 +151,8 @@ public:
     Resumable moveTopDeck(std::string_view targetZoneName);
     void addMarker(ServerCardZone *startZone, int startPos,
                    int targetPos, asn::FaceOrientation faceOrientation);
-    void removeMarker(ServerCard *markerBearer, int markerPos, const asn::Place &place,
-                      int targetPos = -1);
+    ServerCard* removeMarker(ServerCard *markerBearer, int markerPos, const asn::Place &place,
+                             int targetPos = -1);
     Resumable processClockPhaseResult(CommandClockPhase cmd);
     Resumable playCard(const CommandPlayCard cmd);
     Resumable playCounter(const CommandPlayCounter cmd);
@@ -233,6 +235,7 @@ public:
 
     void queueDelayedAbility(const asn::Ability &ability,
                              ServerCard *card,
+                             const AbilityContext &context,
                              std::string_view cardZone = "",
                              bool helperQueue = false);
     const std::vector<TriggeredAbility>& helperQueue() const { return mHelperQueue; }

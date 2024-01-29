@@ -40,6 +40,19 @@ bool hasHinaCondition(const asn::ChooseCard &e) {
 
 }
 
+void AbilityPlayer::setContext(const AbilityContext &context) {
+    for (const auto &cardImprint: context.chosenCards) {
+        if (cardImprint.card && cardImprint.card->zone()->name() == cardImprint.zone) {
+            mChosenCards.push_back(cardImprint);
+        }
+    }
+    for (const auto &cardImprint: context.lastMovedCards) {
+        if (cardImprint.card && cardImprint.card->zone()->name() == cardImprint.zone) {
+            mLastMovedCards.push_back(cardImprint);
+        }
+    }
+}
+
 Resumable AbilityPlayer::payCost() {
     if (!hasCost())
         co_return;

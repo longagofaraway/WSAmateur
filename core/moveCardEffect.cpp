@@ -462,6 +462,10 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     auto targetStageCards = getTargets(e.destination);
     if (targetStageCards.empty())
         co_return;
+
+    if (!isPayingCost())
+        clearLastMovedCards();
+
     auto targetStageCard = targetStageCards.front();
     auto player = targetStageCard->player();
 
@@ -491,6 +495,11 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     for (auto target: targets) {
         auto zone = target->zone();
         player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation);
+
+        if (!isPayingCost()) {
+            addLastMovedCard(CardImprint(target->zone()->name(), target));
+            // logMove?
+        }
 
         if (e.from.zone == asn::Zone::Deck && target->zone()->count() == 0)
             co_await player->refresh();
@@ -543,6 +552,9 @@ Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
     if (canceled())
         co_return;
 
+    if (!isPayingCost())
+        clearLastMovedCards();
+
     if (e.targetMarker.type == asn::TargetType::SpecificCards) {
         const auto &spec = *e.targetMarker.targetSpecification;
         int count{0};
@@ -564,8 +576,13 @@ Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
                     }
                     co_await getStagePosition(position, e);
                 }
-                mPlayer->removeMarker(markerBearer, i, e.place, position);
+                auto removedMarker = mPlayer->removeMarker(markerBearer, i, e.place, position);
                 count++;
+
+                if (!isPayingCost()) {
+                    addLastMovedCard(CardImprint(removedMarker->zone()->name(), removedMarker));
+                    logMove(mPlayer, e.place.zone);
+                }
             }
             if (count >= spec.number.value)
                 break;

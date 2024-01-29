@@ -88,6 +88,7 @@ public:
     void resolveAllContAbilities();
     void removePositionalContBuffsBySource(ServerCard *source);
     void addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
+                           const AbilityContext &context,
                            int duration, int abilityId, bool isShotTrigger);
     void removeDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard, int abilityId);
     const std::vector<DelayedAbility>& delayedAbilities() const { return delayedAbilities_; }

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "abilities.h"
+#include "abilityContext.h"
 #include "cardImprint.h"
 
 class ServerPlayer;
@@ -12,6 +13,7 @@ struct TriggerSubscriber {
     std::string uniqueId;
     asn::Ability ability;
     CardImprint card;
+    AbilityContext context;
 };
 
 using Subscribers = std::unordered_map<asn::TriggerType,

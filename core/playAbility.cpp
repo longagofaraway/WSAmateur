@@ -242,6 +242,7 @@ Resumable ServerPlayer::playChosenAbility(uint32_t uniqueId, bool helperQueue) {
             AbilityPlayer a(this);
             a.setThisCard(queue[j].card);
             a.setCardFromTrigger(queue[j].cardFromTrigger);
+            a.setContext(queue[j].context);
             co_await a.playAbility(queue[j].getAbility());
 
             EventAbilityResolved evEnd;

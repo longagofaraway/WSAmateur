@@ -53,7 +53,7 @@ void TriggerManager::zoneChangeEvent(ServerCard *movedCard, std::string_view fro
                     break;
                 }
             }
-            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, cardZone);
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, subscriber.context, cardZone);
             break;
         }
     }
@@ -85,7 +85,7 @@ void TriggerManager::phaseEvent(asn::PhaseState state, asn::Phase phase) {
                 (t.player == asn::Player::Player && !active) ||
                 (t.player == asn::Player::Opponent && active))
                 continue;
-            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard);
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, subscriber.context);
             break;
         }
     }
@@ -114,7 +114,7 @@ void TriggerManager::payingCostEvent(ServerCard *target, std::optional<asn::Abil
                 if (thisCard->type() != asn::CardType::Char)
                     continue;
             }
-            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "", true);
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, subscriber.context, "", true);
             break;
         }
     }
@@ -135,7 +135,7 @@ void TriggerManager::damageCancelEvent(ServerCard *attCard, bool cancelled) {
                 continue;
             if (!checkCardMatches(attCard, t.damageDealer, thisCard))
                 continue;
-            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, "");
+            thisCard->player()->queueDelayedAbility(subscriber.ability, thisCard, subscriber.context, "");
             break;
         }
     }

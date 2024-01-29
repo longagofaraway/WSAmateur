@@ -486,18 +486,18 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
     mGame->resolveAllContAbilities();
 }
 
-void ServerPlayer::removeMarker(ServerCard *markerBearer, int markerPos,
-                                const asn::Place &place, int targetPos) {
+ServerCard* ServerPlayer::removeMarker(ServerCard *markerBearer, int markerPos,
+                                       const asn::Place &place, int targetPos) {
     auto markerPtr = markerBearer->takeMarker(markerPos);
     if (!markerPtr)
-        return;
+        return nullptr;
 
     std::string targetZoneName = std::string(asnZoneToString(place.zone));
     auto pzone = zone(targetZoneName);
 
     if (place.zone == asn::Zone::Stage) {
         moveCardToStage(std::move(markerPtr), "marker", markerBearer->pos(), pzone, targetPos, markerPos);
-        return;
+        return nullptr;
     }
 
     auto faceOrientation = markerPtr->faceOrientation();
@@ -525,6 +525,8 @@ void ServerPlayer::removeMarker(ServerCard *markerBearer, int markerPos,
     mGame->sendPublicEvent(eventPublic, mId);
 
     mGame->resolveAllContAbilities();
+
+    return card;
 }
 
 Resumable ServerPlayer::processClockPhaseResult(CommandClockPhase cmd) {

@@ -5,6 +5,7 @@
 #include "gameEvent.pb.h"
 
 #include "abilities.h"
+#include "abilityContext.h"
 #include "cardImprint.h"
 #include "coroutineTask.h"
 
@@ -59,6 +60,7 @@ public:
     // it needs to be stored
     void setCardFromTrigger(ServerCard *card) { mCardFromTrigger = card; }
 
+    void setContext(const AbilityContext &context);
     void setTriggerIcon(asn::TriggerIcon icon) { mTriggerIcon = icon; }
 
     bool canBePlayed(const asn::Ability &a);

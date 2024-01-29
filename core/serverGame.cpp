@@ -349,19 +349,22 @@ void ServerGame::removePositionalContBuffsBySource(ServerCard *source) {
 }
 
 void ServerGame::addDelayedAbility(const asn::AutoAbility &ability, CardImprint &thisCard,
+                                   const AbilityContext &context,
                                    int duration, int abilityId, bool isShotTrigger) {
     auto uniqueId = makeSubscriberId(thisCard.card->id(), abilityId);
     if(std::any_of(delayedAbilities_.begin(), delayedAbilities_.end(), [&uniqueId](const auto &delayedAbility) {
         return delayedAbility.uniqueId == uniqueId;
     }))
         return;
-    auto &value = delayedAbilities_.emplace_back(ability, thisCard, uniqueId, duration, isShotTrigger);
+    auto &value = delayedAbilities_.emplace_back(ability, thisCard, uniqueId,
+                                                 context, duration, isShotTrigger);
     TriggerSubscriber subscriber;
     subscriber.ability = asn::Ability();
     subscriber.ability.type = asn::AbilityType::Auto;
     subscriber.ability.ability = value.ability;
     subscriber.card = value.thisCard;
     subscriber.uniqueId = value.uniqueId;
+    subscriber.context = context;
     mTriggerManager.subscribe(ability.triggers.front().type, subscriber);
 }
 
