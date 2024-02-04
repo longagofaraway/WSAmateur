@@ -89,7 +89,8 @@ bool cardHasAttr(const Card &c) {
 }
 }
 
-std::string printTarget(const Target &t, bool plural, bool nominative, std::optional<bool> optArticle) {
+std::string printTarget(const Target &t, bool plural, bool nominative, std::optional<bool> optArticle,
+                        bool opponent) {
     std::string s;
 
     if (t.type == TargetType::ThisCard)
@@ -126,10 +127,21 @@ std::string printTarget(const Target &t, bool plural, bool nominative, std::opti
         if (spec.mode == TargetMode::InFrontOfThis)
             s += "in front of this card ";
         // it's for multiplier
-        else if (spec.mode == TargetMode::FrontRowOther)
-            s += "in the center stage ";
-        else if (spec.mode == TargetMode::BackRowOther)
-            s += "in the back stage ";
+        else if (spec.mode == TargetMode::FrontRowOther || spec.mode == TargetMode::FrontRow) {
+            s += "in ";
+            if (opponent)
+                s += "your opponent's ";
+            else
+                s += "the ";
+            s += "center stage ";
+        } else if (spec.mode == TargetMode::BackRowOther || spec.mode == TargetMode::BackRow) {
+            s += "in ";
+            if (opponent)
+                s += "your opponent's ";
+            else
+                s += "the ";
+            s += "back stage ";
+        }
     } else if (t.type == TargetType::OppositeThis) {
         s += "the character facing this card ";
     } else if (t.type == TargetType::BattleOpponent) {
@@ -147,6 +159,11 @@ std::string printTarget(const Target &t, bool plural, bool nominative, std::opti
                 s += printCard(spec.cards, false, false, spec.mode) + " ";
             }
         }
+    } else if (t.type == TargetType::LastMovedCards) {
+        if (gPrintState.lastMovedCardsNumber == 1)
+            s += "it ";
+        else
+            s += nominative ? "they " : "them ";
     } else if (t.type == TargetType::MentionedInTrigger) {
         s += "that character ";
     } else if (t.type == TargetType::AttackingChar) {
@@ -312,7 +329,12 @@ std::string printForEachMultiplier(const ForEachMultiplier &m, bool addOf) {
         s += "of ";
     }
 
-    s += printTarget(*m.target, plural, false, article);
+    bool opponent = false;
+    if (m.placeType == PlaceType::SpecificPlace) {
+        opponent = m.place->owner == Player::Opponent;
+    }
+
+    s += printTarget(*m.target, plural, false, article, opponent);
 
     if (m.placeType == PlaceType::SpecificPlace) {
         if (m.place->zone != Zone::Stage)
@@ -347,7 +369,7 @@ std::string printDuration(int duration) {
     return "";
 }
 
-std::string printPlace(Place place) {
+std::string printPlace(Place place, bool printStage) {
     std::string s;
     if (place.pos == Position::FrontRow ||
         place.pos == Position::BackRow)
@@ -365,6 +387,9 @@ std::string printPlace(Place place) {
     if (place.pos == Position::OppositeCharacter)
         return "have a character facing this card";
 
+    if (!printStage) {
+        return s;
+    }
     if (place.pos == Position::Top)
         s += "the top card of ";
 

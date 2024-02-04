@@ -12,6 +12,7 @@ Rectangle {
     signal editCard()
     signal editPlace()
     signal excludingThisChanged(bool value)
+    signal invertChanged(bool value)
 
     width: root.width
 
@@ -75,6 +76,7 @@ Rectangle {
             }
         }
 
+        Column {
         CheckBox {
             id: excludingThis
             text: "Excluding this"
@@ -82,6 +84,15 @@ Rectangle {
             onCheckedChanged: {
                 excludingThisChanged(checked);
             }
+        }
+        CheckBox {
+            id: invert
+            text: "Invert"
+            checked: false
+            onCheckedChanged: {
+                invertChanged(checked);
+            }
+        }
         }
     }
 
@@ -99,5 +110,9 @@ Rectangle {
 
     function setExcludingThis(value) {
         excludingThis.checked = value;
+    }
+
+    function setInvert(value) {
+        invert.checked = value;
     }
 }

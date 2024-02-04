@@ -168,6 +168,7 @@ ConditionImplComponent::ConditionImplComponent(asn::ConditionType type, const Va
     case asn::ConditionType::HaveCards: {
         const auto &cond = std::get<asn::ConditionHaveCard>(c);
         QMetaObject::invokeMethod(qmlObject, "setExcludingThis", Q_ARG(QVariant, cond.excludingThis));
+        QMetaObject::invokeMethod(qmlObject, "setInvert", Q_ARG(QVariant, cond.invert));
         QMetaObject::invokeMethod(qmlObject, "setOwner", Q_ARG(QVariant, (int)cond.who));
         QMetaObject::invokeMethod(qmlObject, "setNumModifier", Q_ARG(QVariant, (int)cond.howMany.mod));
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString::number(cond.howMany.value)));
@@ -285,6 +286,7 @@ void ConditionImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
         connect(qmlObject, SIGNAL(ownerChanged(int)), this, SLOT(onPlayerChanged(int)));
         connect(qmlObject, SIGNAL(excludingThisChanged(bool)), this, SLOT(onExcludingThisChanged(bool)));
+        connect(qmlObject, SIGNAL(invertChanged(bool)), this, SLOT(onInvertChanged(bool)));
         break;
     case asn::ConditionType::CardsLocation:
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
@@ -505,6 +507,19 @@ void ConditionImplComponent::onExcludingThisChanged(bool value) {
     case asn::ConditionType::HaveCards: {
         auto &c = std::get<asn::ConditionHaveCard>(condition);
         c.excludingThis = value;
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(condition);
+}
+
+void ConditionImplComponent::onInvertChanged(bool value) {
+    switch (type) {
+    case asn::ConditionType::HaveCards: {
+        auto &c = std::get<asn::ConditionHaveCard>(condition);
+        c.invert = value;
         break;
     }
     default:

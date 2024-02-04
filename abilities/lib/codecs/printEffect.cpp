@@ -940,7 +940,8 @@ std::string printCanPlayWithoutColorRequirement(const CanPlayWithoutColorRequire
 std::string printDelayedAbility(const DelayedAbility &e) {
     std::string s;
 
-    if (!(e.ability->triggers[0].type == TriggerType::OnPhaseEvent)) {
+    if (!e.ability->triggers.empty() &&
+            !(e.ability->triggers[0].type == TriggerType::OnPhaseEvent)) {
         s += printDuration(e.duration);
         if (s.size() > 0) {
             s.pop_back();

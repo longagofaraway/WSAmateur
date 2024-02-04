@@ -108,13 +108,18 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
 
     if (c.invert) {
         s += "you do not have ";
-        bool plural = false;
+        plural = false;
         if (c.excludingThis) {
             s += "other ";
             plural = true;
         }
 
-        s += printCard(c.whichCards, plural) + ", ";
+        s += printCard(c.whichCards, plural);
+        if (c.where.zone == Zone::Stage) {
+            s += " " + printPlace(c.where, false /* printStage */);
+        }
+
+        s += ", ";
 
         return s;
     } else if (haveExactName(c.whichCards.cardSpecifiers)) {
@@ -293,7 +298,20 @@ std::string printConditionPerformedInFull() {
 
 std::string printConditionHasMarkers(const ConditionHasMarkers &c) {
     std::string s = "if ";
+    bool stopEarly{false};
+    if (c.number.value == 1 &&
+            (c.number.mod == NumModifier::AtLeast)) {
+        s += "there is a marker underneath ";
+        stopEarly = true;
+    }
     s += printTarget(c.target);
+
+    if (stopEarly) {
+        s.pop_back();
+        s += ", ";
+        return s;
+    }
+
     s += "has ";
     if (c.number.value == 0 &&
             (c.number.mod == NumModifier::ExactMatch ||

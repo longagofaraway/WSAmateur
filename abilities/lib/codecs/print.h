@@ -33,7 +33,7 @@ std::string printColor(asn::Color color);
 std::string printForEachMultiplier(const asn::ForEachMultiplier &m, bool addOf = false);
 std::string printAttackType(asn::AttackType t);
 std::string printDuration(int duration);
-std::string printPlace(asn::Place place);
+std::string printPlace(asn::Place place, bool printStage = true);
 std::string printFaceOrientation(asn::FaceOrientation orientation);
 std::string printAbilityType(asn::AbilityType type);
 bool haveExactName(const std::vector<asn::CardSpecifier> &s);
@@ -48,7 +48,7 @@ std::string printEffects(const std::vector<asn::Effect> &effects);
 std::string printTrigger(const asn::Trigger &t);
 std::string printTriggers(const std::vector<asn::Trigger> &triggers);
 std::string printTarget(const asn::Target &t, bool plural = false, bool nominative = false,
-                        std::optional<bool> optArticle = {});
+                        std::optional<bool> optArticle = {}, bool opponent = false);
 std::string printTargetAndPlace(const asn::Target &t, const asn::Place &p);
 
 // effects

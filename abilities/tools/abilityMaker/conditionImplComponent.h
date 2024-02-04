@@ -56,6 +56,7 @@ private slots:
 
     void onPlayerChanged(int value);
     void onExcludingThisChanged(bool value);
+    void onInvertChanged(bool value);
     void onZoneFromChanged(int value);
     void onZoneToChanged(int value);
 
