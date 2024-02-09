@@ -32,7 +32,7 @@ void Player::processChooseCard(const EventChooseCard &event) {
     if ((mOpponent && effect.executor == asn::Player::Player) ||
         (!mOpponent && effect.executor == asn::Player::Opponent))
         return;
-    if (effect.targets.size() != 1 ||
+    if (effect.targets.size() < 1 ||
         effect.targets[0].target.type != asn::TargetType::SpecificCards) {
         assert(false);
         return;
@@ -43,14 +43,16 @@ void Player::processChooseCard(const EventChooseCard &event) {
     if (spec.number.mod == asn::NumModifier::UpTo)
         mandatory = false;
 
-    int eligibleCardsNum;
-    bool fromView = effect.targets[0].placeType == asn::PlaceType::Selection;
-
-    eligibleCardsNum = highlightCardsFromEvent(event, effect);
-
+    int eligibleCardsNum = highlightCardsFromEvent(event, effect);
     if (eligibleCardsNum)
         mAbilityList->ability(mAbilityList->activeId()).effect = effect;
-    processChooseCardInternal(eligibleCardsNum, fromView ? std::nullopt : OptionalPlace(*effect.targets[0].place),
+
+    std::vector<asn::Place> places;
+    for (const auto &target: effect.targets) {
+        if (target.placeType == asn::PlaceType::Selection && target.place)
+            places.push_back(target.place.value());
+    }
+    processChooseCardInternal(eligibleCardsNum, places,
                               mandatory, effect.executor);
 }
 
@@ -175,7 +177,7 @@ void Player::processMoveTargetChoice(const EventMoveTargetChoice &event) {
     int eligibleCount = highlightCardsForChoice(effect.target, effect.from);
     if (eligibleCount)
         activeAbility().effect = effect;
-    processChooseCardInternal(eligibleCount, effect.from, event.mandatory(), effect.executor);
+    processChooseCardInternal(eligibleCount, {effect.from}, event.mandatory(), effect.executor);
 }
 
 void Player::processDrawChoice(const EventDrawChoice &event) {

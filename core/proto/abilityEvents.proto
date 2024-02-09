@@ -5,6 +5,8 @@ import "ability.proto";
 message CardToChoose {
     sint32 position = 1;
     sint32 id = 2;
+    string zone = 3;
+    ProtoOwner owner = 4;
 }
 
 message EventAbilityActivated {

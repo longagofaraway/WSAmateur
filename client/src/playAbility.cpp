@@ -25,46 +25,58 @@ int Player::highlightCardsFromEvent(
         const EventChooseCard &event,
         const asn::ChooseCard &effect) {
     bool fromView = effect.targets[0].placeType == asn::PlaceType::Selection;
-    CardZone *pzone;
+    std::map<std::string, CardZone*> zones;
     bool considerCannotBeChosen = false;
     if (fromView) {
-        pzone = getViewWithCards();
+        zones.emplace("view", getViewWithCards());
     } else {
-        const auto &place = *effect.targets[0].place;
-        auto player = place.owner == asn::Player::Player ? this : getOpponent();
-        pzone = player->zone(place.zone);
-        considerCannotBeChosen = (place.owner == asn::Player::Opponent) ==
-                                 (effect.executor == asn::Player::Player);
+        for (const auto &target: effect.targets) {
+            const auto &place = *target.place;
+            auto player = place.owner == asn::Player::Player ? this : getOpponent();
+            zones.emplace(asnZoneToString(place.zone), player->zone(place.zone));
+            // for now let's consider that's impossible to choose from both players
+            considerCannotBeChosen = (place.owner == asn::Player::Opponent) ==
+                                     (effect.executor == asn::Player::Player);
+        }
     }
 
-    const auto &cards = pzone->cards();
-    dehighlightAllCards(pzone);
-    deselectAllCards(pzone);
+    for (auto &zone: zones) {
+        dehighlightAllCards(zone.second);
+        deselectAllCards(zone.second);
+    }
+
     int eligibleCount = 0;
 
-    auto highlightCard = [&cards, pzone,
-            considerCannotBeChosen, &eligibleCount](int pos) {
+    auto highlightCard =
+            [considerCannotBeChosen, &eligibleCount] (CardZone *zone, int pos) {
+        const auto &cards = zone->cards();
         if (!cards[pos].cardPresent())
             return;
 
         if (considerCannotBeChosen && cards[pos].cannotBeChosen())
             return;
 
-        pzone->model().setGlow(pos, true);
+        zone->model().setGlow(pos, true);
         eligibleCount++;
     };
 
     for (int i = 0; i < event.cards_size(); ++i) {
         auto &event_card = event.cards(i);
         if (fromView) {
+            auto view = zones["view"];
+            const auto &cards = view->cards();
             for (size_t i = 0; i < cards.size(); ++i) {
                 if (cards[i].id() == event_card.id()) {
-                    highlightCard(static_cast<int>(i));
+                    highlightCard(view, static_cast<int>(i));
                     break;
                 }
             }
         } else {
-            highlightCard(event_card.position());
+            if (!zones.contains(event_card.zone())) {
+                qWarning() << "met unmatched zone in EventChooseCard";
+                continue;
+            }
+            highlightCard(zones[event_card.zone()], event_card.position());
         }
     }
 
@@ -102,15 +114,16 @@ void Player::toggleZoneView(const asn::Place &place, bool open) {
                               "openView", Q_ARG(QVariant, open));
 }
 
-void Player::processChooseCardInternal(int eligibleCount, OptionalPlace place, bool mandatory,
+void Player::processChooseCardInternal(int eligibleCount, const std::vector<asn::Place> &places, bool mandatory,
                                        asn::Player executor) {
     if (eligibleCount) {
-        if (place)
-            toggleZoneView(place->get(), true);
+        for (const auto &place: places) {
+            toggleZoneView(place, true);
+        }
         if (!mandatory)
             mAbilityList->activateCancel(mAbilityList->activeId(), true);
     } else {
-        mGame->pause(500);
+        mGame->pause(600);
         if (executor == asn::Player::Player)
             sendGameCommand(CommandCancelEffect());
         else
@@ -119,6 +132,7 @@ void Player::processChooseCardInternal(int eligibleCount, OptionalPlace place, b
 }
 
 void Player::sendChooseCard(const asn::ChooseCard &e) {
+    // choosing from multiple zones is not supported
     CardZone *from;
     if (e.targets[0].placeType == asn::PlaceType::Selection) {
         from = getViewWithCards();
@@ -170,23 +184,34 @@ void Player::sendChooseCard(const asn::SearchCard &e) {
     sendGameCommand(cmd);
 }
 
-void Player::dehighlightCards(asn::PlaceType placeType, OptionalPlace place) {
+void Player::dehighlightCards(const std::vector<asn::TargetAndPlace> &targets) {
+    for (const auto &target: targets) {
+        dehighlightCards(target.placeType, target.place);
+    }
+}
+
+void Player::dehighlightCards(asn::PlaceType placeType, std::optional<asn::Place> place) {
     if (placeType == asn::PlaceType::Selection) {
         auto from = getViewWithCards();
         dehighlightAllCards(from);
         deselectAllCards(from);
         return;
     }
-    toggleZoneView(place->get(), false);
-    if (place->get().zone == asn::Zone::NotSpecified)
+    if (placeType != asn::PlaceType::Selection  ||
+            !place.has_value()) {
         return;
-    if (place->get().owner == asn::Player::Player || place->get().owner == asn::Player::Both) {
-        auto from = zone(place->get().zone);
+    }
+
+    toggleZoneView(place.value(), false);
+    if (place.value().zone == asn::Zone::NotSpecified)
+        return;
+    if (place.value().owner == asn::Player::Player || place.value().owner == asn::Player::Both) {
+        auto from = zone(place.value().zone);
         dehighlightAllCards(from);
         deselectAllCards(from);
     }
-    if (place->get().owner == asn::Player::Opponent || place->get().owner == asn::Player::Both) {
-        auto from = getOpponent()->zone(place->get().zone);
+    if (place.value().owner == asn::Player::Opponent || place.value().owner == asn::Player::Both) {
+        auto from = getOpponent()->zone(place.value().zone);
         dehighlightAllCards(from);
         deselectAllCards(from);
     }
@@ -269,8 +294,7 @@ void Player::doneChoosing() {
     auto &effect = a.effect;
     if (std::holds_alternative<asn::ChooseCard>(effect)) {
         auto &ef = std::get<asn::ChooseCard>(effect);
-        auto target = ef.targets[0];
-        dehighlightCards(target.placeType, target.place ? OptionalPlace(*target.place) : std::nullopt);
+        dehighlightCards(ef.targets);
     } else if (std::holds_alternative<asn::MoveCard>(effect)) {
         auto &ef = std::get<asn::MoveCard>(effect);
         dehighlightCards(asn::PlaceType::SpecificPlace, ef.from);
@@ -283,7 +307,7 @@ void Player::doneChoosing() {
         getOpponent()->zone("deck")->visualItem()->setProperty("mGlow", false);
         if (std::holds_alternative<asn::ChooseCard>(a.nextEffect)) {
             auto &ef = std::get<asn::ChooseCard>(a.nextEffect);
-            dehighlightCards(ef.targets[0].placeType, ef.targets[0].place ? OptionalPlace(*ef.targets[0].place) : std::nullopt);
+            dehighlightCards(ef.targets);
         }
     } else if (std::holds_alternative<asn::ChangeState>(effect)) {
         asn::Place place{ asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Both };
@@ -346,7 +370,7 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
         const auto &ef = std::holds_alternative<asn::ChooseCard>(effect) ?
                     std::get<asn::ChooseCard>(effect) :
                     std::get<asn::ChooseCard>(a->nextEffect);
-        assert(ef.targets.size() == 1);
+        assert(ef.targets.size() > 0);
         if (ef.targets[0].target.type != asn::TargetType::SpecificCards)
             return;
 
@@ -363,8 +387,12 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
         number = ef.target.targetSpecification->number;
     } else if (std::holds_alternative<asn::ChangeState>(effect)) {
         number = { asn::NumModifier::ExactMatch, 1 };
+    } else {
+        assert(false);
     }
 
+    // only works with one zone, let's pretend we won't have to choose from multiple zones
+    // in one effect
     if (number.value != selected && selected < highlighted) {
         if (number.mod == asn::NumModifier::UpTo && hasActivatedAbilities()) {
             mAbilityList->activatePlay(mAbilityList->activeId(), selected != 0, "Choose");

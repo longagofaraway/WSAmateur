@@ -161,7 +161,8 @@ private:
     int highlightCardsFromEvent(const EventChooseCard &event, const asn::ChooseCard &effect);
     int highlightCardsForChoice(const asn::Target &target, const asn::Place &place,
                                 const std::optional<asn::ChooseCard> &chooseEffect = {});
-    void dehighlightCards(asn::PlaceType placeType, OptionalPlace place);
+    void dehighlightCards(const std::vector<asn::TargetAndPlace> &targets);
+    void dehighlightCards(asn::PlaceType placeType, std::optional<asn::Place> place);
     void highlightPlayableCards();
 
     void activateAbilities(const EventAbilityActivated &event);
@@ -169,7 +170,7 @@ private:
     void endResolvingAbilties();
     void abilityResolved();
     void processChooseCard(const EventChooseCard &event);
-    void processChooseCardInternal(int eligibleCount, OptionalPlace place, bool mandatory, asn::Player executor);
+    void processChooseCardInternal(int eligibleCount, const std::vector<asn::Place> &places, bool mandatory, asn::Player executor);
     void sendChooseCard(const asn::ChooseCard &e);
     void sendChooseCard(const asn::SearchCard &e);
     void processSearchCard(const EventSearchCard &event);

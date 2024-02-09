@@ -118,9 +118,13 @@ enum ValueType {
   multiplier = 2
 }
 
+// Multiple cardSpecifiers of the same type will be 'or'ed ("Choose 'name1' or 'name2'...")
+// Multiple TargetAndPlace will be 'or'ed ("Choose 'Shuchiin' character or an event...")
+// Multiple consecutive ChooseCard effects will be 'and'ed:
+// "look at up to 6 cards from top of your deck, choose up to 1 red character and up to 1 blue character"
 ChooseCard {
   executor Player,
-  targets Array of TargetAndPlace,
+  targets Array of TargetAndPlace, // 'or' between targets
   excluding Array of Card
 }
 
@@ -132,10 +136,6 @@ TargetAndPlace {
     Nothing
   }
 }
-// Abilities like the following are better done with two different choose effect
-// "look at up to 6 cards from top of your deck, choose up to 1 red character and up to 1 blue character"
-// Array of targets are not supported
-
 
 Look {
   number Number,

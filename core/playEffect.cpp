@@ -261,12 +261,15 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
     EventChooseCard ev;
     ev.set_effect(buf.data(), buf.size());
     ev.set_mandatory(mandatory());
-    const auto &target = e.targets[0];
-    auto targets = getTargets(target.target, target.placeType, target.place);
-    for (const auto &t: targets) {
-        auto card = ev.add_cards();
-        card->set_id(t->id());
-        card->set_position(t->pos());
+    for (const auto &target: e.targets) {
+        auto targets = getTargets(target.target, target.placeType, target.place);
+        for (const auto &t: targets) {
+            auto card = ev.add_cards();
+            card->set_id(t->id());
+            card->set_position(t->pos());
+            card->set_zone(t->zone()->name());
+            card->set_owner(t->player() == mPlayer ? ProtoPlayer : ProtoOpponent);
+        }
     }
 
     auto player = owner(e.executor);
@@ -295,7 +298,7 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
             CommandChooseCard chooseCmd;
             cmd.command().UnpackTo(&chooseCmd);
             // check more cases
-            assert(e.targets.size() == 1);
+            // number of cards must be equal in both targets for now
             if (e.targets[0].target.type == asn::TargetType::SpecificCards) {
                 auto &spec = e.targets[0].target.targetSpecification;
                 if ((spec->number.mod == asn::NumModifier::ExactMatch &&
@@ -304,7 +307,7 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
                      spec->number.value > chooseCmd.positions_size()) ||
                     (spec->number.mod == asn::NumModifier::UpTo &&
                      spec->number.value < chooseCmd.positions_size()))
-                continue;
+                    continue;
             }
             //TODO: add checks
             // player, who sent the command, marks the owner of chosen cards
