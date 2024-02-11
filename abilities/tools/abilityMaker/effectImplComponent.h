@@ -45,25 +45,31 @@ signals:
 
 private slots:
     void editTarget(std::optional<asn::Target> target_ = {});
+    void editTarget2();
     void destroyTarget();
     void targetReady(const asn::Target &t);
+    void target2Ready(const asn::Target &t);
     void secondTargetReady(const asn::Target &t);
     void editMarkerBearer();
     void editDestination();
+    void createSecondTarget();
 
     void onAttrTypeChanged(int value);
     void onAttrChanged(QString value);
     void onDurationChanged(int value);
 
     void editPlace(std::optional<asn::Place> place = {});
+    void editPlace2();
     void editTo();
     void editTo2();
     void addDestination();
     void destroyPlace();
     void placeReady(const asn::Place &p);
     void placeToReady(const asn::Place &p);
+    void place2Ready(const asn::Place &p);
 
     void onPlaceTypeChanged(int value);
+    void onPlaceType2Changed(int value);
     void onPlayerChanged(int value);
     void onZoneChanged(int value);
     void onPositionChanged(int value);

@@ -11,9 +11,13 @@ Rectangle {
     signal cancel()
 
     signal editTarget()
+    signal editTarget2()
     signal placeTypeChanged(int value)
+    signal placeType2Changed(int value)
     signal editPlace()
+    signal editPlace2()
     signal executorChanged(int value)
+    signal createSecondTarget()
 
     signal incomingPlaceType(int value)
     onIncomingPlaceType: {
@@ -44,39 +48,99 @@ Rectangle {
         anchors.horizontalCenter: effectImpl.horizontalCenter
 
         Column {
+            Row {
+                spacing: 5
+                anchors{ top: label.bottom; topMargin: 10 }
+                anchors.horizontalCenter: effectImpl.horizontalCenter
+
+                Column {
+                    Text {
+                        text: "Target"
+                    }
+                    Button {
+                        text: "Open editor"
+                        onClicked: {
+                            editTarget();
+                        }
+                    }
+                }
+
+                Column {
+                    Text { text: "Place type" }
+                    ComboBox {
+                        id: placeType
+                        model: ["Revealed/Looked at", "Specific place"]
+                        onCurrentIndexChanged: {
+                            if (currentIndex == 1)
+                                place.enabled = true;
+                            else
+                                place.enabled = false;
+                            placeTypeChanged(currentIndex + 1);
+                        }
+                    }
+                }
+
+                Column {
+                    id: place
+                    Text { text: "Place" }
+                    Button {
+                        text: "Open editor"
+                        onClicked: {
+                            editPlace();
+                        }
+                    }
+                }
+            }
             Text {
-                text: "Target"
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "+ (or)"
             }
-            Button {
-                text: "Open editor"
-                onClicked: {
-                    editTarget();
-                }
-            }
-        }
+            Row {
+                spacing: 5
+                anchors.horizontalCenter: parent.horizontalCenter
 
-        Column {
-            Text { text: "Place type" }
-            ComboBox {
-                id: placeType
-                model: ["Revealed/Looked at", "Specific place"]
-                onCurrentIndexChanged: {
-                    if (currentIndex == 1)
-                        place.enabled = true;
-                    else
-                        place.enabled = false;
-                    placeTypeChanged(currentIndex + 1);
+                Button {
+                    id: addTargetButton
+                    property bool created: false
+                    text: "Or choose in another place"
+                    onClicked: {
+                        if (!created) {
+                            addSecondTarget();
+                            createSecondTarget();
+                        }
+                    }
                 }
-            }
-        }
 
-        Column {
-            id: place
-            Text { text: "Place" }
-            Button {
-                text: "Open editor"
-                onClicked: {
-                    editPlace();
+                Button {
+                    id: editor2
+                    visible: false
+                    text: "Open editor"
+                    onClicked: {
+                        editTarget2();
+                    }
+                }
+
+                ComboBox {
+                    id: placeType2
+                    visible: false
+                    model: ["Revealed/Looked at", "Specific place"]
+                    currentIndex: 1
+                    onCurrentIndexChanged: {
+                        if (currentIndex == 1)
+                            place2.enabled = true;
+                        else
+                            place2.enabled = false;
+                        placeType2Changed(currentIndex + 1);
+                    }
+                }
+
+                Button {
+                    id: place2
+                    visible: false
+                    text: "Open editor"
+                    onClicked: {
+                        editPlace2();
+                    }
                 }
             }
         }
@@ -119,5 +183,18 @@ Rectangle {
 
     function setExecutor(value) {
         executor.setValue(value);
+    }
+
+    function addSecondTarget() {
+        addTargetButton.created = true;
+        addTargetButton.visible = false;
+        editor2.visible = true;
+        placeType2.visible = true;
+        place2.visible = true;
+    }
+
+    function setSecondTarget(value) {
+        placeType2.currentIndex = value - 1;
+        addSecondTarget();
     }
 }

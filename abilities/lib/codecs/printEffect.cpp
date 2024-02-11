@@ -179,41 +179,44 @@ std::string printChooseCard(const ChooseCard &e) {
     else
         s += "your opponent chooses ";
 
-    assert(e.targets.size() == 1);
     bool plural = false;
     bool article = true;
-    const auto &target = e.targets[0];
-    if (target.target.type == TargetType::SpecificCards) {
-        const auto &spec = *target.target.targetSpecification;
-        if (spec.number.value > 1)
-            plural = true;
-        if ((spec.number.value > 1 && spec.number.mod == NumModifier::ExactMatch) ||
-            (target.placeType == PlaceType::SpecificPlace && target.place->zone == Zone::Stage) ||
-            spec.number.mod == NumModifier::UpTo) {
-            s += printNumber(spec.number);
-            if (spec.number.mod == NumModifier::UpTo)
-                article = false;
-        }
-        if (target.placeType == PlaceType::SpecificPlace && target.place->zone == Zone::Stage) {
-            s += "of " + printPlayer(target.place->owner, e.executor);
-            plural = true;
-        }
-        if (spec.mode == TargetMode::FrontRow)
-            s += "center stage ";
-        else if (spec.mode == TargetMode::AllOther)
-            s += "other ";
+    for (size_t i = 0; i < e.targets.size(); ++i) {
+        if (i)
+            s += "or ";
 
-        gPrintState.chosenCardsNumber = spec.number;
-        s += printCard(spec.cards, plural, article) + " ";
-    } else if (target.target.type == TargetType::CharInBattle) {
-        s += "one of your characters in battle ";
-        gPrintState.battleOpponentMentioned = true;
-        gPrintState.chosenCardsNumber = Number{NumModifier::ExactMatch, 1};
+        if (e.targets[i].target.type == TargetType::SpecificCards) {
+            const auto &spec = *e.targets[i].target.targetSpecification;
+            if (spec.number.value > 1)
+                plural = true;
+            if ((spec.number.value > 1 && spec.number.mod == NumModifier::ExactMatch) ||
+                (e.targets[i].placeType == PlaceType::SpecificPlace && e.targets[i].place->zone == Zone::Stage) ||
+                spec.number.mod == NumModifier::UpTo) {
+                s += printNumber(spec.number);
+                if (spec.number.mod == NumModifier::UpTo)
+                    article = false;
+            }
+            if (e.targets[i].placeType == PlaceType::SpecificPlace && e.targets[i].place->zone == Zone::Stage) {
+                s += "of " + printPlayer(e.targets[i].place->owner, e.executor);
+                plural = true;
+            }
+            if (spec.mode == TargetMode::FrontRow)
+                s += "center stage ";
+            else if (spec.mode == TargetMode::AllOther)
+                s += "other ";
+
+            gPrintState.chosenCardsNumber = spec.number;
+            s += printCard(spec.cards, plural, article) + " ";
+        } else if (e.targets[i].target.type == TargetType::CharInBattle) {
+            s += "one of your characters in battle ";
+            gPrintState.battleOpponentMentioned = true;
+            gPrintState.chosenCardsNumber = Number{NumModifier::ExactMatch, 1};
+        }
     }
 
-    if (target.placeType == PlaceType::SpecificPlace && target.place->zone != Zone::Stage) {
-        s += "in " + printPlayer(target.place->owner, e.executor);
-        s += printZone(target.place->zone) + " ";
+    if (e.targets[0].placeType == PlaceType::SpecificPlace && e.targets[0].place->zone != Zone::Stage) {
+        s += "in " + printPlayer(e.targets[0].place->owner, e.executor);
+        s += printZone(e.targets[0].place->zone) + " ";
     }
 
     return s;

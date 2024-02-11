@@ -12,15 +12,20 @@
 
 namespace {
 const asn::Place defaultPlace{asn::Position::NotSpecified, asn::Zone::Stage, asn::Player::Player};
+const asn::Target defaultTarget{asn::TargetType::ThisCard};
+asn::TargetAndPlace defaultTargetAndPlace() {
+    auto tp = asn::TargetAndPlace();
+    tp.placeType = asn::PlaceType::SpecificPlace;
+    tp.place = defaultPlace;
+    tp.target = defaultTarget;
+    return tp;
+}
 }
 
 void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
     auto defaultNum = asn::Number();
     defaultNum.mod = asn::NumModifier::ExactMatch;
     defaultNum.value = 1;
-
-    auto defaultTarget = asn::Target();
-    defaultTarget.type = asn::TargetType::ThisCard;
 
     auto defaultChooseCard = asn::ChooseCard();
     auto tp = asn::TargetAndPlace();
@@ -337,6 +342,17 @@ const asn::Place& getPlace(EffectImplComponent::VarEffect &effect, asn::EffectTy
     static auto p = asn::Place();
     return p;
 }
+const std::optional<asn::Place> getPlace2(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
+    switch (type) {
+    case asn::EffectType::ChooseCard: {
+        const auto &e = std::get<asn::ChooseCard>(effect);
+        if (e.targets.size() <= 1)
+            return std::nullopt;
+        return e.targets[1].place;
+    }
+    }
+    return std::nullopt;
+}
 const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
     switch (type) {
     case asn::EffectType::AttributeGain: {
@@ -408,6 +424,17 @@ const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::Effect
     }
     static auto t = asn::Target();
     return t;
+}
+const std::optional<asn::Target> getTarget2(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
+    switch (type) {
+    case asn::EffectType::ChooseCard: {
+        const auto &e = std::get<asn::ChooseCard>(effect);
+        if (e.targets.size() <= 1)
+            return std::nullopt;
+        return e.targets[1].target;
+    }
+    }
+    return std::nullopt;
 }
 const asn::Card& getCard(EffectImplComponent::VarEffect &effect, asn::EffectType type) {
     switch (type) {
@@ -483,6 +510,9 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     case asn::EffectType::ChooseCard: {
         const auto &ef = std::get<asn::ChooseCard>(e);
 
+        if (ef.targets.size() > 1) {
+            QMetaObject::invokeMethod(qmlObject, "setSecondTarget", Q_ARG(QVariant, (int)ef.targets[1].placeType));
+        }
         QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, (int)ef.targets[0].placeType));
         QMetaObject::invokeMethod(qmlObject, "setExecutor", Q_ARG(QVariant, (int)ef.executor));
         break;
@@ -748,9 +778,13 @@ void EffectImplComponent::init(QQuickItem *parent) {
         QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, static_cast<int>(asn::PlaceType::SpecificPlace)));
 
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(editTarget2()), this, SLOT(editTarget2()));
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
+        connect(qmlObject, SIGNAL(editPlace2()), this, SLOT(editPlace2()));
         connect(qmlObject, SIGNAL(placeTypeChanged(int)), this, SLOT(onPlaceTypeChanged(int)));
+        connect(qmlObject, SIGNAL(placeType2Changed(int)), this, SLOT(onPlaceType2Changed(int)));
         connect(qmlObject, SIGNAL(executorChanged(int)), this, SLOT(onPlayerChanged(int)));
+        connect(qmlObject, SIGNAL(createSecondTarget()), this, SLOT(createSecondTarget()));
         break;
     case asn::EffectType::RevealCard:
         QMetaObject::invokeMethod(qmlObject, "setNumValue", Q_ARG(QVariant, QString("1")));
@@ -934,6 +968,16 @@ void EffectImplComponent::init(QQuickItem *parent) {
     }
 }
 
+void EffectImplComponent::createSecondTarget() {
+    if (type == asn::EffectType::ChooseCard) {
+        auto &e = std::get<asn::ChooseCard>(effect);
+        if (e.targets.size() <= 1) {
+            e.targets.push_back(defaultTargetAndPlace());
+            emit componentChanged(effect);
+        }
+    }
+}
+
 void EffectImplComponent::editTarget(std::optional<asn::Target> target_) {
     auto &t = target_.has_value() ? *target_ : getTarget(effect, type);
     qmlTarget = std::make_unique<TargetComponent>(t, qmlObject);
@@ -942,6 +986,18 @@ void EffectImplComponent::editTarget(std::optional<asn::Target> target_) {
         connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &EffectImplComponent::secondTargetReady);
     else
         connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &EffectImplComponent::targetReady);
+
+    connect(qmlTarget.get(), &TargetComponent::close, this, &EffectImplComponent::destroyTarget);
+}
+
+void EffectImplComponent::editTarget2() {
+    auto target = getTarget2(effect, type);
+    if (!target)
+        return;
+
+    qmlTarget = std::make_unique<TargetComponent>(target.value(), qmlObject);
+
+    connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &EffectImplComponent::target2Ready);
 
     connect(qmlTarget.get(), &TargetComponent::close, this, &EffectImplComponent::destroyTarget);
 }
@@ -1030,6 +1086,22 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     case asn::EffectType::CanPlayWithoutColorRequirement: {
         auto &e = std::get<asn::CanPlayWithoutColorRequirement>(effect);
         e.target = t;
+        break;
+    }
+    default:
+        assert(false);
+    }
+
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::target2Ready(const asn::Target &t) {
+    switch (type) {
+    case asn::EffectType::ChooseCard: {
+        auto &e = std::get<asn::ChooseCard>(effect);
+        if (e.targets.size() <= 1)
+            return;
+        e.targets[1].target = t;
         break;
     }
     default:
@@ -1301,6 +1373,16 @@ void EffectImplComponent::editPlace(std::optional<asn::Place> place) {
     connect(qmlPlace.get(), &PlaceComponent::close, this, &EffectImplComponent::destroyPlace);
 }
 
+void EffectImplComponent::editPlace2() {
+    auto place = getPlace2(effect, type);
+    if (!place)
+        return;
+    qmlPlace = std::make_unique<PlaceComponent>(place.value(), qmlObject);
+
+    connect(qmlPlace.get(), &PlaceComponent::componentChanged, this, &EffectImplComponent::place2Ready);
+    connect(qmlPlace.get(), &PlaceComponent::close, this, &EffectImplComponent::destroyPlace);
+}
+
 void EffectImplComponent::editTo() {
     auto &e = std::get<asn::MoveCard>(effect);
     editPlace(e.to[0]);
@@ -1366,6 +1448,21 @@ void EffectImplComponent::placeReady(const asn::Place &p) {
     emit componentChanged(effect);
 }
 
+void EffectImplComponent::place2Ready(const asn::Place &p) {
+    switch (type) {
+    case asn::EffectType::ChooseCard: {
+        auto &e = std::get<asn::ChooseCard>(effect);
+        if (e.targets.size() <= 1)
+            return;
+        e.targets[1].place = p;
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
 void EffectImplComponent::placeToReady(const asn::Place &p) {
     auto &e = std::get<asn::MoveCard>(effect);
     e.to[currentCardIndex] = p;
@@ -1385,6 +1482,30 @@ void EffectImplComponent::onPlaceTypeChanged(int value) {
             defaultPlace.pos = asn::Position::NotSpecified;
             defaultPlace.zone = asn::Zone::Stage;
             e.targets[0].place = defaultPlace;
+        }
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onPlaceType2Changed(int value) {
+    switch (type) {
+    case asn::EffectType::ChooseCard: {
+        auto &e = std::get<asn::ChooseCard>(effect);
+        if (e.targets.size() <= 1)
+            return;
+        e.targets[1].placeType = static_cast<asn::PlaceType>(value);
+        if (e.targets[1].placeType == asn::PlaceType::Selection)
+            e.targets[1].place = std::nullopt;
+        else {
+            auto defaultPlace = asn::Place();
+            defaultPlace.owner = asn::Player::Player;
+            defaultPlace.pos = asn::Position::NotSpecified;
+            defaultPlace.zone = asn::Zone::Stage;
+            e.targets[1].place = defaultPlace;
         }
         break;
     }
