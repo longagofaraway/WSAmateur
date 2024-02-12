@@ -22,6 +22,7 @@ struct ForEachMultiplier {
     std::shared_ptr<Target> target;
     PlaceType placeType;
     std::optional<Place> place;
+    std::optional<std::shared_ptr<Target>> markerBearer;
 };
 
 struct AddLevelMultiplier {

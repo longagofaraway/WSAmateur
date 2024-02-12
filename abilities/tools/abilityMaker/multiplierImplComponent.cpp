@@ -73,6 +73,7 @@ void MultiplierImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
         connect(qmlObject, SIGNAL(placeTypeChanged(int)), this, SLOT(onPlaceTypeChanged(int)));
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
+        connect(qmlObject, SIGNAL(editMarkerBearer()), this, SLOT(editMarkerBearer()));
         break;
     }
     case asn::MultiplierType::AddLevel: {
@@ -123,14 +124,22 @@ void MultiplierImplComponent::onPlaceTypeChanged(int value) {
     case asn::MultiplierType::ForEach: {
         auto &m = std::get<asn::ForEachMultiplier>(multiplier);
         m.placeType = static_cast<asn::PlaceType>(value);
-        if (m.placeType != asn::PlaceType::SpecificPlace)
+        if (m.placeType != asn::PlaceType::SpecificPlace) {
             m.place = std::nullopt;
-        else {
+        }
+        if (m.placeType != asn::PlaceType::Marker) {
+            m.markerBearer = std::nullopt;
+        }
+        if (m.placeType == asn::PlaceType::SpecificPlace) {
             auto defaultPlace = asn::Place();
             defaultPlace.owner = asn::Player::Player;
             defaultPlace.pos = asn::Position::NotSpecified;
             defaultPlace.zone = asn::Zone::Stage;
             m.place = defaultPlace;
+        } else if (m.placeType == asn::PlaceType::Marker) {
+            auto target = asn::Target{};
+            target.type = asn::TargetType::ThisCard;
+            m.markerBearer = std::make_shared<asn::Target>(target);
         }
         break;
     }
@@ -180,6 +189,28 @@ void MultiplierImplComponent::targetReady(const asn::Target &t) {
     case asn::MultiplierType::AddTriggerNumber: {
         auto &m = std::get<asn::AddTriggerNumberMultiplier>(multiplier);
         m.target = std::make_shared<asn::Target>(t);
+        break;
+    }
+    default:
+        assert(false);
+    }
+
+    emit componentChanged(multiplier);
+}
+
+void MultiplierImplComponent::editMarkerBearer() {
+    const asn::Target &target = **std::get<asn::ForEachMultiplier>(multiplier).markerBearer;
+    qmlTarget = std::make_unique<TargetComponent>(target, qmlObject);
+
+    connect(qmlTarget.get(), &TargetComponent::componentChanged, this, &MultiplierImplComponent::markerBearerReady);
+    connect(qmlTarget.get(), &TargetComponent::close, this, &MultiplierImplComponent::destroyTarget);
+}
+
+void MultiplierImplComponent::markerBearerReady(const asn::Target &t) {
+    switch (type) {
+    case asn::MultiplierType::ForEach: {
+        auto &m = std::get<asn::ForEachMultiplier>(multiplier);
+        m.markerBearer = std::make_shared<asn::Target>(t);
         break;
     }
     default:

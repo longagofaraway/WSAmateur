@@ -204,6 +204,10 @@ std::string printChooseCard(const ChooseCard &e) {
                 s += "center stage ";
             else if (spec.mode == TargetMode::AllOther)
                 s += "other ";
+            if (e.targets[0].placeType == PlaceType::SpecificPlace && e.targets[0].place->pos == Position::Bottom) {
+                s += "the bottom ";
+                article = false;
+            }
 
             gPrintState.chosenCardsNumber = spec.number;
             s += printCard(spec.cards, plural, article) + " ";

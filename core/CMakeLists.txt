@@ -14,6 +14,7 @@ set(coreSources
     imageLinks.cpp
     lookRevealEffects.cpp
     moveCardEffect.cpp
+    multipliers.cpp
     playAbility.cpp
     playEffect.cpp
     playHardcodedEffect.cpp

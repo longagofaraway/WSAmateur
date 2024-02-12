@@ -312,6 +312,7 @@ std::string printForEachMultiplier(const ForEachMultiplier &m, bool addOf) {
 
     bool plural = true;
     std::optional<bool> article;
+
     if (m.target->type == TargetType::SpecificCards && !addOf) {
         const auto &spec = m.target->targetSpecification.value();
         bool hasOwnership = std::any_of(spec.cards.cardSpecifiers.begin(),
@@ -341,6 +342,9 @@ std::string printForEachMultiplier(const ForEachMultiplier &m, bool addOf) {
             s += "in your " + printZone(m.place->zone) + " ";
     } else if (m.placeType == PlaceType::LastMovedCards) {
         s += "among those cards ";
+    } else if (m.placeType == PlaceType::Marker) {
+        s += "underneath ";
+        s += printTarget(*m.markerBearer.value());
     }
 
     return s;

@@ -16,12 +16,16 @@ ForEachMultiplier parseForEachMultiplier(const QJsonObject &json) {
         throw std::runtime_error("no placeType in ForEachMultiplier");
     if (json.contains("place") && !json["place"].isObject())
         throw std::runtime_error("wrong place in ForEachMultiplier");
+    if (json.contains("markerBearer") && !json["markerBearer"].isObject())
+        throw std::runtime_error("wrong markerBearer in ForEachMultiplier");
 
     ForEachMultiplier m;
     m.target = std::make_shared<Target>(parseTarget(json["target"].toObject()));
     m.placeType = static_cast<PlaceType>(json["placeType"].toInt());
     if (m.placeType == PlaceType::SpecificPlace)
         m.place = parsePlace(json["place"].toObject());
+    if (m.placeType == PlaceType::Marker)
+        m.markerBearer = std::make_shared<Target>(parseTarget(json["markerBearer"].toObject()));
 
     return m;
 }

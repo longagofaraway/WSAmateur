@@ -66,7 +66,8 @@ struct Place {
 enum class PlaceType : uint8_t {
     Selection = 1,
     SpecificPlace,
-    LastMovedCards
+    LastMovedCards,
+    Marker
 };
 
 enum class Phase {

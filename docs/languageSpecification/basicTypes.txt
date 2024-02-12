@@ -61,7 +61,8 @@ enum NumModifier {
 enum PlaceType {
   selection = 1,
   specificPlace = 2,
-  lastMovedCards = 3
+  lastMovedCards = 3,
+  marker = 4
 }
 
 Place {

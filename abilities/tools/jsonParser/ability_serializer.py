@@ -164,10 +164,17 @@ def parseVariant(fieldType, memberName, tokens, current, cpp):
 
 def parseChoice(fieldType, memberName, tokens, current, cpp):
     choiceType = ''
-    if fieldType == 'ForEachMultiplier':
+    indirection = ''
+    if fieldType == 'ForEachMultiplier' and memberName == 'place':
         choiceType = 'Place'
         code = '''\
     if (field.placeType == PlaceType::SpecificPlace) {
+'''
+    elif fieldType == 'ForEachMultiplier' and memberName == 'markerBearer':
+        choiceType = 'Target'
+        indirection = '*'
+        code = '''\
+    if (field.placeType == PlaceType::Marker) {
 '''
     elif fieldType == 'Target':
         choiceType = 'TargetSpecificCards'
@@ -213,10 +220,10 @@ def parseChoice(fieldType, memberName, tokens, current, cpp):
         code += '''\
         JsonRecord record{memberName};
         record{memberName}.key = "{memberName}";
-        record{memberName}.value = serialize{choiceType}(field.{memberName}.value(), offset);
+        record{memberName}.value = serialize{choiceType}({indirection}field.{memberName}.value(), offset);
         records.push_back(record{memberName});
     }}
-'''.format(memberName=memberName, choiceType=choiceType)
+'''.format(memberName=memberName, choiceType=choiceType, indirection=indirection)
     while tokens[current][0] != '}':
         current += 1
     return code, current + 1

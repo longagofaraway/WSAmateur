@@ -9,6 +9,7 @@ Rectangle {
     signal editTarget()
     signal placeTypeChanged(int value)
     signal editPlace()
+    signal editMarkerBearer()
 
     width: root.width
 
@@ -45,10 +46,16 @@ Rectangle {
             PlaceType {
                 id: placeType
                 onValueChanged: {
-                    if (value == 2)
+                    if (value == 2) {
                         place.enabled = true;
-                    else
+                        markerBearer.enabled = false;
+                    } else if (value == 4) {
                         place.enabled = false;
+                        markerBearer.enabled = true;
+                    } else {
+                        place.enabled = false;
+                        markerBearer.enabled = false;
+                    }
                     placeTypeChanged(value);
                 }
             }
@@ -61,6 +68,17 @@ Rectangle {
                 text: "Open editor"
                 onClicked: {
                     editPlace();
+                }
+            }
+        }
+
+        Column {
+            id: markerBearer
+            Text { text: "Marker Bearer" }
+            Button {
+                text: "Open editor"
+                onClicked: {
+                    editMarkerBearer();
                 }
             }
         }

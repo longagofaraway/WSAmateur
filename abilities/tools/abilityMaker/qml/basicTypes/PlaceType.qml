@@ -9,6 +9,6 @@ ComboBox {
         currentIndex = value - 1;
     }
 
-    model: ["Look/Reveal", "Specific Place", "Last Moved Cards"]
+    model: ["Look/Reveal", "Specific Place", "Last Moved Cards", "Marker"]
     onCurrentIndexChanged: valueChanged(currentIndex + 1)
 }

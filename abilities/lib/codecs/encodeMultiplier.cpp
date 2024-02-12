@@ -7,6 +7,8 @@ void encodeForEachMultiplier(const ForEachMultiplier &m, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(m.placeType));
     if (m.placeType == PlaceType::SpecificPlace)
         encodePlace(m.place.value(), buf);
+    if (m.placeType == PlaceType::Marker)
+        encodeTarget(*m.markerBearer.value(), buf);
 }
 
 void encodeAddLevelMultiplier(const AddLevelMultiplier &m, Buf &buf) {

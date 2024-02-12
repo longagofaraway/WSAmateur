@@ -9,6 +9,8 @@ ForEachMultiplier decodeForEachMultiplier(Iterator &it, Iterator end) {
     m.placeType = decodeEnum<PlaceType>(it, end);
     if (m.placeType == PlaceType::SpecificPlace)
         m.place = decodePlace(it, end);
+    if (m.placeType == PlaceType::Marker)
+        m.markerBearer = std::make_shared<Target>(decodeTarget(it, end));
 
     return m;
 }

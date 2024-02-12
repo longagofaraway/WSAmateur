@@ -1,7 +1,5 @@
 #include "abilityPlayer.h"
 
-#include <numeric>
-
 #include <QDebug>
 
 #include "abilityEvents.pb.h"
@@ -183,51 +181,6 @@ void AbilityPlayer::setThisCard(ServerCard *card) {
 
 void AbilityPlayer::removeMentionedCard(int cardId) {
     std::erase_if(mMentionedCards, [cardId](CardImprint &im) { return cardId == im.card->id(); });
-}
-
-int AbilityPlayer::getForEachMultiplierValue(const asn::Multiplier &m) {
-    const auto &specifier = std::get<asn::ForEachMultiplier>(m.specifier);
-    assert(specifier.target->type == asn::TargetType::SpecificCards);
-
-    int cardCount = 0;
-    const auto &tspec = specifier.target->targetSpecification.value();
-
-    if (specifier.placeType == asn::PlaceType::SpecificPlace) {
-        auto player = owner(specifier.place->owner);
-        auto pzone = player->zone(specifier.place->zone);
-        for (int i = 0; i < pzone->count(); ++i) {
-            if (checkTarget(tspec, pzone->card(i)))
-                cardCount++;
-        }
-    } else if (specifier.placeType == asn::PlaceType::LastMovedCards) {
-        for (const auto &card: lastMovedCards()) {
-            if (checkTarget(tspec, card.card))
-                cardCount++;
-        }
-    }
-
-    return cardCount;
-}
-
-int AbilityPlayer::getAddLevelMultiplierValue(const asn::Multiplier &m) {
-    const auto &specifier = std::get<asn::AddLevelMultiplier>(m.specifier);
-    auto targets = getTargets(*specifier.target);
-    int res = 0;
-    for (const auto &target: targets) {
-        res += target->level();
-    }
-    return res;
-}
-
-int AbilityPlayer::getTriggerNumberMultiplierValue(const asn::Multiplier &m) {
-    const auto &specifier = std::get<asn::AddTriggerNumberMultiplier>(m.specifier);
-    auto targets = getTargets(*specifier.target);
-    return std::accumulate(targets.begin(), targets.end(), 0, [&specifier](int sum, const ServerCard *card){
-        const auto &triggerIcons = card->triggers();
-        return sum + std::accumulate(triggerIcons.begin(), triggerIcons.end(), 0, [&specifier](int sum, asn::TriggerIcon icon){
-            return icon == specifier.triggerIcon ? sum + 1 : sum;
-        });
-    });
 }
 
 std::vector<ServerCard*> AbilityPlayer::getTargets(

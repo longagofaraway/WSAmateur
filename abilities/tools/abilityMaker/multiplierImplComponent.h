@@ -34,6 +34,9 @@ private slots:
     void destroyTarget();
     void targetReady(const asn::Target &t);
 
+    void editMarkerBearer();
+    void markerBearerReady(const asn::Target &t);
+
     void editPlace();
     void destroyPlace();
     void placeReady(const asn::Place &p);
