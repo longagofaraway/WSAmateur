@@ -44,6 +44,9 @@ set(abilityMakerSources
     triggerComponent.cpp
     triggerImplComponent.h
     triggerImplComponent.cpp
+    quickSetters/quickSetters.h
+    quickSetters/triggers.cpp
+    quickSetters/cost.cpp
     qml.qrc)
 
 find_package(Qt5 COMPONENTS Quick REQUIRED)

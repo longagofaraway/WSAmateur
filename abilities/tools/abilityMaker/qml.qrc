@@ -101,5 +101,7 @@
         <file>qml/effects/OtherEffect.qml</file>
         <file>qml/triggers/OnActAbillity.qml</file>
         <file>qml/conditions/HasMarkers.qml</file>
+        <file>qml/utilities/AdvancedButton.qml</file>
+        <file>qml/CostColumn.qml</file>
     </qresource>
 </RCC>

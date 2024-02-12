@@ -3,6 +3,7 @@
 #include <QQmlContext>
 
 #include "codecs/print.h"
+#include "quickSetters/quickSetters.h"
 
 namespace {
 asn::Keyword stringToKeyword(const QString &s) {
@@ -51,6 +52,8 @@ void AbilityComponent::init() {
     connect(qmlObject, SIGNAL(editTriggers()), this, SLOT(editTriggers()));
     connect(qmlObject, SIGNAL(editEffects()), this, SLOT(editEffects()));
     connect(qmlObject, SIGNAL(editCost()), this, SLOT(editCost()));
+    connect(qmlObject, SIGNAL(setTrigger(QString)), this, SLOT(setTrigger(QString)));
+    connect(qmlObject, SIGNAL(addCost(QString)), this, SLOT(addCost(QString)));
 
     QMetaObject::invokeMethod(qmlObject, "setActualY");
 }
@@ -141,6 +144,11 @@ void AbilityComponent::triggersReady(const std::vector<asn::Trigger> &t) {
     emit componentChanged(constructAbility());
 }
 
+void AbilityComponent::setTrigger(QString triggerName) {
+    triggers = std::vector{createTrigger(triggerName)};
+    emit componentChanged(constructAbility());
+}
+
 void AbilityComponent::destroyTriggers() {
     qmlTriggers.reset();
 }
@@ -165,6 +173,13 @@ void AbilityComponent::editCost() {
 
 void AbilityComponent::costReady(const std::optional<asn::Cost> &c) {
     cost = c;
+    emit componentChanged(constructAbility());
+}
+
+void AbilityComponent::addCost(QString costName) {
+    if (!cost)
+        cost = asn::Cost{};
+    addCostItem(cost.value(), costName);
     emit componentChanged(constructAbility());
 }
 

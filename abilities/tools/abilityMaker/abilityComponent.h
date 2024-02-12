@@ -51,6 +51,7 @@ public slots:
     void editTriggers();
     void triggersReady(const std::vector<asn::Trigger> &t);
     void destroyTriggers();
+    void setTrigger(QString triggerName);
 
     void editEffects();
     void effectsReady(const std::vector<asn::Effect> &e);
@@ -59,6 +60,7 @@ public slots:
     void editCost();
     void costReady(const std::optional<asn::Cost> &c);
     void destroyCost();
+    void addCost(QString costName);
 
 private:
     void init();

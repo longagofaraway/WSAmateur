@@ -1,6 +1,8 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 
+import "utilities"
+
 Rectangle {
     id: ability
 
@@ -14,6 +16,8 @@ Rectangle {
     signal editTriggers()
     signal editCost()
     signal editEffects()
+    signal setTrigger(triggerName: string)
+    signal addCost(costName: string)
 
     width: root.width
     height: root.height - root.pathHeight - root.textAreaHeight - 10
@@ -109,24 +113,18 @@ Rectangle {
 
         Component.onCompleted: {
             trigger.editTriggers.connect(ability.editTriggers);
+            trigger.setTrigger.connect(ability.setTrigger);
         }
     }
 
-    Column {
+    CostColumn {
         id: cost
 
         anchors { top: rootCombo.bottom; left: trigger.right; topMargin: 10; leftMargin: 10 }
-        enabled: false
 
-        Text {
-            text: "Cost:"
-        }
-
-        Button {
-            text: "Open editor"
-            onClicked: {
-                editCost();
-            }
+        Component.onCompleted: {
+            cost.editCost.connect(ability.editCost);
+            cost.addCost.connect(ability.addCost);
         }
     }
 

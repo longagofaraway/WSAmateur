@@ -50,8 +50,8 @@ Rectangle {
         Column {
             Row {
                 spacing: 5
-                anchors{ top: label.bottom; topMargin: 10 }
-                anchors.horizontalCenter: effectImpl.horizontalCenter
+                //anchors{ top: label.bottom; topMargin: 10 }
+                anchors.horizontalCenter: parent.horizontalCenter
 
                 Column {
                     Text {
