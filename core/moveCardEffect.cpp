@@ -469,21 +469,33 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     auto targetStageCard = targetStageCards.front();
     auto player = targetStageCard->player();
 
-    if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::Top &&
-        e.from.zone == asn::Zone::Deck) {
+    int movedCount = 0;
+    if (e.target.type == asn::TargetType::SpecificCards &&
+            (e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom)) {
         const auto &spec = *e.target.targetSpecification;
         assert(spec.number.mod == asn::NumModifier::ExactMatch);
         auto pzone = player->zone(e.from.zone);
 
         for (int i = 0; i < spec.number.value; ++i) {
-            auto card = pzone->topCard();
+            auto card = (e.from.pos == asn::Position::Top) ? pzone->topCard() : pzone->card(0);
             if (!card)
                 break;
 
+            movedCount++;
             player->addMarker(pzone, pzone->count() - 1, targetStageCard->pos(), e.orientation, e.withMarkers);
-            if (pzone->count() == 0)
-                co_await player->refresh();
+            if (!isPayingCost()) {
+                addLastMovedCard(CardImprint(card->zone()->name(), card));
+                // logMove?
+            }
+
+            if (e.from.zone == asn::Zone::Deck)
+                co_await player->checkRefreshAndLevelUp();
         }
+
+        if ((spec.number.mod == asn::NumModifier::AtLeast || spec.number.mod == asn::NumModifier::ExactMatch) &&
+            movedCount < spec.number.value)
+            mPerformedInFull = false;
+
         co_return;
     }
 
