@@ -497,6 +497,7 @@ void Player::createMovingCard(int id, const QString &code, const std::string &st
     obj->setProperty("startPos", startPos);
     obj->setProperty("targetZone", QString::fromStdString(targetZone));
     obj->setProperty("targetPos", targetPos);
+    obj->setProperty("markerPos", markerPos);
     obj->connect(obj, SIGNAL(moveFinished()), mGame, SLOT(cardMoveFinished()));
     QMetaObject::invokeMethod(obj, "startAnimation");
 }

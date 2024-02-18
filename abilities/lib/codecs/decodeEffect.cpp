@@ -149,6 +149,7 @@ AddMarker decodeAddMarker(Iterator &it, Iterator end) {
     e.from = decodePlace(it, end);
     e.destination = decodeTarget(it, end);
     e.orientation = decodeEnum<FaceOrientation>(it, end);
+    e.withMarkers = decodeBool(it, end);
     return e;
 }
 

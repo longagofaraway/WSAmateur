@@ -442,7 +442,8 @@ std::vector<ProtoTypeCard> ServerPlayer::moveMarkersToWr(std::vector<std::unique
 }
 
 void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
-                              int targetPos, asn::FaceOrientation faceOrientation) {
+                             int targetPos, asn::FaceOrientation faceOrientation,
+                             bool withMarkers) {
     ServerCard *card = startZone->card(startPos);
     if (!card)
         return;
@@ -464,6 +465,9 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
 
     cardPtr->reset();
 
+    if (withMarkers) {
+        transferMarkers(markers, startPos, targetPos, markerBearer, faceOrientation);
+    }
     card = markerBearer->addMarker(std::move(cardPtr));
 
     EventMoveCard event;
@@ -472,8 +476,10 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
     event.set_target_zone("marker");
     event.set_target_pos(targetPos);
     if (startZone->name() == "stage" && markers.size()) {
-        auto movedMarkers = moveMarkersToWr(markers);
-        *event.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
+        if (!withMarkers) {
+            auto movedMarkers = moveMarkersToWr(markers);
+            *event.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
+        }
     }
 
     if (faceOrientation == asn::FaceOrientation::FaceUp) {
@@ -484,6 +490,30 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
     sendToBoth(event);
 
     mGame->resolveAllContAbilities();
+}
+
+void ServerPlayer::transferMarkers(std::vector<std::unique_ptr<ServerCard>> &markers, int startPos, int targetPos,
+                                   ServerCard *markerBearer, asn::FaceOrientation faceOrientation) {
+    if (markers.empty())
+        return;
+
+    for (size_t i = markers.size() - 1; i >= 0; --i) {
+        auto marker = markerBearer->addMarker(std::move(markers[i]));
+
+        EventMoveCard event;
+        event.set_start_zone("marker");
+        event.set_start_pos(startPos);
+        event.set_target_zone("marker");
+        event.set_target_pos(targetPos);
+        event.set_marker_pos(i);
+        if (faceOrientation == asn::FaceOrientation::FaceUp) {
+            event.set_code(marker->code());
+            event.set_card_id(marker->id());
+        }
+        sendToBoth(event);
+    }
+
+    markers.clear();
 }
 
 ServerCard* ServerPlayer::removeMarker(ServerCard *markerBearer, int markerPos,

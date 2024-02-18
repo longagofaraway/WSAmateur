@@ -116,6 +116,7 @@ void encodeAddMarker(const AddMarker &e, Buf &buf) {
     encodePlace(e.from, buf);
     encodeTarget(e.destination, buf);
     buf.push_back(static_cast<uint8_t>(e.orientation));
+    buf.push_back(e.withMarkers ? 1 : 0);
 }
 
 void encodeReplay(const Replay &e, Buf &buf) {

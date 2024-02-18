@@ -480,7 +480,7 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
             if (!card)
                 break;
 
-            player->addMarker(pzone, pzone->count() - 1, targetStageCard->pos(), e.orientation);
+            player->addMarker(pzone, pzone->count() - 1, targetStageCard->pos(), e.orientation, e.withMarkers);
             if (pzone->count() == 0)
                 co_await player->refresh();
         }
@@ -494,7 +494,7 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     });
     for (auto target: targets) {
         auto zone = target->zone();
-        player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation);
+        player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation, e.withMarkers);
 
         if (!isPayingCost()) {
             addLastMovedCard(CardImprint(target->zone()->name(), target));

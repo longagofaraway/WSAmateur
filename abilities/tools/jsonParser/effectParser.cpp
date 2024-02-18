@@ -310,7 +310,9 @@ AddMarker parseAddMarker(const QJsonObject &json) {
     if (!json.contains("destination") || !json["destination"].isObject())
         throw std::runtime_error("no destination in AddMarker");
     if (json.contains("orientation") && !json["orientation"].isDouble())
-        throw std::runtime_error("wrong orientation in DrawCard");
+        throw std::runtime_error("wrong orientation in AddMarker");
+    if (json.contains("withMarkers") && !json["withMarkers"].isBool())
+        throw std::runtime_error("wrong withMarkers in AddMarker");
 
     AddMarker e;
     e.target = parseTarget(json["target"].toObject());
@@ -320,6 +322,10 @@ AddMarker parseAddMarker(const QJsonObject &json) {
         e.orientation = static_cast<FaceOrientation>(json["orientation"].toInt());
     else
         e.orientation = FaceOrientation::FaceDown;
+    if (json.contains("withMarkers"))
+        e.withMarkers = json["withMarkers"].toBool();
+    else
+        e.withMarkers = false;
     return e;
 }
 

@@ -861,6 +861,8 @@ std::string printAddMarker(const AddMarker &e) {
     std::string s = "put ";
 
     s += printTargetAndPlace(e.target, e.from);
+    if (e.withMarkers)
+        s += "and all of its markers ";
     s += printFaceOrientation(e.orientation) + " underneath ";
     s += printTarget(e.destination);
     if (e.target.type == TargetType::ChosenCards) {
@@ -964,7 +966,7 @@ std::string printCostSubstitution(const CostSubstitution &e) {
     std::string s = "you may ";
 
     s += printEffect(*e.effect);
-    s += " in place of 1 stock ";
+    s += "in place of 1 stock ";
 
     return s;
 }

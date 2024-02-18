@@ -10,6 +10,7 @@ Rectangle {
     signal editPlace()
     signal editDestination()
     signal faceOrientationChanged(int value)
+    signal withMarkersChanged(bool value)
 
     width: root.width
 
@@ -73,9 +74,22 @@ Rectangle {
                 }
             }
         }
+
+        CheckBox {
+            id: withMarkers
+            text: "With Markers"
+            checked: false
+            onCheckedChanged: {
+                withMarkersChanged(checked);
+            }
+        }
     }
 
     function setFaceOrientation(value) {
         orientation.setValue(value);
+    }
+
+    function setWithMarkers(value) {
+        withMarkers.checked = value;
     }
 }

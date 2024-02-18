@@ -122,6 +122,7 @@ private slots:
     void chooseTwoReady(const asn::ChooseCard &e);
 
     void onTriggerIconChanged(int value);
+    void onWithMarkersChanged(bool value);
 
     void cardCodeChanged(QString code);
 

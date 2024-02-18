@@ -169,6 +169,7 @@ struct AddMarker {
     Place from;
     Target destination;
     FaceOrientation orientation;
+    bool withMarkers;
 };
 
 struct Bond {

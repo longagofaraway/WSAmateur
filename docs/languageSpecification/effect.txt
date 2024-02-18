@@ -280,7 +280,8 @@ AddMarker {
   target Target,
   from Place,
   destination Target,
-  orientation FaceOrientation
+  orientation FaceOrientation,
+  withMarkers Bool
 }
 
 RemoveMarker {

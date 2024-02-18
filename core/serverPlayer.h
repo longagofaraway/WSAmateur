@@ -150,7 +150,10 @@ public:
                          std::optional<int> markerPos = {});
     Resumable moveTopDeck(std::string_view targetZoneName);
     void addMarker(ServerCardZone *startZone, int startPos,
-                   int targetPos, asn::FaceOrientation faceOrientation);
+                   int targetPos, asn::FaceOrientation faceOrientation,
+                   bool withMarkers);
+    void transferMarkers(std::vector<std::unique_ptr<ServerCard>> &markers, int startPos, int targetPos,
+                         ServerCard *markerBearer, asn::FaceOrientation faceOrientation);
     ServerCard* removeMarker(ServerCard *markerBearer, int markerPos, const asn::Place &place,
                              int targetPos = -1);
     Resumable processClockPhaseResult(CommandClockPhase cmd);

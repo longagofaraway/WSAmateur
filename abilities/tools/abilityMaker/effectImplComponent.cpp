@@ -176,6 +176,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         e.from = defaultPlace;
         e.destination = defaultTarget;
         e.orientation = asn::FaceOrientation::FaceDown;
+        e.withMarkers = false;
         effect = e;
         break;
     }
@@ -606,6 +607,7 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
     case asn::EffectType::AddMarker: {
         const auto &ef = std::get<asn::AddMarker>(e);
         QMetaObject::invokeMethod(qmlObject, "setFaceOrientation", Q_ARG(QVariant, (int)ef.orientation));
+        QMetaObject::invokeMethod(qmlObject, "setWithMarkers", Q_ARG(QVariant, (int)ef.withMarkers));
         break;
     }
     case asn::EffectType::Shuffle: {
@@ -896,6 +898,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         connect(qmlObject, SIGNAL(editDestination()), this, SLOT(editDestination()));
         connect(qmlObject, SIGNAL(faceOrientationChanged(int)), this, SLOT(onFaceOrientationChanged(int)));
+        connect(qmlObject, SIGNAL(withMarkersChanged(bool)), this, SLOT(onWithMarkersChanged(bool)));
 
         QMetaObject::invokeMethod(qmlObject, "setFaceOrientation", Q_ARG(QVariant, QString("2")));
         break;
@@ -1273,6 +1276,20 @@ void EffectImplComponent::chooseTwoReady(const asn::ChooseCard &e) {
 void EffectImplComponent::onTriggerIconChanged(int value) {
     auto &eff = std::get<asn::TriggerIconGain>(effect);
     eff.triggerIcon = static_cast<asn::TriggerIcon>(value);
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onWithMarkersChanged(bool value)
+{
+    switch (type) {
+    case asn::EffectType::AddMarker: {
+        auto &c = std::get<asn::AddMarker>(effect);
+        c.withMarkers = value;
+        break;
+    }
+    default:
+        assert(false);
+    }
     emit componentChanged(effect);
 }
 
