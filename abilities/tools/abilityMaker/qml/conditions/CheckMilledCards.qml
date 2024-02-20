@@ -19,7 +19,7 @@ Rectangle {
     Text {
         id: label
         anchors.horizontalCenter: conditionImpl.horizontalCenter
-        text: "Condition Check Opened Cards"
+        text: "Condition Check Milled Cards"
         font.pointSize: 12
     }
 

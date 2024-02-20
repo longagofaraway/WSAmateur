@@ -376,11 +376,17 @@ std::string printDuration(int duration) {
 std::string printPlace(Place place, bool printStage) {
     std::string s;
     if (place.pos == Position::FrontRow ||
-        place.pos == Position::BackRow)
-        s += "in " + printPlayer(place.owner);
+        place.pos == Position::BackRow ||
+        place.pos == Position::FrontRowMiddlePosition) {
+        s += "in ";
+        if (place.pos == Position::FrontRowMiddlePosition)
+            s += "the middle position of ";
+        s += printPlayer(place.owner);
+    }
 
     switch (place.pos) {
     case Position::FrontRow:
+    case Position::FrontRowMiddlePosition:
         return s + "center stage";
     case Position::BackRow:
         return s + "back stage";

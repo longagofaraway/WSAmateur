@@ -26,7 +26,7 @@ enum ConditionType {
   sumOfLevels = 6,
   cardsLocation = 7,
   duringTurn = 8,
-  checkOpenedCards = 9,
+  checkMilledCards = 9,
   revealedCard = 10,
   playersLevel = 11,
   duringCardsFirstTurn = 12, // during turn this placed from hand to stage

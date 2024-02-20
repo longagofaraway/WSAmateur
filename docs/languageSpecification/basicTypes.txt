@@ -96,7 +96,8 @@ enum Position {
   slotThisWasInRested = 8,
   slotThisWasIn = 9,
   slotTargetWasIn = 10,
-  oppositeCharacter = 11 // have a character facing this
+  oppositeCharacter = 11, // have a character facing this
+  frontRowMiddlePosition = 12
 }
 
 enum State {

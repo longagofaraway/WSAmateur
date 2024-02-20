@@ -38,7 +38,7 @@ Rectangle {
     ComboBox {
         id: conditionTypeCombo
         model: ["No condition", "Is card", "Have cards", "And", "Or", "In battle with this",
-                "Sum of levels", "Card's location", "During turn", "Check opened cards",
+                "Sum of levels", "Card's location", "During turn", "Check milled cards",
                 "Revealed card", "Player's level", "During card's first turn", "Card moved",
                 "Performed in full", "Has markers"]
         currentIndex: -1
