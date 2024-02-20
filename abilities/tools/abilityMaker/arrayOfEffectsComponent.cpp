@@ -29,7 +29,7 @@ ArrayOfEffectsComponent::ArrayOfEffectsComponent(const std::vector<asn::Effect> 
     effects = ef;
     for (size_t i = 0; i < ef.size(); ++i) {
         createEffect();
-        effectSet.push_back(true);
+        effectSet.push_back(ef[i].type != asn::EffectType::NotSpecified);
         conditionSet.push_back(true);
     }
 }
