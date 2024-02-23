@@ -47,6 +47,7 @@ class ServerCard : public CardBase
     std::string mCode;
     std::vector<AbilityState> mAbilities;
     std::vector<asn::TriggerIcon> mTriggerIcons;
+    std::vector<std::string> mTraits;
 
     std::vector<std::unique_ptr<ServerCard>> mMarkers;
 

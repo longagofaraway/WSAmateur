@@ -20,15 +20,21 @@ asn::Condition parseCondition(const QJsonObject &json);
 asn::Effect parseEffect(const QJsonObject &json);
 asn::Ability parseAbility(const QJsonObject &json);
 asn::AutoAbility parseAutoAbility(const QJsonObject &json);
+std::string parseString(const std::string &value);
 
-template<typename T>
-std::vector<T> parseArray(const QJsonArray &json, T(*parseType)(const QJsonObject &json)) {
+template<typename T, typename M>
+std::vector<T> parseArray(const QJsonArray &json, T(*parseType)(const M &json)) {
     if (!json.count())
         return {};
 
     std::vector<T> vec;
-    for (const auto &elem: json)
-        vec.emplace_back(parseType(elem.toObject()));
+    for (const auto &elem: json) {
+        if constexpr (std::is_same_v<M, QJsonObject>) {
+            vec.emplace_back(parseType(elem.toObject()));
+        } else if constexpr (std::is_same_v<M, std::string>) {
+            vec.emplace_back(parseType(elem.toString().toStdString()));
+        }
+    }
 
     return vec;
 }

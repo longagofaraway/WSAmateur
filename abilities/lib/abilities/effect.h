@@ -264,6 +264,18 @@ struct SkipPhase {
     Phase skipUntil;
 };
 
+struct ChooseTrait {
+    Target target;
+};
+
+struct TraitModification {
+    TraitModificationType type;
+    TargetAndPlace target;
+    TraitType traitType;
+    std::vector<std::string> traits;
+    int duration;
+};
+
 struct OtherEffect {
     std::string cardCode;
     int effectId;
@@ -316,6 +328,8 @@ enum class EffectType : uint8_t {
     DelayedAbility,
     CostSubstitution,
     SkipPhase,
+    ChooseTrait,
+    TraitModification,
 
     OtherEffect = 255
 };
@@ -363,6 +377,8 @@ struct Effect {
         CostSubstitution,
         StockSwap,
         SkipPhase,
+        ChooseTrait,
+        TraitModification,
         OtherEffect
     > effect;
 };

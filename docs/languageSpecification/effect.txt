@@ -90,6 +90,8 @@ enum EffectType {
   delayedAbility = 42,
   costSubstitution = 43,
   skipPhase = 44,
+  chooseTrait = 45,
+  traitModification = 46,
   
   otherEffect = 255
 }
@@ -380,6 +382,18 @@ StockSwap {
 
 SkipPhase {
   skipUntil Phase
+}
+
+ChooseTrait {
+  target Target
+}
+
+TraitModification {
+  type TraitModificationType,
+  target TargetAndPlace,
+  traitType TraitType,
+  traits Array of String,
+  duration UInt8
 }
 
 OtherEffect {

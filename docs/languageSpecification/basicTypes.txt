@@ -118,6 +118,16 @@ enum AttackType {
   direct = 3
 }
 
+enum TraitType {
+  value = 0,
+  chosenTraits = 1
+}
+
+enum TraitModificationType {
+  traitGain = 0,
+  traitLoss = 1
+}
+
 ###
 
 Array Of X {

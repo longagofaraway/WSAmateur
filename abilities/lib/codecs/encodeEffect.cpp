@@ -216,6 +216,18 @@ void encodeStockSwap(const StockSwap &e, Buf &buf) {
     buf.push_back(static_cast<uint8_t>(e.zone));
 }
 
+void encodeChooseTrait(const ChooseTrait &e, Buf &buf) {
+    encodeTarget(e.target, buf);
+}
+
+void encodeTraitModification(const TraitModification &e, Buf &buf) {
+    buf.push_back(static_cast<uint8_t>(e.type));
+    encodeTargetAndPlace(e.target, buf);
+    buf.push_back(static_cast<uint8_t>(e.traitType));
+    encodeArray(e.traits, buf, encodeString);
+    buf.push_back(static_cast<uint8_t>(e.duration));
+}
+
 void encodeOtherEffect(const OtherEffect &e, Buf &buf) {
     encodeString(e.cardCode, buf);
     buf.push_back(zzenc_8(e.effectId));
@@ -340,6 +352,12 @@ void encodeEffect(const Effect &e, Buf &buf) {
         break;
     case EffectType::SkipPhase:
         encodeSkipPhase(std::get<SkipPhase>(e.effect), buf);
+        break;
+    case EffectType::ChooseTrait:
+        encodeChooseTrait(std::get<ChooseTrait>(e.effect), buf);
+        break;
+    case EffectType::TraitModification:
+        encodeTraitModification(std::get<TraitModification>(e.effect), buf);
         break;
     case EffectType::OtherEffect:
         encodeOtherEffect(std::get<OtherEffect>(e.effect), buf);

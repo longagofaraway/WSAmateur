@@ -303,6 +303,8 @@ OtherTrigger parseOtherTrigger(const QJsonObject &json) {
     return t;
 }
 
+std::string parseString(const std::string &value) { return value; }
+
 Trigger parseTrigger(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no trigger type");

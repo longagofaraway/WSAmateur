@@ -123,6 +123,8 @@ private slots:
 
     void onTriggerIconChanged(int value);
     void onWithMarkersChanged(bool value);
+    void onTraitModificationTypeChanged(int value);
+    void onTraitTypeChanged(int value);
 
     void cardCodeChanged(QString code);
 

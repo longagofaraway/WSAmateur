@@ -43,6 +43,7 @@ Rectangle {
         }
 
         Column {
+            id: durationColumn
             Text { text: "Duration" }
             ComboBox {
                 id: duration
@@ -58,5 +59,9 @@ Rectangle {
 
     function hideTarget() {
         targetColumn.visible = false;
+    }
+
+    function hideDuration() {
+        durationColumn.visible = false;
     }
 }

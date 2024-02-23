@@ -281,6 +281,22 @@ SkipPhase decodeSkipPhase(Iterator &it, Iterator end) {
     return e;
 }
 
+ChooseTrait decodeChooseTrait(Iterator &it, Iterator end) {
+    ChooseTrait e;
+    e.target = decodeTarget(it, end);
+    return e;
+}
+
+TraitModification decodeTraitModification(Iterator &it, Iterator end) {
+    TraitModification e;
+    e.type = decodeEnum<TraitModificationType>(it, end);
+    e.target = decodeTargetAndPlace(it, end);
+    e.traitType = decodeEnum<TraitType>(it, end);
+    e.traits = decodeArray<std::string>(it, end, decodeString);
+    e.duration = decodeUInt8(it, end);
+    return e;
+}
+
 OtherEffect decodeOtherEffect(Iterator &it, Iterator end) {
     OtherEffect e;
     e.cardCode = decodeString(it, end);
@@ -411,6 +427,12 @@ Effect decodeEffect(Iterator &it, Iterator end) {
         break;
     case EffectType::SkipPhase:
         e.effect = decodeSkipPhase(it, end);
+        break;
+    case EffectType::ChooseTrait:
+        e.effect = decodeChooseTrait(it, end);
+        break;
+    case EffectType::TraitModification:
+        e.effect = decodeTraitModification(it, end);
         break;
     default:
         break;

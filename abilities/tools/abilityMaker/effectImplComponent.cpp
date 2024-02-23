@@ -28,12 +28,12 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     defaultNum.value = 1;
 
     auto defaultChooseCard = asn::ChooseCard();
-    auto tp = asn::TargetAndPlace();
-    tp.placeType = asn::PlaceType::SpecificPlace;
-    tp.place = defaultPlace;
-    tp.target = defaultTarget;
+    auto defaultTargetAndPlace = asn::TargetAndPlace();
+    defaultTargetAndPlace.placeType = asn::PlaceType::SpecificPlace;
+    defaultTargetAndPlace.place = defaultPlace;
+    defaultTargetAndPlace.target = defaultTarget;
     defaultChooseCard.executor = asn::Player::Player;
-    defaultChooseCard.targets.push_back(tp);
+    defaultChooseCard.targets.push_back(defaultTargetAndPlace);
 
     switch (type) {
     case asn::EffectType::AttributeGain: {
@@ -290,6 +290,21 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         effect = e;
         break;
     }
+    case asn::EffectType::ChooseTrait: {
+        auto e = asn::ChooseTrait();
+        e.target = defaultTarget;
+        effect = e;
+        break;
+    }
+    case asn::EffectType::TraitModification: {
+        auto e = asn::TraitModification();
+        e.type = asn::TraitModificationType::TraitGain;
+        e.target = defaultTargetAndPlace;
+        e.traitType = asn::TraitType::Value;
+        e.duration = 1;
+        effect = e;
+        break;
+    }
     case asn::EffectType::OtherEffect: {
         effect = asn::OtherEffect();
         break;
@@ -336,6 +351,10 @@ const asn::Place& getPlace(EffectImplComponent::VarEffect &effect, asn::EffectTy
     case asn::EffectType::PutOnStageRested: {
         const auto &e = std::get<asn::PutOnStageRested>(effect);
         return e.from;
+    }
+    case asn::EffectType::TraitModification: {
+        const auto &e = std::get<asn::TraitModification>(effect);
+        return *e.target.place;
     }
     default:
         assert(false);
@@ -419,6 +438,14 @@ const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::Effect
     case asn::EffectType::CanPlayWithoutColorRequirement: {
         const auto &e = std::get<asn::CanPlayWithoutColorRequirement>(effect);
         return e.target;
+    }
+    case asn::EffectType::ChooseTrait: {
+        const auto &e = std::get<asn::ChooseTrait>(effect);
+        return e.target;
+    }
+    case asn::EffectType::TraitModification: {
+        const auto &e = std::get<asn::TraitModification>(effect);
+        return e.target.target;
     }
     default:
         assert(false);
@@ -683,6 +710,14 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setPhase", Q_ARG(QVariant, (int)ef.skipUntil));
         break;
     }
+    case asn::EffectType::TraitModification: {
+        const auto &ef = std::get<asn::TraitModification>(e);
+        QMetaObject::invokeMethod(qmlObject, "setType", Q_ARG(QVariant, (int)ef.type));
+        QMetaObject::invokeMethod(qmlObject, "setTraitType", Q_ARG(QVariant, (int)ef.traitType));
+        QMetaObject::invokeMethod(qmlObject, "setDuration", Q_ARG(QVariant, (int)ef.duration));
+        QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, (int)ef.target.placeType));
+        break;
+    }
     case asn::EffectType::OtherEffect: {
         const auto &ef = std::get<asn::OtherEffect>(e);
         QMetaObject::invokeMethod(qmlObject, "setCardCode", Q_ARG(QVariant, QString::fromStdString(ef.cardCode)));
@@ -737,6 +772,8 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::CostSubstitution, "CostSubstitution" },
         { asn::EffectType::StockSwap, "StockSwap" },
         { asn::EffectType::SkipPhase, "SkipPhase" },
+        { asn::EffectType::ChooseTrait, "TargetDurationEffect" },
+        { asn::EffectType::TraitModification, "TraitModification" },
         { asn::EffectType::OtherEffect, "OtherEffect" }
     };
 
@@ -962,6 +999,22 @@ void EffectImplComponent::init(QQuickItem *parent) {
         QMetaObject::invokeMethod(qmlObject, "setPhase", Q_ARG(QVariant, QString("8")));
         connect(qmlObject, SIGNAL(phaseChanged(int)), this, SLOT(onPhaseChanged(int)));
         break;
+    case asn::EffectType::ChooseTrait:
+        QMetaObject::invokeMethod(qmlObject, "hideDuration");
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        break;
+    case asn::EffectType::TraitModification:
+        QMetaObject::invokeMethod(qmlObject, "setType", Q_ARG(QVariant, static_cast<int>(asn::TraitModificationType::TraitGain)));
+        QMetaObject::invokeMethod(qmlObject, "setTraitType", Q_ARG(QVariant, static_cast<int>(asn::TraitType::Value)));
+        QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, static_cast<int>(asn::PlaceType::SpecificPlace)));
+
+        connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
+        connect(qmlObject, SIGNAL(typeChanged(int)), this, SLOT(onTraitModificationTypeChanged(int)));
+        connect(qmlObject, SIGNAL(traitTypeChanged(int)), this, SLOT(onTraitTypeChanged(int)));
+        connect(qmlObject, SIGNAL(placeTypeChanged(int)), this, SLOT(onPlaceTypeChanged(int)));
+        connect(qmlObject, SIGNAL(durationChanged(int)), this, SLOT(onDurationChanged(int)));
+        break;
     case asn::EffectType::OtherEffect:
         connect(qmlObject, SIGNAL(cardCodeChanged(QString)), this, SLOT(cardCodeChanged(QString)));
         connect(qmlObject, SIGNAL(effectIdChanged(QString)), this, SLOT(onAttrChanged(QString)));
@@ -1089,6 +1142,16 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     case asn::EffectType::CanPlayWithoutColorRequirement: {
         auto &e = std::get<asn::CanPlayWithoutColorRequirement>(effect);
         e.target = t;
+        break;
+    }
+    case asn::EffectType::ChooseTrait: {
+        auto &e = std::get<asn::ChooseTrait>(effect);
+        e.target = t;
+        break;
+    }
+    case asn::EffectType::TraitModification: {
+        auto &e = std::get<asn::TraitModification>(effect);
+        e.target.target = t;
         break;
     }
     default:
@@ -1283,8 +1346,34 @@ void EffectImplComponent::onWithMarkersChanged(bool value)
 {
     switch (type) {
     case asn::EffectType::AddMarker: {
-        auto &c = std::get<asn::AddMarker>(effect);
-        c.withMarkers = value;
+        auto &e = std::get<asn::AddMarker>(effect);
+        e.withMarkers = value;
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onTraitModificationTypeChanged(int value) {
+    switch (type) {
+    case asn::EffectType::TraitModification: {
+        auto &e = std::get<asn::TraitModification>(effect);
+        e.type = static_cast<asn::TraitModificationType>(value);
+        break;
+    }
+    default:
+        assert(false);
+    }
+    emit componentChanged(effect);
+}
+
+void EffectImplComponent::onTraitTypeChanged(int value) {
+    switch (type) {
+    case asn::EffectType::TraitModification: {
+        auto &e = std::get<asn::TraitModification>(effect);
+        e.traitType = static_cast<asn::TraitType>(value);
         break;
     }
     default:
@@ -1370,6 +1459,11 @@ void EffectImplComponent::onDurationChanged(int value) {
     }
     case asn::EffectType::DelayedAbility: {
         auto &e = std::get<asn::DelayedAbility>(effect);
+        e.duration = value;
+        break;
+    }
+    case asn::EffectType::TraitModification: {
+        auto &e = std::get<asn::TraitModification>(effect);
         e.duration = value;
         break;
     }
@@ -1459,6 +1553,11 @@ void EffectImplComponent::placeReady(const asn::Place &p) {
         e.from = p;
         break;
     }
+    case asn::EffectType::TraitModification: {
+        auto &e = std::get<asn::TraitModification>(effect);
+        e.target.place = p;
+        break;
+    }
     default:
         assert(false);
     }
@@ -1491,14 +1590,28 @@ void EffectImplComponent::onPlaceTypeChanged(int value) {
     case asn::EffectType::ChooseCard: {
         auto &e = std::get<asn::ChooseCard>(effect);
         e.targets[0].placeType = static_cast<asn::PlaceType>(value);
-        if (e.targets[0].placeType == asn::PlaceType::Selection)
+        if (e.targets[0].placeType != asn::PlaceType::SpecificPlace) {
             e.targets[0].place = std::nullopt;
-        else {
+        } else {
             auto defaultPlace = asn::Place();
             defaultPlace.owner = asn::Player::Player;
             defaultPlace.pos = asn::Position::NotSpecified;
             defaultPlace.zone = asn::Zone::Stage;
             e.targets[0].place = defaultPlace;
+        }
+        break;
+    }
+    case asn::EffectType::TraitModification: {
+        auto &e = std::get<asn::TraitModification>(effect);
+        e.target.placeType = static_cast<asn::PlaceType>(value);
+        if (e.target.placeType != asn::PlaceType::SpecificPlace) {
+            e.target.place = std::nullopt;
+        } else {
+            auto defaultPlace = asn::Place();
+            defaultPlace.owner = asn::Player::Player;
+            defaultPlace.pos = asn::Position::NotSpecified;
+            defaultPlace.zone = asn::Zone::Stage;
+            e.target.place = defaultPlace;
         }
         break;
     }

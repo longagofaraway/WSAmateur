@@ -103,5 +103,8 @@
         <file>qml/conditions/HasMarkers.qml</file>
         <file>qml/utilities/AdvancedButton.qml</file>
         <file>qml/CostColumn.qml</file>
+        <file>qml/effects/TraitModification.qml</file>
+        <file>qml/basicTypes/TraitModificationType.qml</file>
+        <file>qml/basicTypes/TraitType.qml</file>
     </qresource>
 </RCC>

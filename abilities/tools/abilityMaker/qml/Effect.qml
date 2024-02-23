@@ -46,7 +46,7 @@ Rectangle {
                 "Replay", "Side Attack Without Penalty", "Standby", "Shuffle", "Put On Stage Rested",
                 "Remove Marker", "Cannot Stand", "Cannot Be Chosen", "Trigger Icon Gain",
                 "Can Play w/o Color Requirement", "Shot Trigger Damage", "Delayed Ability",
-                "Cost Substitution", "Skip Phase", "Other Effect"]
+                "Cost Substitution", "Skip Phase", "ChooseTrait", "TraitModification", "Other Effect"]
         currentIndex: -1
         onCurrentIndexChanged: {
             effectTypeChanged(currentIndex + 1, textAt(currentIndex));

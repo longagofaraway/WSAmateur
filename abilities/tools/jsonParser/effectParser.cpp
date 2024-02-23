@@ -578,6 +578,34 @@ SkipPhase parseSkipPhase(const QJsonObject &json) {
     return e;
 }
 
+ChooseTrait parseChooseTrait(const QJsonObject &json) {
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in ChooseTrait");
+
+    ChooseTrait e;
+    e.target = parseTarget(json["target"].toObject());
+    return e;
+}
+
+TraitModification parseTraitModification(const QJsonObject &json) {
+    if (!json.contains("type") || !json["type"].isDouble())
+        throw std::runtime_error("no type in TraitModification");
+    if (!json.contains("target") || !json["target"].isObject())
+        throw std::runtime_error("no target in TraitModification");
+    if (!json.contains("traitType") || !json["traitType"].isDouble())
+        throw std::runtime_error("no traitType in TraitModification");
+    if (!json.contains("duration") || !json["duration"].isDouble())
+        throw std::runtime_error("no duration in TraitModification");
+
+    TraitModification e;
+    e.type = static_cast<TraitModificationType>(json["type"].toInt());
+    e.target = parseTargetAndPlace(json["target"].toObject());
+    e.traitType = static_cast<TraitType>(json["traitType"].toInt());
+    e.traits = parseArray(json["traits"].toArray(), parseString);
+    e.duration = json["duration"].toInt();
+    return e;
+}
+
 Effect parseEffect(const QJsonObject &json) {
     if (!json.contains("type") || !json["type"].isDouble())
         throw std::runtime_error("no effect type");
@@ -702,6 +730,12 @@ Effect parseEffect(const QJsonObject &json) {
         break;
     case EffectType::SkipPhase:
         e.effect = parseSkipPhase(json["effect"].toObject());
+        break;
+    case EffectType::ChooseTrait:
+        e.effect = parseChooseTrait(json["effect"].toObject());
+        break;
+    case EffectType::TraitModification:
+        e.effect = parseTraitModification(json["effect"].toObject());
         break;
     case EffectType::TriggerCheckTwice:
     case EffectType::EarlyPlay:

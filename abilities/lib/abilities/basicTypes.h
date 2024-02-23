@@ -114,4 +114,14 @@ enum class TriggerIcon : uint8_t {
     Choice
 };
 
+enum class TraitType : uint8_t {
+  Value = 1,
+  ChosenTraits
+};
+
+enum class TraitModificationType : uint8_t {
+  TraitGain = 1,
+  TraitLoss
+};
+
 }
