@@ -8,10 +8,7 @@ Rectangle {
 
     signal editTarget()
     signal editPlace()
-    signal typeChanged(int value)
-    signal traitTypeChanged(int value)
     signal placeTypeChanged(int value)
-    signal durationChanged(int value)
 
     width: root.width
 
@@ -22,7 +19,7 @@ Rectangle {
     Text {
         id: label
         anchors.horizontalCenter: effectImpl.horizontalCenter
-        text: "Trait Modification"
+        text: "Choose Trait"
         font.pointSize: 12
     }
 
@@ -68,51 +65,9 @@ Rectangle {
                 }
             }
         }
-
-        Column {
-            Text { text: "Trait Modification Type" }
-            TraitModificationType {
-                id: modificationType
-                Component.onCompleted: {
-                    valueChanged.connect(typeChanged)
-                }
-            }
-        }
-
-        Column {
-            Text { text: "Trait Type" }
-            TraitType {
-                id: traitType
-                Component.onCompleted: {
-                    valueChanged.connect(traitTypeChanged)
-                }
-            }
-        }
-
-        Column {
-            id: durationColumn
-            Text { text: "Duration" }
-            ComboBox {
-                id: duration
-                model: ["0", "1", "2"]
-                onCurrentIndexChanged: durationChanged(currentIndex);
-            }
-        }
-    }
-
-    function setType(value) {
-        modificationType.setValue(value);
-    }
-
-    function setTraitType(value) {
-        traitType.setValue(value);
     }
 
     function setPlaceType(value) {
         placeType.setValue(value);
-    }
-
-    function setDuration(value) {
-        duration.currentIndex = value;
     }
 }

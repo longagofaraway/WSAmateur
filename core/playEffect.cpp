@@ -6,6 +6,7 @@
 
 #include "abilityPlayer.h"
 #include "abilityUtils.h"
+#include "hardcodedEffects.h"
 #include "serverGame.h"
 #include "serverPlayer.h"
 #include "codecs/encode.h"
@@ -119,6 +120,12 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         break;
     case asn::EffectType::SkipPhase:
         playSkipPhase(std::get<asn::SkipPhase>(e.effect));
+        break;
+    case asn::EffectType::ChooseTrait:
+        co_await playChooseTrait(std::get<asn::ChooseTrait>(e.effect));
+        break;
+    case asn::EffectType::TraitModification:
+        playTraitModification(std::get<asn::TraitModification>(e.effect));
         break;
     case asn::EffectType::OtherEffect:
         co_await playOtherEffect(std::get<asn::OtherEffect>(e.effect));
@@ -261,6 +268,7 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
     EventChooseCard ev;
     ev.set_effect(buf.data(), buf.size());
     ev.set_mandatory(mandatory());
+    ev.set_consider_cannot_be_chosen(true);
     for (const auto &target: e.targets) {
         auto targets = getTargets(target.target, target.placeType, target.place);
         for (const auto &t: targets) {
@@ -1150,4 +1158,120 @@ Resumable AbilityPlayer::playCostSubstitution(const asn::CostSubstitution &e) {
 
 void AbilityPlayer::playSkipPhase(const asn::SkipPhase &e) {
     mPlayer->game()->setSkipUntil(e.skipUntil);
+}
+
+Resumable AbilityPlayer::playChooseTrait(const asn::ChooseTrait &e) {
+    const auto chooseEffect = createChooseCard(e.target);
+
+    const bool needToChoose = (e.target.target.type != asn::TargetType::ChosenCards);
+
+    ServerCard *target{nullptr};
+    if (e.target.target.type == asn::TargetType::SpecificCards) {
+        const auto &spec = *e.target.target.targetSpecification;
+        assert(spec.number.value == 1);
+    } else if (e.target.target.type == asn::TargetType::ChosenCards) {
+        assert(mChosenCards.size() == 1);
+        if (!mChosenCards.empty())
+            target = mChosenCards.front().card;
+    }
+
+    if (needToChoose) {
+        std::vector<uint8_t> buf;
+        encodeChooseCard(chooseEffect, buf);
+
+        EventChooseCard ev;
+        ev.set_effect(buf.data(), buf.size());
+        ev.set_mandatory(mandatory());
+        ev.set_consider_cannot_be_chosen(false);
+        const auto targets = getTargets(e.target.target, e.target.placeType, e.target.place);
+        for (const auto &t: targets) {
+            auto card = ev.add_cards();
+            card->set_id(t->id());
+            card->set_position(t->pos());
+            card->set_zone(t->zone()->name());
+            card->set_owner(t->player() == mPlayer ? ProtoPlayer : ProtoOpponent);
+        }
+
+        mPlayer->sendToBoth(ev);
+
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChooseCard::descriptor()->name());
+        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
+
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandCancelEffect>()) {
+                setCanceled(true);
+                break;
+            } else if (cmd.command().Is<CommandChooseCard>()) {
+                CommandChooseCard cardCmd;
+                cmd.command().UnpackTo(&cardCmd);
+                for (int i = 0; i < cardCmd.positions_size(); ++i) {
+                    auto pzone = owner(protoPlayerToPlayer(cardCmd.owner()))->zone(cardCmd.zone());
+                    if (!pzone)
+                        break;
+
+                    auto card = pzone->card(cardCmd.positions(i));
+                    if (!card)
+                        break;
+
+                    target = card;
+                    break;
+                }
+                break;
+            }
+        }
+        mPlayer->clearExpectedComands();
+    }
+
+    if (!target)
+        co_return;
+
+    std::string header = "Choose a trait";
+    EventTextChoice event;
+    const auto &sTraits = target->traits();
+    std::vector<std::string> traits{sTraits.begin(), sTraits.end()};
+    for (const auto &trait: traits)
+        event.add_choices(trait);
+    if (traits.empty()) {
+        header = "No traits to choose from";
+        event.add_choices("OK");
+    }
+    event.set_header(header);
+    mPlayer->sendGameEvent(event);
+
+    mPlayer->clearExpectedComands();
+    mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
+
+    int choice{};
+    while (true) {
+        auto cmd = co_await waitForCommand();
+        if (cmd.command().Is<CommandChoice>()) {
+            CommandChoice choiceCmd;
+            cmd.command().UnpackTo(&choiceCmd);
+            choice = choiceCmd.choice();
+            break;
+        }
+    }
+
+    if (static_cast<size_t>(choice) >= traits.size())
+        co_return;
+
+    mChosenTraits.push_back(traits.at(choice));
+}
+
+void AbilityPlayer::playTraitModification(const asn::TraitModification &e) {
+    auto targets = getTargets(e.target.target, e.target.placeType, e.target.place);
+
+    std::vector<std::string> traits;
+    if (e.traitType == asn::TraitType::Value) {
+        traits = e.traits;
+    } else if (e.traitType == asn::TraitType::ChosenTraits) {
+        traits = mChosenTraits;
+    }
+
+    for (const auto &trait: traits) {
+        TraitChange buff(e.type, trait, e.duration);
+        applyBuff(targets, buff);
+    }
 }

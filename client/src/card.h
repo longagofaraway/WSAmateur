@@ -72,7 +72,7 @@ public:
     int soul() const { return mSoul; }
     void setSoul(int soul) { mSoul = soul; }
     const std::vector<TriggerIcon>& triggers() const override { return mInfo->triggers(); }
-    const std::vector<std::string>& traits() const override { return mInfo->traits(); }
+    const std::set<std::string> traits() const override;
     CardType type() const override { return mType; }
     asn::State state() const override { return mState; }
     void setState(asn::State state) { mState = state; }

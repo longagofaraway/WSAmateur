@@ -42,6 +42,7 @@ set(coreSources
     connectionManager.h
     coroutineTask.h
     deckList.h
+    hardcodedEffects.h
     imageLinks.h
     playerBuffManager.h
     networkUtils.h
@@ -58,6 +59,7 @@ set(coreSources
     globalAbilities/globalAbilities.h
     globalAbilities/globalAbilities.cpp
     hardcodedEffects/S79/20.cpp
+    hardcodedEffects/chooseGivenTarget.cpp
     ${VERSION_STRING_CPP}
     )
 

@@ -62,3 +62,20 @@ std::unique_ptr<Buff> BoolAttributeChangeEx::clone() const {
     buff->attrType = attrType;
     return buff;
 }
+
+void TraitChange::apply(ServerCard *card) const {
+    card->buffManager()->addTraitChange(this);
+    // sendTraits
+}
+
+void TraitChange::undo(CardBuffManager *buffManager, ServerCard *card) const {
+    card->buffManager()->removeTraitChange(this);
+    // sendTraits
+}
+
+std::unique_ptr<Buff> TraitChange::clone() const {
+    auto buff = std::make_unique<TraitChange>(type, trait, 0);
+    fillBaseFields(buff.get(), this);
+    buff->traitChangeId = traitChangeId;
+    return buff;
+}

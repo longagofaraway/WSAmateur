@@ -46,6 +46,8 @@ class AbilityPlayer {
 
     std::optional<asn::TriggerIcon> mTriggerIcon;
 
+    std::vector<std::string> mChosenTraits;
+
 public:
     AbilityPlayer(ServerPlayer *player) : mPlayer(player) {}
 
@@ -161,6 +163,8 @@ private:
     void playDelayedAbility(const asn::DelayedAbility &e);
     Resumable playCostSubstitution(const asn::CostSubstitution &e);
     void playSkipPhase(const asn::SkipPhase &e);
+    Resumable playChooseTrait(const asn::ChooseTrait &e);
+    void playTraitModification(const asn::TraitModification &e);
 
     Resumable playOtherEffect(const asn::OtherEffect &e);
     Resumable playS79_20();

@@ -28,12 +28,8 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     defaultNum.value = 1;
 
     auto defaultChooseCard = asn::ChooseCard();
-    auto defaultTargetAndPlace = asn::TargetAndPlace();
-    defaultTargetAndPlace.placeType = asn::PlaceType::SpecificPlace;
-    defaultTargetAndPlace.place = defaultPlace;
-    defaultTargetAndPlace.target = defaultTarget;
     defaultChooseCard.executor = asn::Player::Player;
-    defaultChooseCard.targets.push_back(defaultTargetAndPlace);
+    defaultChooseCard.targets.push_back(defaultTargetAndPlace());
 
     switch (type) {
     case asn::EffectType::AttributeGain: {
@@ -292,14 +288,14 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     }
     case asn::EffectType::ChooseTrait: {
         auto e = asn::ChooseTrait();
-        e.target = defaultTarget;
+        e.target = defaultTargetAndPlace();
         effect = e;
         break;
     }
     case asn::EffectType::TraitModification: {
         auto e = asn::TraitModification();
         e.type = asn::TraitModificationType::TraitGain;
-        e.target = defaultTargetAndPlace;
+        e.target = defaultTargetAndPlace();
         e.traitType = asn::TraitType::Value;
         e.duration = 1;
         effect = e;
@@ -351,6 +347,10 @@ const asn::Place& getPlace(EffectImplComponent::VarEffect &effect, asn::EffectTy
     case asn::EffectType::PutOnStageRested: {
         const auto &e = std::get<asn::PutOnStageRested>(effect);
         return e.from;
+    }
+    case asn::EffectType::ChooseTrait: {
+        const auto &e = std::get<asn::ChooseTrait>(effect);
+        return *e.target.place;
     }
     case asn::EffectType::TraitModification: {
         const auto &e = std::get<asn::TraitModification>(effect);
@@ -441,7 +441,7 @@ const asn::Target& getTarget(EffectImplComponent::VarEffect &effect, asn::Effect
     }
     case asn::EffectType::ChooseTrait: {
         const auto &e = std::get<asn::ChooseTrait>(effect);
-        return e.target;
+        return e.target.target;
     }
     case asn::EffectType::TraitModification: {
         const auto &e = std::get<asn::TraitModification>(effect);
@@ -710,6 +710,11 @@ EffectImplComponent::EffectImplComponent(asn::EffectType type, const VarEffect &
         QMetaObject::invokeMethod(qmlObject, "setPhase", Q_ARG(QVariant, (int)ef.skipUntil));
         break;
     }
+    case asn::EffectType::ChooseTrait: {
+        const auto &ef = std::get<asn::ChooseTrait>(e);
+        QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, (int)ef.target.placeType));
+        break;
+    }
     case asn::EffectType::TraitModification: {
         const auto &ef = std::get<asn::TraitModification>(e);
         QMetaObject::invokeMethod(qmlObject, "setType", Q_ARG(QVariant, (int)ef.type));
@@ -772,7 +777,7 @@ void EffectImplComponent::init(QQuickItem *parent) {
         { asn::EffectType::CostSubstitution, "CostSubstitution" },
         { asn::EffectType::StockSwap, "StockSwap" },
         { asn::EffectType::SkipPhase, "SkipPhase" },
-        { asn::EffectType::ChooseTrait, "TargetDurationEffect" },
+        { asn::EffectType::ChooseTrait, "TargetAndPlaceEffect" },
         { asn::EffectType::TraitModification, "TraitModification" },
         { asn::EffectType::OtherEffect, "OtherEffect" }
     };
@@ -1000,8 +1005,10 @@ void EffectImplComponent::init(QQuickItem *parent) {
         connect(qmlObject, SIGNAL(phaseChanged(int)), this, SLOT(onPhaseChanged(int)));
         break;
     case asn::EffectType::ChooseTrait:
-        QMetaObject::invokeMethod(qmlObject, "hideDuration");
+        QMetaObject::invokeMethod(qmlObject, "setPlaceType", Q_ARG(QVariant, static_cast<int>(asn::PlaceType::SpecificPlace)));
         connect(qmlObject, SIGNAL(editTarget()), this, SLOT(editTarget()));
+        connect(qmlObject, SIGNAL(placeTypeChanged(int)), this, SLOT(onPlaceTypeChanged(int)));
+        connect(qmlObject, SIGNAL(editPlace()), this, SLOT(editPlace()));
         break;
     case asn::EffectType::TraitModification:
         QMetaObject::invokeMethod(qmlObject, "setType", Q_ARG(QVariant, static_cast<int>(asn::TraitModificationType::TraitGain)));
@@ -1146,7 +1153,7 @@ void EffectImplComponent::targetReady(const asn::Target &t) {
     }
     case asn::EffectType::ChooseTrait: {
         auto &e = std::get<asn::ChooseTrait>(effect);
-        e.target = t;
+        e.target.target = t;
         break;
     }
     case asn::EffectType::TraitModification: {
@@ -1553,6 +1560,11 @@ void EffectImplComponent::placeReady(const asn::Place &p) {
         e.from = p;
         break;
     }
+    case asn::EffectType::ChooseTrait: {
+        auto &e = std::get<asn::ChooseTrait>(effect);
+        e.target.place = p;
+        break;
+    }
     case asn::EffectType::TraitModification: {
         auto &e = std::get<asn::TraitModification>(effect);
         e.target.place = p;
@@ -1593,10 +1605,6 @@ void EffectImplComponent::onPlaceTypeChanged(int value) {
         if (e.targets[0].placeType != asn::PlaceType::SpecificPlace) {
             e.targets[0].place = std::nullopt;
         } else {
-            auto defaultPlace = asn::Place();
-            defaultPlace.owner = asn::Player::Player;
-            defaultPlace.pos = asn::Position::NotSpecified;
-            defaultPlace.zone = asn::Zone::Stage;
             e.targets[0].place = defaultPlace;
         }
         break;
@@ -1607,10 +1615,16 @@ void EffectImplComponent::onPlaceTypeChanged(int value) {
         if (e.target.placeType != asn::PlaceType::SpecificPlace) {
             e.target.place = std::nullopt;
         } else {
-            auto defaultPlace = asn::Place();
-            defaultPlace.owner = asn::Player::Player;
-            defaultPlace.pos = asn::Position::NotSpecified;
-            defaultPlace.zone = asn::Zone::Stage;
+            e.target.place = defaultPlace;
+        }
+        break;
+    }
+    case asn::EffectType::ChooseTrait: {
+        auto &e = std::get<asn::ChooseTrait>(effect);
+        e.target.placeType = static_cast<asn::PlaceType>(value);
+        if (e.target.placeType != asn::PlaceType::SpecificPlace) {
+            e.target.place = std::nullopt;
+        } else {
             e.target.place = defaultPlace;
         }
         break;
@@ -1631,10 +1645,6 @@ void EffectImplComponent::onPlaceType2Changed(int value) {
         if (e.targets[1].placeType == asn::PlaceType::Selection)
             e.targets[1].place = std::nullopt;
         else {
-            auto defaultPlace = asn::Place();
-            defaultPlace.owner = asn::Player::Player;
-            defaultPlace.pos = asn::Position::NotSpecified;
-            defaultPlace.zone = asn::Zone::Stage;
             e.targets[1].place = defaultPlace;
         }
         break;

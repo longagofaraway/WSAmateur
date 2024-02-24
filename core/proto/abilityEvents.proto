@@ -30,6 +30,7 @@ message EventChooseCard {
     bytes effect = 1;
     bool mandatory = 2;
     repeated CardToChoose cards = 3;
+    bool consider_cannot_be_chosen = 4;
 }
 
 message EventMoveChoice {
@@ -145,6 +146,12 @@ message EventRevealFromHand {
 message EventTextChoice {
     string header = 1;
     repeated string choices = 2;
+}
+
+message EventSetCardTraits {
+    sint32 card_pos = 1;
+    string zone = 2;
+    repeated string traits = 3;
 }
 
 message EventConfirmationRequest {}

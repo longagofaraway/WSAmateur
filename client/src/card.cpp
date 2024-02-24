@@ -94,6 +94,11 @@ int Card::playersLevel() const {
     return mZone->player()->level();
 }
 
+const std::set<std::string> Card::traits() const {
+    const auto &infoTraits = mInfo->traits();
+    return std::set<std::string>{infoTraits.begin(), infoTraits.end()};
+}
+
 QString Card::topMarker() const {
     if (mMarkers.empty())
         return "";

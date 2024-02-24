@@ -283,7 +283,7 @@ SkipPhase decodeSkipPhase(Iterator &it, Iterator end) {
 
 ChooseTrait decodeChooseTrait(Iterator &it, Iterator end) {
     ChooseTrait e;
-    e.target = decodeTarget(it, end);
+    e.target = decodeTargetAndPlace(it, end);
     return e;
 }
 

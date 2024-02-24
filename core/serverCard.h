@@ -24,7 +24,7 @@ public:
     virtual asn::State state() const = 0;
     virtual const std::string& name() const = 0;
     virtual const std::vector<TriggerIcon>& triggers() const = 0;
-    virtual const std::vector<std::string>& traits() const = 0;
+    virtual const std::set<std::string> traits() const = 0;
     virtual CardType type() const = 0;
     virtual int playersLevel() const = 0;
     virtual bool isMarker() const = 0;
@@ -47,7 +47,6 @@ class ServerCard : public CardBase
     std::string mCode;
     std::vector<AbilityState> mAbilities;
     std::vector<asn::TriggerIcon> mTriggerIcons;
-    std::vector<std::string> mTraits;
 
     std::vector<std::unique_ptr<ServerCard>> mMarkers;
 
@@ -106,7 +105,7 @@ public:
     const std::vector<TriggerIcon>& triggers() const override { return mTriggerIcons; }
     void addTriggerIcon(asn::TriggerIcon icon);
     void removeTriggerIcon(asn::TriggerIcon icon);
-    const std::vector<std::string>& traits() const override { return mCardInfo->traits(); }
+    const std::set<std::string> traits() const override;
     int playersLevel() const override;
     asn::FaceOrientation faceOrientation() const { return mFaceOrientation; }
     bool isMarker() const override { return mIsMarker; }

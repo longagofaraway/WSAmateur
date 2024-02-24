@@ -981,6 +981,39 @@ std::string printSkipPhase(const SkipPhase &e) {
     return s;
 }
 
+std::string printChooseTrait(const ChooseTrait &e) {
+    std::string s;
+    if (e.target.target.type == asn::TargetType::ChosenCards) {
+        s = "and 1 trait of that character ";
+        return s;
+    } else {
+        s = "choose 1 trait of a character on ";
+    }
+
+    if (e.target.placeType == asn::PlaceType::SpecificPlace) {
+        s += printPlace(e.target.place.value()) + " ";
+    }
+
+    return s;
+}
+
+std::string printTraitModification(const TraitModification &e) {
+    std::string s;
+
+    s += printTarget(e.target.target);
+    if (e.type == asn::TraitModificationType::TraitLoss) {
+        if (e.traitType == asn::TraitType::ChosenTraits)
+            s += "loses all of that trait ";
+    } else {
+        s += "get ";
+        for (const auto &trait: e.traits)
+            s += trait + " ";
+    }
+    s += printDuration(e.duration);
+
+    return s;
+}
+
 std::string printOtherEffect(const OtherEffect &e) {
     return gOtherEffects[e.cardCode + '-' + std::to_string(e.effectId)];
 }
@@ -1107,6 +1140,12 @@ std::string printEffect(const Effect &e) {
         break;
     case EffectType::SkipPhase:
         s += printSkipPhase(std::get<SkipPhase>(e.effect));
+        break;
+    case EffectType::ChooseTrait:
+        s += printChooseTrait(std::get<ChooseTrait>(e.effect));
+        break;
+    case EffectType::TraitModification:
+        s += printTraitModification(std::get<TraitModification>(e.effect));
         break;
     case EffectType::OtherEffect:
         s += printOtherEffect(std::get<OtherEffect>(e.effect));

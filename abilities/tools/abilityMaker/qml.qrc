@@ -106,5 +106,6 @@
         <file>qml/effects/TraitModification.qml</file>
         <file>qml/basicTypes/TraitModificationType.qml</file>
         <file>qml/basicTypes/TraitType.qml</file>
+        <file>qml/effects/TargetAndPlaceEffect.qml</file>
     </qresource>
 </RCC>

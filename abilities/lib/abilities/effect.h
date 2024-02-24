@@ -265,7 +265,7 @@ struct SkipPhase {
 };
 
 struct ChooseTrait {
-    Target target;
+    TargetAndPlace target;
 };
 
 struct TraitModification {

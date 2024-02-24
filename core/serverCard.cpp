@@ -19,6 +19,7 @@ ServerCard::ServerCard(std::shared_ptr<CardInfo> info, ServerCardZone *zone, int
         mAbilities.emplace_back(decodeAbility(abBuf), static_cast<int>(mAbilities.size()));
 }
 
+// reset is called when changing zones
 void ServerCard::reset() {
     mBuffManager.reset();
     std::erase_if(mAbilities, [](const AbilityState& ab) { return !ab.permanent; });
@@ -206,4 +207,17 @@ int ServerCard::generateAbilitiId() const {
         if (std::none_of(mAbilities.begin(), mAbilities.end(), [id](const AbilityState &s){ return s.id == id; }))
             return id;
     }
+}
+
+const std::set<std::string> ServerCard::traits() const {
+    const auto &traits = mCardInfo->traits();
+    std::set<std::string> resultTraits{traits.begin(), traits.end()};
+    for (const auto traitModification: mBuffManager.traitChanges()) {
+        if (traitModification->type == asn::TraitModificationType::TraitGain) {
+            resultTraits.insert(traitModification->trait);
+        } else {
+            resultTraits.erase(traitModification->trait);
+        }
+    }
+    return resultTraits;
 }

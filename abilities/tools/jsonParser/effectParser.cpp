@@ -583,7 +583,7 @@ ChooseTrait parseChooseTrait(const QJsonObject &json) {
         throw std::runtime_error("no target in ChooseTrait");
 
     ChooseTrait e;
-    e.target = parseTarget(json["target"].toObject());
+    e.target = parseTargetAndPlace(json["target"].toObject());
     return e;
 }
 

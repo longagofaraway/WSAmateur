@@ -1,5 +1,8 @@
 #include "cardBuffManager.h"
 
+#include <algorithm>
+#include <random>
+
 #include "abilityEvents.pb.h"
 #include "gameEvent.pb.h"
 
@@ -7,6 +10,14 @@
 #include "abilityUtils.h"
 #include "serverCard.h"
 #include "serverPlayer.h"
+
+namespace {
+int generateId() {
+    std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
+    int id = gen() % 0xFFFF;
+    return id;
+}
+}
 
 void CardBuffManager::reset() {
     mBuffs.clear();
@@ -453,5 +464,25 @@ bool CardBuffManager::hasBoolAttrChangeEx(BoolAttributeType type) const {
         }
         return false;
     });
+}
 
+TraitChange::TraitChange(asn::TraitModificationType type, std::string trait, int duration)
+    : Buff(BuffType::TraitChange, duration), type(type), trait(trait) {
+    traitChangeId = generateId();
+}
+
+void CardBuffManager::addTraitChange(const TraitChange *traitChange) {
+    const auto it = std::find_if(appliedTraitChanges.begin(), appliedTraitChanges.end(),
+                 [traitChange](const TraitChange *elem) {
+        return traitChange->traitChangeId == elem->traitChangeId;
+    });
+    if (it == appliedTraitChanges.end())
+        return;
+    appliedTraitChanges.push_back(traitChange);
+}
+
+void CardBuffManager::removeTraitChange(const TraitChange *traitChange) {
+    std::erase_if(appliedTraitChanges, [traitChange](const TraitChange *elem) {
+        return traitChange->traitChangeId == elem->traitChangeId;
+    });
 }

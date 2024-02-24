@@ -17,6 +17,11 @@ class CardBuffManager {
 
     CardBuffs cardBuffs;
 
+    // we are assuming you can remove trait until end of turn
+    // and give a trait during same turn (and it stays)
+    // so we remember the order in which trait changes were applied
+    std::vector<const TraitChange*> appliedTraitChanges;
+
 public:
     CardBuffManager(ServerCard *card) : mCard(card) {}
 
@@ -52,6 +57,11 @@ public:
     void validateCannotStand();
 
     bool hasBoolAttrChangeEx(BoolAttributeType type) const;
+
+    void addTraitChange(const TraitChange *traitChange);
+    void removeTraitChange(const TraitChange *traitChange);
+
+    const std::vector<const TraitChange*>& traitChanges() const { return appliedTraitChanges; }
 
 private:
     CardBuffs::iterator removeBuff(CardBuffs::iterator it);

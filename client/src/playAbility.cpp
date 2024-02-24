@@ -36,7 +36,8 @@ int Player::highlightCardsFromEvent(
             zones.emplace(asnZoneToString(place.zone), player->zone(place.zone));
             // for now let's consider that's impossible to choose from both players
             considerCannotBeChosen = (place.owner == asn::Player::Opponent) ==
-                                     (effect.executor == asn::Player::Player);
+                                     (effect.executor == asn::Player::Player) &&
+                    event.consider_cannot_be_chosen();
         }
     }
 

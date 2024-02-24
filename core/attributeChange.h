@@ -95,7 +95,8 @@ inline bool operator==(const BoolAttributeChange &lhs, const BoolAttributeChange
 
 enum class BuffType {
     TriggerIcon = 0,
-    BoolAttrChange
+    BoolAttrChange,
+    TraitChange
 };
 
 class Buff {
@@ -157,6 +158,20 @@ public:
         : Buff(BuffType::BoolAttrChange, duration), attrType(type) {}
     BoolAttributeChangeEx(BoolAttributeType type, ServerCard *source, int abilityId)
         : Buff(source, abilityId, BuffType::BoolAttrChange), attrType(type) {}
+    void apply(ServerCard *card) const override;
+    void update(const Buff &buff) const override {}
+    void undo(CardBuffManager *buffManager, ServerCard *card) const override;
+    std::unique_ptr<Buff> clone() const override;
+};
+
+class TraitChange : public Buff {
+public:
+    asn::TraitModificationType type;
+    std::string trait;
+    int traitChangeId = 0;
+
+    TraitChange() = delete;
+    TraitChange(asn::TraitModificationType type, std::string trait, int duration);
     void apply(ServerCard *card) const override;
     void update(const Buff &buff) const override {}
     void undo(CardBuffManager *buffManager, ServerCard *card) const override;

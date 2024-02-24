@@ -217,7 +217,7 @@ void encodeStockSwap(const StockSwap &e, Buf &buf) {
 }
 
 void encodeChooseTrait(const ChooseTrait &e, Buf &buf) {
-    encodeTarget(e.target, buf);
+    encodeTargetAndPlace(e.target, buf);
 }
 
 void encodeTraitModification(const TraitModification &e, Buf &buf) {
