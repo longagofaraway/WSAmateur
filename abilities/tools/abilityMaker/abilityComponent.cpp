@@ -3,6 +3,7 @@
 #include <QQmlContext>
 
 #include "codecs/print.h"
+#include "hardcodedAbilities.h"
 #include "quickSetters/quickSetters.h"
 
 namespace {
@@ -54,6 +55,7 @@ void AbilityComponent::init() {
     connect(qmlObject, SIGNAL(editCost()), this, SLOT(editCost()));
     connect(qmlObject, SIGNAL(setTrigger(QString)), this, SLOT(setTrigger(QString)));
     connect(qmlObject, SIGNAL(addCost(QString)), this, SLOT(addCost(QString)));
+    connect(qmlObject, SIGNAL(templateChanged(int)), this, SLOT(templateChanged(int)));
 
     QMetaObject::invokeMethod(qmlObject, "setActualY");
 }
@@ -181,6 +183,22 @@ void AbilityComponent::addCost(QString costName) {
         cost = asn::Cost{};
     addCostItem(cost.value(), costName);
     emit componentChanged(constructAbility());
+}
+
+void AbilityComponent::templateChanged(int index) {
+    asn::Ability a;
+    switch (index) {
+    case 0:
+        a = brainstormDeck();
+        break;
+    case 1:
+        a = brainstormDraw();
+        break;
+    case 2:
+        a = encore();
+        break;
+    }
+    setAbility(a);
 }
 
 void AbilityComponent::editEffects() {

@@ -62,6 +62,8 @@ public slots:
     void destroyCost();
     void addCost(QString costName);
 
+    void templateChanged(int index);
+
 private:
     void init();
     void initAbility(const asn::Ability &a);

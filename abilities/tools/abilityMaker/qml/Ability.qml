@@ -18,6 +18,7 @@ Rectangle {
     signal editEffects()
     signal setTrigger(triggerName: string)
     signal addCost(costName: string)
+    signal templateChanged(int index)
 
     width: root.width
     height: root.height - root.pathHeight - root.textAreaHeight - 10
@@ -75,6 +76,16 @@ Rectangle {
                 effects.enabled = true;
                 break;
             }
+        }
+    }
+
+    ComboBox {
+        id: templates
+        anchors.right: ability.right
+        currentIndex: -1
+        model: ["Brainstorm wr", "Brainstorm draw", "Encore"]
+        onCurrentIndexChanged: {
+            ability.templateChanged(currentIndex);
         }
     }
 
