@@ -16,6 +16,11 @@ asn::Card cardWithCardType(asn::CardType type) {
         .cardSpecifiers = specs
     };
 }
+asn::Target simpleTarget(asn::TargetType type) {
+    return asn::Target{
+        .type = type
+    };
+}
 asn::Target targetCard() {
     return asn::Target{
         .type = asn::TargetType::SpecificCards,
@@ -25,6 +30,19 @@ asn::Target targetCard() {
                 .mod = asn::NumModifier::ExactMatch,
                 .value = 1
             }
+        }
+    };
+}
+asn::Target targetCardType(asn::CardType type) {
+    return asn::Target{
+        .type = asn::TargetType::SpecificCards,
+        .targetSpecification = asn::TargetSpecificCards{
+            .mode = asn::TargetMode::Any,
+            .number = asn::Number{
+                .mod = asn::NumModifier::ExactMatch,
+                .value = 1
+            },
+            .cards = cardWithCardType(type)
         }
     };
 }
@@ -104,6 +122,63 @@ asn::Effect draw() {
             .mod = asn::NumModifier::ExactMatch,
             .value = 1
         }
+    };
+    return effect;
+}
+asn::TargetAndPlace charInWr() {
+    asn::TargetAndPlace tp;
+    tp.target = targetCardType(asn::CardType::Char);
+    tp.placeType = asn::PlaceType::SpecificPlace;
+    tp.place = asn::Place{
+        .pos = asn::Position::NotSpecified,
+        .zone = asn::Zone::WaitingRoom,
+        .owner = asn::Player::Player
+    };
+    return tp;
+}
+asn::Effect chosenToHand() {
+    std::vector<asn::Place> places;
+    places.push_back(asn::Place{
+                         .pos = asn::Position::NotSpecified,
+                         .zone = asn::Zone::Hand,
+                         .owner = asn::Player::Player
+                     });
+    asn::Effect effect;
+    effect.type = asn::EffectType::MoveCard;
+    effect.cond = noCondition();
+    effect.effect = asn::MoveCard{
+        .executor = asn::Player::Player,
+        .target = simpleTarget(asn::TargetType::ChosenCards),
+        .from = asn::Place{
+            .pos = asn::Position::NotSpecified,
+            .zone = asn::Zone::Stage,
+            .owner = asn::Player::Player
+        },
+        .to = places
+    };
+    return effect;
+}
+std::vector<asn::Effect> chooseSalvageChar() {
+    std::vector<asn::TargetAndPlace> tps;
+    tps.push_back(charInWr());
+    std::vector<asn::Effect> effects;
+    asn::Effect effect;
+    effect.type = asn::EffectType::ChooseCard;
+    effect.cond = noCondition();
+    effect.effect = asn::ChooseCard{
+        .executor = asn::Player::Player,
+        .targets = tps
+    };
+    effects.push_back(effect);
+    effects.push_back(chosenToHand());
+    return effects;
+};
+asn::Effect payCostSalvageChar() {
+    asn::Effect effect;
+    effect.type = asn::EffectType::PayCost;
+    effect.cond = noCondition();
+    effect.effect = asn::PayCost{
+            .ifYouDo = chooseSalvageChar()
     };
     return effect;
 }
@@ -262,6 +337,37 @@ asn::Ability encore() {
 
     aut.triggers = triggers;
     aut.effects = returnAsRest();
+
+    asn::Ability a;
+    a.type = asn::AbilityType::Auto;
+    a.ability = aut;
+    return a;
+}
+
+asn::Ability bond() {
+    asn::AutoAbility aut{};
+    aut.keywords.push_back(asn::Keyword::Bond);
+
+    asn::Cost cost;
+    cost.items.push_back(asn::CostItem{
+      .type = asn::CostType::Effects,
+      .costItem = discardCard()
+    });
+    aut.cost = cost;
+
+    std::vector<asn::Trigger> triggers;
+    triggers.push_back(asn::Trigger{
+       .type = asn::TriggerType::OnPlay,
+       .trigger = asn::OnPlayTrigger{
+           .target = asn::Target{
+               .type = asn::TargetType::ThisCard,
+           }
+       }
+    });
+    aut.triggers = triggers;
+    std::vector<asn::Effect> effects;
+    effects.push_back(payCostSalvageChar());
+    aut.effects = effects;
 
     asn::Ability a;
     a.type = asn::AbilityType::Auto;

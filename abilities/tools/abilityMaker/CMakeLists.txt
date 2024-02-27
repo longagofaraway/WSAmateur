@@ -31,6 +31,7 @@ set(abilityMakerSources
     effectImplComponent.cpp
     hardcodedAbilities.h
     hardcodedAbilities.cpp
+    hardcodedTriggers.cpp
     main.cpp
     multiplierComponent.h
     multiplierComponent.cpp

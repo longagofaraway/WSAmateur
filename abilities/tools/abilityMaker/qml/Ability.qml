@@ -83,7 +83,7 @@ Rectangle {
         id: templates
         anchors.right: ability.right
         currentIndex: -1
-        model: ["Brainstorm wr", "Brainstorm draw", "Encore"]
+        model: ["Brainstorm wr", "Brainstorm draw", "Encore", "Bond"]
         onCurrentIndexChanged: {
             ability.templateChanged(currentIndex);
         }

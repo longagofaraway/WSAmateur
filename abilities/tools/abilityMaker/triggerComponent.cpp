@@ -2,6 +2,8 @@
 
 #include <QQmlContext>
 
+#include "hardcodedAbilities.h"
+
 TriggerComponent::TriggerComponent(QQuickItem *parent, int position)
     : BaseComponent("Trigger", parent, "trigger" + QString::number(position)) {
     init(parent);
@@ -38,41 +40,24 @@ asn::Trigger TriggerComponent::constructTrigger() {
     return t;
 }
 
-void TriggerComponent::fromHandToStagePreset() {
-    auto tr = asn::ZoneChangeTrigger();
-    tr.from = asn::Zone::Hand;
-    tr.to = asn::Zone::Stage;
-    auto targ = asn::Target();
-    targ.type = asn::TargetType::ThisCard;
-    tr.target.push_back(targ);
-
-    type = asn::TriggerType::OnZoneChange;
-    trigger = tr;
-    initializing = true;
-    emit passTriggerType((int)type);
-}
-
-void TriggerComponent::thisCardAttacks() {
-    auto tr = asn::OnAttackTrigger();
-    auto targ = asn::Target();
-    targ.type = asn::TargetType::ThisCard;
-    tr.target = targ;
-
-    type = asn::TriggerType::OnAttack;
-    trigger = tr;
-    initializing = true;
-    emit passTriggerType((int)type);
-}
-
-void TriggerComponent::thisCardBecomesReversed() {
-    auto tr = asn::StateChangeTrigger();
-    auto targ = asn::Target();
-    targ.type = asn::TargetType::ThisCard;
-    tr.target = targ;
-    tr.state = asn::State::Reversed;
-
-    type = asn::TriggerType::OnStateChange;
-    trigger = tr;
+void TriggerComponent::updateTrigger(int index) {
+    asn::Trigger builtTrigger;
+    switch (index) {
+    case 0:
+        builtTrigger = fromHandToStagePreset();
+        break;
+    case 1:
+        builtTrigger = thisCardAttacks();
+        break;
+    case 2:
+        builtTrigger = thisCardBecomesReversed();
+        break;
+    case 3:
+        builtTrigger = climaxIsPlaced();
+        break;
+    }
+    type = builtTrigger.type;
+    trigger = builtTrigger.trigger;
     initializing = true;
     emit passTriggerType((int)type);
 }
@@ -115,20 +100,6 @@ void TriggerComponent::setTriggerType(int index) {
 
     if (needImpl)
         connect(qmlTriggerImpl.get(), &TriggerImplComponent::componentChanged, this, &TriggerComponent::onTriggerChanged);
-}
-
-void TriggerComponent::updateTrigger(int index) {
-    switch (index) {
-    case 0:
-        fromHandToStagePreset();
-        break;
-    case 1:
-        thisCardAttacks();
-        break;
-    case 2:
-        thisCardBecomesReversed();
-        break;
-    }
 }
 
 void TriggerComponent::onTriggerChanged(const VarTrigger &t) {

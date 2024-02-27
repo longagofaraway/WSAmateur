@@ -29,9 +29,22 @@ bool triggersOnMoveToTheSamePlace(const std::vector<asn::Trigger> &triggers) {
     if (!(triggers[0].type == asn::TriggerType::OnZoneChange &&
         triggers[0].type == triggers[1].type))
         return false;
-    const auto &trigger = std::get<asn::ZoneChangeTrigger>(triggers[1].trigger);
 
-    gPrintState.doubleZoneChangeTrigger = printZone(trigger.from);
+    const auto &trigger1 = std::get<asn::ZoneChangeTrigger>(triggers[0].trigger);
+    const auto &trigger2 = std::get<asn::ZoneChangeTrigger>(triggers[1].trigger);
+    if (trigger1.to != trigger2.to)
+        return false;
+
+    gPrintState.doubleZoneChangeTrigger = printZone(trigger2.from);
+    return true;
+}
+
+bool doubleZoneChangeTriggers(const std::vector<asn::Trigger> &triggers) {
+    if (triggers.size() < 2)
+        return false;
+    if (triggers[0].type != asn::TriggerType::OnZoneChange ||
+            triggers[1].type != asn::TriggerType::OnZoneChange)
+        return false;
     return true;
 }
 }
@@ -39,18 +52,23 @@ bool triggersOnMoveToTheSamePlace(const std::vector<asn::Trigger> &triggers) {
 std::string printTriggers(const std::vector<asn::Trigger> &triggers) {
     std::string s;
 
+    bool needToBreak = false;
+    if (triggers.size() >= 2) {
+        if (triggersOnMoveToTheSamePlace(triggers)) {
+            needToBreak = true;
+        }
+    }
+
+    if (doubleZoneChangeTriggers(triggers)) {
+        gPrintState.isDoubleZoneChangeTriggers = true;
+    }
+
     for (size_t i = 0; i < triggers.size(); ++i) {
+        gPrintState.currentTrigger = i;
         if (i > 0 && s.size() > 2) {
             s.pop_back();
             s.pop_back();
             s += " or ";
-        }
-
-        bool needToBreak = false;
-        if (triggers.size() >= 2 && i == 0) {
-            if (triggersOnMoveToTheSamePlace(triggers)) {
-                needToBreak = true;
-            }
         }
 
         s += printTrigger(triggers[i]);
@@ -62,14 +80,19 @@ std::string printTriggers(const std::vector<asn::Trigger> &triggers) {
 }
 
 std::string printZoneChangeTrigger(const ZoneChangeTrigger &t) {
-    std::string s = "when ";
+    std::string s;
 
-    for (size_t i = 0; i < t.target.size(); ++i) {
-        if (i)
-            s += "or ";
-        s += printTarget(t.target[i]);
+    if (!(gPrintState.isDoubleZoneChangeTriggers &&
+            gPrintState.currentTrigger == 1)) {
+        s += "when ";
+
+        for (size_t i = 0; i < t.target.size(); ++i) {
+            if (i)
+                s += "or ";
+            s += printTarget(t.target[i]);
+        }
+        s += "is placed ";
     }
-    s += "is placed ";
     if (t.to == Zone::Stage)
         s += "on ";
     else

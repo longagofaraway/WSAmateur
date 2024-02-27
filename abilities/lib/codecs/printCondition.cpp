@@ -118,6 +118,8 @@ std::string printConditionHaveCard(const ConditionHaveCard &c) {
         if (c.where.zone == Zone::Stage) {
             s += " " + printPlace(c.where, false /* printStage */);
         }
+        if (s.back() == ' ')
+            s.pop_back();
 
         s += ", ";
 

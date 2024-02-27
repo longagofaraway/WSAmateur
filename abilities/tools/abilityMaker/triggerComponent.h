@@ -39,8 +39,4 @@ private:
     void init(QQuickItem *parent);
     void initTrigger(const asn::Trigger &trigger);
     asn::Trigger constructTrigger();
-
-    void fromHandToStagePreset();
-    void thisCardAttacks();
-    void thisCardBecomesReversed();
 };

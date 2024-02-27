@@ -38,6 +38,14 @@ Column {
                 text: "When this becomes reversed"
                 onTriggered: setTrigger(text)
             }
+            MenuItem {
+                text: "Climax placed"
+                onTriggered: setTrigger(text)
+            }
+            MenuItem {
+                text: "Start of opp's attack phase"
+                onTriggered: setTrigger(text)
+            }
         }
     }
 }

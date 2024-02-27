@@ -38,7 +38,8 @@ Rectangle {
         anchors.top: presetLabel.bottom
         anchors.horizontalCenter: trigger.horizontalCenter
         width: 200
-        model: ["Placed from hand to stage", "When this card attacks", "When this becomes reversed"]
+        model: ["Placed from hand to stage", "When this card attacks", "When this becomes reversed",
+                "Climax is placed"]
         currentIndex: -1
         onCurrentIndexChanged: presetChanged(currentIndex)
     }

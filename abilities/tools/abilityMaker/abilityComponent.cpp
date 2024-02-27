@@ -197,6 +197,9 @@ void AbilityComponent::templateChanged(int index) {
     case 2:
         a = encore();
         break;
+    case 3:
+        a = bond();
+        break;
     }
     setAbility(a);
 }
