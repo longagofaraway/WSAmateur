@@ -7,6 +7,7 @@ MultiplierComponent::MultiplierComponent(QQuickItem *parent)
 
 MultiplierComponent::MultiplierComponent(const asn::Multiplier &m, QQuickItem *parent)
     : BaseComponent("basicTypes/Multiplier", parent, "multiplier") {
+    initializing = true;
     init();
     initMultiplier(m);
 }
@@ -33,13 +34,27 @@ void MultiplierComponent::componentReady() {
 void MultiplierComponent::setMultiplierType(int index) {
     bool needImpl = false;
     multiplier.type = static_cast<asn::MultiplierType>(index);
+    if (initializing) {
+    switch (multiplier.type) {
+    case asn::MultiplierType::ForEach:
+    case asn::MultiplierType::AddLevel:
+    case asn::MultiplierType::AddTriggerNumber:
+        needImpl = true;
+        break;
+    }
+    } else {
     switch (multiplier.type) {
     case asn::MultiplierType::ForEach: {
         needImpl = true;
         auto m = asn::ForEachMultiplier();
         m = asn::ForEachMultiplier();
         m.target = std::make_shared<asn::Target>();
-        m.placeType = asn::PlaceType::Selection;
+        m.placeType = asn::PlaceType::SpecificPlace;
+        m.place = asn::Place{
+            .pos = asn::Position::NotSpecified,
+            .zone = asn::Zone::Stage,
+            .owner = asn::Player::Player
+        };
         multiplier.specifier = m;
         break;
     }
@@ -59,6 +74,7 @@ void MultiplierComponent::setMultiplierType(int index) {
         break;
     }
     }
+    }
 
     if (needImpl) {
         qmlMultiplierImpl = std::make_unique<MultiplierImplComponent>(multiplier.type, multiplier.specifier, qmlObject);
@@ -71,6 +87,7 @@ void MultiplierComponent::setMultiplierType(int index) {
 
     if (needImpl)
         connect(qmlMultiplierImpl.get(), &MultiplierImplComponent::componentChanged, this, &MultiplierComponent::onMultiplierChanged);
+    initializing = false;
 }
 
 void MultiplierComponent::onMultiplierChanged(const MultiplierImplComponent::VarMultiplier &m) {

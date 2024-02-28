@@ -377,7 +377,8 @@ std::string printPlace(Place place, bool printStage) {
     std::string s;
     if (place.pos == Position::FrontRow ||
         place.pos == Position::BackRow ||
-        place.pos == Position::FrontRowMiddlePosition) {
+        place.pos == Position::FrontRowMiddlePosition ||
+        place.pos == Position::EmptyFrontRowMiddlePosition) {
         s += "in ";
         if (place.pos == Position::FrontRowMiddlePosition)
             s += "the middle position of ";

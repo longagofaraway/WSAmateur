@@ -316,7 +316,8 @@ std::string printMoveCard(const MoveCard &e) {
         s += "discard";
     else if (e.to[0].pos == Position::EmptySlotBackRow ||
              e.to[0].pos == Position::EmptySlotFrontRow ||
-             e.to[0].pos == Position::EmptySlot)
+             e.to[0].pos == Position::EmptySlot ||
+             e.to[0].pos == Position::EmptyFrontRowMiddlePosition)
         s += "move";
     else
         s += "put";
@@ -405,6 +406,8 @@ std::string printMoveCard(const MoveCard &e) {
             return s + "to an open position of " + printPlayer(e.to[i].owner) + "center stage ";
         else if (e.to[i].pos == Position::EmptySlot)
             return s + "to an open position of " + printPlayer(e.to[i].owner) + "stage ";
+        else if (e.to[i].pos == Position::EmptyFrontRowMiddlePosition)
+            return s + "to an open middle position of " + printPlayer(e.to[i].owner) + "center stage ";
         else if  (e.to[i].pos == Position::BackRow)
             return s + "to any position of " + printPlayer(e.to[i].owner) + "back stage ";
         else if  (e.to[i].pos == Position::FrontRow)

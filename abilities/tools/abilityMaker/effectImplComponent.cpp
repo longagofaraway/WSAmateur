@@ -509,7 +509,12 @@ asn::Multiplier getDefaultMultiplier() {
     m.type = asn::MultiplierType::ForEach;
     auto mm = asn::ForEachMultiplier();
     mm.target = std::make_shared<asn::Target>();
-    mm.placeType = asn::PlaceType::Selection;
+    mm.placeType = asn::PlaceType::SpecificPlace;
+    mm.place = asn::Place{
+        .pos = asn::Position::NotSpecified,
+        .zone = asn::Zone::Stage,
+        .owner = asn::Player::Player
+    };
     m.specifier = mm;
     return m;
 }
