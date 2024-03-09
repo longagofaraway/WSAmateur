@@ -1,7 +1,10 @@
 #include "serverCard.h"
 
 #include <algorithm>
+#include <chrono>
 #include <random>
+
+#include <QDebug>
 
 #include "serverCardZone.h"
 #include "serverPlayer.h"
@@ -202,7 +205,9 @@ bool ServerCard::boolAttrByType(BoolAttributeType type) const {
 
 int ServerCard::generateAbilitiId() const {
     while (true) {
-        std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
+        auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                       std::chrono::system_clock::now().time_since_epoch()).count();
+        std::mt19937_64 gen(milliseconds);
         int id = gen() % 0xFFFF;
         if (std::none_of(mAbilities.begin(), mAbilities.end(), [id](const AbilityState &s){ return s.id == id; }))
             return id;

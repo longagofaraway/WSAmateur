@@ -2,6 +2,8 @@
 
 #include <unordered_set>
 
+#include <QDebug>
+
 #include "abilityEvents.pb.h"
 #include "abilityCommands.pb.h"
 

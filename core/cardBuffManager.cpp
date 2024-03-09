@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <random>
 
+#include <QDebug>
+
 #include "abilityEvents.pb.h"
 #include "gameEvent.pb.h"
 
@@ -13,7 +15,9 @@
 
 namespace {
 int generateId() {
-    std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                   std::chrono::system_clock::now().time_since_epoch()).count();
+    std::mt19937 gen(milliseconds);
     int id = gen() % 0xFFFF;
     return id;
 }
@@ -79,6 +83,7 @@ void CardBuffManager::sendChangedAttrs(std::tuple<int, int, int> oldAttrs) {
 void CardBuffManager::sendBoolAttrChange(BoolAttributeType type, bool value) {
     EventSetCardBoolAttr event;
     event.set_card_pos(mCard->pos());
+    event.set_zone(mCard->zone()->name());
     event.set_attr(getProtoBoolAttrType(type));
     event.set_value(value);
     mCard->player()->sendToBoth(event);

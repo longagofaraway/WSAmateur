@@ -9,6 +9,8 @@
 #include "sessionEvent.pb.h"
 #include "sessionCommand.pb.h"
 
+#include <QDebug>
+
 namespace {
 template<typename T>
 std::shared_ptr<CommandContainer> prepareCommand(const ::google::protobuf::Message &cmd) {

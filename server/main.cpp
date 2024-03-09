@@ -32,7 +32,7 @@ void myMessageOutput(QtMsgType /*type*/, const QMessageLogContext &, const QStri
 
 int main(int argc, char *argv[]) {
     if (argc == 2 && std::string(argv[1]) == "-v") {
-        std::cout << "running varsion" << VERSION_STRING;
+        std::cout << "running version" << VERSION_STRING;
         return 0;
     }
 

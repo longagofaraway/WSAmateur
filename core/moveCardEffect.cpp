@@ -343,6 +343,15 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 toIndex = targets.front()->prevStagePos();
             if (targets.size() > 1)
                 qDebug() << "using slotTargetWasIn for multiple targets";
+        } else if (e.to[toZoneIndex].pos == asn::Position::EmptyFrontRowMiddlePosition) {
+            auto player = owner(e.to[toZoneIndex].owner);
+            auto stage = player->zone("stage");
+            if (!stage->card(1)) {
+                positionSet = true;
+                toIndex = 1;
+            } else {
+                co_return;
+            }
         }
         if (!positionSet) {
             if (e.target.type == asn::TargetType::LastMovedCards) {

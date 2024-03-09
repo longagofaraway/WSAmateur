@@ -195,8 +195,9 @@ void Game::processGameEventFromQueue() {
     try {
         auto event = mEventQueue.front();
         mEventQueue.pop_front();
-        if (mPlayer->id() == event->player_id())
+        if (mPlayer->id() == event->player_id()) {
             mPlayer->processGameEvent(event);
+        }
         else if (mOpponent)
             mOpponent->processGameEvent(event);
 

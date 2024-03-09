@@ -94,6 +94,7 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
         effectText = printMoveCard(effect) + '?';
     }
 
+    // TODO glow card with active ability
     effectText[0] = std::toupper(effectText[0]);
     std::vector<QString> data { "Yes", "No" };
     auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
@@ -428,6 +429,10 @@ void Player::processSetCardStateTargetChoice(const EventSetCardStateTargetChoice
 
 void Player::processSetCardBoolAttr(const EventSetCardBoolAttr &event) {
     auto pzone = zone(event.zone());
+    if (!pzone) {
+        qWarning() << "no zone in EventSetCardBoolAttr";
+        return;
+    }
     if (pzone->model().count() <= event.card_pos()) {
         qWarning() << "Failed to set bool attr " << event.attr()
                    << " to card at pos " << event.card_pos();

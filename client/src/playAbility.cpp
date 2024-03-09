@@ -198,7 +198,7 @@ void Player::dehighlightCards(asn::PlaceType placeType, std::optional<asn::Place
         deselectAllCards(from);
         return;
     }
-    if (placeType != asn::PlaceType::Selection  ||
+    if (placeType == asn::PlaceType::Selection  ||
             !place.has_value()) {
         return;
     }

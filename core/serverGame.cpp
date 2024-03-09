@@ -97,7 +97,9 @@ ServerPlayer* ServerGame::opponentOfPlayer(int id) const {
 }
 
 void ServerGame::setStartingPlayer() {
-    std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                   std::chrono::system_clock::now().time_since_epoch()).count();
+    std::mt19937 gen(milliseconds);
     std::uniform_int_distribution<> distrib(1, 2);
     int startingPlayerId = distrib(gen);
     for (auto &playerEntry: mPlayers) {

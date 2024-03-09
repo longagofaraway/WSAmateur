@@ -78,7 +78,9 @@ uint32_t abilityHash(const ProtoAbility &a) {
     buf += std::to_string(a.ability_id());
     buf += std::to_string(a.type());
 
-    std::mt19937 gen(static_cast<unsigned>(time(nullptr)));
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                                   std::chrono::system_clock::now().time_since_epoch()).count();
+    std::mt19937 gen(milliseconds);
     buf += std::to_string(gen() % 0xFFFF);
     auto checksum = qChecksum(buf.data(), static_cast<uint>(buf.size()));
     if (!checksum)
@@ -123,7 +125,8 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             break;
         }
         case asn::CardSpecifierType::Trait: {
-            if (std::any_of(card.traits().begin(), card.traits().end(),
+            const auto traits = card.traits();
+            if (std::any_of(traits.begin(), traits.end(),
                 [&spec](const std::string &trait) {
                     return trait == std::get<asn::Trait>(spec.specifier).value;
             }))
