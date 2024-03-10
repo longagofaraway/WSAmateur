@@ -89,10 +89,12 @@ ListView {
             if (frameParent.cardTextFrame !== null)
                 frameParent.cardTextFrame.destroy();
             let textFrame = this.object;
-            if (opponent)
+            if (opponent) {
                 textFrame.anchors.left = frameParent.right;
-            else
+            } else {
                 textFrame.anchors.right = frameParent.left;
+                textFrame.leftOrientedCardReferences = true;
+            }
 
             textFrame.mModel = zone.mModel.textModel(index);
             textFrame.visible = true;

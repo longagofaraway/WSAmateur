@@ -107,10 +107,10 @@ ListView {
             if (!opponent) {
                 textFrame.anchors.bottom = frameParent.bottom;
                 textFrame.transformOrigin = Item.BottomLeft;
-
             } else {
                 textFrame.transformOrigin = Item.TopLeft;
                 textFrame.y = frameParent.height + textFrame.width;
+                textFrame.leftOrientedCardReferences = true;
             }
             textFrame.rotation = opponent ? -90 : 90;
             textFrame.mModel = levelZone.mModel.textModel(index);

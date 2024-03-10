@@ -12,10 +12,12 @@
 #include "phaseEvent.pb.h"
 
 #include "cardDatabase.h"
+#include "deckUtils.h"
 #include "localClientConnection.h"
 #include "localConnectionManager.h"
 #include "remoteClientConnection.h"
 #include "server.h"
+#include "settingsManager.h"
 
 #include <QTimer>
 #include <QDebug>
@@ -165,10 +167,18 @@ void Game::localGameCreated(const EventGameJoined &event) {
 void Game::localOpponentJoined(const EventGameJoined &event) {
     mOpponent = std::make_unique<Player>(event.player_id(), this, true);
 
-    mPlayer->setDeck(gDeck);
+    auto deckName = SettingsManager::get().localGameDeckName();
+    auto xmlDeck = gDeck;
+    if (deckName.has_value()) {
+        auto deck = getDeckByName(deckName.value());
+        if (deck.has_value())
+            xmlDeck = deck->toXml().toStdString();
+    }
+
+    mPlayer->setDeck(xmlDeck);
     mOpponent->setDeck(gOppDeck);
     CommandSetDeck cmd;
-    cmd.set_deck(gDeck);
+    cmd.set_deck(xmlDeck);
     mLocalClients[0]->sendGameCommand(cmd);
     CommandSetDeck cmd2;
     cmd2.set_deck(gOppDeck);

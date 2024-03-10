@@ -122,10 +122,12 @@ ListView {
                 frameParent.cardTextFrame.destroy();
             var textFrame = this.object;
 
-            if (!opponent)
+            if (!opponent) {
                 textFrame.anchors.left = frameParent.right;
-            else
+            } else {
                 textFrame.anchors.right = frameParent.left;
+                textFrame.leftOrientedCardReferences = true;
+            }
             textFrame.mModel = clockView.mModel.textModel(index);
             textFrame.visible = true;
             frameParent.cardTextFrame = textFrame;

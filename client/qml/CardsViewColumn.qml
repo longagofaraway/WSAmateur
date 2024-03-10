@@ -132,10 +132,12 @@ ListView {
 
             let listViewMappedPoint = root.mapFromItem(thisListView, thisListView.x, thisListView.y);
             let cardMappedPoint = root.mapFromItem(frameParent, frameParent.x, frameParent.y);
-            if (!cardsView.mOpponent)
+            if (!cardsView.mOpponent) {
                 textFrame.x = cardMappedPoint.x - textFrame.width - root.cardWidth * 0.1 - 1;
-            else
+                textFrame.leftOrientedCardReferences = true;
+            } else {
                 textFrame.x = cardMappedPoint.x + root.cardWidth - 1;
+            }
             let scaleYOffset = root.cardHeight * 0.1 * 0.5;
             textFrame.y = listViewMappedPoint.y + frameParent.y - scaleYOffset;
 

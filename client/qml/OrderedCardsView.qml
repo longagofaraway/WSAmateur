@@ -241,10 +241,12 @@ Rectangle {
             if (frameParent.cardTextFrame !== null)
                 frameParent.cardTextFrame.destroy();
             let textFrame = this.object;
-            if (!opponent)
+            if (!opponent) {
                 textFrame.anchors.right = frameParent.left;
-            else
+                textFrame.leftOrientedCardReferences = true;
+            } else {
                 textFrame.anchors.left = frameParent.right;
+            }
 
             textFrame.mModel = model;
             textFrame.visible = true;

@@ -6,23 +6,24 @@ Image {
     id: bgImage
 
     property AbilityModel mModel
+    property bool leftOrientedCardReferences: false
 
     z: 100
     width: 300
     height: effectsView.height + borderRect.borderWidth * 2
     source: "qrc:///resources/images/textFrame"
 
-    /* references work but need proper visualization
     ListView {
         width: contentWidth
         height: root.cardHeight / 2
-        y: bgImage.height
+        anchors.left: leftOrientedCardReferences ? undefined : bgImage.right
+        anchors.right: leftOrientedCardReferences ? bgImage.left : undefined
         orientation: ListView.Horizontal
         model: mModel.getReferences()
         delegate: Card {
             mSource: modelData
         }
-    }*/
+    }
 
     Rectangle {
         id: borderRect

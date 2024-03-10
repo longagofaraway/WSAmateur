@@ -413,6 +413,7 @@ ListView {
             if (cardImgDelegate.visualIndex > handDelegate.halfIndex) {
                 textFrame.transformOrigin = Item.TopRight;
                 textFrame.anchors.right = cardImgDelegate.left;
+                textFrame.leftOrientedCardReferences = true;
             } else {
                 textFrame.transformOrigin = Item.TopLeft;
                 textFrame.anchors.left = cardImgDelegate.right;
