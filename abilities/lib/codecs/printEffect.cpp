@@ -518,6 +518,7 @@ std::string printShuffle(const Shuffle &e) {
 
     s += printPlayer(e.owner, Player::Opponent);
     s += printZone(e.zone);
+    s += " ";
 
     return s;
 }

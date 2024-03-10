@@ -428,6 +428,10 @@ void Player::chooseCard(int, QString qzone, bool opponent) {
 void Player::sendChoice(int index) {
     if (hasActivatedAbilities()) {
         auto &a = activeAbility();
+
+        auto pzone = zone(a.zone);
+        pzone->unhighlightByAbility(a.cardId);
+
         auto &effect = a.effect;
         if (std::holds_alternative<asn::AbilityGain>(effect)) {
             auto &ef = std::get<asn::AbilityGain>(effect);
@@ -723,4 +727,12 @@ std::vector<const Card*> Player::getTargets(const Card &thisCard, const asn::Tar
         assert(false);
     }
     return targets;
+}
+
+void Player::highlightActiveAbilityCharacter() {
+    if (!hasActivatedAbilities())
+        return;
+    auto &abilityState = activeAbility();
+    auto pzone = zone(abilityState.zone);
+    pzone->fixedHighlightByAbility(abilityState.cardId);
 }

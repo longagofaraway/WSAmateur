@@ -202,6 +202,8 @@ bool CardModel::setData(const QModelIndex &index, const QVariant &value, int rol
         card.setCannotMove(value.toBool());
         break;
     case HighlightedByAbilityRole:
+        if (card.isHighlightByAbilityFixed())
+            break;
         card.setHighlightedByAbility(value.toBool());
         break;
     default:

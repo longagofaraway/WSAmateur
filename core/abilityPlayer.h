@@ -194,8 +194,6 @@ private:
     Resumable getStagePosition(int &position, std::vector<uint8_t> &buf, asn::EffectType effectType, asn::Player executor);
     Resumable moveFromTop(const asn::MoveCard &e, int toZoneIndex, int toIndex);
     void setCannotPlayBackupOrEvent(ServerPlayer *player, asn::BackupOrEvent type);
-    int getForEachMultiplierValue(const asn::Multiplier &m);
-    int getTriggerNumberMultiplierValue(const asn::Multiplier &m);
     std::vector<ServerCard*> getTargets(const asn::Target &t,
                                         asn::PlaceType placeType = asn::PlaceType::SpecificPlace,
                                         std::optional<asn::Place> place = {});
@@ -210,5 +208,7 @@ private:
     void logMove(ServerPlayer *player, asn::Zone toZone);
 
 public:
+    int getForEachMultiplierValue(const asn::Multiplier &m);
     int getAddLevelMultiplierValue(const asn::Multiplier &m);
+    int getTriggerNumberMultiplierValue(const asn::Multiplier &m);
 };

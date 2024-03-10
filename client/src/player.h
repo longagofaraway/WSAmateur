@@ -164,6 +164,7 @@ private:
     void dehighlightCards(const std::vector<asn::TargetAndPlace> &targets);
     void dehighlightCards(asn::PlaceType placeType, std::optional<asn::Place> place);
     void highlightPlayableCards();
+    void highlightActiveAbilityCharacter();
 
     void activateAbilities(const EventAbilityActivated &event);
     void startResolvingAbility(const EventStartResolvingAbility &event);

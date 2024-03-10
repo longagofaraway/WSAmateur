@@ -187,6 +187,10 @@ bool checkCard(const std::vector<asn::CardSpecifier> &specs, const CardBase &car
             }
             if (level.multiplier.type == asn::MultiplierType::AddLevel)
                 number.value = abilityPlayer->getAddLevelMultiplierValue(level.multiplier) + level.value.value;
+            else if (level.multiplier.type == asn::MultiplierType::ForEach)
+                number.value = abilityPlayer->getForEachMultiplierValue(level.multiplier);
+            else if (level.multiplier.type == asn::MultiplierType::AddTriggerNumber)
+                number.value = abilityPlayer->getTriggerNumberMultiplierValue(level.multiplier);
             else
                 throw std::runtime_error("unhandled multiplier");
             if (checkNumber(number, card.level()))

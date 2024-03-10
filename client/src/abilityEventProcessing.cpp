@@ -49,7 +49,7 @@ void Player::processChooseCard(const EventChooseCard &event) {
 
     std::vector<asn::Place> places;
     for (const auto &target: effect.targets) {
-        if (target.placeType == asn::PlaceType::Selection && target.place)
+        if (target.placeType == asn::PlaceType::SpecificPlace && target.place)
             places.push_back(target.place.value());
     }
     processChooseCardInternal(eligibleCardsNum, places,
@@ -94,7 +94,7 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
         effectText = printMoveCard(effect) + '?';
     }
 
-    // TODO glow card with active ability
+    highlightActiveAbilityCharacter();
     effectText[0] = std::toupper(effectText[0]);
     std::vector<QString> data { "Yes", "No" };
     auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
@@ -214,6 +214,7 @@ void Player::processAbilityChoice(const EventAbilityChoice &event) {
         for (const auto &a: effect.abilities)
             data.push_back(QString::fromStdString(printAbility(a)));
 
+        highlightActiveAbilityCharacter();
         auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
         choiceDlg->setData("Choose ability", data);
         mChoiceDialog = std::move(choiceDlg);
@@ -233,6 +234,7 @@ void Player::processEffectChoice(const EventEffectChoice &event) {
     for (const auto &a: effect.effects)
         data.push_back(QString::fromStdString(printSpecificAbility(a, asn::CardType::Char)));
 
+    highlightActiveAbilityCharacter();
     auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
     choiceDlg->setData("Choose effect to perform", data);
     mChoiceDialog = std::move(choiceDlg);
@@ -395,6 +397,7 @@ void Player::processSetCardStateChoice(const EventSetCardStateChoice &event) {
     auto &activatedAbility = mAbilityList->ability(mAbilityList->activeId());
     activatedAbility.effect = effect;
 
+    highlightActiveAbilityCharacter();
     auto effectText = printChangeState(effect) + '?';
     effectText[0] = std::toupper(effectText[0]);
     std::vector<QString> data { "Yes", "No" };
@@ -506,6 +509,7 @@ void Player::processTextChoice(const EventTextChoice &event) {
     auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
     choiceDlg->setData(QString::fromStdString(event.header()), data);
     mChoiceDialog = std::move(choiceDlg);
+    highlightActiveAbilityCharacter();
 }
 
 void Player::processConfirmationRequest() {

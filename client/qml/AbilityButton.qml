@@ -31,6 +31,7 @@ Rectangle {
     MouseArea {
         anchors.fill: parent
         hoverEnabled: true
+        propagateComposedEvents: true
         onEntered: { if (!active) return; btnRect.layer.enabled = true; }
         onExited: { if (!active) return; btnRect.layer.enabled = false; }
         onPressed: { if (!active) return; btnRect.color = "white"; btnText.color = btnColor; }

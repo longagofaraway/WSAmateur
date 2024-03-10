@@ -20,6 +20,7 @@ class Card : public CardBase {
     bool mGlow = false;
     bool mSelected = false;
     bool mHighlightedByAbility = false;
+    bool mHighlightByAbilityFixed = false;
 
     asn::Color mColor;
     int mLevel;
@@ -62,7 +63,7 @@ public:
     bool selected() const { return mSelected; }
     void setGlow(bool glow) { mGlow = glow; }
     void setSelected(bool selected) { mSelected = selected; }
-    asn::Color color() const { return mColor; }
+    asn::Color color() const override { return mColor; }
     int cost() const override { return mCost; }
     bool isCounter() const { return mInfo->isCounter(); }
     int level() const override { return mLevel; }
@@ -98,6 +99,8 @@ public:
     void setCanPlayWoColorReq(bool p) { mCanPlayWoColorReq = p; }
     bool highlightedByAbility() const { return mHighlightedByAbility; }
     void setHighlightedByAbility(bool p) { mHighlightedByAbility = p; }
+    void fixHighlightByAbility(bool p) { mHighlightByAbilityFixed = p; }
+    bool isHighlightByAbilityFixed() const { return mHighlightByAbilityFixed; }
     bool isMarker() const override { return false; }
 
     QString topMarker() const;

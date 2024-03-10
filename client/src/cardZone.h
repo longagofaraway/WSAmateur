@@ -31,4 +31,7 @@ public:
     virtual CardModel& model() { return mCardsModel; }
     virtual void removeCard(int index) { mCardsModel.removeCard(index); }
     const Card* findCardById(int id) const;
+
+    void fixedHighlightByAbility(int cardId);
+    void unhighlightByAbility(int cardId);
 };
