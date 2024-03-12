@@ -21,10 +21,12 @@ Rectangle {
     Connections {
         target: mModel
         function onCountChanged() {
-            if (cardsView.mModel.count == 0)
+            if (cardsView.mModel.count == 0) {
                 cardsView.opacity = 0;
-            else
+                gGame.getZone("deck", opponent).resetAllCardsInView();
+            } else {
                 cardsView.opacity = 1;
+            }
         }
     }
 
@@ -278,4 +280,5 @@ Rectangle {
     function getYForNewCard() { return cardsView.y + listView.y; }
     function getXForCard(pos) { return cardsView.x + listView.x + pos * listView.mMargin; }
     function getYForCard() { return cardsView.y + listView.y; }
+    function getCardsSize() { return cardsView.mModel.count; }
 }

@@ -324,10 +324,12 @@ void Player::processLookRevealNextCard(asn::EffectType type, bool isOwnerOpponen
         numCards = reveal.number.value;
     }
 
-    if (view->model().count() + 1 < numCards)
-        player->zone("deck")->visualItem()->setProperty("mGlow", true);
+    auto deck = player->zone("deck");
+
+    if (view->model().count() + 1 < numCards && view->model().count() + 1 < deck->model().count())
+        deck->visualItem()->setProperty("mGlow", true);
     else
-        player->zone("deck")->visualItem()->setProperty("mGlow", false);
+        deck->visualItem()->setProperty("mGlow", false);
 
     if (std::holds_alternative<asn::MoveCard>(activeAbility_.nextEffect)) {
         mAbilityList->activatePlay(mAbilityList->activeId(), true, "Submit");

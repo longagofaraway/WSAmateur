@@ -29,6 +29,8 @@ Card {
             setupMoveFromZone();
         if (!noDelete)
             removeCard();
+        else
+            lookLastCardOfDeck();
         setupMoveToZone();
     }
 
@@ -38,6 +40,16 @@ Card {
             szone.removeMarker(startPos, markerPos);
         else
             szone.removeCard(startPos);
+    }
+
+    function lookLastCardOfDeck() {
+        if (startZone != "deck" || targetZone != "view")
+            return;
+
+        let szone = gGame.getZone(startZone, opponent);
+        let view_zone = gGame.getZone(targetZone, opponent);
+        if (view_zone.getCardsSize() + 1 >= szone.getCardsSize())
+            szone.setAllCardsInView();
     }
 
     function setupMoveFromZone() {
@@ -60,8 +72,7 @@ Card {
     }
 
     function setupMoveToZone() {
-        if (targetZone === "reveal") { //||
-                //(targetZone === "hand" && startZone === "wr")) {
+        if (targetZone === "reveal") {
             toX = opponent ? root.width * 0.15 : root.width * 0.75;
             toY = opponent ? root.height * 0.3 : root.height * 0.6;
             let szone = gGame.getZone(startZone, opponent);

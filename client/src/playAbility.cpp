@@ -625,16 +625,17 @@ bool Player::canPlayCounter(const Card &card) const {
 }
 
 void Player::interactWithDeck(bool isOpponent) {
-    if (!mAbilityList->count())
-        return;
-
-    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
     CardZone *pzone;
     if (isOpponent)
         pzone = getOpponent()->zone("deck");
     else
         pzone = zone("deck");
+
     pzone->visualItem()->setProperty("mGlow", false);
+    if (!mAbilityList->count())
+        return;
+
+    auto &effect = mAbilityList->ability(mAbilityList->activeId()).effect;
     if (std::holds_alternative<asn::Look>(effect) ||
         std::holds_alternative<asn::RevealCard>(effect)) {
         // deactivate buttons until a new card is revealed

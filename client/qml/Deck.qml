@@ -8,13 +8,11 @@ Card {
     property bool hidden: true
     property CardModel mModel: innerModel
     property bool mGlow: false
+    property bool allCardsInView: false
     Connections {
         target: mModel
         function onCountChanged() {
-            if (mModel.count == 0)
-                deck.visible = false;
-            else if (mModel.count > 0 && !deck.visible)
-                deck.visible = true;
+            updateVisibility();
         }
     }
 
@@ -77,8 +75,25 @@ Card {
         glow: mGlow
     }
 
+    function updateVisibility() {
+        if (deck.mModel.count === 0 || deck.allCardsInView)
+            deck.visible = false;
+        else if (deck.mModel.count > 0 && !deck.visible && !deck.allCardsInView)
+            deck.visible = true;
+    }
+    function setAllCardsInView() {
+        console.log("setting cards in view");
+        deck.allCardsInView = true;
+        updateVisibility();
+    }
+    function resetAllCardsInView() {
+        deck.allCardsInView = false;
+        updateVisibility();
+    }
+
     function addCard(id, code, targetPos) { gGame.getPlayer(opponent).addCard(id, "", "deck", targetPos); }
     function removeCard(index) { deck.mModel.removeCard(index); }
+    function getCardsSize() { return deck.mModel.count; }
 
     function getXForNewCard() { return deck.x; }
     function getYForNewCard() { return deck.y; }

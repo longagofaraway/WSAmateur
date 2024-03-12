@@ -79,11 +79,15 @@ void Player::abilityResolved() {
     mGame->pause(500);
     mAbilityList->removeActiveAbility();
     auto view = zone("view");
-    if (view->model().count())
+    if (view->model().count()) {
         QMetaObject::invokeMethod(view->visualItem(), "clear");
+        QMetaObject::invokeMethod(zone("deck")->visualItem(), "resetAllCardsInView");
+    }
     auto oppView = getOpponent()->zone("view");
-    if (oppView->model().count())
+    if (oppView->model().count()) {
         QMetaObject::invokeMethod(oppView->visualItem(), "clear");
+        QMetaObject::invokeMethod(getOpponent()->zone("deck")->visualItem(), "resetAllCardsInView");
+    }
 
     if (!mOpponent) {
         int playableCount = 0;
