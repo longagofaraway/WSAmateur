@@ -232,6 +232,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 // 0 is yes, 'yes' will be the first choice on client's side
                 int choice = choiceCmd.choice();
                 if (choice) {
+                    mPerformedInFull = false;
                     setCanceled(true);
                     moveCanceled = true;
                 }
@@ -316,6 +317,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 positionSet = true;
                 toIndex = 2;
             } else if (stage->card(0) && stage->card(1) && stage->card(2)) {
+                mPerformedInFull = false;
                 co_return;
             }
         } else if (e.to[toZoneIndex].pos == asn::Position::EmptySlotBackRow) {
@@ -328,6 +330,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 positionSet = true;
                 toIndex = 3;
             } else if (stage->card(3) && stage->card(4)) {
+                mPerformedInFull = false;
                 co_return;
             }
         } else if (e.to[toZoneIndex].pos == asn::Position::SlotThisWasIn ||
@@ -350,6 +353,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 positionSet = true;
                 toIndex = 1;
             } else {
+                mPerformedInFull = false;
                 co_return;
             }
         }
@@ -435,8 +439,9 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     if (!isPayingCost())
         clearLastMovedCards();
     if (!cardsToMove.empty() && isStandbyTarget(e.target) &&
-        mTriggerIcon && mTriggerIcon.value() == asn::TriggerIcon::Standby)
+        mTriggerIcon && mTriggerIcon.value() == asn::TriggerIcon::Standby) {
         owner(asn::Player::Opponent)->triggerOnOppCharPlacedByStandby();
+    }
     for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
         player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
         if (!isPayingCost()) {
@@ -458,8 +463,10 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     if ((e.target.type == asn::TargetType::ChosenCards && chosenCards().empty()) ||
         ((e.target.type == asn::TargetType::MentionedCards || e.target.type == asn::TargetType::RestOfTheCards) &&
             mentionedCards().empty()) ||
-        (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name()))
+        (e.target.type == asn::TargetType::ThisCard && thisCard().zone != thisCard().card->zone()->name())) {
+        mPerformedInFull = false;
         co_return;
+    }
 
     if (e.target.type == asn::TargetType::SpecificCards && e.from.pos == asn::Position::NotSpecified
         && e.target.targetSpecification->mode != asn::TargetMode::All) {
@@ -469,8 +476,10 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
 
     // TODO: add choice of target stage cards
     auto targetStageCards = getTargets(e.destination);
-    if (targetStageCards.empty())
+    if (targetStageCards.empty()) {
+        mPerformedInFull = false;
         co_return;
+    }
 
     if (!isPayingCost())
         clearLastMovedCards();
@@ -502,8 +511,9 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
         }
 
         if ((spec.number.mod == asn::NumModifier::AtLeast || spec.number.mod == asn::NumModifier::ExactMatch) &&
-            movedCount < spec.number.value)
+            movedCount < spec.number.value) {
             mPerformedInFull = false;
+        }
 
         co_return;
     }
@@ -530,8 +540,10 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
 // user can't choose markers to remove atm
 Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
     auto targetStageCards = getTargets(e.markerBearer);
-    if (targetStageCards.empty())
+    if (targetStageCards.empty()) {
+        mPerformedInFull = false;
         co_return;
+    }
 
     // no choice for now
     assert(targetStageCards.size() == 1);
@@ -570,8 +582,10 @@ Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
         }
         mPlayer->clearExpectedComands();
     }
-    if (canceled())
+    if (canceled()) {
+        mPerformedInFull = false;
         co_return;
+    }
 
     if (!isPayingCost())
         clearLastMovedCards();

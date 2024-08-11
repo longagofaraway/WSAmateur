@@ -429,8 +429,10 @@ Resumable AbilityPlayer::playDrawCard(const asn::DrawCard &e) {
         }
         mPlayer->clearExpectedComands();
     }
-    if (!confirmed)
+    if (!confirmed) {
+        mPerformedInFull = false;
         co_return;
+    }
     for (int i = 0; i < e.value.value; ++i)
         co_await mPlayer->moveTopDeck("hand");
 }
