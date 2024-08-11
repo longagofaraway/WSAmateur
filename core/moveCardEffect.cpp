@@ -89,8 +89,10 @@ Resumable AbilityPlayer::getStagePosition(int &position, std::vector<uint8_t> &b
             CommandChoice choiceCmd;
             cmd.command().UnpackTo(&choiceCmd);
             pos = choiceCmd.choice();
-            if (pos >= 5)
+            if (pos >= 5) {
+                qInfo() << "got wrong stage position " << pos << " for effect type " << static_cast<int>(effectType);
                 continue;
+            }
             break;
         }
     }
@@ -481,8 +483,46 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
         co_return;
     }
 
-    if (!isPayingCost())
-        clearLastMovedCards();
+    if (!mandatory()) {
+        // TODO: same block as in playMoveCard
+        std::vector<uint8_t> buf;
+        encodeAddMarker(e, buf);
+
+        EventMoveChoice ev;
+        ev.set_effect_type(static_cast<int>(asn::EffectType::AddMarker));
+        ev.set_effect(buf.data(), buf.size());
+        auto print_context = ev.mutable_print_context();
+        print_context->set_mentioned_cards_count(mentionedCards().size());
+        print_context->set_last_moved_cards_count(lastMovedCards().size());
+        mPlayer->sendToBoth(ev);
+
+        mPlayer->clearExpectedComands();
+        mPlayer->addExpectedCommand(CommandChoice::descriptor()->name());
+        // TODO: check for legitimacy of cancel
+        mPlayer->addExpectedCommand(CommandCancelEffect::descriptor()->name());
+
+        while (true) {
+            auto cmd = co_await waitForCommand();
+            if (cmd.command().Is<CommandCancelEffect>()) {
+                setCanceled(true);
+                break;
+            } else if (cmd.command().Is<CommandChoice>()) {
+                CommandChoice choiceCmd;
+                cmd.command().UnpackTo(&choiceCmd);
+                // 0 is yes, 'yes' will be the first choice on client's side
+                int choice = choiceCmd.choice();
+                if (choice) {
+                    setCanceled(true);
+                }
+                break;
+            }
+        }
+        mPlayer->clearExpectedComands();
+    }
+    if (canceled()) {
+        mPerformedInFull = false;
+        co_return;
+    }
 
     auto targetStageCard = targetStageCards.front();
     auto player = targetStageCard->player();
@@ -490,6 +530,8 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     int movedCount = 0;
     if (e.target.type == asn::TargetType::SpecificCards &&
             (e.from.pos == asn::Position::Top || e.from.pos == asn::Position::Bottom)) {
+        if (!isPayingCost())
+            clearLastMovedCards();
         const auto &spec = *e.target.targetSpecification;
         assert(spec.number.mod == asn::NumModifier::ExactMatch);
         auto pzone = player->zone(e.from.zone);
@@ -523,6 +565,8 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
     std::sort(targets.begin(), targets.end(), [](const ServerCard *card1, const ServerCard * card2) {
         return card1->pos() > card2->pos();
     });
+    if (!isPayingCost())
+        clearLastMovedCards();
     for (auto target: targets) {
         auto zone = target->zone();
         player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation, e.withMarkers);
@@ -594,15 +638,15 @@ Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
         const auto &spec = *e.targetMarker.targetSpecification;
         int count{0};
         const auto &markers = markerBearer->markers();
-        for (size_t i = markers.size()-1; i >= 0; --i) {
-            if (!markers[i])
+        for (size_t i = markers.size(); i > 0; --i) {
+            if (!markers[i-1])
                 continue;
-            if (markers[i]->faceOrientation() == asn::FaceOrientation::FaceDown &&
+            if (markers[i-1]->faceOrientation() == asn::FaceOrientation::FaceDown &&
                     spec.cards.cardSpecifiers.size() > 0) {
                 // maybe we should allow some card filters for face down markers
                 continue;
             }
-            if (checkTarget(spec, markers[i].get())) {
+            if (checkTarget(spec, markers[i-1].get())) {
                 int position{-1};
                 if (e.place.zone == asn::Zone::Stage) {
                     if (e.place.pos != asn::Position::NotSpecified) {
@@ -611,16 +655,21 @@ Resumable AbilityPlayer::playRemoveMarker(const asn::RemoveMarker &e) {
                     }
                     co_await getStagePosition(position, e);
                 }
-                auto removedMarker = mPlayer->removeMarker(markerBearer, i, e.place, position);
-                count++;
-
-                if (!isPayingCost()) {
-                    addLastMovedCard(CardImprint(removedMarker->zone()->name(), removedMarker));
-                    logMove(mPlayer, e.place.zone);
+                auto removedMarker = mPlayer->moveMarker(markerBearer, i-1, e.place, position);
+                if (removedMarker) {
+                    count++;
+                    if (!isPayingCost()) {
+                        addLastMovedCard(CardImprint(removedMarker->zone()->name(), removedMarker));
+                        logMove(mPlayer, e.place.zone);
+                    }
                 }
             }
             if (count >= spec.number.value)
                 break;
+        }
+        if ((spec.number.mod == asn::NumModifier::ExactMatch || spec.number.mod == asn::NumModifier::AtLeast)
+                && count < spec.number.value ) {
+            mPerformedInFull = false;
         }
     } else {
         qWarning() << "remove marker got not SpecificCards type";

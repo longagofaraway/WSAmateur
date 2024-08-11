@@ -9,6 +9,14 @@ using namespace asn;
 
 class PrintingException : public std::exception {};
 
+void ResetPrintState(int8_t mentionedCardsNumber, int lastMovedCardsNumber) {
+    Number mentioned{.mod=NumModifier::ExactMatch,
+                  .value=mentionedCardsNumber};
+    Number chosen{.mod=NumModifier::ExactMatch,
+                  .value=0};
+    gPrintState = PrintState(mentioned, chosen, lastMovedCardsNumber);
+}
+
 std::string printDigit(int8_t value) {
     switch (value) {
     case 1: return "one";

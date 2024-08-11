@@ -368,10 +368,10 @@ bool ServerPlayer::moveCardToStage(ServerCardZone *startZone, int startPos, Serv
     if (!card)
         return false;
 
-    return moveCardToStage(std::move(card), startZone->name(), startPos, stage, targetPos);
+    return moveCardToStage(std::move(card), startZone->name(), startPos, stage, targetPos) != nullptr;
 }
 
-bool ServerPlayer::moveCardToStage(std::unique_ptr<ServerCard> card, const std::string &startZoneName,
+ServerCard* ServerPlayer::moveCardToStage(std::unique_ptr<ServerCard> card, const std::string &startZoneName,
                                    int startPos, ServerCardZone *stage, int targetPos,
                                    std::optional<int> markerPos) {
     card->reset();
@@ -416,7 +416,7 @@ bool ServerPlayer::moveCardToStage(std::unique_ptr<ServerCard> card, const std::
 
     mGame->resolveAllContAbilities();
 
-    return true;
+    return cardOnStage;
 }
 
 Resumable ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
@@ -497,15 +497,15 @@ void ServerPlayer::transferMarkers(std::vector<std::unique_ptr<ServerCard>> &mar
     if (markers.empty())
         return;
 
-    for (size_t i = markers.size() - 1; i >= 0; --i) {
-        auto marker = markerBearer->addMarker(std::move(markers[i]));
+    for (size_t i = markers.size(); i > 0; --i) {
+        auto marker = markerBearer->addMarker(std::move(markers[i-1]));
 
         EventMoveCard event;
         event.set_start_zone("marker");
         event.set_start_pos(startPos);
         event.set_target_zone("marker");
         event.set_target_pos(targetPos);
-        event.set_marker_pos(i);
+        event.set_marker_pos(i-1);
         if (faceOrientation == asn::FaceOrientation::FaceUp) {
             event.set_code(marker->code());
             event.set_card_id(marker->id());
@@ -516,7 +516,7 @@ void ServerPlayer::transferMarkers(std::vector<std::unique_ptr<ServerCard>> &mar
     markers.clear();
 }
 
-ServerCard* ServerPlayer::removeMarker(ServerCard *markerBearer, int markerPos,
+ServerCard* ServerPlayer::moveMarker(ServerCard *markerBearer, int markerPos,
                                        const asn::Place &place, int targetPos) {
     auto markerPtr = markerBearer->takeMarker(markerPos);
     if (!markerPtr)
@@ -526,8 +526,7 @@ ServerCard* ServerPlayer::removeMarker(ServerCard *markerBearer, int markerPos,
     auto pzone = zone(targetZoneName);
 
     if (place.zone == asn::Zone::Stage) {
-        moveCardToStage(std::move(markerPtr), "marker", markerBearer->pos(), pzone, targetPos, markerPos);
-        return nullptr;
+        return moveCardToStage(std::move(markerPtr), "marker", markerBearer->pos(), pzone, targetPos, markerPos);
     }
 
     auto faceOrientation = markerPtr->faceOrientation();

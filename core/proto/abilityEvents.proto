@@ -33,9 +33,15 @@ message EventChooseCard {
     bool consider_cannot_be_chosen = 4;
 }
 
+message PrintContext {
+    sint32 mentioned_cards_count = 1;
+    sint32 last_moved_cards_count = 2;
+}
+
 message EventMoveChoice {
     sint32 effect_type = 1;
     bytes effect = 2;
+    PrintContext print_context = 3;
 }
 
 message EventMoveTargetChoice {

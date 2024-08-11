@@ -300,6 +300,9 @@ void Player::doneChoosing() {
         auto &ef = std::get<asn::MoveCard>(effect);
         dehighlightCards(asn::PlaceType::SpecificPlace, ef.from);
         dehighlightCards(asn::PlaceType::SpecificPlace, ef.to[0]);
+    } else if (std::holds_alternative<asn::RemoveMarker>(effect)) {
+        auto &ef = std::get<asn::RemoveMarker>(effect);
+        dehighlightCards(asn::PlaceType::SpecificPlace, ef.place);
     } else if (std::holds_alternative<asn::SearchCard>(effect)) {
         mDeckView->hide();
     } else if (std::holds_alternative<asn::Look>(effect) ||

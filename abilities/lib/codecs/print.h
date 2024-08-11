@@ -16,10 +16,12 @@ struct PrintState {
     int currentTrigger = 0;
 
     PrintState() = default;
-    PrintState(const asn::Number &num1, const asn::Number &num2)
-        : mentionedCardsNumber(num1), chosenCardsNumber(num2) {}
+    PrintState(const asn::Number &num1, const asn::Number &num2, int lastMoved=0)
+        : mentionedCardsNumber(num1), chosenCardsNumber(num2), lastMovedCardsNumber(lastMoved) {}
 };
 extern PrintState gPrintState;
+
+void ResetPrintState(int8_t mentionedCardsNumber, int lastMovedCardsNumber);
 
 // utils
 std::string printDigit(int8_t value);
@@ -58,6 +60,7 @@ std::string printMoveCard(const asn::MoveCard &e);
 std::string printDrawCard(const asn::DrawCard &e);
 std::string printActivationTimes(int activationTimes);
 std::string printChangeState(const asn::ChangeState &e);
+std::string printAddMarker(const asn::AddMarker &e);
 std::string printRemoveMarker(const asn::RemoveMarker &e);
 
 std::string printAutoAbilitySimplified(const asn::AutoAbility &ability);

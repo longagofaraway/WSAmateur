@@ -85,6 +85,8 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
         return;
 
     std::string effectText;
+    ResetPrintState(event.print_context().mentioned_cards_count(),
+                    event.print_context().last_moved_cards_count());
     if (event.effect_type() == static_cast<int>(asn::EffectType::RemoveMarker)) {
         auto effect = decodingWrapper(event.effect(), decodeRemoveMarker);
         effectText = printRemoveMarker(effect) + '?';
@@ -92,10 +94,14 @@ void Player::processMoveChoice(const EventMoveChoice &event) {
         auto effect = decodingWrapper(event.effect(), decodeMoveCard);
         assert(effect.executor == asn::Player::Player);
         effectText = printMoveCard(effect) + '?';
+    } else if (event.effect_type() == static_cast<int>(asn::EffectType::AddMarker)) {
+        auto effect = decodingWrapper(event.effect(), decodeAddMarker);
+        effectText = printAddMarker(effect) + '?';
     }
 
     highlightActiveAbilityCharacter();
-    effectText[0] = std::toupper(effectText[0]);
+    if (!effectText.empty())
+        effectText[0] = std::toupper(effectText[0]);
     std::vector<QString> data { "Yes", "No" };
     auto choiceDlg = std::make_unique<ChoiceDialog>(mGame);
     choiceDlg->setData(QString::fromStdString(effectText), data);
@@ -127,12 +133,16 @@ void Player::processMoveDestinationIndexChoice(const EventMoveDestinationIndexCh
     if (static_cast<asn::EffectType>(event.effect_type()) == asn::EffectType::MoveCard) {
         auto effect = decodingWrapper(event.effect(), decodeMoveCard);
         if ((mOpponent && effect.executor == asn::Player::Player) ||
-            (!mOpponent && effect.executor == asn::Player::Opponent))
+            (!mOpponent && effect.executor == asn::Player::Opponent)) {
             return;
+        }
         assert(effect.to.size() == 1);
         a.effect = effect;
         place = effect.to.at(0);
     } else if (static_cast<asn::EffectType>(event.effect_type()) == asn::EffectType::RemoveMarker) {
+        if (mOpponent) {
+            return;
+        }
         auto effect = decodingWrapper(event.effect(), decodeRemoveMarker);
         a.effect = effect;
         place = effect.place;
