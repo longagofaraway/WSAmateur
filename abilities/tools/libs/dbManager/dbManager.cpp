@@ -118,6 +118,7 @@ void replaceAbility(QByteArray& data, int pos, const asn::Ability ability) {
             data.replace(index, size, newAbility);
             break;
         }
+        index += size;
     }
 }
 } // namespace
