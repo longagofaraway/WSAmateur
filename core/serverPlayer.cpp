@@ -315,20 +315,19 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
         // revert effects of cont abilities
         playContAbilities(card, true/*revert*/);
     }
-    auto markers = std::move(card->markers());
+    auto markers = std::move(card->takeMarkers());
     card->reset();
     if (card == attackingCard())
         setAttackingCard(nullptr);
 
     auto cardPtr = startZone->takeCard(startPos);
 
-    targetZone->addCard(std::move(cardPtr), targetPos);
-
     EventMoveCard eventPublic;
     eventPublic.set_start_zone(startZone->name());
     eventPublic.set_target_zone(targetZone->name());
     eventPublic.set_start_pos(startPos);
     eventPublic.set_target_pos(targetPos);
+    eventPublic.set_insert_facedown(false);
     if (startZoneName == "stage" && markers.size()) {
         auto movedMarkers = moveMarkersToWr(markers);
         *eventPublic.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
@@ -350,6 +349,8 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
 
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
+
+    targetZone->addCard(std::move(cardPtr), targetPos);
 
     mGame->resolveAllContAbilities();
 
@@ -388,7 +389,7 @@ ServerCard* ServerPlayer::moveCardToStage(std::unique_ptr<ServerCard> card, cons
         checkZoneChangeTrigger(currentStageCard, "stage", "wr");
         // revert effects of cont abilities
         playContAbilities(currentStageCard, true);
-        removedMarkers = std::move(card->markers());
+        removedMarkers = std::move(currentStageCard->takeMarkers());
         currentStageCard->reset();
     }
 
@@ -406,6 +407,7 @@ ServerCard* ServerPlayer::moveCardToStage(std::unique_ptr<ServerCard> card, cons
     event.set_start_pos(startPos);
     event.set_target_zone(stage->name());
     event.set_target_pos(targetPos);
+    event.set_insert_facedown(false);
     if (markerPos.has_value()) {
         event.set_marker_pos(markerPos.value());
     }
@@ -458,7 +460,7 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
         playContAbilities(card, true/*revert*/);
     }
 
-    auto markers = std::move(card->markers());
+    auto markers = std::move(card->takeMarkers());
     auto cardPtr = startZone->takeCard(startPos);
     if (!cardPtr)
         return;
@@ -475,6 +477,7 @@ void ServerPlayer::addMarker(ServerCardZone *startZone, int startPos,
     event.set_start_pos(startPos);
     event.set_target_zone("marker");
     event.set_target_pos(targetPos);
+    event.set_insert_facedown(faceOrientation == asn::FaceOrientation::FaceDown);
     if (startZone->name() == "stage" && markers.size()) {
         if (!withMarkers) {
             auto movedMarkers = moveMarkersToWr(markers);
@@ -506,6 +509,7 @@ void ServerPlayer::transferMarkers(std::vector<std::unique_ptr<ServerCard>> &mar
         event.set_target_zone("marker");
         event.set_target_pos(targetPos);
         event.set_marker_pos(i-1);
+        event.set_insert_facedown(faceOrientation == asn::FaceOrientation::FaceDown);
         if (faceOrientation == asn::FaceOrientation::FaceUp) {
             event.set_code(marker->code());
             event.set_card_id(marker->id());
@@ -538,6 +542,7 @@ ServerCard* ServerPlayer::moveMarker(ServerCard *markerBearer, int markerPos,
     eventPublic.set_start_pos(markerBearer->pos());
     eventPublic.set_target_zone(targetZoneName);
     eventPublic.set_target_pos(-1);
+    eventPublic.set_insert_facedown(false);
 
     if (!(faceOrientation == asn::FaceOrientation::FaceDown && pzone->type() == ZoneType::HiddenZone)) {
         eventPublic.set_card_id(card->id());
@@ -641,11 +646,13 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard cmd) {
     cardPtr->reset();
     checkZoneChangeTrigger(cardPtr, "hand", "stage");
 
+    std::vector<std::unique_ptr<ServerCard>> removedMarkers;
     auto currentStageCard = stage->card(cmd.stage_pos());
     if (currentStageCard) {
         checkZoneChangeTrigger(currentStageCard, "stage", "wr");
         // revert effects of cont abilities
         playContAbilities(currentStageCard, true);
+        removedMarkers = std::move(currentStageCard->takeMarkers());
         currentStageCard->reset();
     }
 
@@ -654,6 +661,8 @@ Resumable ServerPlayer::playCharacter(const CommandPlayCard cmd) {
     auto oldStageCard = stage->putOnStage(std::move(card), cmd.stage_pos());
     auto cardInPlay = stage->card(cmd.stage_pos());
     cardInPlay->setFirstTurn(true);
+
+    moveMarkersToWr(removedMarkers);
 
     EventPlayCard event;
     event.set_card_id(cardInPlay->id());

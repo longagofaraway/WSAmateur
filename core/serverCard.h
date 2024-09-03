@@ -113,6 +113,7 @@ public:
 
     bool hasMarkers() const { return mMarkers.size(); }
     std::vector<std::unique_ptr<ServerCard>>& markers() { return mMarkers; }
+    std::vector<std::unique_ptr<ServerCard>>&& takeMarkers() { return std::move(mMarkers); }
     ServerCard* addMarker(std::unique_ptr<ServerCard> &&card);
     std::unique_ptr<ServerCard> takeTopMarker();
     std::unique_ptr<ServerCard> takeMarker(int index);

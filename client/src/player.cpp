@@ -474,9 +474,8 @@ void Player::setInitialHand(const EventInitialHand &event) {
 }
 
 void Player::createMovingCard(int id, const QString &code, const std::string &startZone, int startPos,
-                              const std::string &targetZone, int targetPos, int markerPos, bool isUiAction,
-                              bool dontFinishAction, bool noDelete) {
-    if (isUiAction)
+                              const std::string &targetZone, MovingParams params) {
+    if (params.isUiAction)
         mGame->startUiAction();
     else
         mGame->startAction();
@@ -489,15 +488,17 @@ void Player::createMovingCard(int id, const QString &code, const std::string &st
     obj->setProperty("uniqueId", id);
     obj->setProperty("code", source);
     obj->setProperty("opponent", mOpponent);
-    obj->setProperty("isUiAction", isUiAction);
-    obj->setProperty("dontFinishAction", dontFinishAction);
-    obj->setProperty("noDelete", noDelete);
+    obj->setProperty("isUiAction", params.isUiAction);
+    obj->setProperty("dontFinishAction", params.dontFinishAction);
+    obj->setProperty("noDelete", params.noDelete);
+    obj->setProperty("noInsert", params.noInsert);
     obj->setProperty("mSource", source);
     obj->setProperty("startZone", QString::fromStdString(startZone));
     obj->setProperty("startPos", startPos);
     obj->setProperty("targetZone", QString::fromStdString(targetZone));
-    obj->setProperty("targetPos", targetPos);
-    obj->setProperty("markerPos", markerPos);
+    obj->setProperty("targetPos", params.targetPos);
+    obj->setProperty("markerPos", params.markerPos);
+    obj->setProperty("insertFacedown", params.insertFacedown);
     obj->connect(obj, SIGNAL(moveFinished()), mGame, SLOT(cardMoveFinished()));
     QMetaObject::invokeMethod(obj, "startAnimation");
 }
@@ -549,8 +550,25 @@ void Player::moveCard(const EventMoveCard &event) {
 
     addCardToLogView(code, targetZone);
 
+    const auto& markers = event.markers();
+    for (const auto& marker: markers) {
+        auto qcode = QString::fromStdString(marker.code());
+        // insert manually in noInsert mode because order of cards must be in sync with the server
+        createMovingCard(marker.id(), qcode, "stage", startPos, "wr",
+                         MovingParams{.targetPos = -1,
+                                      .dontFinishAction = true,
+                                      .noDelete = true,
+                                      .noInsert = true});
+        addCard(marker.id(), qcode, "wr", -1);
+    }
+
     createMovingCard(event.card_id(), code, startZoneStr, startPos, event.target_zone(),
-                     event.target_pos(), event.marker_pos(), false, dontFinishAction);
+                     MovingParams{
+                         .targetPos = event.target_pos(),
+                         .markerPos = event.marker_pos(),
+                         .dontFinishAction = dontFinishAction,
+                         .insertFacedown = event.insert_facedown()
+                     });
 }
 
 void Player::playCard(const EventPlayCard &event) {
@@ -581,7 +599,8 @@ void Player::playCard(const EventPlayCard &event) {
     else
         targetZone = "stage";
 
-    createMovingCard(event.card_id(), code, "hand", event.hand_pos(), targetZone, event.stage_pos());
+    createMovingCard(event.card_id(), code, "hand", event.hand_pos(), targetZone,
+                     MovingParams{.targetPos = event.stage_pos()});
 }
 
 void Player::switchStagePositions(const EventSwitchStagePositions &event) {
@@ -701,7 +720,11 @@ void Player::moveClockToWr() {
         if (i == 5)
             dontFinishAction = false;
         auto &card = clock->cards()[0];
-        createMovingCard(card.id(), card.qcode(), "clock", 0, "wr", -1, -1, false, dontFinishAction);
+        createMovingCard(card.id(), card.qcode(), "clock", 0, "wr",
+                         MovingParams{
+                             .targetPos = -1,
+                             .dontFinishAction = dontFinishAction
+                         });
     }
 }
 
@@ -808,9 +831,22 @@ void Player::sendSwitchPositions(int from, int to) {
 
 void Player::sendFromStageToWr(int pos) {
     auto &card = mStage->cards()[pos];
-    for (const auto &marker: card.markers())
-        createMovingCard(marker.id(), marker.qcode(), "stage", pos, "wr", -1, -1, true, true, true);
-    createMovingCard(card.id(), card.qcode(), "stage", pos, "wr", -1, -1, true, false, true);
+    for (const auto &marker: card.markers()) {
+        createMovingCard(marker.id(), marker.qcode(), "stage", pos, "wr",
+                         MovingParams{
+                             .targetPos = -1,
+                             .isUiAction = true,
+                             .dontFinishAction = true,
+                             .noDelete = true
+                         });
+    }
+    createMovingCard(card.id(), card.qcode(), "stage", pos, "wr",
+                     MovingParams{
+                         .targetPos = -1,
+                         .isUiAction = true,
+                         .dontFinishAction = false,
+                         .noDelete = true
+                     });
 }
 
 void Player::resetChoiceDialog() {

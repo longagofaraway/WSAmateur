@@ -20,6 +20,7 @@ message EventMoveCard {
     sint32 target_pos = 6;
     repeated ProtoTypeCard markers = 7;
     sint32 marker_pos = 8;
+    bool insert_facedown = 9;
 }
 
 message EventPlayCard {

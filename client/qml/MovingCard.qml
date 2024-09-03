@@ -9,6 +9,8 @@ Card {
     property bool isQmlAction: false
     property bool dontFinishAction: false
     property bool noDelete: false
+    property bool noInsert: false
+    property bool insertFacedown: false
     property string startZone
     property int startPos: 0
     property string targetZone
@@ -138,11 +140,15 @@ Card {
     }
 
     function insertCard() {
-        var zone = gGame.getZone(targetZone, opponent);
-        if (targetZone == "marker")
-            zone.addMarker(uniqueId, code, targetPos, startZone, startPos);
-        else
-            zone.addCard(uniqueId, code, targetPos, startZone, startPos);
+        if (!noInsert) {
+            var zone = gGame.getZone(targetZone, opponent);
+            if (insertFacedown)
+                code = "cardback"
+            if (targetZone == "marker")
+                zone.addMarker(uniqueId, code, targetPos, startZone, startPos);
+            else
+                zone.addCard(uniqueId, code, targetPos, startZone, startPos);
+        }
         movingCard.visible = false;
     }
 
