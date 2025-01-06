@@ -44,8 +44,9 @@ set(coreSources
     deckList.h
     hardcodedEffects.h
     imageLinks.h
-    playerBuffManager.h
+    moveParams.h
     networkUtils.h
+    playerBuffManager.h
     server.h
     serverCard.h
     serverCardZone.h

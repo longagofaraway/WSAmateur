@@ -918,8 +918,8 @@ void swapCardsInternal(ServerCard *card1, ServerCard *card2) {
     auto card1Zone = card1->zone()->name();
     auto card1Pos = card1->pos();
     auto player = card1->player();
-    player->moveCard(card1Zone, card1->pos(), card2->zone()->name(), card2->pos());
-    player->moveCard(card2->zone()->name(), card2->pos(), card1Zone, card1Pos);
+    player->moveCard(card1Zone, card1->pos(), card2->zone()->name(), MoveParams{.targetPos = card2->pos()});
+    player->moveCard(card2->zone()->name(), card2->pos(), card1Zone, MoveParams{.targetPos = card1Pos});
 }
 
 Resumable AbilityPlayer::playSwapCards(const asn::SwapCards &e) {

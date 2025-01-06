@@ -21,6 +21,10 @@ auto decodingWrapper(const std::string &buf, F &decodeFunction) {
 }
 }
 
+Player* Player::getZoneOwnerForEffect(asn::Player cardEffectZoneOwner, asn::Player effectExecuter) {
+    return cardEffectZoneOwner == effectExecuter ? this : getOpponent();
+}
+
 int Player::highlightCardsFromEvent(
         const EventChooseCard &event,
         const asn::ChooseCard &effect) {
@@ -32,7 +36,7 @@ int Player::highlightCardsFromEvent(
     } else {
         for (const auto &target: effect.targets) {
             const auto &place = *target.place;
-            auto player = place.owner == asn::Player::Player ? this : getOpponent();
+            auto player = getZoneOwnerForEffect(place.owner, effect.executor);
             zones.emplace(asnZoneToString(place.zone), player->zone(place.zone));
             // for now let's consider that's impossible to choose from both players
             considerCannotBeChosen = (place.owner == asn::Player::Opponent) ==

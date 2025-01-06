@@ -288,7 +288,7 @@ void ServerPlayer::moveCards(std::string_view startZoneName, const std::vector<i
 }
 
 bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::string_view targetZoneName,
-                            int targetPos, bool reveal, bool enableGlobEncore) {
+                            MoveParams params) {
     ServerCardZone *startZone = zone(startZoneName);
     if (!startZone)
         return false;
@@ -298,9 +298,9 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
         return false;
 
     if (startZoneName != "stage" && targetZoneName == "stage")
-        return moveCardToStage(startZone, startPos, targetZone, targetPos);
+        return moveCardToStage(startZone, startPos, targetZone, params.targetPos);
     if (startZoneName == "stage" && targetZoneName == "stage") {
-        switchPositions(startPos, targetPos);
+        switchPositions(startPos, params.targetPos);
         return true;
     }
 
@@ -326,8 +326,9 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     eventPublic.set_start_zone(startZone->name());
     eventPublic.set_target_zone(targetZone->name());
     eventPublic.set_start_pos(startPos);
-    eventPublic.set_target_pos(targetPos);
+    eventPublic.set_target_pos(params.targetPos);
     eventPublic.set_insert_facedown(false);
+    eventPublic.set_purpose(params.purpose);
     if (startZoneName == "stage" && markers.size()) {
         auto movedMarkers = moveMarkersToWr(markers);
         *eventPublic.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
@@ -343,18 +344,18 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
     if (startZone->type() == ZoneType::PrivateZone || targetZone->type() == ZoneType::PrivateZone) {
         eventPrivate.set_code(card->code());
         eventPrivate.set_card_id(card->id());
-        if (reveal)
+        if (params.reveal)
             eventPublic.set_code(card->code());
     }
 
     sendGameEvent(eventPrivate);
     mGame->sendPublicEvent(eventPublic, mId);
 
-    targetZone->addCard(std::move(cardPtr), targetPos);
+    targetZone->addCard(std::move(cardPtr), params.targetPos);
 
     mGame->resolveAllContAbilities();
 
-    if (enableGlobEncore)
+    if (params.enableGlobEncore)
         checkGlobalEncore(card, startZoneName, targetZoneName);
 
     return true;
@@ -421,9 +422,9 @@ ServerCard* ServerPlayer::moveCardToStage(std::unique_ptr<ServerCard> card, cons
     return cardOnStage;
 }
 
-Resumable ServerPlayer::moveTopDeck(std::string_view targetZoneName) {
+Resumable ServerPlayer::moveTopDeck(std::string_view targetZoneName, const std::string& purpose) {
     auto deck = zone("deck");
-    moveCard("deck", deck->count() - 1, targetZoneName);
+    moveCard("deck", deck->count() - 1, targetZoneName, MoveParams{.purpose = purpose});
 
     co_await checkRefreshAndLevelUp();
 }
@@ -959,6 +960,8 @@ Resumable ServerPlayer::triggerStep(int pos) {
         mAttackingCard->setTriggerCheckTwice(false);
     }
 
+    sendEndOfPhaseEvent();
+
     co_await mGame->checkTiming();
 
     if (attackType() == FrontAttack)
@@ -968,7 +971,7 @@ Resumable ServerPlayer::triggerStep(int pos) {
 }
 
 Resumable ServerPlayer::performTriggerStep(int pos) {
-    co_await moveTopDeck("res");
+    co_await moveTopDeck("res", "TriggerCheck");
     auto card = zone("res")->card(0);
     // end of game
     if (!card)
@@ -1119,7 +1122,8 @@ Resumable ServerPlayer::encoreStep() {
                 for (int i = 0; i < 5; ++i) {
                     auto card = stage->card(i);
                     if (card && card->state() == asn::State::Reversed) {
-                        moveCard("stage", i, "wr", -1, false, false);
+                        moveCard("stage", i, "wr",
+                                 MoveParams{.targetPos = -1, .reveal = false, .enableGlobEncore = false});
                         co_await mGame->checkTiming();
                     }
                 }
@@ -1199,6 +1203,10 @@ void ServerPlayer::sendPhaseEvent(asn::Phase phase) {
     EventPhaseEvent event;
     event.set_phase(static_cast<int>(phase));
     sendToBoth(event);
+}
+
+void ServerPlayer::sendEndOfPhaseEvent() {
+    sendToBoth(EventEndOfPhase{});
 }
 
 void ServerPlayer::sendEndGame(bool victory) {

@@ -38,8 +38,11 @@ struct MovingParams {
     int targetPos = 0;
     int markerPos = 0;
     bool isUiAction = false;
+    // queue of events will stop processing
     bool dontFinishAction = false;
+    // delete from starting zone?
     bool noDelete = false;
+    // insert to target zone?
     bool noInsert = false;
     bool insertFacedown = false;
 };
@@ -228,6 +231,8 @@ private:
     void toggleZoneView(const asn::Place &place, bool open);
     void addCardToLogView(QString code, CardZone *targetZone);
     void deleteMoveLog();
+
+    Player* getZoneOwnerForEffect(asn::Player cardEffectZoneOwner, asn::Player effectExecuter);
 
 public slots:
     void sendSwitchPositions(int from, int to);

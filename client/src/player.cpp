@@ -255,6 +255,8 @@ void Player::processGameEvent(const std::shared_ptr<GameEvent> event) {
         EventPhaseEvent ev;
         event->event().UnpackTo(&ev);
         mGame->setPhase(static_cast<asn::Phase>(ev.phase()));
+    } else if (event->event().Is<EventEndOfPhase>()) {
+        mGame->endPhase();
     } else if (event->event().Is<EventRevealTopDeck>()) {
         EventRevealTopDeck ev;
         event->event().UnpackTo(&ev);
@@ -530,10 +532,12 @@ void Player::moveCard(const EventMoveCard &event) {
         }
     }
 
-    bool dontFinishAction = false;
     if (event.target_zone() == "res") {
-        mGame->pause(800);
-        dontFinishAction = true;
+        mGame->delayNextEvent(event.GetMetadata().descriptor->full_name() + std::string{"res"}, 800);
+    }
+    if (event.purpose() == "TriggerCheck") {
+        mGame->delayNextEvent(event.GetMetadata().descriptor->full_name() +
+                              std::string{"TriggerCheck"}, 1000);
     }
 
     int startPos = event.start_pos();
@@ -566,7 +570,6 @@ void Player::moveCard(const EventMoveCard &event) {
                      MovingParams{
                          .targetPos = event.target_pos(),
                          .markerPos = event.marker_pos(),
-                         .dontFinishAction = dontFinishAction,
                          .insertFacedown = event.insert_facedown()
                      });
 }

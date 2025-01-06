@@ -82,7 +82,6 @@ Card {
             deck.visible = true;
     }
     function setAllCardsInView() {
-        console.log("setting cards in view");
         deck.allCardsInView = true;
         updateVisibility();
     }

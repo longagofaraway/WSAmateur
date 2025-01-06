@@ -10,3 +10,4 @@ message EventEncoreStep {}
 message EventPhaseEvent {
     sint32 phase = 1;
 }
+message EventEndOfPhase {}

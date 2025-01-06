@@ -19,6 +19,7 @@
 #include "commands.h"
 #include "deckList.h"
 #include "globalAbilities/globalAbilities.h"
+#include "moveParams.h"
 #include "playerBuffManager.h"
 #include "serverCardZone.h"
 
@@ -142,13 +143,12 @@ public:
     Resumable mulligan(const CommandMulligan cmd);
     Resumable drawCards(int number);
     void moveCards(std::string_view startZoneName,  const std::vector<int> &cardPositions, std::string_view targetZoneName);
-    bool moveCard(std::string_view startZoneName, int startPos, std::string_view targetZoneName, int targetPos = -1,
-                  bool reveal = false, bool enableGlobEncore = true);
+    bool moveCard(std::string_view startZoneName, int startPos, std::string_view targetZoneName, MoveParams params = MoveParams{});
     bool moveCardToStage(ServerCardZone *startZone, int startPos, ServerCardZone *targetZone, int targetPos);
     ServerCard* moveCardToStage(std::unique_ptr<ServerCard> card, const std::string &startZoneName,
                          int startPos, ServerCardZone *stage, int targetPos,
                          std::optional<int> markerPos = {});
-    Resumable moveTopDeck(std::string_view targetZoneName);
+    Resumable moveTopDeck(std::string_view targetZoneName, const std::string& purpose = {});
     void addMarker(ServerCardZone *startZone, int startPos,
                    int targetPos, asn::FaceOrientation faceOrientation,
                    bool withMarkers);
@@ -186,6 +186,7 @@ public:
     Resumable refresh();
     void moveWrToDeck();
     void sendPhaseEvent(asn::Phase phase);
+    void sendEndOfPhaseEvent();
     void sendEndGame(bool victory);
     Resumable processPlayActCmd(const CommandPlayAct cmd);
     void reorderTopCards(const CommandMoveInOrder &cmd, asn::Zone destZone);

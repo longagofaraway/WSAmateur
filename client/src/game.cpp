@@ -196,7 +196,7 @@ void Game::processGameEvent(const std::shared_ptr<GameEvent> event) {
 }
 
 void Game::processGameEventFromQueue() {
-    if (mActionInProgress || mUiActionInProgress || mEventQueue.empty())
+    if (mActionInProgress || mUiActionInProgress || !mAdditionalActions.empty() || mEventQueue.empty())
         return;
 
     if (!mPlayer)
@@ -286,6 +286,15 @@ void Game::hideText() {
     QMetaObject::invokeMethod(this, "hideText");
 }
 
+void Game::delayNextEvent(const std::string& actionName, int milliseconds) {
+    mAdditionalActions.insert(actionName);
+
+    QTimer::singleShot(milliseconds, this, [this, actionName]() {
+        mAdditionalActions.erase(actionName);
+        QMetaObject::invokeMethod(this, "processGameEventFromQueue", Qt::QueuedConnection);
+    });
+}
+
 Client* Game::getClientForPlayer(int playerId) {
     if (!mIsLocal)
         return mClient;
@@ -305,6 +314,20 @@ void Game::startTurn(bool opponent) {
     mPlayer->setActivePlayer(!opponent);
     mActionInProgress = true;
     QMetaObject::invokeMethod(this, "startTurn", Q_ARG(QVariant, opponent));
+}
+
+void Game::setPhase(asn::Phase phase) {
+    mCurrentPhase = phase;
+    if (phase == asn::Phase::TriggerStep) {
+        showText("Trigger check");
+        delayNextEvent("TriggerStep", 600);
+    }
+}
+
+void Game::endPhase() {
+    if (mCurrentPhase == asn::Phase::TriggerStep) {
+        hideText();
+    }
 }
 
 void Game::clockPhase() {

@@ -103,6 +103,7 @@ private:
     std::vector<CardImprint>& mentionedCards() { return mMentionedCards; }
     void clearMentionedCards() { mMentionedCards.clear(); }
     void removeMentionedCard(int cardId);
+    void removeMentionedCard(ServerCard* card);
 
     void addLastMovedCard(CardImprint &&c) { mLastMovedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& lastMovedCards() { return mLastMovedCards; }

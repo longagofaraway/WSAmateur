@@ -121,7 +121,8 @@ Resumable AbilityPlayer::moveFromTop(const asn::MoveCard &e, int toZoneIndex, in
             break;
 
         movedCount++;
-        player->moveCard(asnZoneToString(e.from.zone), card->pos(), asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+        player->moveCard(asnZoneToString(e.from.zone), card->pos(), asnZoneToString(e.to[toZoneIndex].zone),
+                         MoveParams{.targetPos = toIndex, .reveal = revealChosen()});
         if (!isPayingCost())
             addLastMovedCard(CardImprint(card->zone()->name(), card, e.to[toZoneIndex].owner == asn::Player::Opponent));
 
@@ -265,6 +266,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                     if (static_cast<int>(mentionedCards().size()) != moveCmd.codes_size())
                         co_return;
                     mPlayer->reorderTopCards(moveCmd, e.to[0].zone);
+                    clearMentionedCards();
                     co_return;
                 }
             } else if (cmd.command().Is<CommandConfirmMove>()) {
@@ -370,7 +372,8 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
                 clearLastMovedCards();
                 for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
                     co_await getStagePosition(toIndex, e);
-                    executor->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+                    executor->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone),
+                                       MoveParams{.targetPos = toIndex, .reveal = revealChosen()});
                 }
 
                 co_return;
@@ -445,7 +448,10 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         owner(asn::Player::Opponent)->triggerOnOppCharPlacedByStandby();
     }
     for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
-        player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone), toIndex, revealChosen());
+        player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone),
+                         MoveParams{.targetPos = toIndex, .reveal = revealChosen()});
+
+        removeMentionedCard(it->second);
         if (!isPayingCost()) {
             addLastMovedCard(CardImprint(it->second->zone()->name(), it->second, e.to[toZoneIndex].owner == asn::Player::Opponent));
             logMove(player, e.to[toZoneIndex].zone);
@@ -571,6 +577,7 @@ Resumable AbilityPlayer::playAddMarker(const asn::AddMarker &e) {
         auto zone = target->zone();
         player->addMarker(zone, target->pos(), targetStageCard->pos(), e.orientation, e.withMarkers);
 
+        removeMentionedCard(target);
         if (!isPayingCost()) {
             addLastMovedCard(CardImprint(target->zone()->name(), target));
             // logMove?

@@ -180,7 +180,17 @@ void AbilityPlayer::setThisCard(ServerCard *card) {
 }
 
 void AbilityPlayer::removeMentionedCard(int cardId) {
-    std::erase_if(mMentionedCards, [cardId](CardImprint &im) { return cardId == im.card->id(); });
+    std::erase_if(mMentionedCards, [cardId](CardImprint &im) { return im.card && cardId == im.card->id(); });
+}
+
+void AbilityPlayer::removeMentionedCard(ServerCard* card) {
+    if (mMentionedCards.empty())
+        return;
+
+    if (mMentionedCards.front().card && mMentionedCards.front().card->player() != card->player())
+        return;
+
+    removeMentionedCard(card->id());
 }
 
 std::vector<ServerCard*> AbilityPlayer::getTargets(

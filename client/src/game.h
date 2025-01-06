@@ -34,6 +34,7 @@ private:
     Client *mClient;
     bool mActionInProgress = false;
     bool mUiActionInProgress = false;
+    std::set<std::string> mAdditionalActions; // they delay events for visual purposes
     std::deque<std::shared_ptr<GameEvent>> mEventQueue;
 
     std::unique_ptr<Server> mLocalServer;
@@ -92,8 +93,11 @@ public:
 
     void sendGameCommand(const google::protobuf::Message &command, int playerId);
 
+    void delayNextEvent(const std::string& actionName, int milliseconds);
+
     asn::Phase phase() const { return mCurrentPhase; }
-    void setPhase(asn::Phase phase) { mCurrentPhase = phase; }
+    void setPhase(asn::Phase phase);
+    void endPhase();
     void startTurn(bool opponent);
     void clockPhase();
     void mainPhase();

@@ -360,11 +360,25 @@ void Player::revealTopDeck(const EventRevealTopDeck &event) {
     zone("view")->visualItem()->setProperty("mViewMode", Game::RevealMode);
 
     QString code = QString::fromStdString(event.code());
-    mGame->pause(600);
+
+    bool dontFinishAction{true};
+    if (mAbilityList->count()) {
+        auto &activeAbility_ = activeAbility();
+        auto &effect = activeAbility_.effect;
+
+        if (!std::holds_alternative<asn::Look>(effect) &&
+            !std::holds_alternative<asn::RevealCard>(effect))
+            dontFinishAction = false;
+    }
+    if (dontFinishAction) {
+        mGame->pause(600);
+    } else {
+        mGame->delayNextEvent(event.GetMetadata().descriptor->full_name(), 600);
+    }
     createMovingCard(event.card_id(), code, "deck", 0, "view",
                      MovingParams{.targetPos = -1,
-                                  .isUiAction = true,
-                                  .dontFinishAction = true});
+                                  .dontFinishAction = dontFinishAction,
+                                  .noDelete = true});
 
     processLookRevealNextCard(asn::EffectType::RevealCard);
 }
