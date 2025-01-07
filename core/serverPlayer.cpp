@@ -334,7 +334,8 @@ bool ServerPlayer::moveCard(std::string_view startZoneName, int startPos, std::s
         *eventPublic.mutable_markers() = { movedMarkers.begin(), movedMarkers.end() };
     }
 
-    if (startZone->type() == ZoneType::PublicZone || targetZone->type() == ZoneType::PublicZone) {
+    if (startZone->type() == ZoneType::PublicZone || targetZone->type() == ZoneType::PublicZone ||
+            params.isRevealed) {
         eventPublic.set_code(card->code());
         eventPublic.set_card_id(card->id());
     }

@@ -106,6 +106,7 @@ Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
     switch (e.type) {
     case asn::RevealType::TopDeck:
         clearMentionedCards();
+        mIsRevealing = true;
         if (e.number.mod == asn::NumModifier::UpTo || !mandatory()) {
             std::vector<uint8_t> buf;
             encodeRevealCard(e, buf);
@@ -160,6 +161,7 @@ Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
 Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect) {
     assert(e.place.zone == asn::Zone::Deck);
     clearMentionedCards();
+    mIsRevealing = false;
     auto deck = owner(e.place.owner)->zone("deck");
     if (!deck->count())
         co_return;

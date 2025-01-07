@@ -193,6 +193,18 @@ void AbilityPlayer::removeMentionedCard(ServerCard* card) {
     removeMentionedCard(card->id());
 }
 
+bool AbilityPlayer::isCardRevealed(ServerCard* card) {
+    if (!mIsRevealing)
+        return false;
+
+    for (const auto& cardImprint: mMentionedCards) {
+        if (cardImprint.card && cardImprint.card->player() == card->player() && cardImprint.card->id() == card->id()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<ServerCard*> AbilityPlayer::getTargets(
         const asn::Target &t,
         asn::PlaceType placeType,

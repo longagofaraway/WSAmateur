@@ -345,11 +345,6 @@ Resumable AbilityPlayer::playChooseCard(const asn::ChooseCard &e, bool clearPrev
                 if (relativePlayerType == asn::Player::Opponent && card->cannotBeChosen())
                     continue;
                 addChosenCard(CardImprint(chooseCmd.zone(), card, card->player() != mPlayer));
-                // here we assume that chosen cards from revealed/being looked at are moved after being chosen
-                // it's probably better to do this at the moment the chosen card is being moved
-                // by checking its unique id in selection
-                if (e.targets[0].placeType == asn::PlaceType::Selection)
-                    removeMentionedCard(card->id());
             }
             break;
         }

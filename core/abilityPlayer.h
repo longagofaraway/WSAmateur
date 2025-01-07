@@ -33,6 +33,7 @@ class AbilityPlayer {
     bool mCanceled = false;
     bool mConditionNotMet = false;
     bool mPerformedInFull = false;
+    bool mIsRevealing = false;
     int mAbilityId;
     std::vector<CardImprint> mChosenCards;
     std::vector<CardImprint> mMentionedCards;
@@ -104,6 +105,7 @@ private:
     void clearMentionedCards() { mMentionedCards.clear(); }
     void removeMentionedCard(int cardId);
     void removeMentionedCard(ServerCard* card);
+    bool isCardRevealed(ServerCard* card);
 
     void addLastMovedCard(CardImprint &&c) { mLastMovedCards.emplace_back(std::move(c)); }
     std::vector<CardImprint>& lastMovedCards() { return mLastMovedCards; }

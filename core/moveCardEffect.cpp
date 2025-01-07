@@ -388,9 +388,10 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
         // when we are looking at the top cards of the deck and moving some of them
         // back on top of the deck, mentioned cards will remain on top of the deck
         auto player = owner(e.to[toZoneIndex].owner);
-        if (mentionedCards().size() > 0 && mentionedCards().front().card->player() == player) {
+        int restCardsCount = mentionedCards().size() - chosenCards().size();
+        if (restCardsCount > 0 && mentionedCards().front().card->player() == player) {
             // -1 - excluding moved card itself
-            toIndex = player->zone(e.to[toZoneIndex].zone)->count() - 1 - mentionedCards().size();
+            toIndex = player->zone(e.to[toZoneIndex].zone)->count() - 1 - restCardsCount;
         }
     }
 
@@ -449,7 +450,7 @@ Resumable AbilityPlayer::playMoveCard(const asn::MoveCard &e) {
     }
     for (auto it = cardsToMove.rbegin(); it != cardsToMove.rend(); ++it) {
         player->moveCard(it->second->zone()->name(), it->first, asnZoneToString(e.to[toZoneIndex].zone),
-                         MoveParams{.targetPos = toIndex, .reveal = revealChosen()});
+                         MoveParams{.targetPos = toIndex, .reveal = revealChosen(), .isRevealed = isCardRevealed(it->second)});
 
         removeMentionedCard(it->second);
         if (!isPayingCost()) {
