@@ -12,7 +12,7 @@ CostItem {
 
 enum CostType {
   stock = 1,
-  effect = 2
+  effects = 2
 }
 
 StockCost {

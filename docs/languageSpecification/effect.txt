@@ -86,7 +86,7 @@ enum EffectType {
   cannotBeChosen = 38,
   triggerIconGain = 39,
   canPlayWithoutColorRequirement = 40,
-  shotTrigger = 41, // just to differentiate that it's not char's effect
+  shotTriggerDamage = 41, // just to differentiate that it's not char's effect
   delayedAbility = 42,
   costSubstitution = 43,
   skipPhase = 44,
@@ -202,7 +202,7 @@ PerformEffect {
 
 // almost the same as 'choose' effect, but it exists for translation purposes
 // usually it's 'search your deck' but you can also search your stock or who knows what else
-// cards beeing searched for by user become chosen
+// cards being searched for by user become chosen
 SearchCard {
   targets Array of SearchTarget,
   place Place

@@ -69,6 +69,8 @@ message EventLook {
     bytes effect = 1;
     sint32 next_effect_type = 2;
     bytes next_effect = 3;
+    sint32 second_next_effect_type = 4;
+    bytes second_next_effect = 5;
 }
 
 message EventLookTopDeck {
@@ -81,6 +83,8 @@ message EventReveal {
     bytes effect = 1;
     sint32 next_effect_type = 2;
     bytes next_effect = 3;
+    sint32 second_next_effect_type = 4;
+    bytes second_next_effect = 5;
 }
 
 message EventRevealTopDeck {

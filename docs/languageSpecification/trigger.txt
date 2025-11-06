@@ -20,7 +20,7 @@ Trigger {
 enum TriggerType {
   onZoneChange = 1,
   onPlay = 2,
-  onStateChanged = 3,
+  onStateChange = 3,
   onAttack = 4,
   onBackupOfThis = 5,
   onTriggerReveal = 6,
@@ -66,7 +66,7 @@ StateChangeTrigger {
 }
 
 OnBeingAttackedTrigger {
-  target Target, // who is beeing attacked
+  target Target, // who is being attacked
   attackType AttackType
 }
 

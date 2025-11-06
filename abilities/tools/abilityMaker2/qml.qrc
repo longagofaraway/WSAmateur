@@ -1,6 +1,35 @@
 <RCC>
     <qresource prefix="/">
         <file>qml/main.qml</file>
-        <file>qml/TriggerColumn.qml</file>
+        <file>qml/Menus/TriggerMenu.qml</file>
+        <file>qml/Menus/CostMenu.qml</file>
+        <file>qml/Menus/ConditionMenu.qml</file>
+        <file>qml/Menus/EffectMenu.qml</file>
+        <file>qml/MultiselectComboBox.qml</file>
+        <file>qml/AbilityMenu.qml</file>
+        <file>qml/Trigger.qml</file>
+        <file>qml/WorkingArea.qml</file>
+        <file>qml/Target.qml</file>
+        <file>qml/BasicTypes/Zone.qml</file>
+        <file>qml/Menus/TargetMenu.qml</file>
+        <file>qml/Menus/CardMenu.qml</file>
+        <file>qml/CardSpecifier.qml</file>
+        <file>qml/BasicTypes/CardSpecifierCardType.qml</file>
+        <file>qml/BasicTypes/Player.qml</file>
+        <file>qml/BasicTypes/CardSpecifierOwner.qml</file>
+        <file>qml/BasicTypes/CardSpecifierTextInput.qml</file>
+        <file>qml/CancelButton.qml</file>
+        <file>qml/BasicTypes/CardSpecifierNumber.qml</file>
+        <file>qml/BasicTypes/Number.qml</file>
+        <file>qml/BasicTypes/CardSpecifierState.qml</file>
+        <file>qml/BasicTypes/Phase.qml</file>
+        <file>qml/BasicTypes/PhaseState.qml</file>
+        <file>qml/BasicTypes/State.qml</file>
+        <file>qml/BasicTypes/AttackType.qml</file>
+        <file>qml/BasicTypes/BoolCheckBox.qml</file>
+        <file>qml/BasicTypes/AbilityType.qml</file>
+        <file>qml/EffectsTree/Effect.qml</file>
+        <file>qml/Effect.qml</file>
+        <file>qml/EffectsTree/BranchHeader.qml</file>
     </qresource>
 </RCC>

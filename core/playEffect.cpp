@@ -13,7 +13,8 @@
 #include "serverPlayer.h"
 #include "codecs/encode.h"
 
-Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect) {
+Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect,
+                                    std::optional<asn::Effect> secondNextEffect) {
     if (!evaluateCondition(e.cond)) {
         mConditionNotMet = true;
         mPlayer->sendToBoth(EventConditionNotMet());
@@ -34,7 +35,7 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         co_await playDrawCard(std::get<asn::DrawCard>(e.effect));
         break;
     case asn::EffectType::RevealCard:
-        co_await playRevealCard(std::get<asn::RevealCard>(e.effect), nextEffect);
+        co_await playRevealCard(std::get<asn::RevealCard>(e.effect), nextEffect, secondNextEffect);
         break;
     case asn::EffectType::AttributeGain:
         playAttributeGain(std::get<asn::AttributeGain>(e.effect));
@@ -67,7 +68,7 @@ Resumable AbilityPlayer::playEffect(const asn::Effect &e, std::optional<asn::Eff
         playTriggerCheckTwice();
         break;
     case asn::EffectType::Look:
-        co_await playLook(std::get<asn::Look>(e.effect), nextEffect);
+        co_await playLook(std::get<asn::Look>(e.effect), nextEffect, secondNextEffect);
         break;
     case asn::EffectType::EarlyPlay:
         playEarlyPlay();
@@ -147,6 +148,9 @@ bool needNextEffect(asn::EffectType type) {
     };
     return types.contains(type);
 }
+bool needSecondNextEffect(asn::EffectType type) {
+    return type == asn::EffectType::ChooseCard;
+}
 bool needToSetTargetsByServer(const asn::Target &target) {
     if (target.type != asn::TargetType::SpecificCards)
         return false;
@@ -161,10 +165,15 @@ bool needToSetTargetsByServer(const asn::Target &target) {
 
 Resumable AbilityPlayer::playEffects(const std::vector<asn::Effect> &e) {
     for (size_t i = 0; i < e.size(); ++i) {
-        if (needNextEffect(e[i].type) && (i != e.size() - 1))
-            co_await playEffect(e[i], e[i + 1]);
-        else
+        if (needNextEffect(e[i].type) && (i + 1 < e.size())) {
+            if (needSecondNextEffect(e[i + 1].type) && (i + 2 < e.size())) {
+                co_await playEffect(e[i], e[i + 1], e[i + 2]);
+            } else {
+                co_await playEffect(e[i], e[i + 1]);
+            }
+        } else {
             co_await playEffect(e[i]);
+        }
         if (mConditionNotMet) {
             mConditionNotMet = false;
             break;

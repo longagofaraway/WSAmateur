@@ -13,7 +13,7 @@ enum Player {
 enum TriggerIcon {
   soul = 1,
   wind = 2,
-  pool = 3,
+  bag = 3,
   door = 4,
   book = 5,
   shot = 6,
@@ -54,8 +54,7 @@ Number {
 enum NumModifier {
   exactMatch = 1,
   upTo = 2,
-  atLeast = 3,
-  multiplier = 4
+  atLeast = 3
 }
 
 enum PlaceType {
@@ -74,7 +73,7 @@ Place {
 enum Zone {
   notSpecified = 0,
   stage = 1,
-  waiting room = 2,
+  waitingRoom = 2,
   deck = 3,
   clock = 4,
   hand = 5,
@@ -114,7 +113,7 @@ enum FaceOrientation {
 
 enum AttackType {
   any = 0,
-  front = 1,
+  frontal = 1,
   side = 2,
   direct = 3
 }

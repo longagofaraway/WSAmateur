@@ -102,7 +102,8 @@ Resumable AbilityPlayer::playLookRevealCommon(asn::EffectType type, int numCards
 }
 
 Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
-                                        std::optional<asn::Effect> nextEffect) {
+                                        std::optional<asn::Effect> nextEffect,
+                                        std::optional<asn::Effect> secondNextEffect) {
     switch (e.type) {
     case asn::RevealType::TopDeck:
         clearMentionedCards();
@@ -117,6 +118,14 @@ Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
                 ev.set_next_effect_type(static_cast<int>(nextEffect->type));
                 auto nextBuf = encodeNextEffect(nextEffect.value());
                 ev.set_next_effect(nextBuf.data(), nextBuf.size());
+            }
+            if (secondNextEffect && secondNextEffect.value().type == asn::EffectType::MoveCard) {
+                const auto& effect = std::get<asn::MoveCard>(secondNextEffect.value().effect);
+                if (effect.order == asn::Order::Any && !effect.to.empty() && effect.to[0].zone == asn::Zone::Deck) {
+                    ev.set_second_next_effect_type(static_cast<int>(secondNextEffect.value().type));
+                    auto nextBuf = encodeNextEffect(nextEffect.value());
+                    ev.set_second_next_effect(nextBuf.data(), nextBuf.size());
+                }
             }
             mPlayer->sendToBoth(ev);
 
@@ -158,7 +167,8 @@ Resumable AbilityPlayer::playRevealCard(const asn::RevealCard &e,
     }
 }
 
-Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect) {
+Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect,
+                                  std::optional<asn::Effect> secondNextEffect) {
     assert(e.place.zone == asn::Zone::Deck);
     clearMentionedCards();
     mIsRevealing = false;
@@ -183,6 +193,14 @@ Resumable AbilityPlayer::playLook(const asn::Look &e, std::optional<asn::Effect>
             ev.set_next_effect_type(static_cast<int>(nextEffect->type));
             auto nextBuf = encodeNextEffect(nextEffect.value());
             ev.set_next_effect(nextBuf.data(), nextBuf.size());
+        }
+        if (secondNextEffect && secondNextEffect.value().type == asn::EffectType::MoveCard) {
+            const auto& effect = std::get<asn::MoveCard>(secondNextEffect.value().effect);
+            if (effect.order == asn::Order::Any && !effect.to.empty() && effect.to[0].zone == asn::Zone::Deck) {
+                ev.set_second_next_effect_type(static_cast<int>(secondNextEffect.value().type));
+                auto nextBuf = encodeNextEffect(nextEffect.value());
+                ev.set_second_next_effect(nextBuf.data(), nextBuf.size());
+            }
         }
         mPlayer->sendToBoth(ev);
 

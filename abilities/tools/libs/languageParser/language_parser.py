@@ -1,0 +1,131 @@
+import sys
+
+def readFileWithoutComments(f):
+    doc = ''
+    for line in f:
+        splitlines = line.split('//')
+        doc += splitlines[0] + '\n'
+    return doc
+
+class CppDoc:
+    def __init__(self):
+        self.hpp = ''
+        self.headers = ''
+        self.declarations = ''
+        self.definitions = ''
+
+cpp = CppDoc()
+
+
+def parseEnum(tokens, current, cpp):
+    fieldType = tokens[current]
+
+    values = []
+
+    current += 2 # skip open brace
+    while current < len(tokens) and tokens[current] != '}':
+        value = tokens[current]
+        capitalized = value[0].upper() + value[1:]
+        values.append([value, capitalized])
+        current += 1
+        while current < len(tokens) and tokens[current] != '}' and (not len(tokens[current]) or not tokens[current][0].isalpha()):
+            current += 1
+
+    code = ''
+
+    cpp.hpp += f'std::string toString(asn::{fieldType} field);\n'
+    cpp.hpp += f'asn::{fieldType} parse(const std::string& field, formats::To<asn::{fieldType}>);\n'
+    code += f'''std::string toString(asn::{fieldType} field) {{
+    switch(field) {{'''
+    for value in values:
+        code += f'''
+    case asn::{fieldType}::{value[1]}:
+        return "{value[1]}";'''
+    code += '''
+    }
+    throw std::logic_error("unhandled enum value");
+}\n
+'''
+    code += f'''asn::{fieldType} parse(const std::string& field, formats::To<asn::{fieldType}>) {{'''
+    for value in values:
+        code += f'''
+    if (field == "{value[1]}")
+        return asn::{fieldType}::{value[1]};'''
+    code += '''
+    throw std::logic_error("unknown value" + field);
+}\n
+'''
+
+    cpp.definitions += code
+    while current < len(tokens) and tokens[current][0] != '}':
+        current += 1
+    return current + 1
+
+
+def skipStruct(tokens, current):
+    braces_count = 0
+    while current < len(tokens):
+        if tokens[current] == '{':
+            braces_count += 1
+        elif tokens[current] == '}':
+            braces_count -= 1
+            if braces_count == 0:
+                return current + 1
+        current += 1
+    return current
+
+
+def parseDocFiles(files):
+    for filename in files:
+        f = open(filename, 'r')
+        doc = readFileWithoutComments(f)
+        tokens = doc.split()
+
+        cur_i = 0
+        while cur_i < len(tokens):
+            if (tokens[cur_i] == 'enum'):
+                cur_i += 1
+                cur_i = parseEnum(tokens, cur_i, cpp)
+            elif tokens[cur_i] == '###':
+                break
+            else:
+                cur_i = skipStruct(tokens, cur_i)
+        f.close()
+
+
+cpp.hpp += '''
+#include <string>
+
+#include "abilities.h"
+
+namespace formats {
+template <typename T>
+struct To { };
+}
+
+'''
+
+cpp.headers += '''
+#include "language_parser.h"
+
+#include <functional>
+#include <stdexcept>
+#include <unordered_map>
+
+#include "abilities.h"
+
+'''
+
+parseDocFiles(sys.argv[1:])
+
+gencpp = open('language_parser.cpp', 'wt')
+gencpp.write(cpp.headers)
+gencpp.write('\n\n')
+gencpp.write(cpp.declarations)
+gencpp.write('\n\n')
+gencpp.write(cpp.definitions)
+gencpp.close()
+
+genhpp = open('language_parser.h', 'wt')
+genhpp.write(cpp.hpp)
+genhpp.close()

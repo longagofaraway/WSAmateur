@@ -30,7 +30,7 @@ enum CardSpecifierType {
   exactName = 4,
   nameContains = 5,
   level = 6, 
-  level is higher than your opponent's level = 7,
+  levelHigherThanOpp = 7, // level is higher than your opponent's level
   color = 8,
   cost = 9,
   triggerIcon = 10,
@@ -39,22 +39,22 @@ enum CardSpecifierType {
   standbyTarget = 13, // with level equal to or less than your level +1
   levelWithMultiplier = 14,
   state = 15, // stand, rested, reversed
-  sum of levels less than number of differently named events in memory = 16, // aka Hina finisher
+  sumOfLevelsLessThanDiffNamedEventsInMemory = 16 // sum of levels less than number of differently named events in memory aka Hina finisher
 }
 
 enum CardType {
-  character = 1,
+  char = 1,
   climax = 2,
   event = 3,
   marker = 4
 }
 
 enum Color {
-  Yellow = 1,
-  Green = 2,
-  Red = 3,
-  Blue = 4,
-  Purple = 5
+  yellow = 1,
+  green = 2,
+  red = 3,
+  blue = 4,
+  purple = 5
 }
 
 Trait {

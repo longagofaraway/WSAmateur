@@ -120,14 +120,16 @@ private:
     Resumable playEventAbility(const asn::EventAbility &a);
 
     void playContEffect(const asn::Effect &e);
-    Resumable playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect = {});
+    Resumable playEffect(const asn::Effect &e, std::optional<asn::Effect> nextEffect = {},
+                         std::optional<asn::Effect> secondNextEffect = {});
     Resumable playEffects(const std::vector<asn::Effect> &e);
     Resumable playTriggeredAbilities(const std::vector<TriggeredAbility> &abilities);
     Resumable playNonMandatory(const asn::NonMandatory &e);
     Resumable playChooseCard(const asn::ChooseCard &e, bool clearPrevious = true);
     Resumable playMoveCard(const asn::MoveCard &e);
     Resumable playDrawCard(const asn::DrawCard &e);
-    Resumable playRevealCard(const asn::RevealCard &e, std::optional<asn::Effect> nextEffect = {});
+    Resumable playRevealCard(const asn::RevealCard &e, std::optional<asn::Effect> nextEffect = {},
+                             std::optional<asn::Effect> secondNextEffect = {});
     void playAttributeGain(const asn::AttributeGain &e);
     Resumable playPayCost(const asn::PayCost &e);
     Resumable payCost();
@@ -141,7 +143,8 @@ private:
     Resumable playFlipOver(const asn::FlipOver &e);
     void playBackup(const asn::Backup &e);
     void playTriggerCheckTwice();
-    Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {});
+    Resumable playLook(const asn::Look &e, std::optional<asn::Effect> nextEffect = {},
+                       std::optional<asn::Effect> secondNextEffect = {});
     Resumable playLookRevealCommon(asn::EffectType type, int numCards,
                                    const std::optional<asn::Effect> &nextEffect,
                                    asn::Player zoneOwner = asn::Player::Player);

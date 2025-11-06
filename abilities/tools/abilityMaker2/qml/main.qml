@@ -3,7 +3,8 @@ import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Controls.Styles 1.4
 
-//import abilityMaker 1.0
+import 'Menus'
+import abilityMaker 1.0
 
 Window {
     id: window
@@ -12,48 +13,65 @@ Window {
     height: 580
     title: qsTr("Ability Maker")
 
-    Rectangle {
+    AbilityMaker {
         id: root
         anchors.fill: parent
-    Row{
-        anchors.verticalCenter: root.verticalCenter
-        spacing: 10
-    Column {
-        id: rootCol
-        spacing: 10
+        anchors.leftMargin: 10
+        anchors.rightMargin: 10
 
-        ComboBox {
-            id: rootCombo
-            currentIndex: -1
-            model: ["Cont", "Auto", "Act", "Event"]
-        }
-        Button {
-            id: triggers
-            width: rootCombo.width
-            text: "Trigger"
-            onClicked: highlighted = !highlighted
-            onHighlightedChanged: {
-                triggerCol.visible = highlighted;
+        Column {
+            id: abilityTypeCombo
+            anchors.horizontalCenter: root.horizontalCenter
+            Text {
+                anchors.horizontalCenter: abilityCombo.horizontalCenter
+                text: "Ability type:"
+                font.pointSize: 8
+            }
+            ComboBox {
+                id: abilityCombo
+                currentIndex: -1
+                model: ["Cont", "Auto", "Act", "Event"]
+                onCurrentIndexChanged: {
+                    activationTimes.enabled = (currentIndex == 1);
+                }
             }
         }
-    }
-    Column {
-        id: triggerCol
-        ComboBox {
-            id: triggerTypeCombo
-            anchors.verticalCenter: rootCol.verticalCenter
-            visible: false
-            width: 200
-            model: ["Zone change", "On play", "On state change", "On attack", "On backup of this",
-                    "On trigger reveal", "Phase event", "End of this card's attack",
-                    "On standby trigger effect", "On being attacked", "On damage cancel",
-                    "On damage taken cancel", "On paying cost", "When 【ACT】 abillity used"]
-            currentIndex: -1
-            onCurrentIndexChanged: {
 
+        Row {
+            id: abilitySpecs
+            anchors { top: abilityTypeCombo.bottom; topMargin: 20; horizontalCenter: root.horizontalCenter }
+            spacing: 20
+            Column {
+                id: activationTimes
+
+                enabled: false
+
+                Text {
+                    text: "Activates up to:"
+                }
+
+                ComboBox {
+                    model: ["always", "1", "2"]
+                }
+            }
+
+            MultiselectComboBox {
+                anchors.bottom: abilitySpecs.bottom
+                model: ListModel {
+                    ListElement { name: "CxCombo"; selected: false }
+                    ListElement { name: "Brainstorm"; selected: false }
+                    ListElement { name: "Backup"; selected: false }
+                    ListElement { name: "Encore"; selected: false }
+                    ListElement { name: "Assist"; selected: false }
+                    ListElement { name: "Alarm"; selected: false }
+                    ListElement { name: "Experience"; selected: false }
+                    ListElement { name: "Resonance"; selected: false }
+                    ListElement { name: "Bond"; selected: false }
+                    ListElement { name: "Change"; selected: false }
+                    ListElement { name: "Memory"; selected: false }
+                    ListElement { name: "Replay"; selected: false }
+                }
             }
         }
-    }
-    }
     }
 }

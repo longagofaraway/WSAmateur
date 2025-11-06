@@ -21,7 +21,7 @@ enum TargetType {
   mentionedInTrigger = 10,
   attackingChar = 11
 }
-// mentionedCards are revealed, beeing looked at etc
+// mentionedCards are revealed, being looked at etc
 
 TargetSpecificCards {
   mode TargetMode,
@@ -30,7 +30,7 @@ TargetSpecificCards {
 }
 
 enum TargetMode {
-  notSpecified = 0,
+  any = 0,
   all = 1,
   allOther = 2,
   inFrontOfThis = 3,
