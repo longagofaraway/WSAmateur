@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include "ability.h"
 #include "abilityMaker.h"
 #include "effectsTree.h"
 
@@ -10,6 +11,8 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<AbilityMaker>("abilityMaker", 1, 0, "AbilityMaker");
     qmlRegisterType<EffectsTree>("effectsTree", 1, 0, "EffectsTree");
+    qmlRegisterType<AbilityComponent>("abilityComponent", 1, 0, "AbilityComponent");
+    qRegisterMetaType<asn::Ability>();
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));

@@ -15,11 +15,11 @@ TriggerComponent::TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker)
     init(parent, abilityMaker);
 }
 
-TriggerComponent::TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker, const asn::Trigger& trigger)
+TriggerComponent::TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker, const std::vector<asn::Trigger>& triggers)
     : BaseComponent("Trigger", parent) {
     init(parent, abilityMaker);
-    type_ = trigger.type;
-    trigger_ = trigger.trigger;
+    type_ = triggers.at(0).type;
+    trigger_ = triggers.at(0).trigger;
     QMetaObject::invokeMethod(qmlObject, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
     createTrigger();
 }
@@ -96,6 +96,13 @@ void TriggerComponent::zoneChanged(QString value, QString componentId) {
     default:
         throw std::logic_error("zoneChanged");
     }
+    emit componentChanged(constructTrigger());
+}
+
+std::vector<asn::Trigger> TriggerComponent::constructTrigger() {
+    std::vector<asn::Trigger> vec;
+    vec.push_back(asn::Trigger{.type=type_,.trigger=trigger_});
+    return vec;
 }
 
 void TriggerComponent::targetChanged(const asn::Target& target) {
@@ -138,6 +145,7 @@ void TriggerComponent::targetChanged(const asn::Target& target) {
     }
     default: throw std::logic_error("unhandled target in trigger");
     }
+    emit componentChanged(constructTrigger());
 }
 
 void TriggerComponent::phaseChanged(QString value, QString componentId) {

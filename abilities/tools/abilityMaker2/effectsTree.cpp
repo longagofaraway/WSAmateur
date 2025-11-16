@@ -10,6 +10,7 @@ namespace {
 const int kNodeHeight = 35;
 const int kHeaderHeight = 15;
 const int kOffsetStep = 30;
+const int kDefaultTreeWidth = 180;
 asn::Effect kEmptyEffect = asn::Effect{.type=asn::EffectType::NotSpecified};
 const QString kBaseBranchId = "Main";
 QQuickItem* createQmlObject(const QString &name, QQuickItem *parent, QString id, QString effectMode, QString effectName) {
@@ -49,7 +50,7 @@ std::vector<asn::Effect>& getEffects(asn::Effect& effect, int index) {
 
 void EffectsTree::componentComplete() {
     QQuickItem::componentComplete();
-    this->setProperty("width", 200);
+    this->setProperty("width", kDefaultTreeWidth);
     QString nodeId = "New";
     auto node = createQmlObject("EffectsTree/Effect", this, nodeId, "createMode", "");
     connect(node, SIGNAL(createEffect(QString,QString)), this, SLOT(createEffect(QString,QString)));
@@ -78,12 +79,15 @@ void EffectsTree::setWorkingArea(QObject *workingArea) {
 
 void EffectsTree::renderTree() {
     int totalHeight{0};
+    maxOffset_ = 0;
 
     renderBranch(totalHeight, 0, treeRoot_);
     this->setProperty("height", totalHeight);
+    this->setProperty("width", kDefaultTreeWidth + maxOffset_);
 }
 
 void EffectsTree::renderBranch(int& currentHeight, int offset, const Branch& branch) {
+    maxOffset_ = std::max(offset, maxOffset_);
     for (const auto& node: branch) {
         if (node->effect.type == asn::EffectType::PayCost) {
             node->object->setProperty("x", offset);

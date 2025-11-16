@@ -13,11 +13,12 @@ class AbilityMaker : public QQuickItem {
 private:
     QQuickItem *abilityMenu;
     QQuickItem *workingArea;
+    QQuickItem *abilityText;
 
-    std::shared_ptr<BaseComponent> qmlObject;
+    std::shared_ptr<BaseComponent> currentComponent;
 
-private slots:
-    void createTrigger(QString triggerId);
+public:
+    Q_INVOKABLE QString translate(const asn::Ability &ability);
 
 protected:
     void componentComplete() override;

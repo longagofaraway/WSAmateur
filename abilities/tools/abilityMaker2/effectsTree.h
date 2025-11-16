@@ -39,6 +39,7 @@ private:
     std::vector<asn::Effect> effects_;
     std::vector<std::shared_ptr<TreeNodeInfo>> treeRoot_;
     QQuickItem *workingArea_;
+    int maxOffset_{0};
 
 public:
     Q_INVOKABLE void setWorkingArea(QObject *workingArea);

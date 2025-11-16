@@ -15,9 +15,13 @@ ScrollView {
     property bool costSet: false
 
     signal createTrigger(triggerId: string)
+    signal openTrigger()
 
     function setWorkingArea(workingArea) {
         effectsTree.setWorkingArea(workingArea);
+    }
+    function setTriggerText(triggerText: string) {
+        triggers.text = 'Trigger' + '\n' + triggerText
     }
 
 Column {
@@ -32,6 +36,8 @@ Column {
             highlighted = !highlighted
             if (!scrollView.triggerSet) {
                 triggerMenu.popup()
+            } else {
+                scrollView.openTrigger();
             }
         }
 
@@ -42,7 +48,10 @@ Column {
                 triggerMenu.x = triggers.x + triggers.width;
                 triggerMenu.y = triggers.height / 2 - triggerMenu.height / 2;
             }
-            onCreateTrigger: scrollView.createTrigger(triggerId)
+            onCreateTrigger: {
+                scrollView.createTrigger(triggerId);
+                triggerSet = true;
+            }
         }
     }
 

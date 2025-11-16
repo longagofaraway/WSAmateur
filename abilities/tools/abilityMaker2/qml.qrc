@@ -31,5 +31,7 @@
         <file>qml/EffectsTree/Effect.qml</file>
         <file>qml/Effect.qml</file>
         <file>qml/EffectsTree/BranchHeader.qml</file>
+        <file>qml/AbilityText.qml</file>
+        <file>qml/Ability.qml</file>
     </qresource>
 </RCC>

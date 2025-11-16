@@ -19,59 +19,21 @@ Window {
         anchors.leftMargin: 10
         anchors.rightMargin: 10
 
-        Column {
-            id: abilityTypeCombo
-            anchors.horizontalCenter: root.horizontalCenter
-            Text {
-                anchors.horizontalCenter: abilityCombo.horizontalCenter
-                text: "Ability type:"
-                font.pointSize: 8
-            }
-            ComboBox {
-                id: abilityCombo
-                currentIndex: -1
-                model: ["Cont", "Auto", "Act", "Event"]
-                onCurrentIndexChanged: {
-                    activationTimes.enabled = (currentIndex == 1);
-                }
+        Connections {
+            target: rootAbility
+            function onComponentChanged(ability) {
+                abilityText.text = root.translate(ability);
             }
         }
 
-        Row {
-            id: abilitySpecs
-            anchors { top: abilityTypeCombo.bottom; topMargin: 20; horizontalCenter: root.horizontalCenter }
-            spacing: 20
-            Column {
-                id: activationTimes
+        Ability {
+            id: rootAbility
+            anchors { top: root.top; left: root.left; right: root.right; bottom: abilityText.top }
+        }
 
-                enabled: false
-
-                Text {
-                    text: "Activates up to:"
-                }
-
-                ComboBox {
-                    model: ["always", "1", "2"]
-                }
-            }
-
-            MultiselectComboBox {
-                anchors.bottom: abilitySpecs.bottom
-                model: ListModel {
-                    ListElement { name: "CxCombo"; selected: false }
-                    ListElement { name: "Brainstorm"; selected: false }
-                    ListElement { name: "Backup"; selected: false }
-                    ListElement { name: "Encore"; selected: false }
-                    ListElement { name: "Assist"; selected: false }
-                    ListElement { name: "Alarm"; selected: false }
-                    ListElement { name: "Experience"; selected: false }
-                    ListElement { name: "Resonance"; selected: false }
-                    ListElement { name: "Bond"; selected: false }
-                    ListElement { name: "Change"; selected: false }
-                    ListElement { name: "Memory"; selected: false }
-                    ListElement { name: "Replay"; selected: false }
-                }
-            }
+        AbilityText {
+            id: abilityText
+            anchors { left: root.left; right: root.right; bottom: root.bottom }
         }
     }
 }

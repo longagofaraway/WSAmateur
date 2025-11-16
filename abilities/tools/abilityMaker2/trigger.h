@@ -24,14 +24,18 @@ private:
 
 public:
     TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker);
-    TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker, const asn::Trigger& trigger);
+    TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker, const std::vector<asn::Trigger>& triggers);
     void init(QQuickItem *parent, QQuickItem *abilityMaker);
     ~TriggerComponent();
+
+signals:
+    void componentChanged(std::vector<asn::Trigger> trigger);
 
 private:
     void fitComponent(QQuickItem* object);
     void setTriggerInQml();
     void createTrigger();
+    std::vector<asn::Trigger> constructTrigger();
 
 private slots:
     void onTriggerTypeChanged(QString);

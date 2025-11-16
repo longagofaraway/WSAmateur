@@ -1,4 +1,6 @@
 set(abilityMakerSources
+    ability.h
+    ability.cpp
     abilityMaker.h
     abilityMaker.cpp
     baseComponent.h
