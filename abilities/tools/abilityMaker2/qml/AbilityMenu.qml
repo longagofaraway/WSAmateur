@@ -20,6 +20,9 @@ ScrollView {
     function setWorkingArea(workingArea) {
         effectsTree.setWorkingArea(workingArea);
     }
+    function passAbilityComponent(abilityComponent) {
+        effectsTree.setAbilityComponent(abilityComponent);
+    }
     function setTriggerText(triggerText: string) {
         triggers.text = 'Trigger' + '\n' + triggerText
     }

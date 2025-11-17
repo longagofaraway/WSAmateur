@@ -13,13 +13,13 @@
 
 
 struct BranchInfo;
+class AbilityComponent;
 
 struct TreeNodeInfo {
     QString id;
     QQuickItem* object;
     asn::Effect& effect;
     std::shared_ptr<BranchInfo> branchInfo;
-    std::shared_ptr<EffectComponent> effectComponent;
     std::vector<std::vector<std::shared_ptr<TreeNodeInfo>>> subBranches;
 };
 
@@ -35,6 +35,7 @@ struct BranchInfo {
 class EffectsTree : public QQuickItem {
     Q_OBJECT
 private:
+    AbilityComponent *abilityComponent_{nullptr};
     std::unordered_map<QString, std::shared_ptr<TreeNodeInfo>> nodeMap_;
     std::vector<asn::Effect> effects_;
     std::vector<std::shared_ptr<TreeNodeInfo>> treeRoot_;
@@ -43,6 +44,10 @@ private:
 
 public:
     Q_INVOKABLE void setWorkingArea(QObject *workingArea);
+    Q_INVOKABLE void setAbilityComponent(QQuickItem *abilityComponent);
+
+signals:
+    void componentChanged(std::vector<asn::Effect> effects);
 
 private:
     void renderTree();

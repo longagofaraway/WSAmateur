@@ -1,5 +1,6 @@
 #include "ability.h"
 
+#include "effectsTree.h"
 #include "trigger.h"
 #include "triggerInit.h"
 #include "language_parser.h"
@@ -16,14 +17,22 @@ void AbilityComponent::createTrigger(QString triggerId, QQuickItem *parent) {
         triggers_.push_back(trigger.value());
         openTrigger(parent);
     } else {
-        currentComponent = std::make_shared<TriggerComponent>(parent, this);
+        currentComponent_ = std::make_shared<TriggerComponent>(parent, this);
     }
 }
 
 void AbilityComponent::openTrigger(QQuickItem *parent) {
     auto triggerComponent = std::make_shared<TriggerComponent>(parent, this, triggers_);
     connect(&*triggerComponent, &TriggerComponent::componentChanged, this, &AbilityComponent::triggersChanged);
-    currentComponent = triggerComponent;
+    currentComponent_ = triggerComponent;
+}
+
+void AbilityComponent::setCurrentComponent(std::shared_ptr<BaseComponent> component) {
+    currentComponent_ = component;
+}
+
+void AbilityComponent::subscribeToEffectsChange(EffectsTree* effectsTree) {
+    connect(effectsTree, &EffectsTree::componentChanged, this, &AbilityComponent::effectsChanged);
 }
 
 void AbilityComponent::triggersChanged(const std::vector<asn::Trigger>& triggers) {
@@ -34,6 +43,13 @@ void AbilityComponent::triggersChanged(const std::vector<asn::Trigger>& triggers
 
     emit componentChanged(constructAbility());
 }
+
+void AbilityComponent::effectsChanged(const std::vector<asn::Effect>& effects) {
+    effects_ = effects;
+
+    emit componentChanged(constructAbility());
+}
+
 
 asn::Ability AbilityComponent::constructAbility() {
     asn::Ability ability;

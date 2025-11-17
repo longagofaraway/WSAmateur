@@ -2,6 +2,7 @@
 
 #include <QQmlContext>
 
+#include "ability.h"
 #include "effect.h"
 #include "effectInit.h"
 #include "language_parser.h"
@@ -65,7 +66,6 @@ void EffectsTree::componentComplete() {
         .object = node,
         .effect = kEmptyEffect,
         .branchInfo = branchInfo,
-        .effectComponent = nullptr
     };
     auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
     nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
@@ -75,6 +75,9 @@ void EffectsTree::componentComplete() {
 
 void EffectsTree::setWorkingArea(QObject *workingArea) {
     workingArea_ = qobject_cast<QQuickItem*>(workingArea);
+}
+void EffectsTree::setAbilityComponent(QQuickItem *abilityComponent) {
+    abilityComponent_ = dynamic_cast<AbilityComponent*>(abilityComponent);
 }
 
 void EffectsTree::renderTree() {
@@ -131,15 +134,13 @@ void EffectsTree::createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& su
         .id = parentNodeId+"header",
         .object = qmlheader,
         .effect = kEmptyEffect,
-        .branchInfo = branchInfo,
-        .effectComponent = nullptr
+        .branchInfo = branchInfo
     };
     TreeNodeInfo nodeInfo {
         .id = nodeId,
         .object = node,
         .effect = kEmptyEffect,
-        .branchInfo = branchInfo,
-        .effectComponent = nullptr
+        .branchInfo = branchInfo
     };
     auto headerTreeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(headerNodeInfo));
     auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
@@ -164,11 +165,12 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
         .effect = node->branchInfo->effects.back(),
         .branchInfo = node->branchInfo
     };
+    std::shared_ptr<EffectComponent> effectComponent;
     if (effect.type != asn::EffectType::NotSpecified) {
         //nodeInfo.effectComponent = std::make_shared<EffectComponent>(workingArea_, this, effect);
-        nodeInfo.effectComponent = std::make_shared<EffectComponent>(workingArea_, this);
+        effectComponent = std::make_shared<EffectComponent>(workingArea_, this);
     } else {
-        nodeInfo.effectComponent = std::make_shared<EffectComponent>(workingArea_, this);
+        effectComponent = std::make_shared<EffectComponent>(workingArea_, this);
     }
     if (effect.type == asn::EffectType::PayCost) {
         nodeInfo.subBranches.resize(2);
@@ -180,3 +182,4 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     node->branchInfo->treeBranch.insert(node->branchInfo->treeBranch.end() - 1, treeNodeInfo);
     renderTree();
 }
+

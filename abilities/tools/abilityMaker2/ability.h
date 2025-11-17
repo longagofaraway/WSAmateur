@@ -10,6 +10,8 @@
 
 Q_DECLARE_METATYPE(asn::Ability);
 
+class EffectsTree;
+
 class AbilityComponent : public QQuickItem {
     Q_OBJECT
 private:
@@ -20,11 +22,14 @@ private:
     std::vector<asn::Keyword> keywords_;
     std::vector<asn::Effect> effects_;
 
-    std::shared_ptr<BaseComponent> currentComponent;
+    std::shared_ptr<BaseComponent> currentComponent_;
 
 public:
     Q_INVOKABLE void createTrigger(QString triggerId, QQuickItem *parent);
     Q_INVOKABLE void openTrigger(QQuickItem *parent);
+
+    void setCurrentComponent(std::shared_ptr<BaseComponent> component);
+    void subscribeToEffectsChange(EffectsTree* effectsTree);
 
 signals:
     void componentChanged(asn::Ability ability);
@@ -37,6 +42,7 @@ private:
 
 private slots:
     void triggersChanged(const std::vector<asn::Trigger>& trigger);
+    void effectsChanged(const std::vector<asn::Effect>& effects);
 
 protected:
     void componentComplete() override;

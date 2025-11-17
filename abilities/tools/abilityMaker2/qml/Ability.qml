@@ -12,6 +12,10 @@ AbilityComponent {
         abilityMenu.setTriggerText(triggerText);
     }
 
+    Component.onCompleted: {
+        abilityMenu.passAbilityComponent(abilityComponent)
+    }
+
     Column {
         id: abilityTypeCombo
         anchors.horizontalCenter: abilityComponent.horizontalCenter
@@ -73,6 +77,9 @@ AbilityComponent {
 
         onCreateTrigger: {
             abilityComponent.createTrigger(triggerId, workingArea);
+        }
+        onOpenTrigger: {
+            abilityComponent.openTrigger(workingArea);
         }
     }
 
