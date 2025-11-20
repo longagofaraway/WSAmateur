@@ -15,17 +15,20 @@ public:
     using VarEffect = decltype(asn::Effect::effect);
 
 private:
-    QQuickItem *abilityMaker_;
+    QString nodeId_;
     ComponentManager componentManager_;
 
     asn::EffectType type_;
     VarEffect effect_;
 
 public:
-    EffectComponent(QQuickItem *parent, QQuickItem *abilityMaker);
-    EffectComponent(QQuickItem *parent, QQuickItem *abilityMaker, const asn::Effect& effect);
-    void init(QQuickItem *parent, QQuickItem *abilityMaker);
+    EffectComponent(QString nodeId, QQuickItem *parent);
+    EffectComponent(QString nodeId, QQuickItem *parent, const asn::Effect& effect);
+    void init(QQuickItem *parent);
     ~EffectComponent();
+
+signals:
+    void componentChanged(QString nodeId, asn::EffectType type, VarEffect effect);
 
 private:
     void createEffect();

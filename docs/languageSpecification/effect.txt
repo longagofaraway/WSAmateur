@@ -112,7 +112,7 @@ AttributeGain {
     Multiplier,
     Nothing
   },
-  duration UInt8
+  duration Duration
 }
 
 enum ValueType {
@@ -191,7 +191,7 @@ AbilityGain {
   target Target,
   number UInt8, // how much abilities the card gets
   abilities Array of Ability,
-  duration UInt8
+  duration Duration
 }
 
 PerformEffect {
@@ -258,7 +258,7 @@ DealDamage {
 CannotUseBackupOrEvent {
   what BackupOrEvent,
   player Player,
-  duration UInt8
+  duration Duration
 }
 
 enum BackupOrEvent {
@@ -275,7 +275,7 @@ SwapCards {
 CannotAttack {
   target Target,
   type AttackType,
-  duration UInt8
+  duration Duration
 }
 
 AddMarker {
@@ -319,26 +319,26 @@ Shuffle {
 
 CannotBecomeReversed {
   target Target,
-  duration UInt8
+  duration Duration
 }
 
 OpponentAutoCannotDealDamage {
-  duration UInt8
+  duration Duration
 }
 
 CannotMove {
   target Target,
-  duration UInt8
+  duration Duration
 }
 
 CannotStand {
   target Target,
-  duration UInt8
+  duration Duration
 }
 
 SideAttackWithoutPenalty {
   target Target,
-  duration UInt8
+  duration Duration
 }
 
 PutOnStageRested {
@@ -349,24 +349,24 @@ PutOnStageRested {
 
 CannotBeChosen {
   target Target,
-  duration UInt8
+  duration Duration
 }
 
 TriggerIconGain {
   target Target,
   triggerIcon TriggerIcon,
-  duration UInt8
+  duration Duration
 }
 
 CanPlayWithoutColorRequirement {
   target Target,
-  duration UInt8
+  duration Duration
 }
 
 // i.e. DBG/W87-057 Act ability
 DelayedAbility {
   ability AutoAbility,
-  duration UInt8 // ability will cease to exist after that time
+  duration Duration // ability will cease to exist after that time
 }
 
 // do not add NonMandatory here
@@ -393,7 +393,7 @@ TraitModification {
   target TargetAndPlace,
   traitType TraitType,
   traits Array of String,
-  duration UInt8
+  duration Duration
 }
 
 OtherEffect {

@@ -15,7 +15,6 @@ public:
     using VarTrigger = decltype(asn::Trigger::trigger);
 
 private:
-    QQuickItem *abilityMaker_;
     std::vector<QQuickItem*> components_;
     ComponentManager componentManager_;
 
@@ -23,9 +22,9 @@ private:
     VarTrigger trigger_;
 
 public:
-    TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker);
-    TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker, const std::vector<asn::Trigger>& triggers);
-    void init(QQuickItem *parent, QQuickItem *abilityMaker);
+    TriggerComponent(QQuickItem *parent);
+    TriggerComponent(QQuickItem *parent, const std::vector<asn::Trigger>& triggers);
+    void init(QQuickItem *parent);
     ~TriggerComponent();
 
 signals:

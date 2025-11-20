@@ -17,12 +17,12 @@ void AbilityComponent::createTrigger(QString triggerId, QQuickItem *parent) {
         triggers_.push_back(trigger.value());
         openTrigger(parent);
     } else {
-        currentComponent_ = std::make_shared<TriggerComponent>(parent, this);
+        currentComponent_ = std::make_shared<TriggerComponent>(parent);
     }
 }
 
 void AbilityComponent::openTrigger(QQuickItem *parent) {
-    auto triggerComponent = std::make_shared<TriggerComponent>(parent, this, triggers_);
+    auto triggerComponent = std::make_shared<TriggerComponent>(parent, triggers_);
     connect(&*triggerComponent, &TriggerComponent::componentChanged, this, &AbilityComponent::triggersChanged);
     currentComponent_ = triggerComponent;
 }

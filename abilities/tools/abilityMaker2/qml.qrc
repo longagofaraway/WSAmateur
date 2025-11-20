@@ -33,5 +33,9 @@
         <file>qml/EffectsTree/BranchHeader.qml</file>
         <file>qml/AbilityText.qml</file>
         <file>qml/Ability.qml</file>
+        <file>qml/BasicTypes/AttributeType.qml</file>
+        <file>qml/BasicTypes/ValueType.qml</file>
+        <file>qml/BasicTypes/BasicTextInput.qml</file>
+        <file>qml/BasicTypes/Duration.qml</file>
     </qresource>
 </RCC>

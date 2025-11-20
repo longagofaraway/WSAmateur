@@ -11,6 +11,12 @@ enum class AbilityType : uint8_t {
     Event
 };
 
+enum class Duration : uint8_t {
+    Continuous = 0,
+    One,
+    Two
+};
+
 enum class State : uint8_t {
     Standing = 1,
     Rested,

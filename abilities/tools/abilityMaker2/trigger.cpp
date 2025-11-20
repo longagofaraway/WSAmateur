@@ -10,22 +10,21 @@
 #include "triggerInit.h"
 
 
-TriggerComponent::TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker)
+TriggerComponent::TriggerComponent(QQuickItem *parent)
     : BaseComponent("Trigger", parent) {
-    init(parent, abilityMaker);
+    init(parent);
 }
 
-TriggerComponent::TriggerComponent(QQuickItem *parent, QQuickItem *abilityMaker, const std::vector<asn::Trigger>& triggers)
+TriggerComponent::TriggerComponent(QQuickItem *parent, const std::vector<asn::Trigger>& triggers)
     : BaseComponent("Trigger", parent) {
-    init(parent, abilityMaker);
+    init(parent);
     type_ = triggers.at(0).type;
     trigger_ = triggers.at(0).trigger;
     QMetaObject::invokeMethod(qmlObject, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
     createTrigger();
 }
 
-void TriggerComponent::init(QQuickItem *parent, QQuickItem *abilityMaker) {
-    abilityMaker_ = abilityMaker;
+void TriggerComponent::init(QQuickItem *parent) {
     qvariant_cast<QObject*>(qmlObject->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
     connect(qmlObject, SIGNAL(triggerTypeChanged(QString)), this, SLOT(onTriggerTypeChanged(QString)));
 }

@@ -6,22 +6,21 @@
 #include "language_parser.h"
 #include "triggerInit.h"
 
-EffectComponent::EffectComponent(QQuickItem *parent, QQuickItem *abilityMaker)
-    : BaseComponent("Effect", parent) {
-    init(parent, abilityMaker);
+EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent)
+    : BaseComponent("Effect", parent), nodeId_(nodeId) {
+    init(parent);
 }
 
-EffectComponent::EffectComponent(QQuickItem *parent, QQuickItem *abilityMaker, const asn::Effect& effect)
+EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent, const asn::Effect& effect)
     : BaseComponent("Effect", parent) {
-    init(parent, abilityMaker);
+    init(parent);
     type_ = effect.type;
     effect_ = effect.effect;
     QMetaObject::invokeMethod(qmlObject, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
     createEffect();
 }
 
-void EffectComponent::init(QQuickItem *parent, QQuickItem *abilityMaker) {
-    abilityMaker_ = abilityMaker;
+void EffectComponent::init(QQuickItem *parent) {
     qvariant_cast<QObject*>(qmlObject->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
     connect(qmlObject, SIGNAL(effectTypeChanged(QString)), this, SLOT(onEffectTypeChanged(QString)));
 }

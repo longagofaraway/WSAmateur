@@ -15,6 +15,8 @@
 struct BranchInfo;
 class AbilityComponent;
 
+using VarEffect = decltype(asn::Effect::effect);
+
 struct TreeNodeInfo {
     QString id;
     QQuickItem* object;
@@ -56,6 +58,7 @@ private:
 
 private slots:
     void createEffect(QString,QString);
+    void effectChanged(QString nodeId, asn::EffectType type, const VarEffect& effect);
 
 protected:
     void componentComplete() override;

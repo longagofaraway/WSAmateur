@@ -3,6 +3,6 @@
 #include <QQuickItem>
 #include <QString>
 
-QString getBasicComponentQmlPath(QString componentName);
+QString getBasicComponentQmlPath(QString componentTypeName);
 
 //void connectComponent(QString componentName, QQuickItem *qmlObject, QObject* object);

@@ -1,5 +1,6 @@
 #include "componentManager.h"
 
+#include <QDebug>
 #include <QQmlContext>
 
 #include "componentHelper.h"
@@ -120,6 +121,8 @@ QQuickItem* ComponentManager::createQmlComponent(QString name, QString displayNa
             QObject::connect(linkObject, &BaseComponent::setBool, this, qmlBoolValueSetter);
         }
         connections_.insert(name);
+    } else {
+        qWarning() << "did not find component to create";
     }
     return object;
 }

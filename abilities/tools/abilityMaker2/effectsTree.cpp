@@ -157,7 +157,7 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     auto& node = nodeMap_.at(nodeId);
     auto effect = getEffectFromPreset(effectId);
     QString newNodeId = node->branchInfo->branchId + QString::number(node->branchInfo->sequenceNextVal++);
-    auto newNode = createQmlObject("EffectsTree/Effect", this, nodeId, "selectMode", QString::fromStdString(toString(effect.type)));
+    auto newNode = createQmlObject("EffectsTree/Effect", this, newNodeId, "selectMode", QString::fromStdString(toString(effect.type)));
     node->branchInfo->effects.push_back(effect);
     TreeNodeInfo nodeInfo {
         .id = newNodeId,
@@ -168,10 +168,12 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     std::shared_ptr<EffectComponent> effectComponent;
     if (effect.type != asn::EffectType::NotSpecified) {
         //nodeInfo.effectComponent = std::make_shared<EffectComponent>(workingArea_, this, effect);
-        effectComponent = std::make_shared<EffectComponent>(workingArea_, this);
+        effectComponent = std::make_shared<EffectComponent>(newNodeId, workingArea_, effect);
     } else {
-        effectComponent = std::make_shared<EffectComponent>(workingArea_, this);
+        effectComponent = std::make_shared<EffectComponent>(newNodeId, workingArea_);
     }
+    connect(&*effectComponent, &EffectComponent::componentChanged, this, &EffectsTree::effectChanged);
+    abilityComponent_->setCurrentComponent(effectComponent);
     if (effect.type == asn::EffectType::PayCost) {
         nodeInfo.subBranches.resize(2);
         createSubBranch(nodeInfo.subBranches[0], newNodeId, "If you do", getEffects(nodeInfo.effect, 1));
@@ -181,5 +183,17 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
     node->branchInfo->treeBranch.insert(node->branchInfo->treeBranch.end() - 1, treeNodeInfo);
     renderTree();
+}
+
+void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarEffect& effect) {
+    if(!nodeMap_.contains(nodeId)) {
+        qWarning() << nodeId << " node not found in effectChanged";
+        return;
+    }
+    auto& node = nodeMap_.at(nodeId);
+    node->effect.type = type;
+    node->effect.effect = effect;
+
+    emit componentChanged(effects_);
 }
 

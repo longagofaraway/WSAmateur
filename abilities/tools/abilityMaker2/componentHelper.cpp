@@ -4,52 +4,64 @@
 
 #include "abilities.h"
 
-QString getBasicComponentQmlPath(QString componentName) {
-    if (componentName == "Zone") {
+QString getBasicComponentQmlPath(QString componentTypeName) {
+    if (componentTypeName == "Zone") {
         return "BasicTypes/Zone";
     }
-    if (componentName == "Phase") {
+    if (componentTypeName == "Phase") {
         return "BasicTypes/Phase";
     }
-    if (componentName == "Player") {
+    if (componentTypeName == "Player") {
         return "BasicTypes/Player";
     }
-    if (componentName == "State") {
+    if (componentTypeName == "State") {
         return "BasicTypes/State";
     }
-    if (componentName == "AttackType") {
+    if (componentTypeName == "AttackType") {
         return "BasicTypes/AttackType";
     }
-    if (componentName == "AbilityType") {
+    if (componentTypeName == "AbilityType") {
         return "BasicTypes/AbilityType";
     }
-    if (componentName == "Target") {
+    if (componentTypeName == "AttributeType") {
+        return "BasicTypes/AttributeType";
+    }
+    if (componentTypeName == "ValueType") {
+        return "BasicTypes/ValueType";
+    }
+    if (componentTypeName == "Target") {
         return "Target";
     }
-    if (componentName == "Bool") {
+    if (componentTypeName == "Bool") {
         return "BasicTypes/BoolCheckBox";
     }
+    if (componentTypeName == "Duration") {
+        return "BasicTypes/Duration";
+    }
+    if (componentTypeName == "Int32") {
+        return "BasicTypes/BasicTextInput";
+    }
 
-    if (componentName == "CardSpecifierCardType") {
+    if (componentTypeName == "CardSpecifierCardType") {
         return "BasicTypes/CardSpecifierCardType";
     }
-    if (componentName == "CardSpecifierOwner") {
+    if (componentTypeName == "CardSpecifierOwner") {
         return "BasicTypes/CardSpecifierOwner";
     }
-    if (componentName == "CardSpecifierState") {
+    if (componentTypeName == "CardSpecifierState") {
         return "BasicTypes/CardSpecifierState";
     }
-    if (componentName == "CardSpecifierTrait" ||
-            componentName == "CardSpecifierExactName" ||
-            componentName == "CardSpecifierNameContains") {
+    if (componentTypeName == "CardSpecifierTrait" ||
+            componentTypeName == "CardSpecifierExactName" ||
+            componentTypeName == "CardSpecifierNameContains") {
         return "BasicTypes/CardSpecifierTextInput";
     }
-    if (componentName == "CardSpecifierLevel" ||
-            componentName == "CardSpecifierCost" ||
-            componentName == "CardSpecifierPower") {
+    if (componentTypeName == "CardSpecifierLevel" ||
+            componentTypeName == "CardSpecifierCost" ||
+            componentTypeName == "CardSpecifierPower") {
         return "BasicTypes/CardSpecifierNumber";
     }
-    throw std::runtime_error("unimplemented componentName");
+    throw std::runtime_error("unimplemented componentTypeName");
 }
 
 /*void connectComponent(QString componentName, QQuickItem *qmlObject, QObject* object) {

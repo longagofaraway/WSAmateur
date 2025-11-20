@@ -128,6 +128,12 @@ enum TraitModificationType {
   traitLoss = 1
 }
 
+enum Duration {
+  continuous = 0,
+  one = 1,
+  two = 2
+}
+
 ###
 
 Array Of X {

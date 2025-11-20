@@ -288,6 +288,7 @@ def addStructBody(fieldType, tokens, current, cpp):
             code += array_code
         else:
             indirection = ''
+            closing = ''
             if memberName == 'target' and (fieldType == 'ForEachMultiplier' or 
                                            fieldType == 'AddLevelMultiplier' or
                                            fieldType == 'AddTriggerNumberMultiplier'):
@@ -296,13 +297,16 @@ def addStructBody(fieldType, tokens, current, cpp):
                 indirection = '*'
             if memberName == 'effect' and fieldType == 'CostSubstitution':
                 indirection = '*'
+            if memberName == 'duration' and memberType == 'Duration':
+                indirection = 'static_cast<Duration>('
+                closing = ')'
                 
             code += '''\n\
     JsonRecord record{memberName};
     record{memberName}.key = "{memberName}";
-    record{memberName}.value = serialize{memberType}({indirection}field.{memberName}, offset);
+    record{memberName}.value = serialize{memberType}({indirection}field.{memberName}{closing}, offset);
     records.push_back(record{memberName});
-'''.format(memberType=memberType, memberName=memberName, indirection=indirection)
+'''.format(memberType=memberType, memberName=memberName, indirection=indirection, closing=closing)
     code += '''\n\
     r += printRecords(records, offset);
     offset -= 4;
