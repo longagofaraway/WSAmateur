@@ -113,7 +113,7 @@ std::string printTarget(const Target &t, bool plural, bool nominative, std::opti
             s += "it ";
         else
             s += nominative ? "they " : "them ";
-    } else if (t.type == TargetType::SpecificCards) {
+    } else if (t.type == TargetType::SpecificCards && t.targetSpecification) {
         const auto &spec = *t.targetSpecification;
         bool article = true;
         if (spec.mode == TargetMode::AllOther && spec.number.value != 1) {

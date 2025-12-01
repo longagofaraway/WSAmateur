@@ -25,7 +25,7 @@ QQuickItem* createObject(const QString &moduleName, QQuickItem *parent, QString 
 CardSpecifierComponent::CardSpecifierComponent(QQuickItem *parent, QString componentId)
     : BaseComponent("CardSpecifier", parent, componentId) {
     componentId_ = componentId;
-    connect(qmlObject, SIGNAL(removeCardSpecifier()), this, SLOT(deleteItself()));
+    connect(qmlObject_, SIGNAL(removeCardSpecifier()), this, SLOT(deleteItself()));
 }
 
 CardSpecifierComponent::~CardSpecifierComponent() {
@@ -41,7 +41,7 @@ void CardSpecifierComponent::setCardSpecifier(const asn::CardSpecifier& cardSpec
 
     auto cardSpecifierTypeName = QString::fromStdString(toString(cardSpecifier.type));
     qDebug() << "creating specifier " << cardSpecifierTypeName;
-    qmlSpecifier_ = createObject(getBasicComponentQmlPath("CardSpecifier"+cardSpecifierTypeName), qmlObject, cardSpecifierTypeName);
+    qmlSpecifier_ = createObject(getBasicComponentQmlPath("CardSpecifier"+cardSpecifierTypeName), qmlObject_, cardSpecifierTypeName);
     connect(qmlSpecifier_, SIGNAL(valueChanged(QString)), this, SLOT(valueChanged(QString)));
     switch (cardSpecifier.type) {
     case asn::CardSpecifierType::CardType: {

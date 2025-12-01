@@ -16,6 +16,7 @@ public:
 
 private:
     QString nodeId_;
+    std::vector<QQuickItem*> components_;
     ComponentManager componentManager_;
 
     asn::EffectType type_;
@@ -31,7 +32,11 @@ signals:
     void componentChanged(QString nodeId, asn::EffectType type, VarEffect effect);
 
 private:
+    void fitComponent(QQuickItem* object);
     void createEffect();
+
+private slots:
+    void onEffectTypeChanged(QString);
 
 };
 

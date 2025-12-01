@@ -2,10 +2,9 @@
 
 #include <QQmlContext>
 
-BaseComponent::BaseComponent(const QString &moduleName, QQuickItem *parent, QString componentId) {
+BaseComponent::BaseComponent(const QString &moduleName, QQuickItem *parent, QString componentId)
+    : componentId_(componentId) {
     init(moduleName, parent, componentId);
-
-    //connect(qmlObject, SIGNAL(componentReady()), this, SLOT(componentReady()));
 }
 
 BaseComponent::BaseComponent(const QString &moduleName, QQuickItem *parent) {
@@ -17,11 +16,11 @@ void BaseComponent::init(const QString &moduleName, QQuickItem *parent, QString 
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
     context->setContextProperty("componentId", componentId);
     QObject *obj = component.create(context);
-    qmlObject = qobject_cast<QQuickItem*>(obj);
-    qmlObject->setParentItem(parent);
-    qmlObject->setParent(parent);
+    qmlObject_ = qobject_cast<QQuickItem*>(obj);
+    qmlObject_->setParentItem(parent);
+    qmlObject_->setParent(parent);
 }
 
 BaseComponent::~BaseComponent() {
-    qmlObject->deleteLater();
+    qmlObject_->deleteLater();
 }

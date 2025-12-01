@@ -32,9 +32,15 @@ set(langSpecSource
     effect.txt
     trigger.txt
     card.txt
+    condition.txt
+    multiplier.txt
     basicTypes.txt)
 
+set(helperFilesSource
+    trigger.txt)
+
 list(TRANSFORM langSpecSource PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)
+list(TRANSFORM helperFilesSource PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)
 
 add_custom_command(
     OUTPUT lang_spec.h
@@ -42,9 +48,15 @@ add_custom_command(
     DEPENDS ${langSpecSource} copy_lang_spec.py
     VERBATIM)
 
+add_custom_command(
+    OUTPUT ability_maker_gen.cpp ability_maker_gen.h
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/generate_helper_files.py ${helperFilesSource}
+    DEPENDS ${helperFilesSource} generate_helper_files.py
+    VERBATIM)
+
 find_package(Qt5 COMPONENTS Quick REQUIRED)
 
-add_executable(AbilityMaker2 WIN32 ${abilityMakerSources} lang_spec.h)
+add_executable(AbilityMaker2 WIN32 ${abilityMakerSources} lang_spec.h ability_maker_gen.cpp ability_maker_gen.h)
 
 target_include_directories(AbilityMaker2
     PRIVATE
@@ -58,6 +70,7 @@ if (UNIX)
   target_compile_options(AbilityMaker2 PRIVATE -fcoroutines)
 endif (UNIX)
 
+target_include_directories(AbilityMaker2 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(AbilityMaker2
   PRIVATE Qt5::Core Qt5::Quick dbManager languageParser)
 

@@ -1,6 +1,7 @@
 #include "triggerInit.h"
 #include "trigger.h"
 
+#include "ability_maker_gen.h"
 #include "language_parser.h"
 
 
@@ -225,96 +226,7 @@ std::optional<asn::Trigger> getTriggerFromPreset(QString preset) {
 }
 
 void TriggerComponent::setTriggerInQml() {
-    switch (type_) {
-    case asn::TriggerType::OnZoneChange: {
-        auto &tr = std::get<asn::ZoneChangeTrigger>(trigger_);
-        //tr.target.push_back(defaultTarget);
-        emit setZone(QString::fromStdString(toString(tr.from)), "Zone");
-        emit setZone(QString::fromStdString(toString(tr.to)), "Zone2");
-        break;
-    }
-    /*case asn::TriggerType::OnPlay: {
-        auto tr = asn::OnPlayTrigger();
-        tr.target = defaultTarget;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnStateChange: {
-        auto tr = asn::StateChangeTrigger();
-        tr.target = defaultTarget;
-        tr.state = asn::State::Reversed;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnAttack: {
-        auto tr = asn::OnAttackTrigger();
-        tr.target = defaultTarget;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnBackupOfThis: {
-        trigger = std::monostate();
-        break;
-    }
-    case asn::TriggerType::OnTriggerReveal: {
-        auto tr = asn::TriggerRevealTrigger();
-        asn::CardSpecifier spec{
-            .type = asn::CardSpecifierType::CardType,
-            .specifier = asn::CardType::Climax
-        };
-        tr.card.cardSpecifiers.push_back(spec);
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnPhaseEvent: {
-        auto tr = asn::PhaseTrigger();
-        tr.phase = asn::Phase::ClimaxPhase;
-        tr.player = asn::Player::Player;
-        tr.state = asn::PhaseState::Start;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnEndOfThisCardsAttack: {
-        trigger = std::monostate();
-        break;
-    }
-    case asn::TriggerType::OnOppCharPlacedByStandbyTriggerReveal: {
-        trigger = std::monostate();
-        break;
-    }
-    case asn::TriggerType::OnBeingAttacked: {
-        auto tr = asn::OnBeingAttackedTrigger();
-        tr.target = defaultTarget;
-        tr.attackType = asn::AttackType::Frontal;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnDamageCancel: {
-        auto tr = asn::OnDamageCancelTrigger();
-        tr.damageDealer = defaultTarget;
-        tr.cancelled = true;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnDamageTakenCancel: {
-        auto tr = asn::OnDamageTakenCancelTrigger();
-        tr.cancelled = false;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnPayingCost: {
-        auto tr = asn::OnPayingCostTrigger();
-        tr.abilityType = asn::AbilityType::Auto;
-        tr.target = defaultTarget;
-        trigger = tr;
-        break;
-    }
-    case asn::TriggerType::OnActAbillity: {
-        auto tr = asn::OnActAbillityTrigger();
-        tr.player = asn::Player::Player;
-        trigger = tr;
-        break;
-    }*/
-    }
+    gen::ComponentMediator helper(this);
+    helper.setTriggerInQml(type_, trigger_);
 }
 

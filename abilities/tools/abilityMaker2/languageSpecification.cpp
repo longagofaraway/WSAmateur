@@ -1,5 +1,6 @@
 #include "languageSpecification.h"
 
+#include <set>
 #include <sstream>
 
 #include <QDebug>
@@ -93,6 +94,73 @@ const QHash<QString, std::string> typeToStruct = {
 }
 
 LanguageSpecification::LanguageSpecification() {
+    typeToStruct_ = QHash<QString, std::string>{
+        // Effect
+        {"AttributeGain", "AttributeGain"},
+        {"ChooseCard", "ChooseCard"},
+        {"RevealCard", "RevealCard"},
+        {"MoveCard", "MoveCard"},
+        {"SearchCard", "SearchCard"},
+        {"PayCost", "PayCost"},
+        {"AbilityGain", "AbilityGain"},
+        {"MoveWrToDeck", "MoveWrToDeck"},
+        {"FlipOver", "FlipOver"},
+        {"Backup", "Backup"},
+        {"TriggerCheckTwice", "Empty"},
+        {"Look", "Look"},
+        {"NonMandatory", "NonMandatory"},
+        {"EarlyPlay", "Empty"},
+        {"CannotPlay", "Empty"},
+        {"PerformEffect", "PerformEffect"},
+        {"ChangeState", "ChangeState"},
+        {"DealDamage", "DealDamage"},
+        {"CannotUseBackupOrEvent", "CannotUseBackupOrEvent"},
+        {"DrawCard", "DrawCard"},
+        {"SwapCards", "SwapCards"},
+        {"CannotAttack", "CannotAttack"},
+        {"CharAutoCannotDealDamage", ""},
+        {"OpponentAutoCannotDealDamage", "OpponentAutoCannotDealDamage"},
+        {"CannotBecomeReversed", "CannotBecomeReversed"},
+        {"StockSwap", "StockSwap"},
+        {"AddMarker", "AddMarker"},
+        {"Bond", "Bond"},
+        {"CannotMove", "CannotMove"},
+        {"PerformReplay", "PerformReplay"},
+        {"Replay", "Replay"},
+        {"SideAttackWithoutPenalty", "SideAttackWithoutPenalty"},
+        {"Standby", "Empty"},
+        {"Shuffle", "Shuffle"},
+        {"PutOnStageRested", "PutOnStageRested"},
+        {"RemoveMarker", "RemoveMarker"},
+        {"CannotStand", "CannotStand"},
+        {"CannotBeChosen", "CannotBeChosen"},
+        {"TriggerIconGain", "TriggerIconGain"},
+        {"CanPlayWithoutColorRequirement", "CanPlayWithoutColorRequirement"},
+        {"ShotTriggerDamage", "Empty"},
+        {"DelayedAbility", "DelayedAbility"},
+        {"CostSubstitution", "CostSubstitution"},
+        {"SkipPhase", "SkipPhase"},
+        {"ChooseTrait", "ChooseTrait"},
+        {"TraitModification", "TraitModification"},
+
+        // Card
+        {"CardType", "CardType"},
+        {"Owner", "Player"},
+        {"Trait", "Trait"},
+        {"ExactName", "ExactName"},
+        {"NameContains", "NameContains"},
+        {"Level", "Level"},
+        {"LevelHigherThanOpp", "Empty"},
+        {"Color", "Color"},
+        {"Cost", "CostSpecifier"},
+        {"TriggerIcon", "TriggerIcon"},
+        {"HasMarker", "Empty"},
+        {"Power", "Power"},
+        {"StandbyTarget", "Empty"},
+        {"LevelWithMultiplier", "LevelWithMultiplier"},
+        {"SumOfLevelsLessThanDiffNamedEventsInMemory", "Empty"},
+        {"State", "State"}
+    };
     std::istringstream ss(kLangSpec);
     std::string line;
 
@@ -149,6 +217,42 @@ LanguageSpecification::LanguageSpecification() {
         parsed_[lastToken] = components;
     };
 
+    auto parseRelation = [&, this]() {
+        int braces_count = 1;
+        std::set<char> punctuation{',',':'};
+        while (std::getline(ss, line))  {
+            std::istringstream linestream(line);
+            std::string token;
+            std::vector<std::string> tokens;
+            while(std::getline(linestream, token, ' ')) {
+                if (token.empty()) continue;
+                if (punctuation.contains(token.back())) token.pop_back();
+                if (token == "{") braces_count++;
+                else if (token == "}") braces_count--;
+                tokens.push_back(token);
+            }
+
+            if (braces_count == 0) break;
+
+            if (tokens.size() <= 1) {
+                continue;
+            }
+
+            auto type = QString::fromStdString(tokens[0]);
+            type.front() = type.front().toUpper();
+            auto structName = tokens[1];
+            if (lastToken == "Trigger") {
+                triggersMap_[type] = structName;
+            } else if (lastToken == "Effect") {
+                effectsMap_[type] = structName;
+            } else if (lastToken == "Condition") {
+                conditionsMap_[type] = structName;
+            } else if (lastToken == "CardSpecifier") {
+                cardsMap_[type] = structName;
+            }
+        }
+    };
+
     auto parseEnum = [&, this]() {
         std::vector<LangComponent> components;
         LangComponent enum_component{
@@ -176,9 +280,14 @@ LanguageSpecification::LanguageSpecification() {
         }
 
         if (line.starts_with("enum")) {
-            lastToken = line.substr(5, line.find(' '));
+            lastToken = line.substr(5, line.find(' ', 5)-5);
             parseEnum();
             skipBlock();
+            continue;
+        }
+        if (line.starts_with("relation")) {
+            lastToken = line.substr(9, line.find(' ', 9)-9);
+            parseRelation();
             continue;
         }
 
@@ -190,6 +299,10 @@ LanguageSpecification::LanguageSpecification() {
 
         parseStruct();
     }
+    typeToStruct_.insert(triggersMap_);
+    typeToStruct_.insert(effectsMap_);
+    typeToStruct_.insert(conditionsMap_);
+    typeToStruct_.insert(cardsMap_);
 }
 
 LanguageSpecification& LanguageSpecification::get() {
@@ -198,11 +311,11 @@ LanguageSpecification& LanguageSpecification::get() {
 }
 
 std::vector<LangComponent> LanguageSpecification::getComponents(const QString typeName) {
-    if (!typeToStruct.contains(typeName)) {
+    if (!typeToStruct_.contains(typeName)) {
         qDebug() << "typeName " << typeName << " not found";
         return {};
     }
-    auto componentName = typeToStruct[typeName];
+    auto componentName = typeToStruct_[typeName];
     if (parsed_.contains(componentName)) {
         return parsed_[componentName];
     }

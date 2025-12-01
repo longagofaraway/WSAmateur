@@ -37,5 +37,6 @@
         <file>qml/BasicTypes/ValueType.qml</file>
         <file>qml/BasicTypes/BasicTextInput.qml</file>
         <file>qml/BasicTypes/Duration.qml</file>
+        <file>qml/Card.qml</file>
     </qresource>
 </RCC>

@@ -4,7 +4,7 @@
 
 #include "languageSpecification.h"
 #include "language_parser.h"
-#include "triggerInit.h"
+#include "effectInit.h"
 
 EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent)
     : BaseComponent("Effect", parent), nodeId_(nodeId) {
@@ -16,22 +16,34 @@ EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent, const asn::
     init(parent);
     type_ = effect.type;
     effect_ = effect.effect;
-    QMetaObject::invokeMethod(qmlObject, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
+    QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
     createEffect();
 }
 
 void EffectComponent::init(QQuickItem *parent) {
-    qvariant_cast<QObject*>(qmlObject->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
-    connect(qmlObject, SIGNAL(effectTypeChanged(QString)), this, SLOT(onEffectTypeChanged(QString)));
+    qvariant_cast<QObject*>(qmlObject_->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
+    connect(qmlObject_, SIGNAL(effectTypeChanged(QString)), this, SLOT(onEffectTypeChanged(QString)));
 }
 
-EffectComponent::~EffectComponent() {
-    /*for (auto *component: components_) {
-        component->deleteLater();
-    }*/
+EffectComponent::~EffectComponent() {}
+
+void EffectComponent::fitComponent(QQuickItem* object) {
+    if (components_.empty()) {
+        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("left", qmlObject_->property("left"));
+        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("leftMargin", QVariant(50));
+        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("top", qmlObject_->property("top"));
+        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("topMargin", QVariant(130));
+    } else {
+        auto *lastObject = components_.back();
+        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("left", lastObject->property("right"));
+        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("leftMargin", QVariant(10));
+        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("top", lastObject->property("top"));
+    }
+    components_.push_back(object);
 }
 
 void EffectComponent::createEffect() {
+    components_.clear();
     componentManager_.clear();
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponents(QString::fromStdString(toString(type_)));
@@ -39,9 +51,16 @@ void EffectComponent::createEffect() {
     for (const auto& comp: components) {
         QString component_id = comp.type + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
         types.insert(comp.type.toStdString());
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject, this);
-        //fitComponent(object);
+        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this);
+        fitComponent(object);
     }
 
     //setTriggerInQml();
+}
+
+void EffectComponent::onEffectTypeChanged(QString type) {
+    qDebug() << "changing effect type";
+    type_ = parse(type.toStdString(), formats::To<asn::EffectType>{});
+    effect_ = getDefaultEffect(type_);
+    createEffect();
 }

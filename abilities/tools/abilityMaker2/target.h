@@ -27,9 +27,6 @@ public:
 
     void setTarget(const asn::Target&);
 
-signals:
-    void targetReady(const asn::Target&);
-
 private slots:
     void onCreateCardSpecifier(QString cardSpecifierType, QString value);
     void deleteCardSpecifier(QString componentId);

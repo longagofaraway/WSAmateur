@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QQmlContext>
 
+#include "ability_maker_gen.h"
 #include "componentHelper.h"
 #include "cardSpecifier.h"
 #include "target.h"
@@ -34,26 +35,29 @@ QQuickItem* ComponentManager::createComponent(QString name, QString displayName,
 }
 
 QQuickItem* ComponentManager::createCppComponent(QString name, QString displayName, QString id, QQuickItem *parent, BaseComponent* linkObject) {
+    auto creator = std::make_shared<gen::ComponentMediator>(linkObject);
     if (name == "Target") {
-        cppComponents_[id.toStdString()] = std::make_unique<TargetComponent>(parent, id, displayName);
-        auto *component = cppComponents_[id.toStdString()].get();
+        CppComponentPack pack{.component = std::make_unique<TargetComponent>(parent, id, displayName), .creator = creator};
+        cppComponents_[id] = std::move(pack);
+        auto *component = cppComponents_[id].component.get();
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setTarget, component, [=](const asn::Target& target, QString idParam) {
-                auto *component = dynamic_cast<TargetComponent*>(cppComponents_[idParam.toStdString()].get());
+                auto *component = dynamic_cast<TargetComponent*>(cppComponents_[idParam].component.get());
                 component->setTarget(target);
             });
         }
         connections_.insert(name);
-        QObject::connect(component, SIGNAL(targetReady(asn::Target)), linkObject, SLOT(targetChanged(asn::Target)));
+        QObject::connect(component, &BaseComponent::targetReady, cppComponents_[id].creator.get(), &gen::ComponentMediator::targetChanged);
         return component->getQmlObject();
     }
     if (name == "CardSpecifier") {
-        cppComponents_[id.toStdString()] = std::make_unique<CardSpecifierComponent>(parent, id);
-        auto *component = cppComponents_[id.toStdString()].get();
+        CppComponentPack pack{.component = std::make_unique<CardSpecifierComponent>(parent, id), .creator = creator};
+        cppComponents_[id] = std::move(pack);
+        auto *component = cppComponents_[id].component.get();
         QObject::connect(component, SIGNAL(deleteComponent(QString)), linkObject, SLOT(deleteCardSpecifier(QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setCardSpecifier, this, [=](const asn::CardSpecifier& cardSpecifier, QString idParam) {
-                auto *component = dynamic_cast<CardSpecifierComponent*>(cppComponents_[idParam.toStdString()].get());
+                auto *component = dynamic_cast<CardSpecifierComponent*>(cppComponents_[idParam].component.get());
                 component->setCardSpecifier(cardSpecifier);
             });
         }
@@ -66,57 +70,64 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
 
 QQuickItem* ComponentManager::createQmlComponent(QString name, QString displayName, QString id, QQuickItem *parent, BaseComponent* linkObject) {
     QQuickItem *object = createQmlObject(getBasicComponentQmlPath(name), id, displayName, parent);
-    components_[id] = object;
+    QmlComponentPack pack{.component = object, .creator = std::make_shared<gen::ComponentMediator>(linkObject)};
+    components_[id] = std::move(pack);
     auto qmlValueSetter = [=](QString value, QString idParam) {
-        QMetaObject::invokeMethod(components_[idParam], "setValue", Q_ARG(QVariant, value));
+        QMetaObject::invokeMethod(components_[idParam].component, "setValue", Q_ARG(QVariant, value));
     };
     auto qmlBoolValueSetter = [=](bool value, QString idParam) {
-        QMetaObject::invokeMethod(components_[idParam], "setValue", Q_ARG(QVariant, value));
+        QMetaObject::invokeMethod(components_[idParam].component, "setValue", Q_ARG(QVariant, value));
     };
     if (name == "Zone") {
-        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(zoneChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(zoneChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setZone, this, qmlValueSetter);
         }
         connections_.insert(name);
     } else if (name == "Phase") {
-        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(phaseChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(phaseChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setPhase, this, qmlValueSetter);
         }
         connections_.insert(name);
     } else if (name == "PhaseState") {
-        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(phaseStateChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(phaseStateChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setPhaseState, this, qmlValueSetter);
         }
         connections_.insert(name);
     } else if (name == "Player") {
-        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(playerChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(playerChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setPlayer, this, qmlValueSetter);
         }
         connections_.insert(name);
     } else if (name == "State") {
-        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(stateChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(stateChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setState, this, qmlValueSetter);
         }
         connections_.insert(name);
     } else if (name == "AttackType") {
-        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(attackTypeChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(attackTypeChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setAttackType, this, qmlValueSetter);
         }
         connections_.insert(name);
     } else if (name == "AbilityType") {
-        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(abilityTypeChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(abilityTypeChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setAbilityType, this, qmlValueSetter);
         }
         connections_.insert(name);
     } else if (name == "Bool") {
-        QObject::connect(object, SIGNAL(valueChanged(bool,QString)), linkObject, SLOT(boolChanged(bool,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(bool,QString)), components_[id].creator.get(), SLOT(boolChanged(bool,QString)));
+        if (!connections_.contains(name)) {
+            QObject::connect(linkObject, &BaseComponent::setBool, this, qmlBoolValueSetter);
+        }
+        connections_.insert(name);
+    } else if (name == "String") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), components_[id].creator.get(), SLOT(stringChanged(QString,QString)));
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setBool, this, qmlBoolValueSetter);
         }
@@ -127,19 +138,24 @@ QQuickItem* ComponentManager::createQmlComponent(QString name, QString displayNa
     return object;
 }
 
+
+ComponentManager::~ComponentManager() {
+    clear();
+}
+
 void ComponentManager::clear() {
-    for (auto *component: qAsConst(components_)) {
-        component->deleteLater();
+    for (auto &component: qAsConst(components_)) {
+        component.component->deleteLater();
     }
     components_.clear();
     cppComponents_.clear();
 }
 
 void ComponentManager::deleteComponent(QString id) {
-    if (cppComponents_.contains(id.toStdString())) {
-        cppComponents_.erase(id.toStdString());
+    if (cppComponents_.contains(id)) {
+        cppComponents_.erase(id);
     } else if (components_.contains(id)) {
-        components_[id]->deleteLater();
+        components_[id].component->deleteLater();
         components_.remove(id);
     }
 }

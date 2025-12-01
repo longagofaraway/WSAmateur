@@ -2,10 +2,16 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 ComboBox {
+    id: zone
     signal valueChanged(string newValue, string compId)
 
     function setValue(newValue) {
         currentIndex = indexOfValue(newValue);
+    }
+
+    Text {
+        text: "Zone"
+        anchors.bottom: zone.top
     }
 
     textRole: "key"

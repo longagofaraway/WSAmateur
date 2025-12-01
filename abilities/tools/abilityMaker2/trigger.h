@@ -27,6 +27,10 @@ public:
     void init(QQuickItem *parent);
     ~TriggerComponent();
 
+    void notifyOfChanges() override;
+    asn::TriggerType getLanguageComponentType(formats::To<asn::TriggerType>) override { return type_; }
+    VarTrigger& getLanguageComponent(formats::To<VarTrigger>) override { return trigger_; }
+
 signals:
     void componentChanged(std::vector<asn::Trigger> trigger);
 
@@ -38,15 +42,7 @@ private:
 
 private slots:
     void onTriggerTypeChanged(QString);
-
-    void zoneChanged(QString, QString);
-    void targetChanged(const asn::Target& target);
-    void phaseChanged(QString, QString);
-    void phaseStateChanged(QString, QString);
-    void playerChanged(QString, QString);
-    void stateChanged(QString, QString);
-    void attackTypeChanged(QString, QString);
-    void boolChanged(bool, QString);
-    void abilityTypeChanged(QString, QString);
 };
+
+
 

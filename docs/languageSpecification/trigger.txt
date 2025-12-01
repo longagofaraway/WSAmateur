@@ -36,6 +36,24 @@ enum TriggerType {
   otherTrigger = 255
 }
 
+relation Trigger {
+  onZoneChange: ZoneChangeTrigger,
+  onPlay: OnPlayTrigger,
+  onStateChange: StateChangeTrigger,
+  onAttack: OnAttackTrigger,
+  onBackupOfThis: Nothing,
+  onTriggerReveal: TriggerRevealTrigger,
+  onPhaseEvent: PhaseTrigger,
+  onEndOfThisCardsAttack: Nothing,
+  onOppCharPlacedByStandbyTriggerReveal: Nothing,
+  onBeingAttacked: OnBeingAttackedTrigger, 
+  onDamageCancel: OnDamageCancelTrigger, 
+  onDamageTakenCancel: OnDamageTakenCancelTrigger, 
+  onPayingCost: OnPayingCostTrigger, 
+  onActAbillity: OnActAbillityTrigger, 
+  otherTrigger: OtherTrigger
+}
+
 ZoneChangeTrigger {
   target Array of Target,  // targets are ORed
   from Zone,

@@ -3,12 +3,16 @@
 #include <QQuickItem>
 
 #include "abilities.h"
+#include "language_parser.h"
+
+using VarTrigger = decltype(asn::Trigger::trigger);
 
 class BaseComponent : public QObject
 {
     Q_OBJECT
 protected:
-    QQuickItem *qmlObject;
+    QQuickItem *qmlObject_;
+    QString componentId_;
 
 public:
     explicit BaseComponent(const QString &moduleName, QQuickItem *parent);
@@ -17,12 +21,17 @@ public:
 
     void init(const QString &moduleName, QQuickItem *parent, QString compnentId);
 
-    QQuickItem* getQmlObject() { return qmlObject; }
+    QQuickItem* getQmlObject() { return qmlObject_; }
+
+    virtual void notifyOfChanges() { throw std::runtime_error("not implemented"); }
+    virtual asn::TriggerType getLanguageComponentType(formats::To<asn::TriggerType>) { throw std::runtime_error("not implemented"); }
+    virtual VarTrigger& getLanguageComponent(formats::To<VarTrigger>) { throw std::runtime_error("not implemented"); }
 
 signals:
     void close();
 
     void deleteComponent(QString componentId);
+    void setCard(const asn::Card&, QString);
     void setCardSpecifier(const asn::CardSpecifier&, QString);
     void setTarget(const asn::Target&, QString);
     void setZone(QString, QString);
@@ -33,9 +42,8 @@ signals:
     void setAttackType(QString, QString);
     void setAbilityType(QString, QString);
     void setBool(bool, QString);
+    void setString(QString, QString);
 
-/*public slots:
-    virtual void zoneChanged(QString) = 0;
-    virtual void zone2Changed(QString) = 0;*/
+    void targetReady(const asn::Target&, QString);
 };
 

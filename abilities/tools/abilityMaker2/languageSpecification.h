@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include <QHash>
 #include <QString>
 
 struct LangComponent {
@@ -15,6 +16,12 @@ struct LangComponent {
 
 class LanguageSpecification {
     std::unordered_map<std::string, std::vector<LangComponent>> parsed_;
+
+    QHash<QString, std::string> typeToStruct_;
+    QHash<QString, std::string> triggersMap_;
+    QHash<QString, std::string> effectsMap_;
+    QHash<QString, std::string> conditionsMap_;
+    QHash<QString, std::string> cardsMap_;
 public:
     std::vector<LangComponent> getComponents(const QString typeName);
 

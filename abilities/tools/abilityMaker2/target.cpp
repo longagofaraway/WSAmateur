@@ -77,13 +77,13 @@ asn::CardSpecifier buildCardSpecifier(QString cardSpecifierType, QString value) 
 } // namespace
 
 TargetComponent::TargetComponent(QQuickItem *parent, QString id, QString displayName)
-    : BaseComponent("Target", parent) {
-    connect(qmlObject, SIGNAL(createCardSpecifier(QString,QString)), this, SLOT(onCreateCardSpecifier(QString,QString)));
-    connect(qmlObject, SIGNAL(numModifierChanged(QString)), this, SLOT(onNumModifierChanged(QString)));
-    connect(qmlObject, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
-    connect(qmlObject, SIGNAL(setTargetMode(QString)), this, SLOT(setTargetMode(QString)));
-    connect(qmlObject, SIGNAL(setTargetType(QString)), this, SLOT(setTargetType(QString)));
-    qmlObject->setProperty("displayName", displayName);
+    : BaseComponent("Target", parent, id) {
+    connect(qmlObject_, SIGNAL(createCardSpecifier(QString,QString)), this, SLOT(onCreateCardSpecifier(QString,QString)));
+    connect(qmlObject_, SIGNAL(numModifierChanged(QString)), this, SLOT(onNumModifierChanged(QString)));
+    connect(qmlObject_, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
+    connect(qmlObject_, SIGNAL(setTargetMode(QString)), this, SLOT(setTargetMode(QString)));
+    connect(qmlObject_, SIGNAL(setTargetType(QString)), this, SLOT(setTargetType(QString)));
+    qmlObject_->setProperty("displayName", displayName);
     number_.mod = asn::NumModifier::AtLeast;
     number_.value = 1;
 }
@@ -92,8 +92,8 @@ void TargetComponent::refitComponents() {
     if (cardSpecifiers_.empty()) return;
 
     int i = 0;
-    auto middle = qmlObject->width() / 3;
-    QQuickItem *bottomObject = qmlObject;
+    auto middle = qmlObject_->width() / 3;
+    QQuickItem *bottomObject = qmlObject_;
     qreal margin = 50;
     int maxSize = std::min(cardSpecifiers_.size(), 2);
     qreal fullLength = maxSize * cardSpecifiers_.first().object->width() + (maxSize - 1) * margin;
@@ -117,7 +117,7 @@ void TargetComponent::addComponent(QQuickItem* object, QString componentId, cons
 void TargetComponent::onCreateCardSpecifier(QString cardSpecifierType, QString value) {
     if (type_ != asn::TargetType::SpecificCards && type_ != asn::TargetType::BattleOpponent) {
         type_ = asn::TargetType::SpecificCards;
-        QMetaObject::invokeMethod(qmlObject, "showNumber");
+        QMetaObject::invokeMethod(qmlObject_, "showNumber");
     }
     auto cardSpecifier = buildCardSpecifier(cardSpecifierType, value);
     createCardSpecifier(cardSpecifier);
@@ -127,7 +127,7 @@ void TargetComponent::onCreateCardSpecifier(QString cardSpecifierType, QString v
 void TargetComponent::createCardSpecifier(const asn::CardSpecifier& specifier) {
     auto componentId = generateCardSpecifierId();
 
-    auto *object = componentManager_.createComponent("CardSpecifier", "CardSpecifier", componentId, qmlObject, this);
+    auto *object = componentManager_.createComponent("CardSpecifier", "CardSpecifier", componentId, qmlObject_, this);
     addComponent(object, componentId, specifier);
     emit setCardSpecifier(specifier, componentId);
 }
@@ -141,22 +141,22 @@ void TargetComponent::setSecondLine() {
             secondLine = toString(type_);
         }
     }
-    QMetaObject::invokeMethod(qmlObject, "setSecondLine", Q_ARG(QVariant, QString::fromStdString(secondLine)));
+    QMetaObject::invokeMethod(qmlObject_, "setSecondLine", Q_ARG(QVariant, QString::fromStdString(secondLine)));
 }
 
 void TargetComponent::setTarget(const asn::Target& target) {
     type_ = target.type;
     if (type_ == asn::TargetType::SpecificCards) {
-        QMetaObject::invokeMethod(qmlObject, "showNumber");
+        QMetaObject::invokeMethod(qmlObject_, "showNumber");
     } else {
-        QMetaObject::invokeMethod(qmlObject, "hideNumber");
+        QMetaObject::invokeMethod(qmlObject_, "hideNumber");
     }
     if (target.targetSpecification.has_value()) {
         const auto& spec = target.targetSpecification.value();
         number_ = spec.number;
         mode_ = spec.mode;
-        QMetaObject::invokeMethod(qmlObject, "setNumMod", Q_ARG(QVariant, QString::fromStdString(toString(number_.mod))));
-        QMetaObject::invokeMethod(qmlObject, "setValue", Q_ARG(QVariant, QString::number(number_.value)));
+        QMetaObject::invokeMethod(qmlObject_, "setNumMod", Q_ARG(QVariant, QString::fromStdString(toString(number_.mod))));
+        QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::number(number_.value)));
 
         for (const auto& cardSpec: spec.cards.cardSpecifiers) {
             createCardSpecifier(cardSpec);
@@ -185,7 +185,7 @@ void TargetComponent::onNumValueChanged(QString value) {
 void TargetComponent::setTargetMode(QString targetMode) {
     mode_ = parse(targetMode.toStdString(), formats::To<asn::TargetMode>{});
     type_ = asn::TargetType::SpecificCards;
-    QMetaObject::invokeMethod(qmlObject, "showNumber");
+    QMetaObject::invokeMethod(qmlObject_, "showNumber");
     buildTarget();
     setSecondLine();
 }
@@ -198,7 +198,7 @@ void TargetComponent::setTargetType(QString targetType) {
         }
         cardSpecifiers_.clear();
         refitComponents();
-        QMetaObject::invokeMethod(qmlObject, "hideNumber");
+        QMetaObject::invokeMethod(qmlObject_, "hideNumber");
     }
     buildTarget();
     setSecondLine();
@@ -220,5 +220,5 @@ void TargetComponent::buildTarget() {
             spec.cards.cardSpecifiers.push_back(value.specifier);
         }
     }
-    emit targetReady(target);
+    emit targetReady(target, componentId_);
 }
