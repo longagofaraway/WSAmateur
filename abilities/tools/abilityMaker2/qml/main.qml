@@ -9,7 +9,7 @@ import abilityMaker 1.0
 Window {
     id: window
     visible: true
-    width: 780
+    width: 980
     height: 580
     title: qsTr("Ability Maker")
 

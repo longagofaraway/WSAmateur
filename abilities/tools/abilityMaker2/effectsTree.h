@@ -42,17 +42,21 @@ private:
     std::vector<asn::Effect> effects_;
     std::vector<std::shared_ptr<TreeNodeInfo>> treeRoot_;
     QQuickItem *workingArea_;
+    QQuickItem *selectedItem_{nullptr};
     int maxOffset_{0};
 
 public:
     Q_INVOKABLE void setWorkingArea(QObject *workingArea);
     Q_INVOKABLE void setAbilityComponent(QQuickItem *abilityComponent);
+    Q_INVOKABLE void loseFocus();
 
 signals:
     void componentChanged(std::vector<asn::Effect> effects);
+    void gotFocus();
 
 private:
     void renderTree();
+    void setFocus(QQuickItem* node);
     void renderBranch(int& currentHeight, int offset, const Branch& branch);
     void createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString idSuffix, QString header, std::vector<asn::Effect>& effects);
 

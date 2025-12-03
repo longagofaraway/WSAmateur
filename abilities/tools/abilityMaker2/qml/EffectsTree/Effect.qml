@@ -4,11 +4,13 @@ import QtQuick.Controls 2.12
 import '../Menus'
 
 Row {
+    id: effectRow
     signal createEffect(string compId, string effect)
     property string componentId
     property string effectMode: "createMode"
     property string effectName
     property string conditionName
+    property bool selected: false
 
     spacing: 10
     Button {
@@ -26,6 +28,7 @@ Row {
         id: effectButton
         width: 80
         height: 30
+        highlighted: effectRow.selected
         text: {
             if (effectMode === "createMode")
                 return "+";

@@ -158,6 +158,7 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     auto effect = getEffectFromPreset(effectId);
     QString newNodeId = node->branchInfo->branchId + QString::number(node->branchInfo->sequenceNextVal++);
     auto newNode = createQmlObject("EffectsTree/Effect", this, newNodeId, "selectMode", QString::fromStdString(toString(effect.type)));
+    setFocus(newNode);
     node->branchInfo->effects.push_back(effect);
     TreeNodeInfo nodeInfo {
         .id = newNodeId,
@@ -195,5 +196,21 @@ void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarE
     node->effect.effect = effect;
 
     emit componentChanged(effects_);
+}
+
+void EffectsTree::setFocus(QQuickItem* node) {
+    if (selectedItem_ != nullptr) {
+        selectedItem_->setProperty("selected", false);
+    }
+    selectedItem_ = node;
+    selectedItem_->setProperty("selected", true);
+    emit gotFocus();
+}
+
+void EffectsTree::loseFocus() {
+    if (selectedItem_ == nullptr) {
+        return;
+    }
+    selectedItem_->setProperty("selected", false);
 }
 

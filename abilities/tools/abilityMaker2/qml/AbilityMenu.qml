@@ -36,7 +36,8 @@ Column {
         id: triggers
         text: "Trigger"
         onClicked: {
-            highlighted = !highlighted
+            highlighted = true;
+            effectsTree.loseFocus();
             if (!scrollView.triggerSet) {
                 triggerMenu.popup()
             } else {
@@ -46,7 +47,6 @@ Column {
 
         TriggerMenu {
             id: triggerMenu
-            onAboutToHide: triggers.highlighted = false
             onAboutToShow: {
                 triggerMenu.x = triggers.x + triggers.width;
                 triggerMenu.y = triggers.height / 2 - triggerMenu.height / 2;
@@ -93,49 +93,18 @@ Column {
         }
     }
 
-    EffectsTree {
+    Connections {
+        target: effectsTree
+        function onGotFocus() {
+            triggers.highlighted = false;
+        }
+    }
 
+    EffectsTree {
         id: effectsTree
         Text {
             text:"Lol!"
         }
     }
-
-    /*
-    Button {
-        id: condition
-        text: "Condition"
-        onClicked: {
-            highlighted = !highlighted
-            conditionMenu.popup()
-        }
-
-        ConditionMenu {
-            id: conditionMenu
-            onAboutToHide: condition.highlighted = false
-            onAboutToShow: {
-                conditionMenu.x = condition.x + condition.width;
-                conditionMenu.y = condition.height / 2 - conditionMenu.height / 2;
-            }
-        }
-    }
-
-    Button {
-        id: effect
-        text: "Effect"
-        onClicked: {
-            highlighted = !highlighted
-            effectMenu.popup()
-        }
-
-        EffectMenu {
-            id: effectMenu
-            onAboutToHide: effect.highlighted = false
-            onAboutToShow: {
-                effectMenu.x = effect.x + effect.width;
-                effectMenu.y = effect.height / 2 - effectMenu.height / 2;
-            }
-        }
-    }*/
 }
 }

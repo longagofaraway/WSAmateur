@@ -6,14 +6,14 @@
 
 
 decltype(asn::Trigger::trigger) getDefaultTrigger(asn::TriggerType type) {
-    auto defaultTarget = asn::Target();
-    defaultTarget.type = asn::TargetType::ThisCard;
+    auto thisCardTarget = asn::Target();
+    thisCardTarget.type = asn::TargetType::ThisCard;
 
     decltype(asn::Trigger::trigger) trigger;
     switch (type) {
     case asn::TriggerType::OnZoneChange: {
         auto tr = asn::ZoneChangeTrigger();
-        tr.target.push_back(defaultTarget);
+        tr.target.push_back(thisCardTarget);
         tr.from = asn::Zone::Hand;
         tr.to = asn::Zone::Stage;
         trigger = tr;
@@ -21,20 +21,20 @@ decltype(asn::Trigger::trigger) getDefaultTrigger(asn::TriggerType type) {
     }
     case asn::TriggerType::OnPlay: {
         auto tr = asn::OnPlayTrigger();
-        tr.target = defaultTarget;
+        tr.target = thisCardTarget;
         trigger = tr;
         break;
     }
     case asn::TriggerType::OnStateChange: {
         auto tr = asn::StateChangeTrigger();
-        tr.target = defaultTarget;
+        tr.target = thisCardTarget;
         tr.state = asn::State::Reversed;
         trigger = tr;
         break;
     }
     case asn::TriggerType::OnAttack: {
         auto tr = asn::OnAttackTrigger();
-        tr.target = defaultTarget;
+        tr.target = thisCardTarget;
         trigger = tr;
         break;
     }
@@ -70,14 +70,14 @@ decltype(asn::Trigger::trigger) getDefaultTrigger(asn::TriggerType type) {
     }
     case asn::TriggerType::OnBeingAttacked: {
         auto tr = asn::OnBeingAttackedTrigger();
-        tr.target = defaultTarget;
+        tr.target = thisCardTarget;
         tr.attackType = asn::AttackType::Frontal;
         trigger = tr;
         break;
     }
     case asn::TriggerType::OnDamageCancel: {
         auto tr = asn::OnDamageCancelTrigger();
-        tr.damageDealer = defaultTarget;
+        tr.damageDealer = thisCardTarget;
         tr.cancelled = true;
         trigger = tr;
         break;
@@ -91,7 +91,7 @@ decltype(asn::Trigger::trigger) getDefaultTrigger(asn::TriggerType type) {
     case asn::TriggerType::OnPayingCost: {
         auto tr = asn::OnPayingCostTrigger();
         tr.abilityType = asn::AbilityType::Auto;
-        tr.target = defaultTarget;
+        tr.target = thisCardTarget;
         trigger = tr;
         break;
     }

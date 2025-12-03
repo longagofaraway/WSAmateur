@@ -2,10 +2,17 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 ComboBox {
+    id: phaseState
+    property string displayName: 'PhaseState'
     signal valueChanged(string newValue, string compId)
 
     function setValue(newValue) {
         currentIndex = indexOfValue(newValue);
+    }
+
+    Text {
+        text: phaseState.displayName
+        anchors.bottom: phaseState.top
     }
 
     textRole: "key"

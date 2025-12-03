@@ -149,6 +149,7 @@ void ComponentManager::clear() {
     }
     components_.clear();
     cppComponents_.clear();
+    connections_.clear();
 }
 
 void ComponentManager::deleteComponent(QString id) {

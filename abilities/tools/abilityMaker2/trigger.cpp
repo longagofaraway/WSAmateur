@@ -68,6 +68,7 @@ void TriggerComponent::createTrigger() {
     }
 
     setTriggerInQml();
+    notifyOfChanges();
 }
 
 void TriggerComponent::notifyOfChanges() {

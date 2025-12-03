@@ -3,6 +3,8 @@ import QtQuick.Controls 2.12
 
 ComboBox {
     id: zone
+
+    property string displayName: 'Zone'
     signal valueChanged(string newValue, string compId)
 
     function setValue(newValue) {
@@ -10,7 +12,7 @@ ComboBox {
     }
 
     Text {
-        text: "Zone"
+        text: zone.displayName
         anchors.bottom: zone.top
     }
 
