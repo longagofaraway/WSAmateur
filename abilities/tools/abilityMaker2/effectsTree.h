@@ -20,7 +20,7 @@ using VarEffect = decltype(asn::Effect::effect);
 struct TreeNodeInfo {
     QString id;
     QQuickItem* object;
-    asn::Effect& effect;
+    std::optional<asn::Effect> effect;
     std::shared_ptr<BranchInfo> branchInfo;
     std::vector<std::vector<std::shared_ptr<TreeNodeInfo>>> subBranches;
 };
@@ -30,7 +30,6 @@ using Branch = std::vector<std::shared_ptr<TreeNodeInfo>>;
 struct BranchInfo {
     QString branchId;
     int sequenceNextVal{0};
-    std::vector<asn::Effect>& effects;
     Branch& treeBranch;
 };
 
@@ -39,7 +38,6 @@ class EffectsTree : public QQuickItem {
 private:
     AbilityComponent *abilityComponent_{nullptr};
     std::unordered_map<QString, std::shared_ptr<TreeNodeInfo>> nodeMap_;
-    std::vector<asn::Effect> effects_;
     std::vector<std::shared_ptr<TreeNodeInfo>> treeRoot_;
     QQuickItem *workingArea_;
     QQuickItem *selectedItem_{nullptr};
@@ -58,7 +56,9 @@ private:
     void renderTree();
     void setFocus(QQuickItem* node);
     void renderBranch(int& currentHeight, int offset, const Branch& branch);
-    void createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString idSuffix, QString header, std::vector<asn::Effect>& effects);
+    void createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString idSuffix, QString header);
+    void updateEffectsTree(TreeNodeInfo *node);
+    void notifyOfChanges();
 
 private slots:
     void createEffect(QString,QString);

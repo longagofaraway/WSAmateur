@@ -36,16 +36,29 @@ QQuickItem* createQmlBranchHeader(QQuickItem *parent, QString header) {
     qmlObject->setProperty("header", header);
     return qmlObject;
 }
-std::vector<asn::Effect>& getEffects(asn::Effect& effect, int index) {
-    if (effect.type == asn::EffectType::PayCost) {
-        auto& ef = std::get<asn::PayCost>(effect.effect);
-        if (index == 1) {
-            return ef.ifYouDo;
+
+std::vector<asn::Effect> constructEffects(const std::vector<std::shared_ptr<TreeNodeInfo>>& nodes) {
+    std::vector<asn::Effect> effects;
+    for (const auto &node: nodes) {
+        if (!node->effect.has_value())
+            continue;
+        const auto& effect = node->effect.value();
+        if (effect.type == asn::EffectType::PayCost) {
+            if (node->subBranches.size() != 2) {
+                qWarning() << "Wrong number of subbranches";
+                return {};
+            }
+            asn::Effect eff{.type = effect.type, .cond = effect.cond};
+            asn::PayCost payCost;
+            payCost.ifYouDo = constructEffects(node->subBranches[0]);
+            payCost.ifYouDont = constructEffects(node->subBranches[1]);
+            eff.effect = payCost;
+            effects.push_back(eff);
         } else {
-            return ef.ifYouDont;
+            effects.push_back(effect);
         }
     }
-    throw std::runtime_error("unsupported effect: "+toString(effect.type));
+    return effects;
 }
 }
 
@@ -58,13 +71,11 @@ void EffectsTree::componentComplete() {
     auto branchInfo = std::make_shared<BranchInfo>(BranchInfo {
         .branchId = kBaseBranchId,
         .sequenceNextVal = 0,
-        .effects = effects_,
         .treeBranch = treeRoot_
     });
     TreeNodeInfo nodeInfo {
         .id = nodeId,
         .object = node,
-        .effect = kEmptyEffect,
         .branchInfo = branchInfo,
     };
     auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
@@ -92,7 +103,7 @@ void EffectsTree::renderTree() {
 void EffectsTree::renderBranch(int& currentHeight, int offset, const Branch& branch) {
     maxOffset_ = std::max(offset, maxOffset_);
     for (const auto& node: branch) {
-        if (node->effect.type == asn::EffectType::PayCost) {
+        if (node->effect.has_value() && node->effect.value().type == asn::EffectType::PayCost) {
             node->object->setProperty("x", offset);
             node->object->setProperty("y", currentHeight);
             currentHeight += kNodeHeight;
@@ -100,7 +111,7 @@ void EffectsTree::renderBranch(int& currentHeight, int offset, const Branch& bra
                 renderBranch(currentHeight, offset + kOffsetStep, node->subBranches.at(i));
             }
             continue;
-        } else if (node->effect.type == asn::EffectType::NonMandatory) {
+        } else if (node->effect.has_value() && node->effect.value().type == asn::EffectType::NonMandatory) {
             for (size_t i = 0; i < node->subBranches.size(); i++) {
                 renderBranch(currentHeight, offset + kOffsetStep, node->subBranches.at(i));
             }
@@ -118,7 +129,7 @@ void EffectsTree::renderBranch(int& currentHeight, int offset, const Branch& bra
     }
 }
 
-void EffectsTree::createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString parentNodeId, QString header, std::vector<asn::Effect>& effects) {
+void EffectsTree::createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString parentNodeId, QString header) {
     QString nodeId = "New"+parentNodeId;
     auto qmlheader = createQmlBranchHeader(this, header);
     auto node = createQmlObject("EffectsTree/Effect", this, nodeId, "createMode", "");
@@ -127,19 +138,16 @@ void EffectsTree::createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& su
     auto branchInfo = std::make_shared<BranchInfo>(BranchInfo {
         .branchId = parentNodeId+header,
         .sequenceNextVal = 0,
-        .effects = effects,
         .treeBranch = subBranch
     });
     TreeNodeInfo headerNodeInfo {
         .id = parentNodeId+"header",
         .object = qmlheader,
-        .effect = kEmptyEffect,
         .branchInfo = branchInfo
     };
     TreeNodeInfo nodeInfo {
         .id = nodeId,
         .object = node,
-        .effect = kEmptyEffect,
         .branchInfo = branchInfo
     };
     auto headerTreeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(headerNodeInfo));
@@ -147,6 +155,19 @@ void EffectsTree::createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& su
     nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
     subBranch.push_back(headerTreeNodeInfo);
     subBranch.push_back(treeNodeInfo);
+}
+
+void EffectsTree::updateEffectsTree(TreeNodeInfo *node) {
+    if (!node->effect.has_value()) {
+        return;
+    }
+    const auto &effect = node->effect.value();
+    if (effect.type == asn::EffectType::PayCost) {
+        node->subBranches.clear();
+        node->subBranches.resize(2);
+        createSubBranch(node->subBranches[0], node->id, "If you do");
+        createSubBranch(node->subBranches[1], node->id, "If you don't");
+    }
 }
 
 void EffectsTree::createEffect(QString nodeId, QString effectId) {
@@ -159,27 +180,21 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     QString newNodeId = node->branchInfo->branchId + QString::number(node->branchInfo->sequenceNextVal++);
     auto newNode = createQmlObject("EffectsTree/Effect", this, newNodeId, "selectMode", QString::fromStdString(toString(effect.type)));
     setFocus(newNode);
-    node->branchInfo->effects.push_back(effect);
     TreeNodeInfo nodeInfo {
         .id = newNodeId,
         .object = newNode,
-        .effect = node->branchInfo->effects.back(),
+        .effect = effect,
         .branchInfo = node->branchInfo
     };
     std::shared_ptr<EffectComponent> effectComponent;
     if (effect.type != asn::EffectType::NotSpecified) {
-        //nodeInfo.effectComponent = std::make_shared<EffectComponent>(workingArea_, this, effect);
         effectComponent = std::make_shared<EffectComponent>(newNodeId, workingArea_, effect);
     } else {
         effectComponent = std::make_shared<EffectComponent>(newNodeId, workingArea_);
     }
     connect(&*effectComponent, &EffectComponent::componentChanged, this, &EffectsTree::effectChanged);
     abilityComponent_->setCurrentComponent(effectComponent);
-    if (effect.type == asn::EffectType::PayCost) {
-        nodeInfo.subBranches.resize(2);
-        createSubBranch(nodeInfo.subBranches[0], newNodeId, "If you do", getEffects(nodeInfo.effect, 1));
-        createSubBranch(nodeInfo.subBranches[1], newNodeId, "If you don't", getEffects(nodeInfo.effect, 2));
-    }
+    updateEffectsTree(&nodeInfo);
     auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
     nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
     node->branchInfo->treeBranch.insert(node->branchInfo->treeBranch.end() - 1, treeNodeInfo);
@@ -192,10 +207,23 @@ void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarE
         return;
     }
     auto& node = nodeMap_.at(nodeId);
-    node->effect.type = type;
-    node->effect.effect = effect;
+    if (!node->effect.has_value()) {
+        qWarning() << "changing effect on a wrong node";
+        return;
+    }
+    if (node->effect.value().type == type) {
+        return;
+    }
+    node->effect.value().type = type;
+    node->effect.value().effect = effect;
 
-    emit componentChanged(effects_);
+    updateEffectsTree(node.get());
+    renderTree();
+    notifyOfChanges();
+}
+
+void EffectsTree::notifyOfChanges() {
+    emit componentChanged(constructEffects(treeRoot_));
 }
 
 void EffectsTree::setFocus(QQuickItem* node) {
