@@ -6,6 +6,10 @@
 #include "baseComponent.h"
 #include "componentManager.h"
 
+namespace gen {
+    class ComponentMediator;
+}
+
 struct CardSpecifier {
     QQuickItem* object;
     asn::CardSpecifier specifier;
@@ -18,6 +22,7 @@ protected:
     ComponentManager componentManager_;
 
     QMap<QString, CardSpecifier> cardSpecifiers_;
+    std::shared_ptr<gen::ComponentMediator> mediator;
 
 public:
     CardComponent(QString moduleName, QQuickItem *parent, QString id, QString displayName);

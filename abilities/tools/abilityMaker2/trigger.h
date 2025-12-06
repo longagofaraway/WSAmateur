@@ -8,6 +8,10 @@
 #include "baseComponent.h"
 #include "componentManager.h"
 
+namespace gen {
+    class TriggerHelper;
+}
+
 class TriggerComponent : public BaseComponent
 {
     Q_OBJECT
@@ -20,6 +24,7 @@ private:
 
     asn::TriggerType type_;
     VarTrigger trigger_;
+    std::shared_ptr<gen::TriggerHelper> gen_helper;
 
 public:
     TriggerComponent(QQuickItem *parent);

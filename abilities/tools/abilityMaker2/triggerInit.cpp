@@ -226,7 +226,7 @@ std::optional<asn::Trigger> getTriggerFromPreset(QString preset) {
 }
 
 void TriggerComponent::setTriggerInQml() {
-    gen::ComponentMediator helper(this);
+    gen::TriggerHelper helper(this);
     helper.setTriggerInQml(type_, trigger_);
 }
 

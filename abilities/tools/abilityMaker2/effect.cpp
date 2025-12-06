@@ -2,6 +2,7 @@
 
 #include <set>
 
+#include "ability_maker_gen.h"
 #include "languageSpecification.h"
 #include "language_parser.h"
 #include "effectInit.h"
@@ -54,7 +55,7 @@ void EffectComponent::createEffect() {
         }
         QString component_id = comp.type + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
         types.insert(comp.type.toStdString());
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this);
+        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
         fitComponent(object);
     }
 

@@ -4,6 +4,7 @@
 
 #include <QQmlContext>
 
+#include "ability_maker_gen.h"
 #include "componentHelper.h"
 #include "languageSpecification.h"
 #include "language_parser.h"
@@ -25,6 +26,7 @@ TriggerComponent::TriggerComponent(QQuickItem *parent, const std::vector<asn::Tr
 }
 
 void TriggerComponent::init(QQuickItem *parent) {
+    gen_helper = std::make_shared<gen::TriggerHelper>(this);
     qvariant_cast<QObject*>(qmlObject_->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
     connect(qmlObject_, SIGNAL(triggerTypeChanged(QString)), this, SLOT(onTriggerTypeChanged(QString)));
 }
@@ -63,7 +65,7 @@ void TriggerComponent::createTrigger() {
     for (const auto& comp: components) {
         QString component_id = comp.type + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
         types.insert(comp.type.toStdString());
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this);
+        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
         fitComponent(object);
     }
 

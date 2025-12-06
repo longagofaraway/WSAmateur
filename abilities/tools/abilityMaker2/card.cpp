@@ -1,5 +1,7 @@
 #include "card.h"
 
+#include "ability_maker_gen.h"
+
 namespace {
 
 QString generateCardSpecifierId() {
@@ -71,6 +73,7 @@ asn::CardSpecifier buildCardSpecifier(QString cardSpecifierType, QString value) 
 
 CardComponent::CardComponent(QString moduleName, QQuickItem *parent, QString id, QString displayName)
     : BaseComponent(moduleName, parent, id) {
+    mediator = std::make_shared<gen::ComponentMediator>(this);
     connect(qmlObject_, SIGNAL(createCardSpecifier(QString,QString)), this, SLOT(onCreateCardSpecifier(QString,QString)));
     qmlObject_->setProperty("displayName", displayName);
 }
@@ -110,7 +113,7 @@ void CardComponent::onCreateCardSpecifier(QString cardSpecifierType, QString val
 void CardComponent::createCardSpecifier(const asn::CardSpecifier& specifier) {
     auto componentId = generateCardSpecifierId();
 
-    auto *object = componentManager_.createComponent("CardSpecifier", "CardSpecifier", componentId, qmlObject_, this);
+    auto *object = componentManager_.createComponent("CardSpecifier", "CardSpecifier", componentId, qmlObject_, this, mediator.get());
     addComponent(object, componentId, specifier);
     emit setCardSpecifier(specifier, componentId);
 }

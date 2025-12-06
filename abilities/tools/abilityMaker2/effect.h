@@ -8,6 +8,10 @@
 #include "baseComponent.h"
 #include "componentManager.h"
 
+namespace gen {
+    class TriggerHelper;
+}
+
 class EffectComponent : public BaseComponent
 {
     Q_OBJECT
@@ -21,12 +25,16 @@ private:
 
     asn::EffectType type_;
     VarEffect effect_;
+    std::shared_ptr<gen::TriggerHelper> gen_helper;
 
 public:
     EffectComponent(QString nodeId, QQuickItem *parent);
     EffectComponent(QString nodeId, QQuickItem *parent, const asn::Effect& effect);
     void init(QQuickItem *parent);
     ~EffectComponent();
+
+    virtual asn::EffectType getLanguageComponentType(formats::To<asn::EffectType>) override { return type_; }
+    virtual VarEffect& getLanguageComponent(formats::To<VarEffect>) override { return effect_; }
 
 signals:
     void componentChanged(QString nodeId, asn::EffectType type, VarEffect effect);
