@@ -5,6 +5,8 @@ set(abilityMakerSources
     abilityMaker.cpp
     baseComponent.h
     baseComponent.cpp
+    card.h
+    card.cpp
     cardSpecifier.h
     cardSpecifier.cpp
     componentHelper.h

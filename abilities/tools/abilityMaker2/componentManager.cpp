@@ -5,13 +5,15 @@
 
 #include "ability_maker_gen.h"
 #include "componentHelper.h"
+#include "card.h"
 #include "cardSpecifier.h"
 #include "target.h"
 
 namespace {
 const QSet<QString> kCppComponents {
     "Target",
-    "CardSpecifier"
+    "CardSpecifier",
+    "Card"
 };
 
 QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent) {
@@ -63,6 +65,20 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
         }
         connections_.insert(name);
         QObject::connect(component, SIGNAL(componentReady(asn::CardSpecifier,QString)), linkObject, SLOT(cardSpecifierChanged(asn::CardSpecifier,QString)));
+        return component->getQmlObject();
+    }
+    if (name == "Card") {
+        CppComponentPack pack{.component = std::make_unique<CardComponent>(name, parent, id, name), .creator = creator};
+        cppComponents_[id] = std::move(pack);
+        auto *component = cppComponents_[id].component.get();
+        if (!connections_.contains(name)) {
+            QObject::connect(linkObject, &BaseComponent::setCard, this, [=](const asn::Card& card, QString idParam) {
+                auto *component = dynamic_cast<CardComponent*>(cppComponents_[idParam].component.get());
+                component->setCard(card);
+            });
+        }
+        connections_.insert(name);
+        QObject::connect(component, SIGNAL(cardReady(asn::Card,QString)), linkObject, SLOT(cardChanged(asn::Card,QString)));
         return component->getQmlObject();
     }
     return nullptr;

@@ -6,6 +6,7 @@
 #include "language_parser.h"
 
 using VarTrigger = decltype(asn::Trigger::trigger);
+using VarEffect = decltype(asn::Effect::effect);
 
 class BaseComponent : public QObject
 {
@@ -26,6 +27,8 @@ public:
     virtual void notifyOfChanges() { throw std::runtime_error("not implemented"); }
     virtual asn::TriggerType getLanguageComponentType(formats::To<asn::TriggerType>) { throw std::runtime_error("not implemented"); }
     virtual VarTrigger& getLanguageComponent(formats::To<VarTrigger>) { throw std::runtime_error("not implemented"); }
+    virtual asn::EffectType getLanguageComponentType(formats::To<asn::EffectType>) { throw std::runtime_error("not implemented"); }
+    virtual VarEffect& getLanguageComponent(formats::To<VarEffect>) { throw std::runtime_error("not implemented"); }
 
 signals:
     void close();
@@ -45,5 +48,6 @@ signals:
     void setString(QString, QString);
 
     void targetReady(const asn::Target&, QString);
+    void cardReady(const asn::Card&, QString);
 };
 

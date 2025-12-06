@@ -16,6 +16,7 @@ QString getBasicComponentQmlPath(QString componentTypeName) {
         {"AttributeType", "BasicTypes/AttributeType"},
         {"ValueType", "BasicTypes/ValueType"},
         {"Target", "Target"},
+        {"Card", "Card"},
         {"Bool", "BasicTypes/BoolCheckBox"},
         {"Duration", "BasicTypes/Duration"},
         {"Int32", "BasicTypes/BasicTextInput"},
