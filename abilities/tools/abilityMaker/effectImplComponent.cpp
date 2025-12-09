@@ -35,7 +35,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     case asn::EffectType::AttributeGain: {
         auto e = asn::AttributeGain();
         e.type = asn::AttributeType::Power;
-        e.gainType = asn::ValueType::Raw;
+        e.gainType = asn::ValueType::RawValue;
         e.value = 0;
         e.duration = 1;
         e.target = defaultTarget;
@@ -60,7 +60,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
         place.zone = asn::Zone::Deck;
         e.number = defaultNum;
         e.place = place;
-        e.valueType = asn::ValueType::Raw;
+        e.valueType = asn::ValueType::RawValue;
         effect = e;
         break;
     }
@@ -117,7 +117,7 @@ void initEffectByType(EffectImplComponent::VarEffect &effect, asn::EffectType ty
     case asn::EffectType::ShotTriggerDamage:
     case asn::EffectType::DealDamage: {
         auto e = asn::DealDamage();
-        e.damageType = asn::ValueType::Raw;
+        e.damageType = asn::ValueType::RawValue;
         e.damage = 1;
         effect = e;
         break;

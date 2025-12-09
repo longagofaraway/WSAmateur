@@ -65,9 +65,9 @@ def parseEnum(tokens, current, cpp):
 def skipStruct(tokens, current):
     braces_count = 0
     while current < len(tokens):
-        if tokens[current] == '{':
+        if '{' in tokens[current]:
             braces_count += 1
-        elif tokens[current] == '}':
+        if '}' in tokens[current]:
             braces_count -= 1
             if braces_count == 0:
                 return current + 1

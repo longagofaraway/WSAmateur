@@ -75,7 +75,7 @@ Resumable AbilityPlayer::playS79_20() {
         t2.type = asn::TargetType::ChosenCards;
         a.target = t2;
         a.type = asn::AttributeType::Power;
-        a.gainType = asn::ValueType::Raw;
+        a.gainType = asn::ValueType::RawValue;
         a.value = 5000;
         a.duration = 1;
 

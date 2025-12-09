@@ -7,6 +7,8 @@ class Language:
     def getLanguageComponentType(self):
         if self.mode == 'Trigger':
             return 'TriggerType'
+        if self.mode == 'Effect':
+            return 'EffectType'
         raise 'unknown Language mode'
     
 
@@ -15,6 +17,7 @@ class Language:
             return 'TriggerHelper'
         elif self.mode == 'Effect':
             return 'EffectHelper'
+        raise 'unknown Language mode'
 
 
     def getClassDeclaration(self):
@@ -31,6 +34,8 @@ public slots:
     def _qmlSetterDeclaration(self):
         if self.mode == 'Trigger':
             return 'setTriggerInQml(asn::TriggerType languageComponentType, const VarTrigger& languageComponent)'
+        if self.mode == 'Effect':
+            return 'setEffectInQml(asn::EffectType languageComponentType, const VarEffect& languageComponent)'
 
 
     def getQmlSetterCode(self):
@@ -53,6 +58,30 @@ public slots:
             inputCppType = 'const asn::Target&'
         elif type == 'Card':
             inputCppType = 'const asn::Card&'
+        elif type == 'TargetAndPlace':
+            inputCppType = 'const asn::TargetAndPlace&'
+        elif type == 'SearchTarget':
+            inputCppType = 'const asn::SearchTarget&'
+        elif type == 'Effect':
+            inputCppType = 'const asn::Effect&'
+        elif type == 'EventAbility':
+            inputCppType = 'const asn::EventAbility&'
+        elif type == 'AutoAbility':
+            inputCppType = 'const asn::AutoAbility&'
+        elif type == 'Ability':
+            inputCppType = 'const asn::Ability&'
+        elif type == 'ChooseCard':
+            inputCppType = 'const asn::ChooseCard&'
+        elif type == 'Number':
+            inputCppType = 'const asn::Number&'
+        elif type == 'Multiplier':
+            inputCppType = 'const asn::Multiplier&'
+        elif type == 'Place':
+            inputCppType = 'const asn::Place&'
+        elif type == 'Duration':
+            inputCppType = 'int'
+        elif type in ['UInt8', 'Int32', 'Int8']:
+            inputCppType = 'int'
         else:
             inputCppType = 'QString'
         return f'{ltype}Changed({inputCppType} value, QString componentId)'
@@ -168,6 +197,27 @@ def skipBlock(ss, current_line):
             return
 
 
+def parseChoice(ss, current_line):
+    braces_count = countBracesInLine(current_line)
+    if braces_count == 0:
+        return
+    
+    choice_type = ''
+    for line in ss:
+        braces_count += countBracesInLine(line)
+        if braces_count == 0:
+            break
+        line = line.strip()
+        if line.endswith(','):
+            line = line[:-1]
+        if line == 'Nothing':
+            continue
+        if not line:
+            continue
+        choice_type = line
+    return choice_type
+
+
 def parseStruct(ss, current_line, lang):
     braces_count = countBracesInLine(current_line)
     if braces_count == 0:
@@ -191,23 +241,35 @@ def parseStruct(ss, current_line, lang):
 
         field_name = tokens[0]
         is_array = False
+        is_optional = False
         if tokens[1] == 'Array':
             field_type = tokens[3]
             is_array = True
+        elif tokens[1] == 'Choice':
+            field_type = parseChoice(ss, current_line)
+            is_optional = True
+            braces_count -= 1
         else:
             field_type = tokens[1]
 
         type_matches[field_type] = type_matches.get(field_type, 0) + 1
-        if field_type in ['Bool', 'Target', 'Card']:
+        if field_type in ['Bool', 'Target', 'Card', 'Int32', 'Int8', 'UInt8', 'Multiplier', 'TargetAndPlace', 'Number', 'Place', 'Duration', 'Ability', 'SearchTarget', 'EventAbility', 'Effect', 'ChooseCard', 'AutoAbility']:
             prepared_signal_field = f'elem.{field_name}'
+            prepared_slot_field = 'value'
+            if struct_name in ['DelayedAbility', 'CostSubstitution'] and field_type in ['AutoAbility', 'Effect']:
+                prepared_signal_field = '*'+prepared_signal_field+'.get()'
+                prepared_slot_field = f'std::make_shared<asn::{field_type}>('+prepared_slot_field+')'
             if is_array:
                 prepared_signal_field += '[0]'
-            prepared_slot_field = 'value'
         elif field_type == 'String':
             prepared_signal_field = f'QString::fromStdString(elem.{field_name})'
-            prepared_slot_field = 'value.toStdString()'
+            if is_array:
+                prepared_signal_field = f'QString::fromStdString(elem.{field_name}[0])'
+            prepared_slot_field = 'value.toStdString()' 
         else: #enum
             prepared_signal_field = f'QString::fromStdString(toString(elem.{field_name}))'
+            if is_array:
+                prepared_signal_field = f'QString::fromStdString(toString(elem.{field_name}[0]))'
             prepared_slot_field = f'parse(value.toStdString(), formats::To<asn::{field_type}>{{}})'
         component_id = field_type
         slot_repeat_check = 'if (componentId.back().digitValue() == -1)'
@@ -217,7 +279,15 @@ def parseStruct(ss, current_line, lang):
         if is_array:
             signal_code += f'''        if (elem.{field_name}.size() > 0) {{
     '''
-        signal_code += f'''        emit linkObject->set{field_type}({prepared_signal_field}, "{component_id}");
+        optional_getter = ''
+        if is_optional:
+            signal_code += f'''        if (elem.{field_name}.has_value()) {{
+    '''
+            optional_getter = '.value()'
+        signal_code += f'''        emit linkObject->set{field_type}({prepared_signal_field}{optional_getter}, "{component_id}");
+'''
+        if is_optional:
+            signal_code += '''        }
 '''
         if is_array:
             signal_code += '''        }
@@ -279,6 +349,7 @@ cpp = '''// This file is autogenerated. Do not edit
 namespace gen {
 '''
 
+hpp_buffer = ''
 all_types = set()
 global_lang = Language()
 for filename in sys.argv[1:]:
@@ -295,7 +366,6 @@ for filename in sys.argv[1:]:
     doc_ss = StringIO(doc)
     slot_code = {}
     signal_code = ''
-    hpp_buffer = ''
     for line in doc_ss:
         tokens = line.split()
         if len(tokens) < 1:
@@ -305,10 +375,7 @@ for filename in sys.argv[1:]:
             lang.mode = tokens[0]
             hpp_buffer += lang.getClassDeclaration()
             continue
-        if tokens[0] == 'relation':
-            skipBlock(doc_ss, line)
-            continue
-        if tokens[0] == 'enum':
+        if tokens[0] in ['relation','enum','TargetAndPlace', 'SearchTarget', 'PayCost']:
             skipBlock(doc_ss, line)
             continue
 

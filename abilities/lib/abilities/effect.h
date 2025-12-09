@@ -29,7 +29,7 @@ struct ChooseCard {
 };
 
 enum class ValueType : uint8_t {
-    Raw = 1,
+    RawValue = 1,
     Multiplier
 };
 

@@ -40,6 +40,8 @@ Effect {
     CostSubstitution,
     StockSwap,
     SkipPhase,
+    ChooseTrait,
+    TraitModification,
     OtherEffect,
     Nothing
   }
@@ -94,6 +96,57 @@ enum EffectType {
   traitModification = 46,
   
   otherEffect = 255
+}
+
+
+relation Trigger {
+  attributeGain: AttributeGain,
+  chooseCard: ChooseCard,
+  revealCard: RevealCard,
+  moveCard: MoveCard,
+  searchCard: SearchCard,
+  payCost: PayCost,
+  abilityGain: AbilityGain,
+  moveWrToDeck: MoveWrToDeck,
+  flipOver: FlipOver,
+  backup: Backup,
+  triggerCheckTwice: Nothing,
+  look: Look,
+  nonMandatory: NonMandatory,
+  earlyPlay: Nothing,
+  cannotPlay: Nothing,
+  performEffect: PerformEffect,
+  changeState: ChangeState,
+  dealDamage: DealDamage,
+  cannotUseBackupOrEvent: CannotUseBackupOrEvent,
+  drawCard: DrawCard,
+  swapCards: SwapCards,
+  cannotAttack: CannotAttack,
+  charAutoCannotDealDamage: Nothing,
+  opponentAutoCannotDealDamage: OpponentAutoCannotDealDamage,
+  cannotBecomeReversed: CannotBecomeReversed,
+  stockSwap: StockSwap,
+  addMarker: AddMarker,
+  bond: Bond,
+  cannotMove: CannotMove,
+  performReplay: PerformReplay,
+  replay: Replay,
+  sideAttackWithoutPenalty: SideAttackWithoutPenalty,
+  standby: Nothing,
+  shuffle: Shuffle,
+  putOnStageRested: PutOnStageRested,
+  removeMarker: RemoveMarker,
+  cannotStand: CannotStand,
+  cannotBeChosen: CannotBeChosen,
+  triggerIconGain: TriggerIconGain,
+  canPlayWithoutColorRequirement: CanPlayWithoutColorRequirement,
+  shotTriggerDamage: Nothing,
+  delayedAbility: DelayedAbility,
+  costSubstitution: CostSubstitution,
+  skipPhase: SkipPhase,
+  chooseTrait: ChooseTrait,
+  traitModification: TraitModification,
+  otherEffect: OtherEffect
 }
 
 enum AttributeType {

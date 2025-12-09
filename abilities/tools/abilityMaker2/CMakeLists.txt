@@ -39,7 +39,8 @@ set(langSpecSource
     basicTypes.txt)
 
 set(helperFilesSource
-    trigger.txt)
+    trigger.txt
+    effect.txt)
 
 list(TRANSFORM langSpecSource PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)
 list(TRANSFORM helperFilesSource PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)
