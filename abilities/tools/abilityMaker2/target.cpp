@@ -11,15 +11,14 @@ TargetComponent::TargetComponent(QQuickItem *parent, QString id, QString display
     connect(qmlObject_, SIGNAL(numValueChanged(QString)), this, SLOT(onNumValueChanged(QString)));
     connect(qmlObject_, SIGNAL(setTargetMode(QString)), this, SLOT(setTargetMode(QString)));
     connect(qmlObject_, SIGNAL(setTargetType(QString)), this, SLOT(setTargetType(QString)));
-    number_.mod = asn::NumModifier::AtLeast;
-    number_.value = 1;
 }
 
 
 void TargetComponent::createCardSpecifierAdditionalActions() {
     if (type_ != asn::TargetType::SpecificCards && type_ != asn::TargetType::BattleOpponent) {
         type_ = asn::TargetType::SpecificCards;
-        QMetaObject::invokeMethod(qmlObject_, "showNumber");
+        number_ = asn::Number{.mod=asn::NumModifier::ExactMatch,.value=1};
+        setQmlNumber(number_.value());
     }
     setSecondLine();
 }
@@ -36,34 +35,37 @@ void TargetComponent::setSecondLine() {
     QMetaObject::invokeMethod(qmlObject_, "setSecondLine", Q_ARG(QVariant, QString::fromStdString(secondLine)));
 }
 
+void TargetComponent::setQmlNumber(const asn::Number& number) {
+    QMetaObject::invokeMethod(qmlObject_, "showNumber");
+    QMetaObject::invokeMethod(qmlObject_, "setNumMod", Q_ARG(QVariant, QString::fromStdString(toString(number_.value().mod))));
+    QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::number(number_.value().value)));
+}
+
 void TargetComponent::setTarget(const asn::Target& target) {
     type_ = target.type;
-    if (type_ == asn::TargetType::SpecificCards) {
-        QMetaObject::invokeMethod(qmlObject_, "showNumber");
-    } else {
-        QMetaObject::invokeMethod(qmlObject_, "hideNumber");
-    }
     if (target.targetSpecification.has_value()) {
         const auto& spec = target.targetSpecification.value();
         number_ = spec.number;
         mode_ = spec.mode;
-        QMetaObject::invokeMethod(qmlObject_, "setNumMod", Q_ARG(QVariant, QString::fromStdString(toString(number_.mod))));
-        QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::number(number_.value)));
+        setQmlNumber(number_.value());
 
         for (const auto& cardSpec: spec.cards.cardSpecifiers) {
             createCardSpecifier(cardSpec);
         }
+    }else {
+        QMetaObject::invokeMethod(qmlObject_, "hideNumber");
     }
     setSecondLine();
+    notifyOfChanges();
 }
 
 void TargetComponent::onNumModifierChanged(QString numModifier) {
-    number_.mod = parse(numModifier.toStdString(), formats::To<asn::NumModifier>{});
+    number_.value().mod = parse(numModifier.toStdString(), formats::To<asn::NumModifier>{});
     notifyOfChanges();
 }
 
 void TargetComponent::onNumValueChanged(QString value) {
-    number_.value = value.toInt();
+    number_.value().value = value.toInt();
     notifyOfChanges();
 }
 
@@ -92,13 +94,14 @@ void TargetComponent::setTargetType(QString targetType) {
 void TargetComponent::notifyOfChanges() {
     asn::Target target;
     target.type = type_;
-    if (type_ == asn::TargetType::SpecificCards || type_ == asn::TargetType::BattleOpponent) {
+    if (number_.has_value()) {
         asn::TargetSpecificCards spec;
         spec.mode = mode_;
-        spec.number = number_;
+        spec.number = number_.value();
         for (auto& value: cardSpecifiers_) {
             spec.cards.cardSpecifiers.push_back(value.specifier);
         }
+        target.targetSpecification = spec;
     }
     emit targetReady(target, componentId_);
 }

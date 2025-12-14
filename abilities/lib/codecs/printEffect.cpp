@@ -135,7 +135,7 @@ std::string printAttributeGain(const AttributeGain &e) {
     if (e.value > 0)
         res += "+";
 
-    if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::TimesLevel)
+    if (e.gainType == ValueType::Multiplier && e.modifier && e.modifier->type == MultiplierType::TimesLevel)
         res += "X";
     else
         res += std::to_string(e.value);
@@ -151,7 +151,7 @@ std::string printAttributeGain(const AttributeGain &e) {
         break;
     }
 
-    if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::ForEach) {
+    if (e.gainType == ValueType::Multiplier && e.modifier && e.modifier->type == MultiplierType::ForEach) {
         const auto &m = std::get<ForEachMultiplier>(e.modifier->specifier);
         res += "for each ";
         res += printForEachMultiplier(m);
@@ -163,7 +163,7 @@ std::string printAttributeGain(const AttributeGain &e) {
         gPrintState.abilityChainingFirst = false;
     }
 
-    if (e.gainType == ValueType::Multiplier && e.modifier->type == MultiplierType::TimesLevel) {
+    if (e.gainType == ValueType::Multiplier && e.modifier && e.modifier->type == MultiplierType::TimesLevel) {
         res.pop_back();
         res += ". X is equal to " + std::to_string(e.value) + " multiplied by that character's level ";
     }

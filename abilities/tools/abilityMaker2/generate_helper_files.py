@@ -80,8 +80,6 @@ public slots:
             inputCppType = 'const asn::Place&'
         elif type == 'Duration':
             inputCppType = 'int'
-        elif type in ['UInt8', 'Int32', 'Int8']:
-            inputCppType = 'int'
         else:
             inputCppType = 'QString'
         return f'{ltype}Changed({inputCppType} value, QString componentId)'
@@ -253,7 +251,7 @@ def parseStruct(ss, current_line, lang):
             field_type = tokens[1]
 
         type_matches[field_type] = type_matches.get(field_type, 0) + 1
-        if field_type in ['Bool', 'Target', 'Card', 'Int32', 'Int8', 'UInt8', 'Multiplier', 'TargetAndPlace', 'Number', 'Place', 'Duration', 'Ability', 'SearchTarget', 'EventAbility', 'Effect', 'ChooseCard', 'AutoAbility']:
+        if field_type in ['Bool', 'Target', 'Card', 'Multiplier', 'TargetAndPlace', 'Number', 'Place', 'Duration', 'Ability', 'SearchTarget', 'EventAbility', 'Effect', 'ChooseCard', 'AutoAbility']:
             prepared_signal_field = f'elem.{field_name}'
             prepared_slot_field = 'value'
             if struct_name in ['DelayedAbility', 'CostSubstitution'] and field_type in ['AutoAbility', 'Effect']:
@@ -261,6 +259,9 @@ def parseStruct(ss, current_line, lang):
                 prepared_slot_field = f'std::make_shared<asn::{field_type}>('+prepared_slot_field+')'
             if is_array:
                 prepared_signal_field += '[0]'
+        elif field_type in ['Int32', 'UInt8', 'Int8']:
+            prepared_signal_field = f'QString::number(elem.{field_name})'
+            prepared_slot_field = f'value.toInt()'
         elif field_type == 'String':
             prepared_signal_field = f'QString::fromStdString(elem.{field_name})'
             if is_array:
@@ -271,7 +272,7 @@ def parseStruct(ss, current_line, lang):
             if is_array:
                 prepared_signal_field = f'QString::fromStdString(toString(elem.{field_name}[0]))'
             prepared_slot_field = f'parse(value.toStdString(), formats::To<asn::{field_type}>{{}})'
-        component_id = field_type
+        component_id = field_type + '/'
         slot_repeat_check = 'if (componentId.back().digitValue() == -1)'
         if type_matches[field_type] > 1:
             component_id += str(type_matches[field_type])

@@ -63,7 +63,7 @@ void TriggerComponent::createTrigger() {
     auto components = spec.getComponents(QString::fromStdString(toString(type_)));
     std::set<std::string> types;
     for (const auto& comp: components) {
-        QString component_id = comp.type + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
+        QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
         types.insert(comp.type.toStdString());
         auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
         fitComponent(object);

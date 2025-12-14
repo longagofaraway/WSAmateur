@@ -16,10 +16,11 @@ const QSet<QString> kCppComponents {
     "Card"
 };
 
-QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent) {
+QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent, BaseComponent *linkObject) {
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/" + name + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
     context->setContextProperty("componentId", id);
+    context->setContextProperty("parentComponent", linkObject);
     QObject *obj = component.create(context);
     QQuickItem *qmlObject = qobject_cast<QQuickItem*>(obj);
     qmlObject->setProperty("displayName", displayName);
@@ -81,67 +82,52 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
 }
 
 QQuickItem* ComponentManager::createQmlComponent(QString name, QString displayName, QString id, QQuickItem *parent, BaseComponent *linkObject, gen::ComponentMediator *mediator) {
-    QQuickItem *object = createQmlObject(getBasicComponentQmlPath(name), id, displayName, parent);
+    QQuickItem *object = createQmlObject(getBasicComponentQmlPath(name), id, displayName, parent, linkObject);
     components_[id] = object;
-    auto qmlValueSetter = [=](QString value, QString idParam) {
-        QMetaObject::invokeMethod(components_[idParam], "setValue", Q_ARG(QVariant, value));
-    };
-    auto qmlBoolValueSetter = [=](bool value, QString idParam) {
-        QMetaObject::invokeMethod(components_[idParam], "setValue", Q_ARG(QVariant, value));
-    };
     if (name == "Zone") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(zoneChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setZone, this, qmlValueSetter);
-        }
         connections_.insert(name);
     } else if (name == "Phase") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(phaseChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setPhase, this, qmlValueSetter);
-        }
         connections_.insert(name);
     } else if (name == "PhaseState") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(phaseStateChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setPhaseState, this, qmlValueSetter);
-        }
         connections_.insert(name);
     } else if (name == "Player") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(playerChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setPlayer, this, qmlValueSetter);
-        }
         connections_.insert(name);
     } else if (name == "State") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(stateChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setState, this, qmlValueSetter);
-        }
         connections_.insert(name);
     } else if (name == "AttackType") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(attackTypeChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setAttackType, this, qmlValueSetter);
-        }
         connections_.insert(name);
     } else if (name == "AbilityType") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(abilityTypeChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setAbilityType, this, qmlValueSetter);
-        }
+        connections_.insert(name);
+    } else if (name == "AttributeType") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(attributeTypeChanged(QString,QString)));
+        connections_.insert(name);
+    } else if (name == "ValueType") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(valueTypeChanged(QString,QString)));
         connections_.insert(name);
     } else if (name == "Bool") {
         QObject::connect(object, SIGNAL(valueChanged(bool,QString)), mediator, SLOT(boolChanged(bool,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setBool, this, qmlBoolValueSetter);
-        }
         connections_.insert(name);
     } else if (name == "String") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(stringChanged(QString,QString)));
-        if (!connections_.contains(name)) {
-            QObject::connect(linkObject, &BaseComponent::setString, this, qmlValueSetter);
-        }
+        connections_.insert(name);
+    } else if (name == "Int32") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(int32Changed(QString,QString)));
+        connections_.insert(name);
+    } else if (name == "Int8") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(int8Changed(QString,QString)));
+        connections_.insert(name);
+    } else if (name == "UInt8") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(uInt8Changed(QString,QString)));
+        connections_.insert(name);
+    } else if (name == "Duration") {
+        QObject::connect(object, SIGNAL(valueChanged(int,QString)), mediator, SLOT(durationChanged(int,QString)));
         connections_.insert(name);
     } else {
         qWarning() << "did not find component to create";

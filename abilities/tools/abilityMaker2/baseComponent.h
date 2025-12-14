@@ -49,9 +49,9 @@ signals:
     void setBool(bool, QString);
     void setString(QString, QString);
     void setValueType(QString, QString);
-    void setInt32(int32_t, QString);
-    void setInt8(int8_t, QString);
-    void setUInt8(uint8_t, QString);
+    void setInt32(QString, QString);
+    void setInt8(QString, QString);
+    void setUInt8(QString, QString);
     void setMultiplier(const std::optional<asn::Multiplier>&, QString);
     void setDuration(int, QString);
     void setNumber(const asn::Number&, QString);

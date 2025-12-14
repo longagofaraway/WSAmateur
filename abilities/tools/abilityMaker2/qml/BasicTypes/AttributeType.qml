@@ -3,12 +3,18 @@ import QtQuick.Controls 2.12
 
 ComboBox {
     id: attributeType
-    property string displayName: 'AttributeType'
 
+    property string displayName: 'AttributeType'
     signal valueChanged(string newValue, string compId)
 
-    function setValue(newValue) {
-        currentIndex = indexOfValue(newValue);
+    Connections {
+        target: parentComponent
+
+        function onSetAttributeType(newValue, compId) {
+            if (componentId !== compId)
+                return;
+            currentIndex = indexOfValue(newValue);
+        }
     }
 
     Text {

@@ -89,6 +89,7 @@ void EffectsTree::setWorkingArea(QObject *workingArea) {
 }
 void EffectsTree::setAbilityComponent(QQuickItem *abilityComponent) {
     abilityComponent_ = dynamic_cast<AbilityComponent*>(abilityComponent);
+    abilityComponent_->subscribeToEffectsChange(this);
 }
 
 void EffectsTree::renderTree() {
@@ -211,15 +212,16 @@ void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarE
         qWarning() << "changing effect on a wrong node";
         return;
     }
+
+    node->effect.value().effect = effect;
+    notifyOfChanges();
     if (node->effect.value().type == type) {
         return;
     }
-    node->effect.value().type = type;
-    node->effect.value().effect = effect;
 
+    node->effect.value().type = type;
     updateEffectsTree(node.get());
     renderTree();
-    notifyOfChanges();
 }
 
 void EffectsTree::notifyOfChanges() {

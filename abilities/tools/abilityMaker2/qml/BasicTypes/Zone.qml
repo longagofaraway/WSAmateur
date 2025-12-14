@@ -7,8 +7,14 @@ ComboBox {
     property string displayName: 'Zone'
     signal valueChanged(string newValue, string compId)
 
-    function setValue(newValue) {
-        currentIndex = indexOfValue(newValue);
+    Connections {
+        target: parentComponent
+
+        function onSetZone(newValue, compId) {
+            if (componentId !== compId)
+                return;
+            currentIndex = indexOfValue(newValue);
+        }
     }
 
     Text {

@@ -13,7 +13,7 @@ EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent)
 }
 
 EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent, const asn::Effect& effect)
-    : BaseComponent("Effect", parent) {
+    : BaseComponent("Effect", parent), nodeId_(nodeId) {
     init(parent);
     type_ = effect.type;
     effect_ = effect.effect;
@@ -22,6 +22,7 @@ EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent, const asn::
 }
 
 void EffectComponent::init(QQuickItem *parent) {
+    gen_helper = std::make_shared<gen::EffectHelper>(this);
     qvariant_cast<QObject*>(qmlObject_->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
     connect(qmlObject_, SIGNAL(effectTypeChanged(QString)), this, SLOT(onEffectTypeChanged(QString)));
 }
@@ -53,13 +54,13 @@ void EffectComponent::createEffect() {
         if (comp.type == "Effect") {
             continue;
         }
-        QString component_id = comp.type + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
+        QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
         types.insert(comp.type.toStdString());
         auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
         fitComponent(object);
     }
 
-    //setTriggerInQml();
+    gen_helper->setEffectInQml(type_, effect_);
 }
 
 void EffectComponent::onEffectTypeChanged(QString type) {
@@ -67,4 +68,8 @@ void EffectComponent::onEffectTypeChanged(QString type) {
     type_ = parse(type.toStdString(), formats::To<asn::EffectType>{});
     effect_ = getDefaultEffect(type_);
     createEffect();
+}
+
+void EffectComponent::notifyOfChanges() {
+    emit componentChanged(nodeId_, type_, effect_);
 }

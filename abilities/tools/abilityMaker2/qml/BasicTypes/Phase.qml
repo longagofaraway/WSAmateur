@@ -3,12 +3,19 @@ import QtQuick.Controls 2.12
 
 ComboBox {
     id: phase
-    property string displayName: 'Phase'
 
+    property string displayName: 'Phase'
     signal valueChanged(string newValue, string compId)
 
-    function setValue(newValue) {
-        currentIndex = indexOfValue(newValue);
+    Connections {
+        target: parentComponent
+
+        function onSetPhase(newValue, compId) {
+            console.info('lol');
+            if (componentId !== compId)
+                return;
+            currentIndex = indexOfValue(newValue);
+        }
     }
 
     Text {

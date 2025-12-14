@@ -108,6 +108,7 @@ void CardComponent::onCreateCardSpecifier(QString cardSpecifierType, QString val
     auto cardSpecifier = buildCardSpecifier(cardSpecifierType, value);
     createCardSpecifier(cardSpecifier);
     createCardSpecifierAdditionalActions();
+    notifyOfChanges();
 }
 
 void CardComponent::createCardSpecifier(const asn::CardSpecifier& specifier) {

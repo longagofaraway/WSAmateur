@@ -14,7 +14,7 @@ class TargetComponent : public CardComponent
 private:
     asn::TargetType type_;
     asn::TargetMode mode_{asn::TargetMode::Any};
-    asn::Number number_;
+    std::optional<asn::Number> number_;
 
 public:
     TargetComponent(QQuickItem *parent, QString id, QString displayName);
@@ -29,6 +29,7 @@ private slots:
     void onNumValueChanged(QString);
     void setTargetMode(QString);
     void setTargetType(QString);
+    void setQmlNumber(const asn::Number& number);
 
 private:
     void addComponent(QQuickItem* object, QString componentId, const asn::CardSpecifier& specifier);

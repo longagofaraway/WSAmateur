@@ -103,6 +103,7 @@ void CardSpecifierComponent::setCardSpecifier(const asn::CardSpecifier& cardSpec
         break;
     }
     }
+    emit componentReady(specifier_, componentId_);
 }
 
 void CardSpecifierComponent::valueChanged(QString value) {

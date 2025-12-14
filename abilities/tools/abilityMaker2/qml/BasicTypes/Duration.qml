@@ -3,12 +3,18 @@ import QtQuick.Controls 2.12
 
 ComboBox {
     id: duration
+
     property string displayName: 'Duration'
+    signal valueChanged(int newValue, string compId)
 
-    signal valueChanged(string newValue, string compId)
+    Connections {
+        target: parentComponent
 
-    function setValue(newValue) {
-        currentIndex = indexOfValue(newValue);
+        function onSetDuration(newValue, compId) {
+            if (componentId !== compId)
+                return;
+            currentIndex = newValue;
+        }
     }
 
     Text {
@@ -24,5 +30,5 @@ ComboBox {
         ListElement { key: "2"; value: "Two" }
     }
     currentIndex: -1
-    onCurrentValueChanged: valueChanged(currentValue, componentId);
+    onCurrentValueChanged: valueChanged(currentIndex, componentId);
 }

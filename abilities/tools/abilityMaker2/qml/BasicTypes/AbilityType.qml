@@ -4,8 +4,14 @@ import QtQuick.Controls 2.12
 ComboBox {
     signal valueChanged(string newValue, string compId)
 
-    function setValue(newValue) {
-        currentIndex = indexOfValue(newValue);
+    Connections {
+        target: parentComponent
+
+        function onSetAbilityType(newValue, compId) {
+            if (componentId !== compId)
+                return;
+            currentIndex = indexOfValue(newValue);
+        }
     }
 
     textRole: "key"

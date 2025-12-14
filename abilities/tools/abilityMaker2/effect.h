@@ -9,7 +9,7 @@
 #include "componentManager.h"
 
 namespace gen {
-    class TriggerHelper;
+    class EffectHelper;
 }
 
 class EffectComponent : public BaseComponent
@@ -25,7 +25,7 @@ private:
 
     asn::EffectType type_;
     VarEffect effect_;
-    std::shared_ptr<gen::TriggerHelper> gen_helper;
+    std::shared_ptr<gen::EffectHelper> gen_helper;
 
 public:
     EffectComponent(QString nodeId, QQuickItem *parent);
@@ -33,6 +33,7 @@ public:
     void init(QQuickItem *parent);
     ~EffectComponent();
 
+    void notifyOfChanges() override;
     virtual asn::EffectType getLanguageComponentType(formats::To<asn::EffectType>) override { return type_; }
     virtual VarEffect& getLanguageComponent(formats::To<VarEffect>) override { return effect_; }
 

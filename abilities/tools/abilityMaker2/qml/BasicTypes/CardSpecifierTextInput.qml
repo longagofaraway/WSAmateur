@@ -3,6 +3,7 @@ import QtQuick.Controls 2.12
 
 Item {
     id: itemRoot
+
     property string componentName
     signal valueChanged(string newValue)
 

@@ -3,12 +3,18 @@ import QtQuick.Controls 2.12
 
 ComboBox {
     id: attackType
-    property string displayName: 'AttackType'
 
+    property string displayName: 'AttackType'
     signal valueChanged(string newValue, string compId)
 
-    function setValue(newValue) {
-        currentIndex = indexOfValue(newValue);
+    Connections {
+        target: parentComponent
+
+        function onSetAttackType(newValue, compId) {
+            if (componentId !== compId)
+                return;
+            currentIndex = indexOfValue(newValue);
+        }
     }
 
     Text {
