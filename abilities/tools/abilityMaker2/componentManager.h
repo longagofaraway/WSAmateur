@@ -25,6 +25,6 @@ public:
     void clear();
 
 private:
-    QQuickItem* createCppComponent(QString name, QString displayName, QString id, QQuickItem *parent, BaseComponent* linkObject, gen::ComponentMediator *mediator);
-    QQuickItem* createQmlComponent(QString name, QString displayName, QString id, QQuickItem *parent, BaseComponent* linkObject, gen::ComponentMediator *mediator);
+    QQuickItem* createCppComponent(QString name, QString displayName, QString id, QQuickItem *parent, BaseComponent* linkObject, QObject *mediator);
+    QQuickItem* createQmlComponent(QString name, QString displayName, QString id, QQuickItem *parent, BaseComponent* linkObject, QObject *mediator);
 };

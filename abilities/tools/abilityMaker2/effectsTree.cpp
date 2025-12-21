@@ -200,6 +200,8 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
     node->branchInfo->treeBranch.insert(node->branchInfo->treeBranch.end() - 1, treeNodeInfo);
     renderTree();
+
+    notifyOfChanges();
 }
 
 void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarEffect& effect) {

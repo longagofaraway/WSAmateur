@@ -48,7 +48,7 @@ void EffectComponent::createEffect() {
     components_.clear();
     componentManager_.clear();
     auto &spec = LanguageSpecification::get();
-    auto components = spec.getComponents(QString::fromStdString(toString(type_)));
+    auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
     std::set<std::string> types;
     for (const auto& comp: components) {
         if (comp.type == "Effect") {

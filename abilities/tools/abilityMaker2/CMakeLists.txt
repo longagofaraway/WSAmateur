@@ -22,8 +22,12 @@ set(abilityMakerSources
     languageSpecification.h
     languageSpecification.cpp
     main.cpp
+    place.h
+    place.cpp
     target.h
     target.cpp
+    targetAndPlace.h
+    targetAndPlace.cpp
     trigger.h
     trigger.cpp
     triggerInit.h

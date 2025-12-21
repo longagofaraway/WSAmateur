@@ -21,7 +21,7 @@ public:
 
     void createCardSpecifierAdditionalActions() override;
 
-    void setTarget(const asn::Target&);
+    void setTarget(asn::Target);
     void notifyOfChanges() override;
 
 private slots:

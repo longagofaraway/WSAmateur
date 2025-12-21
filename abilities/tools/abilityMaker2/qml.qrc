@@ -41,5 +41,9 @@
         <file>resources/images/reverse.png</file>
         <file>resources/images/rest.png</file>
         <file>resources/images/stand.png</file>
+        <file>qml/TargetAndPlace.qml</file>
+        <file>qml/BasicTypes/PlaceType.qml</file>
+        <file>qml/BasicTypes/Position.qml</file>
+        <file>qml/BasicTypes/Place.qml</file>
     </qresource>
 </RCC>

@@ -42,6 +42,7 @@ signals:
     void setPhase(QString, QString);
     void setPhaseState(QString, QString);
     void setPlayer(QString, QString);
+    void setPlaceType(QString, QString);
     void setState(QString, QString);
     void setAttackType(QString, QString);
     void setAbilityType(QString, QString);
@@ -73,5 +74,7 @@ signals:
 
     void targetReady(const asn::Target&, QString);
     void cardReady(const asn::Card&, QString);
+    void targetAndPlaceReady(const asn::TargetAndPlace&, QString);
+    void placeReady(const asn::Place&, QString);
 };
 

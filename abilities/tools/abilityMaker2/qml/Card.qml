@@ -9,7 +9,9 @@ Button {
 
     signal createCardSpecifier(cardSpecifierType: string, value: string)
 
-    text: 'Card'
+    property string displayName: 'Card'
+
+    text: displayName
     width: 150
 
     onClicked: cardMenu.popup()

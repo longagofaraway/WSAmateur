@@ -7,6 +7,20 @@
 
 #include "lang_spec.h"
 
+namespace {
+std::string strip(const std::string &inpt)
+{
+    auto start_it = inpt.begin();
+    auto end_it = inpt.rbegin();
+    while (std::isspace(*start_it))
+        ++start_it;
+    if (start_it != inpt.end()) {
+       while (std::isspace(*end_it))
+          ++end_it;
+     }
+    return std::string(start_it, end_it.base());
+}
+}
 
 LanguageSpecification::LanguageSpecification() {
     std::istringstream ss(kLangSpec);
@@ -26,6 +40,26 @@ LanguageSpecification::LanguageSpecification() {
                  }
              }
          }
+    };
+
+    auto parseChoice = [&](QString name) -> LangComponent {
+        int braces_count = 1;
+        LangComponent comp;
+        comp.name = name;
+        std::string choiceLine;
+        while (std::getline(ss, choiceLine)) {
+            if (choiceLine.empty()) continue;
+            for (auto ch: choiceLine) {
+                if (ch == '{') braces_count++;
+                else if (ch == '}') braces_count--;
+            }
+            if (braces_count <= 0) break;
+            choiceLine = strip(choiceLine);
+            if (choiceLine.back() == ',') choiceLine.pop_back();
+            if (choiceLine == "Nothing") continue;
+            comp.type = QString::fromStdString(choiceLine);
+        }
+        return comp;
     };
 
     auto parseStruct = [&, this]() {
@@ -50,8 +84,7 @@ LanguageSpecification::LanguageSpecification() {
                     comp.name.front() = comp.name.front().toUpper();
                     comp.isArray = true;
                 } else if (tokens[1] == "Choice") {
-                    skipBlock();
-                    continue;
+                    comp = parseChoice(QString::fromStdString(tokens[0]));
                 } else {
                     comp.type = QString::fromStdString(tokens[1]);
                     comp.name = QString::fromStdString(tokens[0]);
@@ -158,7 +191,7 @@ LanguageSpecification& LanguageSpecification::get() {
     return langSpec;
 }
 
-std::vector<LangComponent> LanguageSpecification::getComponents(const QString typeName) {
+std::vector<LangComponent> LanguageSpecification::getComponentsByEnum(const QString typeName) {
     if (!typeToStruct_.contains(typeName)) {
         qDebug() << "typeName " << typeName << " not found";
         return {};
@@ -169,3 +202,11 @@ std::vector<LangComponent> LanguageSpecification::getComponents(const QString ty
     }
     return {};
 }
+
+std::vector<LangComponent> LanguageSpecification::getComponentsByType(const QString typeName) {
+    if (parsed_.contains(typeName.toStdString())) {
+        return parsed_[typeName.toStdString()];
+    }
+    return {};
+}
+

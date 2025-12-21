@@ -23,7 +23,8 @@ class LanguageSpecification {
     QHash<QString, std::string> conditionsMap_;
     QHash<QString, std::string> cardsMap_;
 public:
-    std::vector<LangComponent> getComponents(const QString typeName);
+    std::vector<LangComponent> getComponentsByEnum(const QString typeName);
+    std::vector<LangComponent> getComponentsByType(const QString typeName);
 
     static LanguageSpecification& get();
 private:
