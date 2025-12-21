@@ -6,7 +6,10 @@
 
 QString getBasicComponentQmlPath(QString componentTypeName) {
     QHash<QString, QString> kComponentQmlPath = {
+        {"Multiplier", "BasicTypes/Place"},
+        {"Number", "BasicTypes/Number"},
         {"Zone", "BasicTypes/Zone"},
+        {"Order", "BasicTypes/Order"},
         {"Phase", "BasicTypes/Phase"},
         {"PhaseState", "BasicTypes/PhaseState"},
         {"PlaceType", "BasicTypes/PlaceType"},

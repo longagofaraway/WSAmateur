@@ -76,5 +76,6 @@ signals:
     void cardReady(const asn::Card&, QString);
     void targetAndPlaceReady(const asn::TargetAndPlace&, QString);
     void placeReady(const asn::Place&, QString);
+    void numberReady(const asn::Number&, QString);
 };
 

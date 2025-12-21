@@ -7,6 +7,7 @@
 #include "componentHelper.h"
 #include "card.h"
 #include "cardSpecifier.h"
+#include "number.h"
 #include "place.h"
 #include "target.h"
 #include "targetAndPlace.h"
@@ -17,7 +18,8 @@ const QSet<QString> kCppComponents {
     "TargetAndPlace",
     "CardSpecifier",
     "Card",
-    "Place"
+    "Place",
+    "Number"
 };
 
 QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent, BaseComponent *linkObject) {
@@ -99,7 +101,7 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
         return component->getQmlObject();
     }
     if (name == "Place") {
-        cppComponents_[id] = std::make_unique<PlaceComponent>(parent, id);
+        cppComponents_[id] = std::make_unique<PlaceComponent>(parent, id, displayName);
         auto *component = cppComponents_[id].get();
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setPlace, this, [=](const asn::Place& place, QString idParam) {
@@ -111,6 +113,19 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
         QObject::connect(component, SIGNAL(placeReady(asn::Place,QString)), mediator, SLOT(placeChanged(asn::Place,QString)));
         return component->getQmlObject();
     }
+    if (name == "Number") {
+        cppComponents_[id] = std::make_unique<NumberComponent>(parent, id, displayName);
+        auto *component = cppComponents_[id].get();
+        if (!connections_.contains(name)) {
+            QObject::connect(linkObject, &BaseComponent::setNumber, this, [=](const asn::Number& number, QString idParam) {
+                auto *component = dynamic_cast<NumberComponent*>(cppComponents_[idParam].get());
+                component->setNumber(number);
+            });
+        }
+        connections_.insert(name);
+        QObject::connect(component, SIGNAL(numberReady(asn::Number,QString)), mediator, SLOT(numberChanged(asn::Number,QString)));
+        return component->getQmlObject();
+    }
     return nullptr;
 }
 
@@ -119,6 +134,9 @@ QQuickItem* ComponentManager::createQmlComponent(QString name, QString displayNa
     components_[id] = object;
     if (name == "Zone") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(zoneChanged(QString,QString)));
+        connections_.insert(name);
+    } else if (name == "Order") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(orderChanged(QString,QString)));
         connections_.insert(name);
     } else if (name == "Phase") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(phaseChanged(QString,QString)));

@@ -45,5 +45,6 @@
         <file>qml/BasicTypes/PlaceType.qml</file>
         <file>qml/BasicTypes/Position.qml</file>
         <file>qml/BasicTypes/Place.qml</file>
+        <file>qml/BasicTypes/Order.qml</file>
     </qresource>
 </RCC>

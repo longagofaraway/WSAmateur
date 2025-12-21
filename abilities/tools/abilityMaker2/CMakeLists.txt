@@ -22,6 +22,8 @@ set(abilityMakerSources
     languageSpecification.h
     languageSpecification.cpp
     main.cpp
+    number.h
+    number.cpp
     place.h
     place.cpp
     target.h

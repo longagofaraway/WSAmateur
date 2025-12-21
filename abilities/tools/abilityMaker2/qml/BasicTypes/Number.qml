@@ -1,8 +1,10 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 
-Row {
-    property var fontSize
+Rectangle {
+    id: numberQml
+    property double fontSize: 8
+    property string displayName
     signal numModifierChanged(string value)
     signal valueChanged(string value)
 
@@ -12,6 +14,16 @@ Row {
     function setValue(newValue) {
         textInput.text = newValue;
     }
+
+    width: childrenRect.width
+    height: childrenRect.height - 10
+
+    Text {
+        text: displayName
+        anchors.bottom: numberQml.top
+    }
+
+Row {
 
     spacing: 5
 
@@ -25,7 +37,7 @@ Row {
             ListElement { key: "<="; value: "UpTo" }
             ListElement { key: ">="; value: "AtLeast" }
         }
-        onCurrentValueChanged: numModifierChanged(currentValue);
+        onCurrentValueChanged: numberQml.numModifierChanged(currentValue);
     }
 
     Rectangle {
@@ -39,9 +51,9 @@ Row {
             anchors.fill: parent
             anchors.margins: 4
             verticalAlignment: TextInput.AlignVCenter
-            onTextChanged: valueChanged(text)
+            onTextChanged: numberQml.valueChanged(text)
             selectByMouse: true
-            font.pointSize: fontSize
+            font.pointSize: numberQml.fontSize
 
             property string placeholderText: "Enter value"
 
@@ -53,4 +65,6 @@ Row {
             }
         }
     }
+}
+
 }

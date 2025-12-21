@@ -4,11 +4,22 @@
 
 namespace {
 const asn::Effect kEmptyEffect = asn::Effect{.type=asn::EffectType::AbilityGain};
+asn::Target upTo1Char() {
+    asn::Card card;
+    card.cardSpecifiers.push_back(asn::CardSpecifier{.type=asn::CardSpecifierType::CardType,
+                                                     .specifier=asn::CardType::Char});
+    asn::Target t{.type = asn::TargetType::SpecificCards};
+    t.targetSpecification = asn::TargetSpecificCards{.mode=asn::TargetMode::Any,
+            .number=asn::Number{.mod=asn::NumModifier::UpTo,.value=1},
+            .cards=card};
+    return t;
+}
 }
 
 decltype(asn::Effect::effect) getDefaultEffect(asn::EffectType type) {
-    auto thisCardTarget = asn::Target();
+    asn::Target thisCardTarget;
     thisCardTarget.type = asn::TargetType::ThisCard;
+
     switch (type) {
     case asn::EffectType::AttributeGain:{
         auto ef = asn::AttributeGain();
@@ -23,20 +34,28 @@ decltype(asn::Effect::effect) getDefaultEffect(asn::EffectType type) {
         auto ef = asn::ChooseCard();
         ef.executor = asn::Player::Player;
         asn::TargetAndPlace tp;
-        asn::Target t;
-        asn::Card card;
-        card.cardSpecifiers.push_back(asn::CardSpecifier{.type=asn::CardSpecifierType::CardType,
-                                                         .specifier=asn::CardType::Char});
-        t.type = asn::TargetType::SpecificCards;
-        t.targetSpecification = asn::TargetSpecificCards{.mode=asn::TargetMode::Any,
-                .number=asn::Number{.mod=asn::NumModifier::UpTo,.value=1},
-                .cards=card};
-        tp.target = t;
+        tp.target = upTo1Char();
         tp.placeType = asn::PlaceType::SpecificPlace;
         tp.place = asn::Place{.pos=asn::Position::NotSpecified,
                 .zone=asn::Zone::WaitingRoom,
                 .owner=asn::Player::Player};
         ef.targets.push_back(tp);
+        return ef;
+    }
+    case asn::EffectType::MoveCard:{
+        auto ef = asn::MoveCard();
+        ef.executor = asn::Player::Player;
+        ef.from = asn::Place{.pos=asn::Position::NotSpecified,.zone=asn::Zone::WaitingRoom,.owner=asn::Player::Player};
+        ef.to.push_back(asn::Place{.pos=asn::Position::NotSpecified,.zone=asn::Zone::Hand,.owner=asn::Player::Player});
+        ef.target = upTo1Char();
+        ef.order = asn::Order::NotSpecified;
+        return ef;
+    }
+    case asn::EffectType::Look:{
+        auto ef = asn::Look{};
+        ef.number = asn::Number{.mod=asn::NumModifier::UpTo,.value=3};
+        ef.place = asn::Place{.pos=asn::Position::Top,.zone=asn::Zone::Deck,.owner=asn::Player::Player};
+        ef.valueType = asn::ValueType::RawValue;
         return ef;
     }
     case asn::EffectType::PayCost:

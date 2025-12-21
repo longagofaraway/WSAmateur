@@ -3,8 +3,9 @@
 #include "language_parser.h"
 #include "languageSpecification.h"
 
-PlaceComponent::PlaceComponent(QQuickItem *parent, QString id)
+PlaceComponent::PlaceComponent(QQuickItem *parent, QString id, QString displayName)
     : BaseComponent("BasicTypes/Place", parent, id) {
+    qmlObject_->setProperty("displayName", displayName);
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByType(QString::fromStdString("Place"));
     for (const auto& comp: components) {

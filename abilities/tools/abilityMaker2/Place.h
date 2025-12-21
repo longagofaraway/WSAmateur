@@ -16,7 +16,7 @@ private:
     asn::Place place_;
 
 public:
-    PlaceComponent(QQuickItem *parent, QString id);
+    PlaceComponent(QQuickItem *parent, QString id, QString displayName);
 
     void setPlace(asn::Place);
     void notifyOfChanges() override;
