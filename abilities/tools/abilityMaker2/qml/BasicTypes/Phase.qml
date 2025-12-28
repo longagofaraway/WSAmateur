@@ -11,7 +11,6 @@ ComboBox {
         target: parentComponent
 
         function onSetPhase(newValue, compId) {
-            console.info('lol');
             if (componentId !== compId)
                 return;
             currentIndex = indexOfValue(newValue);

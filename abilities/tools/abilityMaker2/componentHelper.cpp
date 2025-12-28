@@ -17,6 +17,7 @@ QString getBasicComponentQmlPath(QString componentTypeName) {
         {"Player", "BasicTypes/Player"},
         {"Position", "BasicTypes/Position"},
         {"State", "BasicTypes/State"},
+        {"TriggerIcon", "BasicTypes/TriggerIcon"},
         {"AttackType", "BasicTypes/AttackType"},
         {"AbilityType", "BasicTypes/AbilityType"},
         {"AttributeType", "BasicTypes/AttributeType"},

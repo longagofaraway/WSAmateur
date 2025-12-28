@@ -11,6 +11,7 @@ struct LangComponent {
     QString name;
     bool isArray{false};
     bool isEnum{false};
+    bool isOptional{false};
 };
 
 

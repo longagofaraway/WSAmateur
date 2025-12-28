@@ -159,13 +159,13 @@ enum AttributeType {
 AttributeGain {
   target Target,
   type AttributeType,
-  gainType ValueType,
   value Int32,
+  duration Duration,
+  gainType ValueType,
   modifier Choice {
     Multiplier,
     Nothing
-  },
-  duration Duration
+  }
 }
 
 enum ValueType {

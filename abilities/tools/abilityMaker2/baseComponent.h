@@ -82,7 +82,7 @@ signals:
     void numberReady(const asn::Number&, QString);
     void multiplierReady(const asn::Multiplier&, QString);
 
-    void showMultiplier(bool, QString);
     void valueTypeChanged(QString, QString);
+    void placeTypeChanged(QString, QString);
 };
 

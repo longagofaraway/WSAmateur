@@ -72,6 +72,7 @@ void TargetComponent::onNumValueChanged(QString value) {
 void TargetComponent::setTargetMode(QString targetMode) {
     mode_ = parse(targetMode.toStdString(), formats::To<asn::TargetMode>{});
     type_ = asn::TargetType::SpecificCards;
+    number_ = asn::Number{.mod=asn::NumModifier::ExactMatch,.value=1};
     QMetaObject::invokeMethod(qmlObject_, "showNumber");
     notifyOfChanges();
     setSecondLine();

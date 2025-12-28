@@ -71,7 +71,7 @@ void EffectComponent::onEffectTypeChanged(QString type) {
 }
 
 void EffectComponent::notifyOfChanges() {
-    emit componentChanged(nodeId_, type_, effect_);
+    emit componentChanged(nodeId_, type_, nullifyOptionalFields(type_, effect_));
     qreal width{70}, height{0};
     for (const auto component: components_) {
         width += component->width() + 10;

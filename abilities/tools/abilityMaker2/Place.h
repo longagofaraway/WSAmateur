@@ -21,10 +21,14 @@ public:
     void setPlace(asn::Place);
     void notifyOfChanges() override;
 
+signals:
+    void placeComponentPlaceTypeChanged(asn::PlaceType);
+
 public slots:
     void positionChanged(QString position, QString id);
     void zoneChanged(QString zone, QString id);
     void playerChanged(QString player, QString id);
+    void onPlaceTypeChanged(QString,QString);
 
 private:
     void fitComponent(QQuickItem* object);

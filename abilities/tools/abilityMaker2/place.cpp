@@ -53,3 +53,11 @@ void PlaceComponent::playerChanged(QString player, QString id) {
     place_.owner = parse(player.toStdString(), formats::To<asn::Player>{});
     notifyOfChanges();
 }
+
+void PlaceComponent::onPlaceTypeChanged(QString value, QString) {
+    auto type = parse(value.toStdString(), formats::To<asn::PlaceType>{});
+    if (type == asn::PlaceType::SpecificPlace)
+        qmlObject_->setVisible(true);
+    else
+        qmlObject_->setVisible(false);
+}

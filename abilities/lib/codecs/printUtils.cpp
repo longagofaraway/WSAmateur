@@ -350,7 +350,7 @@ std::string printForEachMultiplier(const ForEachMultiplier &m, bool addOf) {
             s += "in your " + printZone(m.place->zone) + " ";
     } else if (m.placeType == PlaceType::LastMovedCards) {
         s += "among those cards ";
-    } else if (m.placeType == PlaceType::Marker) {
+    } else if (m.placeType == PlaceType::Marker && m.markerBearer) {
         s += "underneath ";
         s += printTarget(*m.markerBearer.value());
     }

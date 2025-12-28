@@ -9,3 +9,5 @@
 decltype(asn::Effect::effect) getDefaultEffect(asn::EffectType type);
 
 asn::Effect getEffectFromPreset(QString preset);
+
+decltype(asn::Effect::effect) nullifyOptionalFields(asn::EffectType type, decltype(asn::Effect::effect) effect);

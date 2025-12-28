@@ -10,6 +10,20 @@
 namespace {
 const qreal kLeftMargin = 10.0;
 const qreal kTopMargin = 100.0;
+
+VarMultiplier nullifyOptionalFields(asn::MultiplierType type, VarMultiplier multiplier) {
+    switch (type) {
+    case asn::MultiplierType::ForEach: {
+        auto &elem = std::get<asn::ForEachMultiplier>(multiplier);
+        if (elem.placeType != asn::PlaceType::SpecificPlace)
+            elem.place = std::nullopt;
+        if (elem.placeType != asn::PlaceType::Marker)
+            elem.markerBearer = std::nullopt;
+        break;
+    }
+    }
+    return multiplier;
+}
 }
 
 MultiplierComponent::MultiplierComponent(QQuickItem *parent, QString id, QString displayName)
@@ -19,8 +33,11 @@ MultiplierComponent::MultiplierComponent(QQuickItem *parent, QString id, QString
     connect(qmlObject_, SIGNAL(multiplierTypeChanged(QString)), this, SLOT(onMultiplierTypeChanged(QString)));
 }
 
-void MultiplierComponent::setMultiplier(asn::Multiplier) {
-
+void MultiplierComponent::setMultiplier(asn::Multiplier multiplier) {
+    type_ = multiplier.type;
+    multiplier_ = multiplier.specifier;
+    QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
+    createMultiplier();
 }
 
 void MultiplierComponent::fitComponent(QQuickItem* object) {
@@ -39,7 +56,7 @@ void MultiplierComponent::fitComponent(QQuickItem* object) {
 }
 
 void MultiplierComponent::notifyOfChanges() {
-    asn::Multiplier m{.type=type_,.specifier=multiplier_.value()};
+    asn::Multiplier m{.type=type_,.specifier=nullifyOptionalFields(type_, multiplier_.value())};
     emit multiplierReady(m, componentId_);
 }
 
@@ -63,9 +80,24 @@ void MultiplierComponent::onMultiplierTypeChanged(QString value) {
     createMultiplier();
 }
 
+void MultiplierComponent::onPlaceTypeChanged(QString value, QString id) {
+    // hide/show place
+    emit placeTypeChanged(value, id);
+
+    auto type = parse(value.toStdString(), formats::To<asn::PlaceType>{});
+    if (!markerBearer)
+        return;
+    if (type == asn::PlaceType::Marker)
+        markerBearer->setProperty("visible", true);
+    else
+        markerBearer->setProperty("visible", false);
+    notifyOfChanges();
+}
+
 void MultiplierComponent::createMultiplier() {
     components_.clear();
     componentManager_.clear();
+    markerBearer = nullptr;
 
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
@@ -74,20 +106,25 @@ void MultiplierComponent::createMultiplier() {
         QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
         types.insert(comp.type.toStdString());
         auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
-        object->setProperty("visible", true);
+        if (comp.name == "MarkerBearer") {
+            object->setProperty("visible", false);
+            markerBearer = object;
+        }
         fitComponent(object);
     }
 
-    //resizeMultiplier();
+    resizeMultiplier();
+    gen_helper->setMultiplierInQml(type_, multiplier_.value());
+    notifyOfChanges();
+}
+
+void MultiplierComponent::resizeMultiplier() {
     qreal width{0};
     qreal maxHeight{0};
     for (const auto& component: components_) {
         width += component->width();
         maxHeight = std::max(maxHeight, component->height());
     }
-    qmlObject_->setWidth(width + kLeftMargin*(components_.size()+1));
+    qmlObject_->setWidth(std::max(width, qreal{200}) + kLeftMargin*(components_.size()+1));
     qmlObject_->setHeight(maxHeight + kTopMargin + 2);
-
-    gen_helper->setMultiplierInQml(type_, multiplier_.value());
-    notifyOfChanges();
 }

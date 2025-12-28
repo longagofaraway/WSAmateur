@@ -103,13 +103,15 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
         return component->getQmlObject();
     }
     if (name == "Place") {
-        cppComponents_[id] = std::make_unique<PlaceComponent>(parent, id, displayName);
-        auto *component = cppComponents_[id].get();
+        auto unique_component = std::make_unique<PlaceComponent>(parent, id, displayName);
+        auto *component = unique_component.get();
+        cppComponents_[id] = std::move(unique_component);
         if (!connections_.contains(name)) {
             QObject::connect(linkObject, &BaseComponent::setPlace, this, [=](const asn::Place& place, QString idParam) {
                 auto *component = dynamic_cast<PlaceComponent*>(cppComponents_[idParam].get());
                 component->setPlace(place);
             });
+            QObject::connect(linkObject, &BaseComponent::placeTypeChanged, component, &PlaceComponent::onPlaceTypeChanged);
         }
         connections_.insert(name);
         QObject::connect(component, SIGNAL(placeReady(asn::Place,QString)), mediator, SLOT(placeChanged(asn::Place,QString)));
@@ -166,12 +168,18 @@ QQuickItem* ComponentManager::createQmlComponent(QString name, QString displayNa
         connections_.insert(name);
     } else if (name == "PlaceType") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(placeTypeChanged(QString,QString)));
+        if (mediator != linkObject) {
+            QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SLOT(onPlaceTypeChanged(QString,QString)));
+        }
         connections_.insert(name);
     } else if (name == "Position") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(positionChanged(QString,QString)));
         connections_.insert(name);
     } else if (name == "State") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(stateChanged(QString,QString)));
+        connections_.insert(name);
+    } else if (name == "TiggerIcon") {
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(tiggerIconChanged(QString,QString)));
         connections_.insert(name);
     } else if (name == "AttackType") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(attackTypeChanged(QString,QString)));

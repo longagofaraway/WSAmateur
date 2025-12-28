@@ -71,3 +71,37 @@ asn::Effect getEffectFromPreset(QString preset) {
     effect.effect = getDefaultEffect(effect.type);
     return effect;
 }
+
+decltype(asn::Effect::effect) nullifyOptionalFields(asn::EffectType type, decltype(asn::Effect::effect) effect) {
+    switch (type) {
+    case asn::EffectType::AttributeGain: {
+        auto &ef = std::get<asn::AttributeGain>(effect);
+        if (ef.gainType != asn::ValueType::Multiplier) {
+            ef.modifier = std::nullopt;
+        }
+        break;
+    }
+    case asn::EffectType::Look: {
+        auto &ef = std::get<asn::Look>(effect);
+        if (ef.valueType != asn::ValueType::Multiplier) {
+            ef.multiplier = std::nullopt;
+        }
+        break;
+    }
+    case asn::EffectType::RevealCard: {
+        auto &ef = std::get<asn::RevealCard>(effect);
+        if (ef.type != asn::RevealType::FromHand) {
+            ef.card = std::nullopt;
+        }
+        break;
+    }
+    case asn::EffectType::DealDamage: {
+        auto &ef = std::get<asn::DealDamage>(effect);
+        if (ef.damageType != asn::ValueType::Multiplier) {
+            ef.modifier = std::nullopt;
+        }
+        break;
+    }
+    }
+    return effect;
+}

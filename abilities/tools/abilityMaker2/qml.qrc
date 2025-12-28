@@ -47,5 +47,6 @@
         <file>qml/BasicTypes/Place.qml</file>
         <file>qml/BasicTypes/Order.qml</file>
         <file>qml/Multiplier.qml</file>
+        <file>qml/BasicTypes/TriggerIcon.qml</file>
     </qresource>
 </RCC>

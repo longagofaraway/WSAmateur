@@ -45,7 +45,10 @@ void TargetAndPlaceComponent::setTargetAndPlace(asn::TargetAndPlace target) {
 }
 
 void TargetAndPlaceComponent::notifyOfChanges() {
-    emit targetAndPlaceReady(target_, componentId_);
+    auto target = target_;
+    if (target.placeType != asn::PlaceType::SpecificPlace)
+        target.place = std::nullopt;
+    emit targetAndPlaceReady(target, componentId_);
 }
 
 void TargetAndPlaceComponent::targetChanged(const asn::Target &target, QString id) {

@@ -24,6 +24,8 @@ private:
     std::optional<VarMultiplier> multiplier_;
     std::shared_ptr<gen::MultiplierHelper> gen_helper;
 
+    QQuickItem *markerBearer;
+
 public:
     MultiplierComponent(QQuickItem *parent, QString id, QString displayName);
 
@@ -36,8 +38,10 @@ public:
 
 public slots:
     void onMultiplierTypeChanged(QString);
+    void onPlaceTypeChanged(QString placeType, QString id);
 
 private:
     void fitComponent(QQuickItem* object);
     void createMultiplier();
+    void resizeMultiplier();
 };
