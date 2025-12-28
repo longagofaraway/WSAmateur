@@ -99,7 +99,7 @@ enum EffectType {
 }
 
 
-relation Trigger {
+relation Effect {
   attributeGain: AttributeGain,
   chooseCard: ChooseCard,
   revealCard: RevealCard,

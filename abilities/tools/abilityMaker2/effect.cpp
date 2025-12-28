@@ -72,4 +72,10 @@ void EffectComponent::onEffectTypeChanged(QString type) {
 
 void EffectComponent::notifyOfChanges() {
     emit componentChanged(nodeId_, type_, effect_);
+    qreal width{70}, height{0};
+    for (const auto component: components_) {
+        width += component->width() + 10;
+        height = std::max(height, component->height());
+    }
+    emit sizeChanged(width, height);
 }

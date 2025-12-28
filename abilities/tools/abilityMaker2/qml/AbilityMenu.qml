@@ -16,6 +16,7 @@ ScrollView {
 
     signal createTrigger(triggerId: string)
     signal openTrigger()
+    signal abilityMenuSizeChanged(qmlWidth: real, qmlHeight: real)
 
     function setWorkingArea(workingArea) {
         effectsTree.setWorkingArea(workingArea);
@@ -97,6 +98,9 @@ Column {
         target: effectsTree
         function onGotFocus() {
             triggers.highlighted = false;
+        }
+        function onSizeChanged(qmlWidth, qmlHeight) {
+            abilityMenuSizeChanged(qmlWidth, qmlHeight);
         }
     }
 

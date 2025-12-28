@@ -16,6 +16,14 @@ enum MultiplierType {
   previousDamage = 5 // if cancelled, deal the same amount of damage
 }
 
+relation Multiplier {
+  forEach: ForEachMultiplier,
+  timesLevel: Nothing,
+  addLevel: AddLevelMultiplier,
+  addTriggerNumber: AddTriggerNumberMultiplier,
+  previousDamage: Nothing
+}
+
 ForEachMultiplier {
   target Target,
   placeType PlaceType,

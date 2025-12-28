@@ -24,6 +24,10 @@ Window {
             function onComponentChanged(ability) {
                 abilityText.text = root.translate(ability);
             }
+            function onAbilitySizeChanged(qmlWidth, qmlHeight) {
+                if (qmlWidth > window.width)
+                    window.width = qmlWidth;
+            }
         }
 
         Ability {

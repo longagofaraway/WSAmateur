@@ -46,6 +46,7 @@ LanguageSpecification::LanguageSpecification() {
         int braces_count = 1;
         LangComponent comp;
         comp.name = name;
+        comp.name.front() = comp.name.front().toUpper();
         std::string choiceLine;
         while (std::getline(ss, choiceLine)) {
             if (choiceLine.empty()) continue;
@@ -130,6 +131,8 @@ LanguageSpecification::LanguageSpecification() {
                 conditionsMap_[type] = structName;
             } else if (lastToken == "CardSpecifier") {
                 cardsMap_[type] = structName;
+            } else if (lastToken == "Multiplier") {
+                multiplierMap_[type] = structName;
             }
         }
     };
@@ -184,6 +187,7 @@ LanguageSpecification::LanguageSpecification() {
     typeToStruct_.insert(effectsMap_);
     typeToStruct_.insert(conditionsMap_);
     typeToStruct_.insert(cardsMap_);
+    typeToStruct_.insert(multiplierMap_);
 }
 
 LanguageSpecification& LanguageSpecification::get() {

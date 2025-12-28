@@ -21,10 +21,25 @@ Item {
             anchors.horizontalCenter: column.horizontalCenter
         }
 
-        Player {
+        /*Player {
             id: comboBox
 
             font.pointSize: 10
+            onCurrentValueChanged: itemRoot.valueChanged(currentValue);
+        }*/
+
+        ComboBox {
+            id: comboBox
+
+            font.pointSize: 10
+            textRole: "key"
+            valueRole: "value"
+            model: ListModel {
+                ListElement { key: "Player"; value: "Player" }
+                ListElement { key: "Opponent"; value: "Opponent" }
+                ListElement { key: "Both"; value: "Both" }
+            }
+            currentIndex: -1
             onCurrentValueChanged: itemRoot.valueChanged(currentValue);
         }
     }

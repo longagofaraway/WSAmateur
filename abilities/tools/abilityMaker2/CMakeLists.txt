@@ -22,6 +22,10 @@ set(abilityMakerSources
     languageSpecification.h
     languageSpecification.cpp
     main.cpp
+    multiplier.h
+    multiplier.cpp
+    multiplierInit.h
+    multiplierInit.cpp
     number.h
     number.cpp
     place.h
@@ -46,7 +50,8 @@ set(langSpecSource
 
 set(helperFilesSource
     trigger.txt
-    effect.txt)
+    effect.txt
+    multiplier.txt)
 
 list(TRANSFORM langSpecSource PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)
 list(TRANSFORM helperFilesSource PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)

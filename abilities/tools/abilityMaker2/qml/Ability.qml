@@ -8,6 +8,8 @@ import abilityComponent 1.0
 AbilityComponent {
     id: abilityComponent
 
+    signal abilitySizeChanged(qmlWidth: real, qmlHeight: real)
+
     function setTriggerText(triggerText: string) {
         abilityMenu.setTriggerText(triggerText);
     }
@@ -80,6 +82,9 @@ AbilityComponent {
         }
         onOpenTrigger: {
             abilityComponent.openTrigger(workingArea);
+        }
+        onAbilityMenuSizeChanged: {
+            abilityComponent.abilitySizeChanged(qmlWidth, qmlHeight);
         }
     }
 

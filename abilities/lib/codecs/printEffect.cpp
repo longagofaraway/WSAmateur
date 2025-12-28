@@ -638,7 +638,7 @@ std::string printLook(const Look &e) {
     s += printPlayer(e.place.owner);
     s += printZone(e.place.zone) + " ";
 
-    if (e.valueType == ValueType::Multiplier && e.multiplier.value().type == MultiplierType::ForEach) {
+    if (e.valueType == ValueType::Multiplier && e.multiplier && e.multiplier.value().type == MultiplierType::ForEach) {
         const auto &m = std::get<ForEachMultiplier>(e.multiplier->specifier);
         s += "(X is equal to the number ";
         s += printForEachMultiplier(m, true);

@@ -194,6 +194,7 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
         effectComponent = std::make_shared<EffectComponent>(newNodeId, workingArea_);
     }
     connect(&*effectComponent, &EffectComponent::componentChanged, this, &EffectsTree::effectChanged);
+    connect(&*effectComponent, &EffectComponent::sizeChanged, this, &EffectsTree::effectSizeChanged);
     abilityComponent_->setCurrentComponent(effectComponent);
     updateEffectsTree(&nodeInfo);
     auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
@@ -224,6 +225,10 @@ void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarE
     node->effect.value().type = type;
     updateEffectsTree(node.get());
     renderTree();
+}
+
+void EffectsTree::effectSizeChanged(qreal width, qreal height) {
+    emit sizeChanged(width+this->width(), height+this->height());
 }
 
 void EffectsTree::notifyOfChanges() {

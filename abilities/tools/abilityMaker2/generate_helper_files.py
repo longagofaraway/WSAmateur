@@ -9,14 +9,18 @@ class Language:
             return 'TriggerType'
         if self.mode == 'Effect':
             return 'EffectType'
+        if self.mode == 'Multiplier':
+            return 'MultiplierType'
         raise 'unknown Language mode'
     
 
     def _getCurrentClassName(self):
         if self.mode == 'Trigger':
             return 'TriggerHelper'
-        elif self.mode == 'Effect':
+        if self.mode == 'Effect':
             return 'EffectHelper'
+        if self.mode == 'Multiplier':
+            return 'MultiplierHelper'
         raise 'unknown Language mode'
 
 
@@ -36,6 +40,8 @@ public slots:
             return 'setTriggerInQml(asn::TriggerType languageComponentType, const VarTrigger& languageComponent)'
         if self.mode == 'Effect':
             return 'setEffectInQml(asn::EffectType languageComponentType, const VarEffect& languageComponent)'
+        if self.mode == 'Multiplier':
+            return 'setMultiplierInQml(asn::MultiplierType languageComponentType, const VarMultiplier& languageComponent)'
 
 
     def getQmlSetterCode(self):
@@ -93,6 +99,9 @@ public slots:
         elif self.mode == 'Effect':
             component_type_type = 'asn::EffectType'
             component_type = 'VarEffect'
+        elif self.mode == 'Multiplier':
+            component_type_type = 'asn::MultiplierType'
+            component_type = 'VarMultiplier'
         return f'''void {class_name}::{self._slotFunctionDeclaration(type)} {{
     auto languageComponentType = linkObject->getLanguageComponentType(formats::To<{component_type_type}>{{}});
     auto& languageComponent = linkObject->getLanguageComponent(formats::To<{component_type}>{{}});
@@ -254,7 +263,10 @@ def parseStruct(ss, current_line, lang):
         if field_type in ['Bool', 'Target', 'Card', 'Multiplier', 'TargetAndPlace', 'Number', 'Place', 'Duration', 'Ability', 'SearchTarget', 'EventAbility', 'Effect', 'ChooseCard', 'AutoAbility']:
             prepared_signal_field = f'elem.{field_name}'
             prepared_slot_field = 'value'
-            if struct_name in ['DelayedAbility', 'CostSubstitution'] and field_type in ['AutoAbility', 'Effect']:
+            if is_optional:
+                prepared_signal_field += '.value()'
+            if ((struct_name in ['DelayedAbility', 'CostSubstitution'] and field_type in ['AutoAbility', 'Effect']) or
+                struct_name in ['ForEachMultiplier', 'AddLevelMultiplier', 'AddTriggerNumberMultiplier'] and field_type == 'Target'):
                 prepared_signal_field = '*'+prepared_signal_field+'.get()'
                 prepared_slot_field = f'std::make_shared<asn::{field_type}>('+prepared_slot_field+')'
             if is_array:
@@ -280,12 +292,10 @@ def parseStruct(ss, current_line, lang):
         if is_array:
             signal_code += f'''        if (elem.{field_name}.size() > 0) {{
     '''
-        optional_getter = ''
         if is_optional:
             signal_code += f'''        if (elem.{field_name}.has_value()) {{
     '''
-            optional_getter = '.value()'
-        signal_code += f'''        emit linkObject->set{field_type}({prepared_signal_field}{optional_getter}, "{component_id}");
+        signal_code += f'''        emit linkObject->set{field_type}({prepared_signal_field}, "{component_id}");
 '''
         if is_optional:
             signal_code += '''        }
@@ -331,6 +341,7 @@ namespace gen {
 
 using VarTrigger = decltype(asn::Trigger::trigger);
 using VarEffect = decltype(asn::Effect::effect);
+using VarMultiplier = decltype(asn::Multiplier::specifier);
 
 class ComponentMediator : public QObject {
     Q_OBJECT
@@ -371,7 +382,7 @@ for filename in sys.argv[1:]:
         tokens = line.split()
         if len(tokens) < 1:
             continue
-        if tokens[0] == 'Trigger' or tokens[0] == 'Effect':
+        if tokens[0] == 'Trigger' or tokens[0] == 'Effect' or tokens[0] == 'Multiplier':
             skipBlock(doc_ss, line)
             lang.mode = tokens[0]
             hpp_buffer += lang.getClassDeclaration()

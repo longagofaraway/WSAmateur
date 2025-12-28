@@ -7,6 +7,7 @@
 
 using VarTrigger = decltype(asn::Trigger::trigger);
 using VarEffect = decltype(asn::Effect::effect);
+using VarMultiplier = decltype(asn::Multiplier::specifier);
 
 class BaseComponent : public QObject
 {
@@ -29,6 +30,8 @@ public:
     virtual VarTrigger& getLanguageComponent(formats::To<VarTrigger>) { throw std::runtime_error("not implemented"); }
     virtual asn::EffectType getLanguageComponentType(formats::To<asn::EffectType>) { throw std::runtime_error("not implemented"); }
     virtual VarEffect& getLanguageComponent(formats::To<VarEffect>) { throw std::runtime_error("not implemented"); }
+    virtual asn::MultiplierType getLanguageComponentType(formats::To<asn::MultiplierType>) { throw std::runtime_error("not implemented"); }
+    virtual VarMultiplier& getLanguageComponent(formats::To<VarMultiplier>) { throw std::runtime_error("not implemented"); }
 
 signals:
     void close();
@@ -53,7 +56,7 @@ signals:
     void setInt32(QString, QString);
     void setInt8(QString, QString);
     void setUInt8(QString, QString);
-    void setMultiplier(const std::optional<asn::Multiplier>&, QString);
+    void setMultiplier(const asn::Multiplier&, QString);
     void setDuration(int, QString);
     void setNumber(const asn::Number&, QString);
     void setPlace(const asn::Place&, QString);
@@ -77,5 +80,9 @@ signals:
     void targetAndPlaceReady(const asn::TargetAndPlace&, QString);
     void placeReady(const asn::Place&, QString);
     void numberReady(const asn::Number&, QString);
+    void multiplierReady(const asn::Multiplier&, QString);
+
+    void showMultiplier(bool, QString);
+    void valueTypeChanged(QString, QString);
 };
 

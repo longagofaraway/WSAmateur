@@ -51,6 +51,7 @@ public:
 signals:
     void componentChanged(std::vector<asn::Effect> effects);
     void gotFocus();
+    void sizeChanged(qreal width, qreal height);
 
 private:
     void renderTree();
@@ -63,6 +64,7 @@ private:
 private slots:
     void createEffect(QString,QString);
     void effectChanged(QString nodeId, asn::EffectType type, const VarEffect& effect);
+    void effectSizeChanged(qreal width, qreal height);
 
 protected:
     void componentComplete() override;

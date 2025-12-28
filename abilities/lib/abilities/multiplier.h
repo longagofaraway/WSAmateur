@@ -18,7 +18,7 @@ enum class MultiplierType : uint8_t {
 };
 
 struct ForEachMultiplier {
-    // shared_ptr to break circular dependecy
+    // shared_ptr to break circular dependency
     std::shared_ptr<Target> target;
     PlaceType placeType;
     std::optional<Place> place;

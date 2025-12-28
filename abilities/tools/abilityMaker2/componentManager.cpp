@@ -7,6 +7,7 @@
 #include "componentHelper.h"
 #include "card.h"
 #include "cardSpecifier.h"
+#include "multiplier.h"
 #include "number.h"
 #include "place.h"
 #include "target.h"
@@ -19,7 +20,8 @@ const QSet<QString> kCppComponents {
     "CardSpecifier",
     "Card",
     "Place",
-    "Number"
+    "Number",
+    "Multiplier"
 };
 
 QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent, BaseComponent *linkObject) {
@@ -126,6 +128,21 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
         QObject::connect(component, SIGNAL(numberReady(asn::Number,QString)), mediator, SLOT(numberChanged(asn::Number,QString)));
         return component->getQmlObject();
     }
+    if (name == "Multiplier") {
+        auto unique_component = std::make_unique<MultiplierComponent>(parent, id, displayName);
+        auto *component = unique_component.get();
+        cppComponents_[id] = std::move(unique_component);
+        if (!connections_.contains(name)) {
+            QObject::connect(linkObject, &BaseComponent::setMultiplier, this, [=](const asn::Multiplier& multiplier, QString idParam) {
+                auto *component = dynamic_cast<MultiplierComponent*>(cppComponents_[idParam].get());
+                component->setMultiplier(multiplier);
+            });
+            QObject::connect(linkObject, &BaseComponent::valueTypeChanged, component, &MultiplierComponent::onValueTypeChanged);
+        }
+        connections_.insert(name);
+        QObject::connect(component, SIGNAL(multiplierReady(asn::Multiplier,QString)), mediator, SLOT(multiplierChanged(asn::Multiplier,QString)));
+        return component->getQmlObject();
+    }
     return nullptr;
 }
 
@@ -167,6 +184,7 @@ QQuickItem* ComponentManager::createQmlComponent(QString name, QString displayNa
         connections_.insert(name);
     } else if (name == "ValueType") {
         QObject::connect(object, SIGNAL(valueChanged(QString,QString)), mediator, SLOT(valueTypeChanged(QString,QString)));
+        QObject::connect(object, SIGNAL(valueChanged(QString,QString)), linkObject, SIGNAL(valueTypeChanged(QString,QString)));
         connections_.insert(name);
     } else if (name == "Bool") {
         QObject::connect(object, SIGNAL(valueChanged(bool,QString)), mediator, SLOT(boolChanged(bool,QString)));

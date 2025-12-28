@@ -39,6 +39,7 @@ public:
 
 signals:
     void componentChanged(QString nodeId, asn::EffectType type, VarEffect effect);
+    void sizeChanged(qreal width, qreal height);
 
 private:
     void fitComponent(QQuickItem* object);

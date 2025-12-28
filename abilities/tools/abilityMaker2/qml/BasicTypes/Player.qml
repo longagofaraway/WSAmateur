@@ -7,7 +7,6 @@ ComboBox {
     property string displayName: 'Player'
     signal valueChanged(string newValue, string compId)
 
-
     Connections {
         target: parentComponent
 
