@@ -87,6 +87,8 @@ std::string printCard(const Card &c, bool plural, bool article, TargetMode mode)
                     } else {
                         s += "the sum of the levels of those cards";
                     }
+                } else if (multiplier.target->type == TargetType::MentionedCards) {
+                    s += "the level of revealed cards";
                 } else {
                     assert(false);
                 }

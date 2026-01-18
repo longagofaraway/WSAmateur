@@ -3,6 +3,8 @@ set(abilityMakerSources
     ability.cpp
     abilityMaker.h
     abilityMaker.cpp
+    applicationData.h
+    applicationData.cpp
     baseComponent.h
     baseComponent.cpp
     card.h

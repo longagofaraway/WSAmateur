@@ -52,6 +52,10 @@ Menu {
         text: "Level"
         onTriggered: cardMenu.createCardSpecifier("Level", "")
     }
+    MenuItem {
+        text: "Level with multiplier"
+        onTriggered: cardMenu.createCardSpecifier("LevelWithMultiplier", "")
+    }
     Menu {
         cascade: true
         title: "State"

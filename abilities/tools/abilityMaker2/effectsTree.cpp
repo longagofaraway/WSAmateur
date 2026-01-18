@@ -3,6 +3,7 @@
 #include <QQmlContext>
 
 #include "ability.h"
+#include "applicationData.h"
 #include "effect.h"
 #include "effectInit.h"
 #include "language_parser.h"
@@ -86,7 +87,9 @@ void EffectsTree::componentComplete() {
 
 void EffectsTree::setWorkingArea(QObject *workingArea) {
     workingArea_ = qobject_cast<QQuickItem*>(workingArea);
+    ApplicationData::get().setWorkingArea(workingArea_);
 }
+
 void EffectsTree::setAbilityComponent(QQuickItem *abilityComponent) {
     abilityComponent_ = dynamic_cast<AbilityComponent*>(abilityComponent);
     abilityComponent_->subscribeToEffectsChange(this);

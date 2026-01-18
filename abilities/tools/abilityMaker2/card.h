@@ -22,7 +22,7 @@ protected:
     ComponentManager componentManager_;
 
     QMap<QString, CardSpecifier> cardSpecifiers_;
-    std::shared_ptr<gen::ComponentMediator> mediator;
+    std::shared_ptr<gen::ComponentMediator> mediator_;
 
 public:
     CardComponent(QString moduleName, QQuickItem *parent, QString id, QString displayName);

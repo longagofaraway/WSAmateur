@@ -36,6 +36,7 @@ QString getBasicComponentQmlPath(QString componentTypeName) {
         {"CardSpecifierExactName", "BasicTypes/CardSpecifierTextInput"},
         {"CardSpecifierNameContains", "BasicTypes/CardSpecifierTextInput"},
         {"CardSpecifierLevel", "BasicTypes/CardSpecifierNumber"},
+        {"CardSpecifierLevelWithMultiplier", "BasicTypes/CardSpecifierNumberWithMultiplier"},
         {"CardSpecifierCost", "BasicTypes/CardSpecifierNumber"},
         {"CardSpecifierPower", "BasicTypes/CardSpecifierNumber"}
     };

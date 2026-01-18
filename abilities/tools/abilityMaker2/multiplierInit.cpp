@@ -19,6 +19,7 @@ decltype(asn::Multiplier::specifier) getDefaultMultiplier(asn::MultiplierType ty
     others.targetSpecification = spec;
 
     auto lastMoved = asn::Target{.type=asn::TargetType::LastMovedCards};
+    auto mentioned = asn::Target{.type=asn::TargetType::MentionedCards};
 
     decltype(asn::Multiplier::specifier) multiplier;
     switch (type) {
@@ -38,7 +39,7 @@ decltype(asn::Multiplier::specifier) getDefaultMultiplier(asn::MultiplierType ty
     }
     case asn::MultiplierType::AddLevel: {
         auto m = asn::AddLevelMultiplier();
-        m.target = std::make_shared<asn::Target>(lastMoved);
+        m.target = std::make_shared<asn::Target>(mentioned);
         multiplier = m;
         break;
     }

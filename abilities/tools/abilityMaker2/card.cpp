@@ -1,6 +1,7 @@
 #include "card.h"
 
 #include "ability_maker_gen.h"
+#include "multiplierInit.h"
 
 namespace {
 
@@ -56,9 +57,14 @@ asn::CardSpecifier buildCardSpecifier(QString cardSpecifierType, QString value) 
     case asn::CardSpecifierType::StandbyTarget:
         spec.specifier = std::monostate{};
         break;
-    case asn::CardSpecifierType::LevelWithMultiplier:
-        spec.specifier = asn::LevelWithMultiplier{.value=defaultCost};
+    case asn::CardSpecifierType::LevelWithMultiplier: {
+        auto specifier = asn::LevelWithMultiplier{.value=asn::Number{.mod=asn::NumModifier::UpTo,.value=0}};
+        asn::Multiplier m{.type = asn::MultiplierType::AddLevel};
+        m.specifier = getDefaultMultiplier(m.type);
+        specifier.multiplier = m;
+        spec.specifier = specifier;
         break;
+    }
     case asn::CardSpecifierType::State:
         spec.specifier = parse(value.toStdString(), formats::To<asn::State>{});
         break;
@@ -73,7 +79,7 @@ asn::CardSpecifier buildCardSpecifier(QString cardSpecifierType, QString value) 
 
 CardComponent::CardComponent(QString moduleName, QQuickItem *parent, QString id, QString displayName)
     : BaseComponent(moduleName, parent, id) {
-    mediator = std::make_shared<gen::ComponentMediator>(this);
+    mediator_ = std::make_shared<gen::ComponentMediator>(this);
     connect(qmlObject_, SIGNAL(createCardSpecifier(QString,QString)), this, SLOT(onCreateCardSpecifier(QString,QString)));
     qmlObject_->setProperty("displayName", displayName);
 }
@@ -114,7 +120,7 @@ void CardComponent::onCreateCardSpecifier(QString cardSpecifierType, QString val
 void CardComponent::createCardSpecifier(const asn::CardSpecifier& specifier) {
     auto componentId = generateCardSpecifierId();
 
-    auto *object = componentManager_.createComponent("CardSpecifier", "CardSpecifier", componentId, qmlObject_, this, mediator.get());
+    auto *object = componentManager_.createComponent("CardSpecifier", "CardSpecifier", componentId, qmlObject_, this, mediator_.get());
     addComponent(object, componentId, specifier);
     emit setCardSpecifier(specifier, componentId);
 }
