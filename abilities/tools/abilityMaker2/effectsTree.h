@@ -60,11 +60,13 @@ private:
     void createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString idSuffix, QString header);
     void updateEffectsTree(TreeNodeInfo *node);
     void notifyOfChanges();
+    void createEffectComponent(const TreeNodeInfo *nodeInfo);
 
 private slots:
     void createEffect(QString,QString);
     void effectChanged(QString nodeId, asn::EffectType type, const VarEffect& effect);
     void effectSizeChanged(qreal width, qreal height);
+    void selectEffect(QString);
 
 protected:
     void componentComplete() override;

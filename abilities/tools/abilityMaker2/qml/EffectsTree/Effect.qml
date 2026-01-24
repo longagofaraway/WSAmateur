@@ -6,6 +6,7 @@ import '../Menus'
 Row {
     id: effectRow
     signal createEffect(string compId, string effect)
+    signal selectEffect(string compId)
     property string componentId
     property string effectMode: "createMode"
     property string effectName
@@ -38,6 +39,8 @@ Row {
         onClicked: {
             if (effectMode === "createMode") {
                 effectMenu.popup();
+            } else {
+                selectEffect(componentId);
             }
         }
 

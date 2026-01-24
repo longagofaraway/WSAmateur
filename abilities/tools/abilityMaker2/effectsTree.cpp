@@ -174,6 +174,19 @@ void EffectsTree::updateEffectsTree(TreeNodeInfo *node) {
     }
 }
 
+void EffectsTree::createEffectComponent(const TreeNodeInfo *nodeInfo) {
+    std::shared_ptr<EffectComponent> effectComponent;
+    if (nodeInfo->effect.value().type != asn::EffectType::NotSpecified) {
+        effectComponent = std::make_shared<EffectComponent>(nodeInfo->id, workingArea_, nodeInfo->effect.value());
+    } else {
+        effectComponent = std::make_shared<EffectComponent>(nodeInfo->id, workingArea_);
+    }
+    connect(&*effectComponent, &EffectComponent::componentChanged, this, &EffectsTree::effectChanged);
+    connect(&*effectComponent, &EffectComponent::sizeChanged, this, &EffectsTree::effectSizeChanged);
+    abilityComponent_->setCurrentComponent(effectComponent);
+    setFocus(nodeInfo->object);
+}
+
 void EffectsTree::createEffect(QString nodeId, QString effectId) {
     if (!nodeMap_.contains(nodeId)) {
         qWarning() << nodeId << " node not found";
@@ -183,22 +196,14 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     auto effect = getEffectFromPreset(effectId);
     QString newNodeId = node->branchInfo->branchId + QString::number(node->branchInfo->sequenceNextVal++);
     auto newNode = createQmlObject("EffectsTree/Effect", this, newNodeId, "selectMode", QString::fromStdString(toString(effect.type)));
-    setFocus(newNode);
+    connect(newNode, SIGNAL(selectEffect(QString)), this, SLOT(selectEffect(QString)));
     TreeNodeInfo nodeInfo {
         .id = newNodeId,
         .object = newNode,
         .effect = effect,
         .branchInfo = node->branchInfo
     };
-    std::shared_ptr<EffectComponent> effectComponent;
-    if (effect.type != asn::EffectType::NotSpecified) {
-        effectComponent = std::make_shared<EffectComponent>(newNodeId, workingArea_, effect);
-    } else {
-        effectComponent = std::make_shared<EffectComponent>(newNodeId, workingArea_);
-    }
-    connect(&*effectComponent, &EffectComponent::componentChanged, this, &EffectsTree::effectChanged);
-    connect(&*effectComponent, &EffectComponent::sizeChanged, this, &EffectsTree::effectSizeChanged);
-    abilityComponent_->setCurrentComponent(effectComponent);
+    createEffectComponent(&nodeInfo);
     updateEffectsTree(&nodeInfo);
     auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
     nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
@@ -232,6 +237,11 @@ void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarE
 
 void EffectsTree::effectSizeChanged(qreal width, qreal height) {
     emit sizeChanged(width+this->width(), height+this->height());
+}
+
+void EffectsTree::selectEffect(QString componentId) {
+    auto treeNodeInfo = nodeMap_.at(componentId);
+    createEffectComponent(treeNodeInfo.get());
 }
 
 void EffectsTree::notifyOfChanges() {
