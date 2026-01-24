@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE void openTrigger(QQuickItem *parent);
 
     void setCurrentComponent(std::shared_ptr<BaseComponent> component);
+    std::shared_ptr<BaseComponent> getCurrentComponent() { return currentComponent_; }
     void subscribeToEffectsChange(EffectsTree* effectsTree);
 
 signals:

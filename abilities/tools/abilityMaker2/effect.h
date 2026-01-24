@@ -19,7 +19,6 @@ public:
     using VarEffect = decltype(asn::Effect::effect);
 
 private:
-    QString nodeId_;
     std::vector<QQuickItem*> components_;
     ComponentManager componentManager_;
 

@@ -9,8 +9,6 @@ Rectangle {
     signal removeCardSpecifier()
 
     CancelButton {
-        width: 15
-        height: 15
         anchors.top: specifier.top
         anchors.left: specifier.right
         anchors.leftMargin: 10

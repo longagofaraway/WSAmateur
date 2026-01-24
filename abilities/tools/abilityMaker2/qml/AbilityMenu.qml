@@ -106,9 +106,6 @@ Column {
 
     EffectsTree {
         id: effectsTree
-        Text {
-            text:"Lol!"
-        }
     }
 }
 }

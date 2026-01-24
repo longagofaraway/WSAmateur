@@ -12,7 +12,7 @@ namespace {
 const int kNodeHeight = 35;
 const int kHeaderHeight = 15;
 const int kOffsetStep = 30;
-const int kDefaultTreeWidth = 180;
+const int kDefaultTreeWidth = 190;
 asn::Effect kEmptyEffect = asn::Effect{.type=asn::EffectType::NotSpecified};
 const QString kBaseBranchId = "Main";
 QQuickItem* createQmlObject(const QString &name, QQuickItem *parent, QString id, QString effectMode, QString effectName) {
@@ -134,7 +134,7 @@ void EffectsTree::renderBranch(int& currentHeight, int offset, const Branch& bra
 }
 
 void EffectsTree::createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString parentNodeId, QString header) {
-    QString nodeId = "New"+parentNodeId;
+    QString nodeId = "New"+parentNodeId+header;
     auto qmlheader = createQmlBranchHeader(this, header);
     auto node = createQmlObject("EffectsTree/Effect", this, nodeId, "createMode", "");
     connect(node, SIGNAL(createEffect(QString,QString)), this, SLOT(createEffect(QString,QString)));
@@ -197,6 +197,7 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     QString newNodeId = node->branchInfo->branchId + QString::number(node->branchInfo->sequenceNextVal++);
     auto newNode = createQmlObject("EffectsTree/Effect", this, newNodeId, "selectMode", QString::fromStdString(toString(effect.type)));
     connect(newNode, SIGNAL(selectEffect(QString)), this, SLOT(selectEffect(QString)));
+    connect(newNode, SIGNAL(deleteEffect(QString)), this, SLOT(deleteEffect(QString)));
     TreeNodeInfo nodeInfo {
         .id = newNodeId,
         .object = newNode,
@@ -242,6 +243,41 @@ void EffectsTree::effectSizeChanged(qreal width, qreal height) {
 void EffectsTree::selectEffect(QString componentId) {
     auto treeNodeInfo = nodeMap_.at(componentId);
     createEffectComponent(treeNodeInfo.get());
+}
+
+void EffectsTree::deleteNode(std::shared_ptr<TreeNodeInfo> node) {
+    auto currentComponent = abilityComponent_->getCurrentComponent();
+    if (currentComponent && currentComponent->getComponentId() == node->id) {
+        std::shared_ptr<EffectComponent> effectComponent;
+        abilityComponent_->setCurrentComponent(effectComponent);
+    }
+    if (selectedItem_ == node->object) {
+        selectedItem_ = nullptr;
+    }
+    for (auto& subBranch: node->subBranches) {
+        for (auto& subNode: subBranch) {
+            deleteNode(subNode);
+        }
+    }
+
+    nodeMap_.erase(node->id);
+    node->object->deleteLater();
+}
+
+void EffectsTree::deleteEffect(QString componentId) {
+    auto treeNodeInfo = nodeMap_.at(componentId);
+    deleteNode(treeNodeInfo);
+    auto& branch = treeNodeInfo->branchInfo->treeBranch;
+    for (auto it = branch.begin(); it != branch.end(); ++it) {
+        if (it->get()->id == treeNodeInfo->id) {
+            branch.erase(it);
+            break;
+        }
+    }
+
+    renderTree();
+
+    notifyOfChanges();
 }
 
 void EffectsTree::notifyOfChanges() {

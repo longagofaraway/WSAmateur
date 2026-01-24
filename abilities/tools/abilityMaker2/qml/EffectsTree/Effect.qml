@@ -2,11 +2,14 @@ import QtQuick 2.12
 import QtQuick.Controls 2.12
 
 import '../Menus'
+import '..'
 
 Row {
     id: effectRow
     signal createEffect(string compId, string effect)
     signal selectEffect(string compId)
+    signal deleteEffect(string compId)
+
     property string componentId
     property string effectMode: "createMode"
     property string effectName
@@ -42,6 +45,12 @@ Row {
             } else {
                 selectEffect(componentId);
             }
+        }
+
+        CancelButton {
+            anchors { horizontalCenter: effectButton.right; verticalCenter: effectButton.top }
+            onClicked: deleteEffect(componentId)
+            visible: effectMode !== "createMode"
         }
 
         EffectMenu {

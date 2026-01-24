@@ -8,12 +8,12 @@
 #include "effectInit.h"
 
 EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent)
-    : BaseComponent("Effect", parent), nodeId_(nodeId) {
+    : BaseComponent("Effect", parent, nodeId) {
     init(parent);
 }
 
 EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent, const asn::Effect& effect)
-    : BaseComponent("Effect", parent), nodeId_(nodeId) {
+    : BaseComponent("Effect", parent, nodeId) {
     init(parent);
     type_ = effect.type;
     effect_ = effect.effect;
@@ -71,7 +71,7 @@ void EffectComponent::onEffectTypeChanged(QString type) {
 }
 
 void EffectComponent::notifyOfChanges() {
-    emit componentChanged(nodeId_, type_, nullifyOptionalFields(type_, effect_));
+    emit componentChanged(componentId_, type_, nullifyOptionalFields(type_, effect_));
     qreal width{70}, height{0};
     for (const auto component: components_) {
         width += component->width() + 10;

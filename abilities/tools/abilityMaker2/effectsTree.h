@@ -66,7 +66,9 @@ private slots:
     void createEffect(QString,QString);
     void effectChanged(QString nodeId, asn::EffectType type, const VarEffect& effect);
     void effectSizeChanged(qreal width, qreal height);
-    void selectEffect(QString);
+    void selectEffect(QString componentId);
+    void deleteEffect(QString componentId);
+    void deleteNode(std::shared_ptr<TreeNodeInfo> node);
 
 protected:
     void componentComplete() override;

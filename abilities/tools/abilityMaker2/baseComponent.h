@@ -24,6 +24,7 @@ public:
     void init(const QString &moduleName, QQuickItem *parent, QString compnentId);
 
     QQuickItem* getQmlObject() { return qmlObject_; }
+    QString getComponentId() const { return componentId_; }
 
     virtual void notifyOfChanges() { throw std::runtime_error("not implemented"); }
     virtual asn::TriggerType getLanguageComponentType(formats::To<asn::TriggerType>) { throw std::runtime_error("not implemented"); }

@@ -40,7 +40,7 @@ Rectangle {
             ListElement { key: "Stock Swap"; value: "StockSwap" }
             ListElement { key: "Shuffle"; value: "Shuffle" }
             ListElement { key: "Choose Card"; value: "ChooseCard" }
-            ListElement { key: "Look Card"; value: "LookCard" }
+            ListElement { key: "Look"; value: "Look" }
             ListElement { key: "Reveal Card"; value: "RevealCard" }
             ListElement { key: "Search Card"; value: "SearchCard" }
             ListElement { key: "Attribute Gain"; value: "AttributeGain" }
