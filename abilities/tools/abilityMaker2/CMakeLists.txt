@@ -15,6 +15,10 @@ set(abilityMakerSources
     componentHelper.cpp
     componentManager.h
     componentManager.cpp
+    condition.h
+    condition.cpp
+    conditionInit.h
+    conditionInit.cpp
     effect.h
     effect.cpp
     effectInit.h
@@ -53,6 +57,7 @@ set(langSpecSource
 set(helperFilesSource
     trigger.txt
     effect.txt
+    condition.txt
     multiplier.txt)
 
 list(TRANSFORM langSpecSource PREPEND ${PROJECT_SOURCE_DIR}/docs/languageSpecification/)

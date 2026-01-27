@@ -55,20 +55,28 @@ signals:
 
 private:
     void renderTree();
-    void setFocus(QQuickItem* node);
+    void setFocus(QQuickItem* node, bool isCondition);
     void renderBranch(int& currentHeight, int offset, const Branch& branch);
     void createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString idSuffix, QString header);
     void updateEffectsTree(TreeNodeInfo *node);
     void notifyOfChanges();
     void createEffectComponent(const TreeNodeInfo *nodeInfo);
+    void createConditionComponent(const TreeNodeInfo *nodeInfo);
+    TreeNodeInfo* createNode(TreeNodeInfo *creatingNode, const asn::Effect& effect);
 
 private slots:
     void createEffect(QString,QString);
+    void setEffect(QString,QString);
     void effectChanged(QString nodeId, asn::EffectType type, const VarEffect& effect);
     void effectSizeChanged(qreal width, qreal height);
     void selectEffect(QString componentId);
     void deleteEffect(QString componentId);
     void deleteNode(std::shared_ptr<TreeNodeInfo> node);
+
+    void createCondition(QString,QString);
+    void setCondition(QString,QString);
+    void selectCondition(QString componentId);
+    void conditionChanged(QString nodeId, asn::ConditionType type, const VarCondition& condition);
 
 protected:
     void componentComplete() override;

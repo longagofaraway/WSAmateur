@@ -7,6 +7,7 @@
 
 using VarTrigger = decltype(asn::Trigger::trigger);
 using VarEffect = decltype(asn::Effect::effect);
+using VarCondition = decltype(asn::Condition::cond);
 using VarMultiplier = decltype(asn::Multiplier::specifier);
 
 class BaseComponent : public QObject
@@ -33,6 +34,8 @@ public:
     virtual VarEffect& getLanguageComponent(formats::To<VarEffect>) { throw std::runtime_error("not implemented"); }
     virtual asn::MultiplierType getLanguageComponentType(formats::To<asn::MultiplierType>) { throw std::runtime_error("not implemented"); }
     virtual VarMultiplier& getLanguageComponent(formats::To<VarMultiplier>) { throw std::runtime_error("not implemented"); }
+    virtual asn::ConditionType getLanguageComponentType(formats::To<asn::ConditionType>) { throw std::runtime_error("not implemented"); }
+    virtual VarCondition& getLanguageComponent(formats::To<VarCondition>) { throw std::runtime_error("not implemented"); }
 
 signals:
     void close();
@@ -63,6 +66,7 @@ signals:
     void setPlace(const asn::Place&, QString);
     void setRevealType(QString, QString);
     void setOrder(QString, QString);
+    void setCondition(const asn::Condition&, QString);
     void setEffect(const asn::Effect&, QString);
     void setAbility(const asn::Ability&, QString);
     void setEventAbility(const asn::EventAbility&, QString);

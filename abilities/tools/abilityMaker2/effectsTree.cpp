@@ -6,6 +6,8 @@
 #include "applicationData.h"
 #include "effect.h"
 #include "effectInit.h"
+#include "condition.h"
+#include "conditionInit.h"
 #include "language_parser.h"
 
 namespace {
@@ -15,7 +17,7 @@ const int kOffsetStep = 30;
 const int kDefaultTreeWidth = 190;
 asn::Effect kEmptyEffect = asn::Effect{.type=asn::EffectType::NotSpecified};
 const QString kBaseBranchId = "Main";
-QQuickItem* createQmlObject(const QString &name, QQuickItem *parent, QString id, QString effectMode, QString effectName) {
+QQuickItem* createQmlObject(const QString &name, QQuickItem *parent, QString id) {
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/" + name + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);
     QObject *obj = component.create(context);
@@ -23,8 +25,6 @@ QQuickItem* createQmlObject(const QString &name, QQuickItem *parent, QString id,
     qmlObject->setParentItem(parent);
     qmlObject->setParent(parent);
     qmlObject->setProperty("componentId", id);
-    qmlObject->setProperty("effectMode", effectMode);
-    qmlObject->setProperty("effectName", effectName);
     return qmlObject;
 }
 QQuickItem* createQmlBranchHeader(QQuickItem *parent, QString header) {
@@ -61,14 +61,21 @@ std::vector<asn::Effect> constructEffects(const std::vector<std::shared_ptr<Tree
     }
     return effects;
 }
+
+bool hasSubBranches(asn::EffectType type) {
+    return type == asn::EffectType::PayCost || type == asn::EffectType::NonMandatory;
 }
+} // namespace
 
 void EffectsTree::componentComplete() {
     QQuickItem::componentComplete();
     this->setProperty("width", kDefaultTreeWidth);
     QString nodeId = "New";
-    auto node = createQmlObject("EffectsTree/Effect", this, nodeId, "createMode", "");
+    auto node = createQmlObject("EffectsTree/Effect", this, nodeId);
+    node->setProperty("effectMode", "createMode");
+    node->setProperty("conditionMode", "createMode");
     connect(node, SIGNAL(createEffect(QString,QString)), this, SLOT(createEffect(QString,QString)));
+    connect(node, SIGNAL(createCondition(QString,QString)), this, SLOT(createCondition(QString,QString)));
     auto branchInfo = std::make_shared<BranchInfo>(BranchInfo {
         .branchId = kBaseBranchId,
         .sequenceNextVal = 0,
@@ -136,8 +143,11 @@ void EffectsTree::renderBranch(int& currentHeight, int offset, const Branch& bra
 void EffectsTree::createSubBranch(std::vector<std::shared_ptr<TreeNodeInfo>>& subBranch, QString parentNodeId, QString header) {
     QString nodeId = "New"+parentNodeId+header;
     auto qmlheader = createQmlBranchHeader(this, header);
-    auto node = createQmlObject("EffectsTree/Effect", this, nodeId, "createMode", "");
+    auto node = createQmlObject("EffectsTree/Effect", this, nodeId);
+    node->setProperty("effectMode", "createMode");
+    node->setProperty("conditionMode", "createMode");
     connect(node, SIGNAL(createEffect(QString,QString)), this, SLOT(createEffect(QString,QString)));
+    connect(node, SIGNAL(createCondition(QString,QString)), this, SLOT(createCondition(QString,QString)));
 
     auto branchInfo = std::make_shared<BranchInfo>(BranchInfo {
         .branchId = parentNodeId+header,
@@ -166,7 +176,7 @@ void EffectsTree::updateEffectsTree(TreeNodeInfo *node) {
         return;
     }
     const auto &effect = node->effect.value();
-    if (effect.type == asn::EffectType::PayCost) {
+    if (hasSubBranches(effect.type)) {
         node->subBranches.clear();
         node->subBranches.resize(2);
         createSubBranch(node->subBranches[0], node->id, "If you do");
@@ -184,7 +194,35 @@ void EffectsTree::createEffectComponent(const TreeNodeInfo *nodeInfo) {
     connect(&*effectComponent, &EffectComponent::componentChanged, this, &EffectsTree::effectChanged);
     connect(&*effectComponent, &EffectComponent::sizeChanged, this, &EffectsTree::effectSizeChanged);
     abilityComponent_->setCurrentComponent(effectComponent);
-    setFocus(nodeInfo->object);
+    setFocus(nodeInfo->object, /*isCondition*/ false);
+}
+
+void EffectsTree:: createConditionComponent(const TreeNodeInfo *nodeInfo) {
+    std::shared_ptr<ConditionComponent> conditionComponent;
+    conditionComponent = std::make_shared<ConditionComponent>(nodeInfo->id, workingArea_, nodeInfo->effect.value().cond);
+    connect(&*conditionComponent, &ConditionComponent::componentChanged, this, &EffectsTree::conditionChanged);
+    connect(&*conditionComponent, &ConditionComponent::sizeChanged, this, &EffectsTree::effectSizeChanged);
+    abilityComponent_->setCurrentComponent(conditionComponent);
+    setFocus(nodeInfo->object, /*isCondition*/ true);
+}
+
+TreeNodeInfo* EffectsTree::createNode(TreeNodeInfo *creatingNode, const asn::Effect& effect) {
+    QString newNodeId = creatingNode->branchInfo->branchId + QString::number(creatingNode->branchInfo->sequenceNextVal++);
+    auto newNode = createQmlObject("EffectsTree/Effect", this, newNodeId);
+    connect(newNode, SIGNAL(selectEffect(QString)), this, SLOT(selectEffect(QString)));
+    connect(newNode, SIGNAL(setEffect(QString,QString)), this, SLOT(setEffect(QString,QString)));
+    connect(newNode, SIGNAL(deleteEffect(QString)), this, SLOT(deleteEffect(QString)));
+    connect(newNode, SIGNAL(selectCondition(QString)), this, SLOT(selectCondition(QString)));
+    connect(newNode, SIGNAL(setCondition(QString,QString)), this, SLOT(setCondition(QString,QString)));
+    TreeNodeInfo nodeInfo {
+        .id = newNodeId,
+        .object = newNode,
+        .effect = effect,
+        .branchInfo = creatingNode->branchInfo
+    };
+    auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
+    nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
+    return creatingNode->branchInfo->treeBranch.insert(creatingNode->branchInfo->treeBranch.end() - 1, treeNodeInfo)->get();
 }
 
 void EffectsTree::createEffect(QString nodeId, QString effectId) {
@@ -194,21 +232,28 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     }
     auto& node = nodeMap_.at(nodeId);
     auto effect = getEffectFromPreset(effectId);
-    QString newNodeId = node->branchInfo->branchId + QString::number(node->branchInfo->sequenceNextVal++);
-    auto newNode = createQmlObject("EffectsTree/Effect", this, newNodeId, "selectMode", QString::fromStdString(toString(effect.type)));
-    connect(newNode, SIGNAL(selectEffect(QString)), this, SLOT(selectEffect(QString)));
-    connect(newNode, SIGNAL(deleteEffect(QString)), this, SLOT(deleteEffect(QString)));
-    TreeNodeInfo nodeInfo {
-        .id = newNodeId,
-        .object = newNode,
-        .effect = effect,
-        .branchInfo = node->branchInfo
-    };
-    createEffectComponent(&nodeInfo);
-    updateEffectsTree(&nodeInfo);
-    auto treeNodeInfo = std::make_shared<TreeNodeInfo>(std::move(nodeInfo));
-    nodeMap_.emplace(std::make_pair(treeNodeInfo->id, treeNodeInfo));
-    node->branchInfo->treeBranch.insert(node->branchInfo->treeBranch.end() - 1, treeNodeInfo);
+    auto newNode = createNode(node.get(), effect);
+    newNode->object->setProperty("effectMode", "selectMode");
+    newNode->object->setProperty("effectName", QString::fromStdString(toString(effect.type)));
+    newNode->object->setProperty("conditionMode", "setMode");
+    createEffectComponent(newNode);
+    updateEffectsTree(newNode);
+    renderTree();
+
+    notifyOfChanges();
+}
+
+void EffectsTree::setEffect(QString nodeId, QString effectId) {
+    if (!nodeMap_.contains(nodeId)) {
+        qWarning() << nodeId << " node not found";
+        return;
+    }
+    auto& node = nodeMap_.at(nodeId);
+    node->effect = getEffectFromPreset(effectId);
+    node->object->setProperty("effectMode", "selectMode");
+    node->object->setProperty("effectName", QString::fromStdString(toString(node->effect.value().type)));
+    createEffectComponent(node.get());
+    updateEffectsTree(node.get());
     renderTree();
 
     notifyOfChanges();
@@ -225,13 +270,23 @@ void EffectsTree::effectChanged(QString nodeId, asn::EffectType type, const VarE
         return;
     }
 
+    auto oldType = node->effect.value().type;
+    node->effect.value().type = type;
     node->effect.value().effect = effect;
     notifyOfChanges();
-    if (node->effect.value().type == type) {
+    if (oldType == type) {
         return;
     }
+    // need to delete subbranches here
+    if (hasSubBranches(oldType)) {
+        for (auto& subBranch: node->subBranches) {
+            for (auto& subNode: subBranch) {
+                deleteNode(subNode);
+            }
+        }
+    }
 
-    node->effect.value().type = type;
+    node->object->setProperty("effectName", QString::fromStdString(toString(type)));
     updateEffectsTree(node.get());
     renderTree();
 }
@@ -264,6 +319,63 @@ void EffectsTree::deleteNode(std::shared_ptr<TreeNodeInfo> node) {
     node->object->deleteLater();
 }
 
+void EffectsTree::createCondition(QString nodeId, QString conditionId) {
+    if (!nodeMap_.contains(nodeId)) {
+        qWarning() << nodeId << " node not found";
+        return;
+    }
+    auto& node = nodeMap_.at(nodeId);
+    auto condition = getConditionFromPreset(conditionId);
+    asn::Effect effect{.type=asn::EffectType::NotSpecified};
+    effect.cond = condition;
+    auto newNode = createNode(node.get(), effect);
+    newNode->object->setProperty("effectMode", "setMode");
+    newNode->object->setProperty("conditionName", QString::fromStdString(toString(condition.type)));
+    newNode->object->setProperty("conditionMode", "selectMode");
+    createConditionComponent(newNode);
+    renderTree();
+
+    notifyOfChanges();
+}
+
+void EffectsTree::setCondition(QString nodeId, QString conditionId) {
+    if (!nodeMap_.contains(nodeId)) {
+        qWarning() << nodeId << " node not found";
+        return;
+    }
+    auto& node = nodeMap_.at(nodeId);
+    node->effect.value().cond = getConditionFromPreset(conditionId);
+    node->object->setProperty("conditionMode", "selectMode");
+    node->object->setProperty("conditionName", QString::fromStdString(toString(node->effect.value().cond.type)));
+    createConditionComponent(node.get());
+    renderTree();
+
+    notifyOfChanges();
+}
+
+void EffectsTree::selectCondition(QString componentId) {
+    auto treeNodeInfo = nodeMap_.at(componentId);
+    createConditionComponent(treeNodeInfo.get());
+}
+
+void EffectsTree::conditionChanged(QString nodeId, asn::ConditionType type, const VarCondition &condition) {
+    if(!nodeMap_.contains(nodeId)) {
+        qWarning() << nodeId << " node not found in effectChanged";
+        return;
+    }
+    auto& node = nodeMap_.at(nodeId);
+    if (!node->effect.has_value()) {
+        qWarning() << "changing effect on a wrong node";
+        return;
+    }
+
+    node->effect.value().cond.type = type;
+    node->effect.value().cond.cond = condition;
+    renderTree();
+
+    notifyOfChanges();
+}
+
 void EffectsTree::deleteEffect(QString componentId) {
     auto treeNodeInfo = nodeMap_.at(componentId);
     deleteNode(treeNodeInfo);
@@ -284,12 +396,16 @@ void EffectsTree::notifyOfChanges() {
     emit componentChanged(constructEffects(treeRoot_));
 }
 
-void EffectsTree::setFocus(QQuickItem* node) {
+void EffectsTree::setFocus(QQuickItem* node, bool isCondition) {
     if (selectedItem_ != nullptr) {
         selectedItem_->setProperty("selected", false);
+        selectedItem_->setProperty("conditionSelected", false);
     }
     selectedItem_ = node;
-    selectedItem_->setProperty("selected", true);
+    if (isCondition)
+        selectedItem_->setProperty("conditionSelected", true);
+    else
+        selectedItem_->setProperty("selected", true);
     emit gotFocus();
 }
 

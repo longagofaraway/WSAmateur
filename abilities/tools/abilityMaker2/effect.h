@@ -46,6 +46,5 @@ private:
 
 private slots:
     void onEffectTypeChanged(QString);
-
 };
 

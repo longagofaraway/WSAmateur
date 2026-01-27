@@ -9,6 +9,8 @@ class Language:
             return 'TriggerType'
         if self.mode == 'Effect':
             return 'EffectType'
+        if self.mode == 'Condition':
+            return 'ConditionType'
         if self.mode == 'Multiplier':
             return 'MultiplierType'
         raise 'unknown Language mode'
@@ -19,6 +21,8 @@ class Language:
             return 'TriggerHelper'
         if self.mode == 'Effect':
             return 'EffectHelper'
+        if self.mode == 'Condition':
+            return 'ConditionHelper'
         if self.mode == 'Multiplier':
             return 'MultiplierHelper'
         raise 'unknown Language mode'
@@ -40,6 +44,8 @@ public slots:
             return 'setTriggerInQml(asn::TriggerType languageComponentType, const VarTrigger& languageComponent)'
         if self.mode == 'Effect':
             return 'setEffectInQml(asn::EffectType languageComponentType, const VarEffect& languageComponent)'
+        if self.mode == 'Condition':
+            return 'setConditionInQml(asn::ConditionType languageComponentType, const VarCondition& languageComponent)'
         if self.mode == 'Multiplier':
             return 'setMultiplierInQml(asn::MultiplierType languageComponentType, const VarMultiplier& languageComponent)'
 
@@ -70,6 +76,8 @@ public slots:
             inputCppType = 'const asn::SearchTarget&'
         elif type == 'Effect':
             inputCppType = 'const asn::Effect&'
+        elif type == 'Condition':
+            inputCppType = 'const asn::Condition&'
         elif type == 'EventAbility':
             inputCppType = 'const asn::EventAbility&'
         elif type == 'AutoAbility':
@@ -99,6 +107,9 @@ public slots:
         elif self.mode == 'Effect':
             component_type_type = 'asn::EffectType'
             component_type = 'VarEffect'
+        elif self.mode == 'Condition':
+            component_type_type = 'asn::ConditionType'
+            component_type = 'VarCondition'
         elif self.mode == 'Multiplier':
             component_type_type = 'asn::MultiplierType'
             component_type = 'VarMultiplier'
@@ -260,7 +271,7 @@ def parseStruct(ss, current_line, lang):
             field_type = tokens[1]
 
         type_matches[field_type] = type_matches.get(field_type, 0) + 1
-        if field_type in ['Bool', 'Target', 'Card', 'Multiplier', 'TargetAndPlace', 'Number', 'Place', 'Duration', 'Ability', 'SearchTarget', 'EventAbility', 'Effect', 'ChooseCard', 'AutoAbility']:
+        if field_type in ['Bool', 'Target', 'Card', 'Multiplier', 'TargetAndPlace', 'Number', 'Place', 'Duration', 'Ability', 'SearchTarget', 'EventAbility', 'Effect', 'ChooseCard', 'AutoAbility', 'Condition']:
             prepared_signal_field = f'elem.{field_name}'
             prepared_slot_field = 'value'
             if is_optional:
@@ -341,6 +352,7 @@ namespace gen {
 
 using VarTrigger = decltype(asn::Trigger::trigger);
 using VarEffect = decltype(asn::Effect::effect);
+using VarCondition = decltype(asn::Condition::cond);
 using VarMultiplier = decltype(asn::Multiplier::specifier);
 
 class ComponentMediator : public QObject {
@@ -382,7 +394,7 @@ for filename in sys.argv[1:]:
         tokens = line.split()
         if len(tokens) < 1:
             continue
-        if tokens[0] == 'Trigger' or tokens[0] == 'Effect' or tokens[0] == 'Multiplier':
+        if tokens[0] == 'Trigger' or tokens[0] == 'Effect'or tokens[0] == 'Condition' or tokens[0] == 'Multiplier':
             skipBlock(doc_ss, line)
             lang.mode = tokens[0]
             hpp_buffer += lang.getClassDeclaration()

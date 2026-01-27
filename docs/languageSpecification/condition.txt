@@ -33,9 +33,28 @@ enum ConditionType {
   cardMoved = 13,
 
   // i.e. rest one of your chars, if you do...
-  // you probably need to use NonMandatory effect or PayCost
+  // check if it's better to use NonMandatory effect or PayCost
   performedInFull = 14,
   hasMarkers = 15
+}
+
+relation Effect {
+  noCondition: Nothing,
+  isCard: ConditionIsCard,
+  haveCards: ConditionHaveCard,
+  and: ConditionAnd,
+  or: ConditionOr,
+  inBattleWithThis: Nothing,
+  sumOfLevels: ConditionSumOfLevels,
+  cardsLocation: ConditionCardsLocation,
+  duringTurn: ConditionDuringTurn,
+  checkMilledCards: ConditionCheckMilledCards,
+  revealedCard: ConditionRevealCard,
+  playersLevel: ConditionPlayersLevel,
+  duringCardsFirstTurn: Nothing,
+  cardMoved: ConditionCardMoved,
+  performedInFull: Nothing,
+  hasMarkers: ConditionHasMarkers
 }
 
 ConditionAnd {
@@ -67,6 +86,7 @@ ConditionCardsLocation {
   target Target,
   place Place
 }
+// If this is in the back row...
 
 ConditionDuringTurn {
   player Player

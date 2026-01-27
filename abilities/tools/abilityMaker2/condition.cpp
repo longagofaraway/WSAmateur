@@ -1,35 +1,40 @@
-#include "effect.h"
+#include "condition.h"
 
 #include <set>
 
 #include "ability_maker_gen.h"
 #include "languageSpecification.h"
 #include "language_parser.h"
-#include "effectInit.h"
+#include "conditionInit.h"
 
-EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent)
-    : BaseComponent("Effect", parent, nodeId) {
+ConditionComponent::ConditionComponent(QString nodeId, QQuickItem *parent)
+    : BaseComponent("Condition", parent, nodeId) {
     init(parent);
 }
 
-EffectComponent::EffectComponent(QString nodeId, QQuickItem *parent, const asn::Effect& effect)
-    : BaseComponent("Effect", parent, nodeId) {
+ConditionComponent::ConditionComponent(QString nodeId, QQuickItem *parent, const asn::Condition& condition)
+    : BaseComponent("Condition", parent, nodeId) {
     init(parent);
-    type_ = effect.type;
-    effect_ = effect.effect;
+    type_ = condition.type;
+    condition_ = condition.cond;
     QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
-    createEffect();
+    createCondition();
 }
 
-void EffectComponent::init(QQuickItem *parent) {
-    gen_helper = std::make_shared<gen::EffectHelper>(this);
+void ConditionComponent::init(QQuickItem *parent) {
+    gen_helper = std::make_shared<gen::ConditionHelper>(this);
     qvariant_cast<QObject*>(qmlObject_->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
-    connect(qmlObject_, SIGNAL(effectTypeChanged(QString)), this, SLOT(onEffectTypeChanged(QString)));
+    connect(qmlObject_, SIGNAL(conditionTypeChanged(QString)), this, SLOT(onConditionTypeChanged(QString)));
 }
 
-EffectComponent::~EffectComponent() {}
+void ConditionComponent::onConditionTypeChanged(QString type) {
+    type_ = parse(type.toStdString(), formats::To<asn::ConditionType>{});
+    condition_ = getDefaultCondition(type_);
+    createCondition();
+    notifyOfChanges();
+}
 
-void EffectComponent::fitComponent(QQuickItem* object) {
+void ConditionComponent::fitComponent(QQuickItem* object) {
     if (components_.empty()) {
         qvariant_cast<QObject*>(object->property("anchors"))->setProperty("left", qmlObject_->property("left"));
         qvariant_cast<QObject*>(object->property("anchors"))->setProperty("leftMargin", QVariant(50));
@@ -44,14 +49,14 @@ void EffectComponent::fitComponent(QQuickItem* object) {
     components_.push_back(object);
 }
 
-void EffectComponent::createEffect() {
+void ConditionComponent::createCondition() {
     components_.clear();
     componentManager_.clear();
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
     std::set<std::string> types;
     for (const auto& comp: components) {
-        if (comp.type == "Effect") {
+        if (comp.type == "Condition") {
             continue;
         }
         QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
@@ -60,18 +65,11 @@ void EffectComponent::createEffect() {
         fitComponent(object);
     }
 
-    gen_helper->setEffectInQml(type_, effect_);
+    gen_helper->setConditionInQml(type_, condition_);
 }
 
-void EffectComponent::onEffectTypeChanged(QString type) {
-    type_ = parse(type.toStdString(), formats::To<asn::EffectType>{});
-    effect_ = getDefaultEffect(type_);
-    createEffect();
-    notifyOfChanges();
-}
-
-void EffectComponent::notifyOfChanges() {
-    emit componentChanged(componentId_, type_, nullifyOptionalFields(type_, effect_));
+void ConditionComponent::notifyOfChanges() {
+    emit componentChanged(componentId_, type_, condition_);
     qreal width{70}, height{0};
     for (const auto component: components_) {
         width += component->width() + 10;

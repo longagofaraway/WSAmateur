@@ -50,5 +50,6 @@
         <file>qml/BasicTypes/TriggerIcon.qml</file>
         <file>qml/BasicTypes/CardSpecifierNumberWithMultiplier.qml</file>
         <file>qml/FloatingArea.qml</file>
+        <file>qml/Condition.qml</file>
     </qresource>
 </RCC>
