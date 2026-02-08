@@ -64,7 +64,7 @@ void CardSpecifierComponent::multiplierClosing() {
     multiplier_area_->deleteLater();
 }
 
-void CardSpecifierComponent::setCardSpecifier(const asn::CardSpecifier& cardSpecifier) {
+void CardSpecifierComponent::setCardSpecifier(const asn::CardSpecifier cardSpecifier) {
     specifier_ = cardSpecifier;
 
     auto cardSpecifierTypeName = QString::fromStdString(toString(cardSpecifier.type));

@@ -137,7 +137,7 @@ void CardComponent::cardSpecifierChanged(const asn::CardSpecifier& specifier, QS
     notifyOfChanges();
 }
 
-void CardComponent::setCard(const asn::Card& card) {
+void CardComponent::setCard(const asn::Card card) {
     for (const auto& cardSpec: card.cardSpecifiers) {
         createCardSpecifier(cardSpec);
     }

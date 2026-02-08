@@ -22,7 +22,7 @@ public:
     CardSpecifierComponent(QQuickItem *parent, QString componentId);
     ~CardSpecifierComponent();
 
-    void setCardSpecifier(const asn::CardSpecifier& cardSpecifier);
+    void setCardSpecifier(const asn::CardSpecifier cardSpecifier);
 
 signals:
     void componentReady(const asn::CardSpecifier&, QString);

@@ -249,7 +249,9 @@ void EffectsTree::setEffect(QString nodeId, QString effectId) {
         return;
     }
     auto& node = nodeMap_.at(nodeId);
-    node->effect = getEffectFromPreset(effectId);
+    auto newEffect = getEffectFromPreset(effectId);
+    node->effect.value().type = newEffect.type;
+    node->effect.value().effect = newEffect.effect;
     node->object->setProperty("effectMode", "selectMode");
     node->object->setProperty("effectName", QString::fromStdString(toString(node->effect.value().type)));
     createEffectComponent(node.get());

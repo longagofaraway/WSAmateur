@@ -16,7 +16,7 @@ class ComponentManager : public QObject {
 
     std::unordered_map<QString, std::unique_ptr<BaseComponent>> cppComponents_;
     QHash<QString, QQuickItem*> components_;
-    QSet<QString> connections_;
+    QHash<QString, QMetaObject::Connection> connections_;
 
 public:
     ~ComponentManager();

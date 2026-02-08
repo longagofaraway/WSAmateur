@@ -30,7 +30,7 @@ public:
     virtual void createCardSpecifierAdditionalActions() {}
     void notifyOfChanges() override;
 
-    void setCard(const asn::Card&);
+    void setCard(const asn::Card);
     void refitComponents();
     void createCardSpecifier(const asn::CardSpecifier& specifier);
 
