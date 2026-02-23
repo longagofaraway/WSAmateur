@@ -15,16 +15,20 @@ ConditionComponent::ConditionComponent(QString nodeId, QQuickItem *parent)
 ConditionComponent::ConditionComponent(QString nodeId, QQuickItem *parent, const asn::Condition& condition)
     : BaseComponent("Condition", parent, nodeId) {
     init(parent);
-    type_ = condition.type;
-    condition_ = condition.cond;
-    QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
-    createCondition();
+    setCondition(condition);
+    qvariant_cast<QObject*>(qmlObject_->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
 }
 
 void ConditionComponent::init(QQuickItem *parent) {
     gen_helper = std::make_shared<gen::ConditionHelper>(this);
-    qvariant_cast<QObject*>(qmlObject_->property("anchors"))->setProperty("fill", QVariant::fromValue(parent));
     connect(qmlObject_, SIGNAL(conditionTypeChanged(QString)), this, SLOT(onConditionTypeChanged(QString)));
+}
+
+void ConditionComponent::setCondition(asn::Condition condition) {
+    type_ = condition.type;
+    condition_ = condition.cond;
+    QMetaObject::invokeMethod(qmlObject_, "setValue", Q_ARG(QVariant, QString::fromStdString(toString(type_))));
+    createCondition();
 }
 
 void ConditionComponent::onConditionTypeChanged(QString type) {
@@ -56,13 +60,16 @@ void ConditionComponent::createCondition() {
     auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
     std::set<std::string> types;
     for (const auto& comp: components) {
-        if (comp.type == "Condition") {
+        /*if (comp.type == "Condition") {
             continue;
-        }
+        }*/
         QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
         types.insert(comp.type.toStdString());
         auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
         fitComponent(object);
+        if (comp.type == "Condition") {
+            object->setProperty("scale", QVariant(0.8));
+        }
     }
 
     gen_helper->setConditionInQml(type_, condition_);
@@ -70,6 +77,7 @@ void ConditionComponent::createCondition() {
 
 void ConditionComponent::notifyOfChanges() {
     emit componentChanged(componentId_, type_, condition_);
+    emit conditionReady(asn::Condition{.type=type_,.cond=condition_}, componentId_);
     qreal width{70}, height{0};
     for (const auto component: components_) {
         width += component->width() + 10;

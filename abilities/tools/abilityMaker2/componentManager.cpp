@@ -7,6 +7,7 @@
 #include "componentHelper.h"
 #include "card.h"
 #include "cardSpecifier.h"
+#include "condition.h"
 #include "multiplier.h"
 #include "number.h"
 #include "place.h"
@@ -21,7 +22,8 @@ const QSet<QString> kCppComponents {
     "Card",
     "Place",
     "Number",
-    "Multiplier"
+    "Multiplier",
+    "Condition"
 };
 
 QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent, BaseComponent *linkObject) {
@@ -158,6 +160,21 @@ QQuickItem* ComponentManager::createCppComponent(QString name, QString displayNa
         QObject::connect(linkObject, &BaseComponent::valueTypeChanged, component, &MultiplierComponent::onValueTypeChanged);
         connections_.insert(id, connection);
         QObject::connect(component, SIGNAL(multiplierReady(asn::Multiplier,QString)), mediator, SLOT(multiplierChanged(asn::Multiplier,QString)));
+        return component->getQmlObject();
+    }
+    if (name == "Condition") {
+        cppComponents_[id] = std::make_unique<ConditionComponent>(id, parent);
+        auto *component = cppComponents_[id].get();
+        if (connections_.contains(id)) {
+            qWarning() << "duplicate connection for component " << name;
+        }
+        QMetaObject::Connection connection = QObject::connect(linkObject, &BaseComponent::setCondition, this,
+            [=](const asn::Condition& condition, QString idParam) {
+                auto *component = dynamic_cast<ConditionComponent*>(cppComponents_[idParam].get());
+                component->setCondition(condition);
+            });
+        connections_.insert(id, connection);
+        QObject::connect(component, SIGNAL(conditionReady(asn::Condition,QString)), mediator, SLOT(targetAndPlaceChanged(asn::Condition,QString)));
         return component->getQmlObject();
     }
     return nullptr;

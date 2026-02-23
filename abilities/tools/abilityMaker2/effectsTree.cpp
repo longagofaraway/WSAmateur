@@ -416,5 +416,6 @@ void EffectsTree::loseFocus() {
         return;
     }
     selectedItem_->setProperty("selected", false);
+    selectedItem_->setProperty("conditionSelected", false);
 }
 

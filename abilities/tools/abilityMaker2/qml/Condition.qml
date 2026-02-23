@@ -4,6 +4,7 @@ import QtQuick.Controls 2.12
 Rectangle {
     id: condition
 
+    width: 220
     signal conditionTypeChanged(string value)
 
     function setValue(newValue) {

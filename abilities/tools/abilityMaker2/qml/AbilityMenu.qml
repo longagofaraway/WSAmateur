@@ -32,17 +32,16 @@ Column {
     id: rootCol
     spacing: 10
 
-
     Button {
         id: triggers
         text: "Trigger"
         onClicked: {
-            highlighted = true;
-            effectsTree.loseFocus();
             if (!scrollView.triggerSet) {
                 triggerMenu.popup()
             } else {
+                highlighted = true;
                 scrollView.openTrigger();
+                effectsTree.loseFocus();
             }
         }
 
@@ -53,6 +52,8 @@ Column {
                 triggerMenu.y = triggers.height / 2 - triggerMenu.height / 2;
             }
             onCreateTrigger: {
+                triggers.highlighted = true;
+                effectsTree.loseFocus();
                 scrollView.createTrigger(triggerId);
                 triggerSet = true;
             }
@@ -98,6 +99,7 @@ Column {
         target: effectsTree
         function onGotFocus() {
             triggers.highlighted = false;
+            cost.highlighted = false;
         }
         function onSizeChanged(qmlWidth, qmlHeight) {
             abilityMenuSizeChanged(qmlWidth, qmlHeight);

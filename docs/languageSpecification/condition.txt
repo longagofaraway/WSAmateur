@@ -70,12 +70,12 @@ ConditionIsCard {
 }
 
 ConditionHaveCard {
-  invert Bool, // do not have
   who Player,
   howMany Number,
   whichCards Card,
   where Place,
-  excludingThis Bool
+  excludingThis Bool,
+  invert Bool, // do not have
 }
 
 ConditionSumOfLevels {

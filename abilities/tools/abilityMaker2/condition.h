@@ -32,6 +32,7 @@ public:
     void init(QQuickItem *parent);
     ~ConditionComponent() = default;
 
+    void setCondition(asn::Condition);
     void notifyOfChanges() override;
     virtual asn::ConditionType getLanguageComponentType(formats::To<asn::ConditionType>) override { return type_; }
     virtual VarCondition& getLanguageComponent(formats::To<VarCondition>) override { return condition_; }
