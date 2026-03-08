@@ -4,14 +4,21 @@ import QtQuick.Controls 2.12
 import 'Menus'
 import 'BasicTypes'
 
-Button {
+
+Rectangle {
     id: card
 
     signal createCardSpecifier(cardSpecifierType: string, value: string)
 
     property string displayName: 'Card'
 
-    text: displayName
+    width: 150
+    height: childrenRect.height
+
+Button {
+    id: cardButton
+
+    text: card.displayName
     width: 150
 
     onClicked: cardMenu.popup()
@@ -27,4 +34,5 @@ Button {
             card.createCardSpecifier(cardSpecifierType, value);
         }
     }
+}
 }

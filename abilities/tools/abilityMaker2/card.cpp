@@ -1,13 +1,14 @@
 #include "card.h"
 
 #include "ability_maker_gen.h"
+#include "languageSpecification.h"
 #include "multiplierInit.h"
 
 namespace {
 
-QString generateCardSpecifierId() {
+int generateCardSpecifierId() {
     static int i = 0;
-    return QString("cardSpecifier_") + QString::number(i++);
+    return ++i;
 }
 
 asn::CardSpecifier buildCardSpecifier(QString cardSpecifierType, QString value) {
@@ -90,6 +91,7 @@ void CardComponent::refitComponents() {
     int i = 0;
     auto middle = qmlObject_->width() / 3;
     QQuickItem *bottomObject = qmlObject_;
+    qreal y = 50;
     qreal margin = 50;
     int maxSize = std::min(cardSpecifiers_.size(), 2);
     qreal fullLength = maxSize * cardSpecifiers_.first().object->width() + (maxSize - 1) * margin;
@@ -98,10 +100,12 @@ void CardComponent::refitComponents() {
     };
     for (auto it = cardSpecifiers_.begin(); it != cardSpecifiers_.end(); ++it) {
         it.value().object->setX(getX(it.value().object, i));
-        qvariant_cast<QObject*>(it.value().object->property("anchors"))->setProperty("top", bottomObject->property("bottom"));
-        qvariant_cast<QObject*>(it.value().object->property("anchors"))->setProperty("topMargin", QVariant(10));
+        it.value().object->setY(y + 10);
         i++;
-        if (i % 2 == 0) bottomObject = it.value().object;
+        if (i % 2 == 0) {
+            bottomObject = it.value().object;
+            y = bottomObject->y() + bottomObject->height() + 10;
+        }
     }
 }
 
@@ -118,10 +122,13 @@ void CardComponent::onCreateCardSpecifier(QString cardSpecifierType, QString val
 }
 
 void CardComponent::createCardSpecifier(const asn::CardSpecifier& specifier) {
-    auto componentId = generateCardSpecifierId();
+    auto typeIndex = generateCardSpecifierId();
 
-    auto *object = componentManager_.createComponent("CardSpecifier", "CardSpecifier", componentId, qmlObject_, this, mediator_.get());
-    addComponent(object, componentId, specifier);
+    auto componentId = componentManager_.buildComponentId("CardSpecifier", typeIndex, 0);
+    LangComponent langComponent{.type="CardSpecifier",.name="CardSpecifier"};
+    auto components = componentManager_.createComponent(
+                langComponent, qmlObject_, this, mediator_.get(), typeIndex, 1);
+    addComponent(components[0], componentId, specifier);
     emit setCardSpecifier(specifier, componentId);
 }
 

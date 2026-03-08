@@ -5,6 +5,10 @@ set(abilityMakerSources
     abilityMaker.cpp
     applicationData.h
     applicationData.cpp
+    array.h
+    array.cpp
+    asnTypeConstructor.h
+    asnTypeConstructor.cpp
     baseComponent.h
     baseComponent.cpp
     card.h
@@ -13,6 +17,8 @@ set(abilityMakerSources
     cardSpecifier.cpp
     componentHelper.h
     componentHelper.cpp
+    componentIdParser.h
+    componentIdParser.cpp
     componentManager.h
     componentManager.cpp
     condition.h

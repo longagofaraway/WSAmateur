@@ -11,6 +11,7 @@ Window {
     visible: true
     width: 1060
     height: 580
+    property real kMaxHeight: 800
     title: qsTr("Ability Maker")
 
     AbilityMaker {
@@ -25,8 +26,11 @@ Window {
                 abilityText.text = root.translate(ability);
             }
             function onAbilitySizeChanged(qmlWidth, qmlHeight) {
+                console.log('new width: '+qmlWidth+', new height: '+qmlHeight);
                 if (qmlWidth > window.width)
                     window.width = qmlWidth;
+                if (qmlHeight > window.height)
+                    window.height = Math.min(kMaxHeight, qmlHeight);
             }
         }
 

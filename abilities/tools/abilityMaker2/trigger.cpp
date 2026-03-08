@@ -12,12 +12,12 @@
 
 
 TriggerComponent::TriggerComponent(QQuickItem *parent)
-    : BaseComponent("Trigger", parent) {
+    : BaseComponent("Trigger", parent, "Trigger") {
     init(parent);
 }
 
 TriggerComponent::TriggerComponent(QQuickItem *parent, const std::vector<asn::Trigger>& triggers)
-    : BaseComponent("Trigger", parent) {
+    : BaseComponent("Trigger", parent, "Trigger") {
     init(parent);
     type_ = triggers.at(0).type;
     trigger_ = triggers.at(0).trigger;
@@ -33,19 +33,39 @@ void TriggerComponent::init(QQuickItem *parent) {
 
 TriggerComponent::~TriggerComponent() {}
 
-void TriggerComponent::fitComponent(QQuickItem* object) {
-    if (components_.empty()) {
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("left", qmlObject_->property("left"));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("leftMargin", QVariant(50));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("top", qmlObject_->property("top"));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("topMargin", QVariant(130));
-    } else {
-        auto *lastObject = components_.back();
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("left", lastObject->property("right"));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("leftMargin", QVariant(10));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("top", lastObject->property("top"));
+void TriggerComponent::fitComponent() {
+    auto bottomObject = qmlObject_;
+    QQuickItem *lastObject, *currentLastObject;
+    for (int x = 0; x < components_.size(); ++x) {
+        for (int y = 0; y < components_[x].size(); ++y) {
+            if (x == 0) {
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("left", qmlObject_->property("left"));
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("leftMargin", QVariant(50));
+                if (y == 0) {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", qmlObject_->property("top"));
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("topMargin", QVariant(130));
+                    lastObject = components_[x][y];
+                    currentLastObject = components_[x][y];
+                } else {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", bottomObject->property("bottom"));
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("topMargin", QVariant(10));
+                }
+                bottomObject = components_[x][y];
+            } else {
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("left", lastObject->property("right"));
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("leftMargin", QVariant(10));
+                if (y == 0) {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", lastObject->property("top"));
+                    currentLastObject = components_[x][y];
+                } else {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", bottomObject->property("bottom"));
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("topMargin", QVariant(10));
+                }
+                bottomObject = components_[x][y];
+            }
+        }
+        lastObject = currentLastObject;
     }
-    components_.push_back(object);
 }
 
 void TriggerComponent::onTriggerTypeChanged(QString type) {
@@ -55,18 +75,17 @@ void TriggerComponent::onTriggerTypeChanged(QString type) {
     createTrigger();
 }
 
-
 void TriggerComponent::createTrigger() {
     components_.clear();
     componentManager_.clear();
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
-    std::set<std::string> types;
+    int i{0};
     for (const auto& comp: components) {
-        QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
-        types.insert(comp.type.toStdString());
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
-        fitComponent(object);
+        size_t arraySize = gen_helper->getArraySize(type_, trigger_, comp.name);
+        auto objects = componentManager_.createComponent(comp, qmlObject_, this, gen_helper.get(), ++i, arraySize);
+        components_.push_back(objects);
+        fitComponent();
     }
 
     setTriggerInQml();
@@ -81,4 +100,17 @@ std::vector<asn::Trigger> TriggerComponent::constructTrigger() {
     std::vector<asn::Trigger> vec;
     vec.push_back(asn::Trigger{.type=type_,.trigger=trigger_});
     return vec;
+}
+
+void TriggerComponent::addComponentToArray(QString type, QString fieldName, int typePosition) {
+    gen_helper->addElementToArray(fieldName);
+    auto updatedComponents = componentManager_.getComponentsRow(type, typePosition);
+    if (type == "Condition") {
+        for (auto object: updatedComponents) {
+            object->setProperty("scale", QVariant(0.8));
+        }
+    }
+    components_[typePosition-1] = updatedComponents;
+    fitComponent();
+    notifyOfChanges();
 }

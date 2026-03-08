@@ -7,10 +7,6 @@ BaseComponent::BaseComponent(const QString &moduleName, QQuickItem *parent, QStr
     init(moduleName, parent, componentId);
 }
 
-BaseComponent::BaseComponent(const QString &moduleName, QQuickItem *parent) {
-    init(moduleName, parent, "");
-}
-
 void BaseComponent::init(const QString &moduleName, QQuickItem *parent, QString componentId) {
     QQmlComponent component(qmlEngine(parent), "qrc:/qml/" + moduleName + ".qml");
     QQmlContext *context = new QQmlContext(qmlContext(parent), parent);

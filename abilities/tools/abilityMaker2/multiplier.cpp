@@ -101,11 +101,11 @@ void MultiplierComponent::createMultiplier() {
 
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
-    std::set<std::string> types;
     for (const auto& comp: components) {
-        QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
-        types.insert(comp.type.toStdString());
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
+        auto objects = componentManager_.createComponent(comp, qmlObject_, this, gen_helper.get(), 1, 1);
+        if (objects.empty())
+            continue;
+        auto *object = objects[0];
         if (comp.name == "MarkerBearer") {
             object->setProperty("visible", false);
             markerBearer = object;

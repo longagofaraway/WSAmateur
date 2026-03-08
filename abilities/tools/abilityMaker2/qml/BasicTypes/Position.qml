@@ -6,10 +6,10 @@ ComboBox {
 
     property string displayName: 'Position'
     signal valueChanged(string newValue, string compId)
+    //signal setPosition()
 
     Connections {
         target: parentComponent
-
         function onSetPosition(newValue, compId) {
             if (componentId !== compId)
                 return;

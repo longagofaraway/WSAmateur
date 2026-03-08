@@ -198,8 +198,7 @@ void EffectsTree::createEffectComponent(const TreeNodeInfo *nodeInfo) {
 }
 
 void EffectsTree:: createConditionComponent(const TreeNodeInfo *nodeInfo) {
-    std::shared_ptr<ConditionComponent> conditionComponent;
-    conditionComponent = std::make_shared<ConditionComponent>(nodeInfo->id, workingArea_, nodeInfo->effect.value().cond);
+    std::shared_ptr<ConditionComponent> conditionComponent = std::make_shared<ConditionComponent>(nodeInfo->id, workingArea_, nodeInfo->effect.value().cond);
     connect(&*conditionComponent, &ConditionComponent::componentChanged, this, &EffectsTree::conditionChanged);
     connect(&*conditionComponent, &ConditionComponent::sizeChanged, this, &EffectsTree::effectSizeChanged);
     abilityComponent_->setCurrentComponent(conditionComponent);

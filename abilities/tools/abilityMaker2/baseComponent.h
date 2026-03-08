@@ -18,7 +18,6 @@ protected:
     QString componentId_;
 
 public:
-    explicit BaseComponent(const QString &moduleName, QQuickItem *parent);
     explicit BaseComponent(const QString &moduleName, QQuickItem *parent, QString componentId);
     virtual ~BaseComponent();
 
@@ -36,6 +35,8 @@ public:
     virtual VarMultiplier& getLanguageComponent(formats::To<VarMultiplier>) { throw std::runtime_error("not implemented"); }
     virtual asn::ConditionType getLanguageComponentType(formats::To<asn::ConditionType>) { throw std::runtime_error("not implemented"); }
     virtual VarCondition& getLanguageComponent(formats::To<VarCondition>) { throw std::runtime_error("not implemented"); }
+
+    virtual void addComponentToArray(QString type, QString fieldName, int typePosition) { throw std::runtime_error("not implemented"); }
 
 signals:
     void close();

@@ -19,7 +19,7 @@ public:
     using VarTrigger = decltype(asn::Trigger::trigger);
 
 private:
-    std::vector<QQuickItem*> components_;
+    std::vector<std::vector<QQuickItem*>> components_;
     ComponentManager componentManager_;
 
     asn::TriggerType type_;
@@ -35,12 +35,13 @@ public:
     void notifyOfChanges() override;
     asn::TriggerType getLanguageComponentType(formats::To<asn::TriggerType>) override { return type_; }
     VarTrigger& getLanguageComponent(formats::To<VarTrigger>) override { return trigger_; }
+    void addComponentToArray(QString type, QString fieldName, int typePosition) override;
 
 signals:
     void componentChanged(std::vector<asn::Trigger> trigger);
 
 private:
-    void fitComponent(QQuickItem* object);
+    void fitComponent();
     void setTriggerInQml();
     void createTrigger();
     std::vector<asn::Trigger> constructTrigger();

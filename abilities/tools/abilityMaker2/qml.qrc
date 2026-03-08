@@ -51,5 +51,6 @@
         <file>qml/BasicTypes/CardSpecifierNumberWithMultiplier.qml</file>
         <file>qml/FloatingArea.qml</file>
         <file>qml/Condition.qml</file>
+        <file>qml/Array.qml</file>
     </qresource>
 </RCC>

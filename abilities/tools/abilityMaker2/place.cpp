@@ -9,9 +9,9 @@ PlaceComponent::PlaceComponent(QQuickItem *parent, QString id, QString displayNa
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByType(QString::fromStdString("Place"));
     for (const auto& comp: components) {
-        QString component_id = comp.type;
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, nullptr);
-        fitComponent(object);
+        auto objects = componentManager_.createComponent(comp, qmlObject_, this, nullptr, 1, 1);
+        if (!objects.empty())
+            fitComponent(objects[0]);
     }
 }
 
@@ -30,9 +30,9 @@ void PlaceComponent::fitComponent(QQuickItem* object) {
 
 void PlaceComponent::setPlace(asn::Place place) {
     place_ = place;
-    emit setPosition(QString::fromStdString(toString(place_.pos)), "Position");
-    emit setPlayer(QString::fromStdString(toString(place_.owner)), "Player");
-    emit setZone(QString::fromStdString(toString(place_.zone)), "Zone");
+    emit setPosition(QString::fromStdString(toString(place_.pos)), "Position/1/0");
+    emit setPlayer(QString::fromStdString(toString(place_.owner)), "Player/1/0");
+    emit setZone(QString::fromStdString(toString(place_.zone)), "Zone/1/0");
 }
 
 void PlaceComponent::notifyOfChanges() {

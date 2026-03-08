@@ -5,6 +5,8 @@ Rectangle {
     id: condition
 
     width: 220
+    height: childrenRect.height
+    transformOrigin: Item.Top
     signal conditionTypeChanged(string value)
 
     function setValue(newValue) {

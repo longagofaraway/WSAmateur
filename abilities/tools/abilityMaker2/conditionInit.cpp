@@ -39,10 +39,14 @@ decltype(asn::Condition::cond) getDefaultCondition(asn::ConditionType type) {
         return condition;
     }
     case asn::ConditionType::And:{
-        return asn::ConditionAnd();
+        auto condition = asn::ConditionAnd();
+        condition.cond.push_back(asn::Condition{.type=asn::ConditionType::NoCondition});
+        return condition;
     }
     case asn::ConditionType::Or:{
-        return asn::ConditionOr();
+        auto condition = asn::ConditionOr();
+        condition.cond.push_back(asn::Condition{.type=asn::ConditionType::NoCondition});
+        return condition;
     }
     case asn::ConditionType::NoCondition:
     case asn::ConditionType::InBattleWithThis:

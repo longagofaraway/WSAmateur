@@ -8,9 +8,9 @@ TargetAndPlaceComponent::TargetAndPlaceComponent(QQuickItem *parent, QString id)
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByType(QString::fromStdString("TargetAndPlace"));
     for (const auto& comp: components) {
-        QString component_id = comp.type;
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, nullptr);
-        fitComponent(object);
+        auto objects = componentManager_.createComponent(comp, qmlObject_, this, nullptr, 1, 1);
+        if (!objects.empty())
+            fitComponent(objects[0]);
     }
 }
 
@@ -37,10 +37,10 @@ void TargetAndPlaceComponent::setPlaceVisibility() {
 
 void TargetAndPlaceComponent::setTargetAndPlace(asn::TargetAndPlace target) {
     target_ = target;
-    emit setTarget(target_.target, "Target");
-    emit setPlaceType(QString::fromStdString(toString(target_.placeType)), "PlaceType");
+    emit setTarget(target_.target, "Target/1/0");
+    emit setPlaceType(QString::fromStdString(toString(target_.placeType)), "PlaceType/1/0");
     if (target.place)
-        emit setPlace(target.place.value(), "Place");
+        emit setPlace(target.place.value(), "Place/1/0");
     setPlaceVisibility();
 }
 

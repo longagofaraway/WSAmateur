@@ -19,7 +19,7 @@ public:
     using VarCondition = decltype(asn::Condition::cond);
 
 private:
-    std::vector<QQuickItem*> components_;
+    std::vector<std::vector<QQuickItem*>> components_;
     ComponentManager componentManager_;
 
     asn::ConditionType type_;
@@ -34,15 +34,16 @@ public:
 
     void setCondition(asn::Condition);
     void notifyOfChanges() override;
-    virtual asn::ConditionType getLanguageComponentType(formats::To<asn::ConditionType>) override { return type_; }
-    virtual VarCondition& getLanguageComponent(formats::To<VarCondition>) override { return condition_; }
+    asn::ConditionType getLanguageComponentType(formats::To<asn::ConditionType>) override { return type_; }
+    VarCondition& getLanguageComponent(formats::To<VarCondition>) override { return condition_; }
+    void addComponentToArray(QString type, QString fieldName, int typePosition) override;
 
 signals:
     void componentChanged(QString nodeId, asn::ConditionType type, VarCondition condition);
     void sizeChanged(qreal width, qreal height);
 
 private:
-    void fitComponent(QQuickItem* object);
+    void fitComponent();
     void createCondition();
 
 private slots:

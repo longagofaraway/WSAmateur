@@ -19,7 +19,7 @@ public:
     using VarEffect = decltype(asn::Effect::effect);
 
 private:
-    std::vector<QQuickItem*> components_;
+    std::vector<std::vector<QQuickItem*>> components_;
     ComponentManager componentManager_;
 
     asn::EffectType type_;
@@ -35,13 +35,14 @@ public:
     void notifyOfChanges() override;
     virtual asn::EffectType getLanguageComponentType(formats::To<asn::EffectType>) override { return type_; }
     virtual VarEffect& getLanguageComponent(formats::To<VarEffect>) override { return effect_; }
+    void addComponentToArray(QString type, QString fieldName, int typePosition) override;
 
 signals:
     void componentChanged(QString nodeId, asn::EffectType type, VarEffect effect);
     void sizeChanged(qreal width, qreal height);
 
 private:
-    void fitComponent(QQuickItem* object);
+    void fitComponent();
     void createEffect();
 
 private slots:

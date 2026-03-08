@@ -50,6 +50,17 @@ public slots:
             return 'setMultiplierInQml(asn::MultiplierType languageComponentType, const VarMultiplier& languageComponent)'
 
 
+    def _arraySizeGetterDeclaration(self):
+        if self.mode == 'Trigger':
+            return 'getArraySize(asn::TriggerType languageComponentType, const VarTrigger& languageComponent, QString field_name)'
+        if self.mode == 'Effect':
+            return 'getArraySize(asn::EffectType languageComponentType, const VarEffect& languageComponent, QString field_name)'
+        if self.mode == 'Condition':
+            return 'getArraySize(asn::ConditionType languageComponentType, const VarCondition& languageComponent, QString field_name)'
+        if self.mode == 'Multiplier':
+            return 'getArraySize(asn::MultiplierType languageComponentType, const VarMultiplier& languageComponent, QString field_name)'
+
+
     def getQmlSetterCode(self):
         class_name = self._getCurrentClassName()
         return f'''void {class_name}::{self._qmlSetterDeclaration()} {{
@@ -57,8 +68,34 @@ public slots:
 '''
 
 
+    def getArraySizeGetterCode(self):
+        class_name = self._getCurrentClassName()
+        return f'''size_t {class_name}::{self._arraySizeGetterDeclaration()} {{
+    switch (languageComponentType) {{
+'''
+
+
     def getQmlSetterDeclaraion(self):
         return f'''void {self._qmlSetterDeclaration()};
+'''
+
+ 
+    def getArraySizeGetterDeclaraion(self):
+        return f'''size_t {self._arraySizeGetterDeclaration()};
+'''
+    
+
+    def _getArrayElementAdderSignature(self):
+        return f'addElementToArray(QString field_name)'
+
+
+    def getArrayElementAdderDeclaration(self):
+        return f'''void {self._getArrayElementAdderSignature()} override;
+'''
+    
+
+    def getBaseClassArrayElementAdderDefinition(self):
+        return f'''virtual void {self._getArrayElementAdderSignature()} {{}}
 '''
 
 
@@ -99,7 +136,7 @@ public slots:
         return f'{ltype}Changed({inputCppType} value, QString componentId)'
 
 
-    def getSlotFunctionDefinition(self, type):
+    def _getFunctionStarter(self, function_declaration, additional_code=''):
         class_name = self._getCurrentClassName()
         if self.mode == 'Trigger':
             component_type_type = 'asn::TriggerType'
@@ -113,11 +150,21 @@ public slots:
         elif self.mode == 'Multiplier':
             component_type_type = 'asn::MultiplierType'
             component_type = 'VarMultiplier'
-        return f'''void {class_name}::{self._slotFunctionDeclaration(type)} {{
+        return f'''void {class_name}::{function_declaration} {{
     auto languageComponentType = linkObject->getLanguageComponentType(formats::To<{component_type_type}>{{}});
     auto& languageComponent = linkObject->getLanguageComponent(formats::To<{component_type}>{{}});
+    {additional_code}
     switch (languageComponentType) {{
 '''
+
+
+    def getSlotFunctionDefinition(self, type):
+        idParser = 'auto [typePosition, arrayPosition] = parseComponentId(componentId);'
+        return self._getFunctionStarter(self._slotFunctionDeclaration(type), idParser)
+    
+
+    def getArrayElementAdderDefinition(self):
+        return self._getFunctionStarter(self._getArrayElementAdderSignature())
 
 
     def getBaseClassSlotDefinition(self, type):
@@ -136,8 +183,16 @@ public slots:
 '''
 
 
+    def getArraySizeGetterCodeFooter(self):
+        return '''    }
+    return 1; 
+}
+'''
+
+
     def getSlotCodeFooter(self, type):
         return f'''    default:
+        qWarning() << "unhandled {type}";
         throw std::logic_error("unhandled {type}");
     }}
     linkObject->notifyOfChanges();
@@ -149,6 +204,8 @@ class ParsedStruct:
     def __init__(self):
         self.qml_setter_code = ''
         self.slot_code = {}
+        self.array_size_getter_code = ''
+        self.array_appender_code = ''
 
 
 def readFileWithoutComments(f):
@@ -247,7 +304,10 @@ def parseStruct(ss, current_line, lang):
         auto &elem = std::get<asn::{struct_name}>(languageComponent);
 '''
     slot_code_header = signal_code
+    array_size_getter_code = signal_code
+    array_appender_code = signal_code
     type_matches = {}
+    type_position = 0
     slot_code = {}
     for line in ss:
         braces_count += countBracesInLine(line)
@@ -257,12 +317,17 @@ def parseStruct(ss, current_line, lang):
         if len(tokens) < 2:
             continue
 
+        type_position += 1
         field_name = tokens[0]
         is_array = False
         is_optional = False
         if tokens[1] == 'Array':
             field_type = tokens[3]
             is_array = True
+            array_size_getter_code += f'''        if (field_name.toLower() == "{field_name.lower()}") {{
+'''
+            array_appender_code += f'''        if (field_name.toLower() == "{field_name.lower()}") {{
+'''
         elif tokens[1] == 'Choice':
             field_type = parseChoice(ss, current_line)
             is_optional = True
@@ -281,32 +346,40 @@ def parseStruct(ss, current_line, lang):
                 prepared_signal_field = '*'+prepared_signal_field+'.get()'
                 prepared_slot_field = f'std::make_shared<asn::{field_type}>('+prepared_slot_field+')'
             if is_array:
-                prepared_signal_field += '[0]'
+                prepared_array_size_getter_field = prepared_signal_field + '.size()'
+                prepared_array_appender = prepared_signal_field + f'.push_back(defaultConstructor.get{field_type}())'
+                prepared_signal_field_last_slot = prepared_signal_field + f'[{prepared_array_size_getter_field}-1]'
+                prepared_signal_field += '[i]'
         elif field_type in ['Int32', 'UInt8', 'Int8']:
             prepared_signal_field = f'QString::number(elem.{field_name})'
             prepared_slot_field = f'value.toInt()'
         elif field_type == 'String':
             prepared_signal_field = f'QString::fromStdString(elem.{field_name})'
             if is_array:
-                prepared_signal_field = f'QString::fromStdString(elem.{field_name}[0])'
+                prepared_signal_field = f'QString::fromStdString(elem.{field_name}[i])'
+                prepared_array_size_getter_field = f'elem.{field_name}.size()'
+                prepared_signal_field_last_slot = f'QString::fromStdString(elem.{field_name}[{prepared_array_size_getter_field}-1])'
+                prepared_array_appender = f'elem.{field_name}.push_back("")'
             prepared_slot_field = 'value.toStdString()' 
         else: #enum
             prepared_signal_field = f'QString::fromStdString(toString(elem.{field_name}))'
             if is_array:
-                prepared_signal_field = f'QString::fromStdString(toString(elem.{field_name}[0]))'
+                prepared_signal_field = f'QString::fromStdString(toString(elem.{field_name}[i]))'
+                prepared_array_size_getter_field = f'elem.{field_name}.size()'
+                prepared_signal_field_last_slot = f'QString::fromStdString(toString(elem.{field_name}[{prepared_array_size_getter_field}-1]))'
+                prepared_array_appender = f'elem.{field_name}.push_back(elem.{field_name}.back())'
             prepared_slot_field = f'parse(value.toStdString(), formats::To<asn::{field_type}>{{}})'
-        component_id = field_type + '/'
-        slot_repeat_check = 'if (componentId.back().digitValue() == -1)'
-        if type_matches[field_type] > 1:
-            component_id += str(type_matches[field_type])
-            slot_repeat_check = f'if (componentId.back().digitValue() == {type_matches[field_type]})'
+        component_id = field_type + '/' + str(type_position) + '/'
+        array_index = '0'
+        slot_type_position_check = f'if (typePosition == "{type_position}")'
         if is_array:
-            signal_code += f'''        if (elem.{field_name}.size() > 0) {{
+            signal_code += f'''        for (int i = 0; i < elem.{field_name}.size(); ++i) {{
     '''
+            array_index = 'i'
         if is_optional:
             signal_code += f'''        if (elem.{field_name}.has_value()) {{
     '''
-        signal_code += f'''        emit linkObject->set{field_type}({prepared_signal_field}, "{component_id}");
+        signal_code += f'''        emit linkObject->set{field_type}({prepared_signal_field}, "{component_id}"+QString::number({array_index}));
 '''
         if is_optional:
             signal_code += '''        }
@@ -314,13 +387,23 @@ def parseStruct(ss, current_line, lang):
         if is_array:
             signal_code += '''        }
 '''
-            slot_code[field_type] = slot_code.get(field_type, '') + f'''        {slot_repeat_check} {{
-            elem.{field_name}.clear();
-            elem.{field_name}.push_back({prepared_slot_field});
+            slot_code[field_type] = slot_code.get(field_type, '') + f'''        {slot_type_position_check} {{
+            if (elem.{field_name}.size() <= arrayPosition.toInt()) {{
+                qWarning() << "wrong arrat index for {field_name}";
+                throw std::runtime_error("wrong arrat index for {field_name}");
+            }}
+            elem.{field_name}[arrayPosition.toInt()] = {prepared_slot_field};
+        }}
+'''
+            array_size_getter_code += f'''            return {prepared_array_size_getter_field};
+        }}
+'''
+            array_appender_code += f'''            {prepared_array_appender};
+            emit linkObject->set{field_type}({prepared_signal_field_last_slot}, "{component_id}"+QString::number({prepared_array_size_getter_field}-1));
         }}
 '''
         else:
-            slot_code[field_type] = slot_code.get(field_type, '') + f'''        {slot_repeat_check} {{
+            slot_code[field_type] = slot_code.get(field_type, '') + f'''        {slot_type_position_check} {{
             elem.{field_name} = {prepared_slot_field};
         }}
 '''
@@ -329,8 +412,16 @@ def parseStruct(ss, current_line, lang):
     signal_code += '''        break;
     }
 '''
+    array_size_getter_code += '''        break;
+    }
+'''
+    array_appender_code += '''        break;
+    }
+'''
     result = ParsedStruct()
     result.qml_setter_code = signal_code
+    result.array_size_getter_code = array_size_getter_code
+    result.array_appender_code = array_appender_code
     for key in slot_code:
         result.slot_code[key] = slot_code_header + slot_code[key] + '''        break;
     }
@@ -346,6 +437,7 @@ hpp = '''// This file is autogenerated. Do not edit
 #include <QObject>
 
 #include "abilities.h"
+#include "asnTypeConstructor.h"
 #include "baseComponent.h"
 
 namespace gen {
@@ -359,6 +451,7 @@ class ComponentMediator : public QObject {
     Q_OBJECT
 protected:
     BaseComponent *linkObject;
+    AsnTypeConstructor defaultConstructor;
 public:
     ComponentMediator(BaseComponent *linkObject) : linkObject(linkObject) {}
 
@@ -369,6 +462,7 @@ cpp = '''// This file is autogenerated. Do not edit
 #include "ability_maker_gen.h"
 
 #include "language_parser.h"
+#include "componentIdParser.h"
 
 namespace gen {
 '''
@@ -390,6 +484,8 @@ for filename in sys.argv[1:]:
     doc_ss = StringIO(doc)
     slot_code = {}
     signal_code = ''
+    array_size_getter_code = ''
+    array_appender_code = ''
     for line in doc_ss:
         tokens = line.split()
         if len(tokens) < 1:
@@ -406,12 +502,22 @@ for filename in sys.argv[1:]:
         parse_result = parseStruct(doc_ss, line, lang)
         signal_code += parse_result.qml_setter_code
         slot_code = {k: slot_code.get(k, '') + parse_result.slot_code.get(k, '') for k in slot_code.keys() | parse_result.slot_code.keys()}
+        array_size_getter_code += parse_result.array_size_getter_code
+        array_appender_code += parse_result.array_appender_code
 
     qml_setter_code = lang.getQmlSetterCode() + signal_code
+    array_size_getter_code = lang.getArraySizeGetterCode() + array_size_getter_code
+    array_appender_code = lang.getArrayElementAdderDefinition() + array_appender_code
     hpp_buffer += lang.getQmlSetterDeclaraion()
+    hpp_buffer += lang.getArraySizeGetterDeclaraion()
+    hpp_buffer += lang.getArrayElementAdderDeclaration()
 
     qml_setter_code += lang.getQmlSetterCodeFooter()
+    array_size_getter_code += lang.getArraySizeGetterCodeFooter()
+    array_appender_code += lang.getSlotCodeFooter('')
     cpp += qml_setter_code
+    cpp += array_size_getter_code
+    cpp += array_appender_code
     for key in slot_code:
         all_types.update([key])
         hpp_buffer += lang.getSlotFunctionDeclaraion(key)
@@ -422,6 +528,7 @@ for filename in sys.argv[1:]:
 
 '''
 
+hpp += global_lang.getBaseClassArrayElementAdderDefinition()
 for key in all_types:
     hpp += global_lang.getBaseClassSlotDefinition(key)
 hpp += '''

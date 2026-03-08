@@ -29,19 +29,39 @@ void EffectComponent::init(QQuickItem *parent) {
 
 EffectComponent::~EffectComponent() {}
 
-void EffectComponent::fitComponent(QQuickItem* object) {
-    if (components_.empty()) {
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("left", qmlObject_->property("left"));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("leftMargin", QVariant(50));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("top", qmlObject_->property("top"));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("topMargin", QVariant(130));
-    } else {
-        auto *lastObject = components_.back();
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("left", lastObject->property("right"));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("leftMargin", QVariant(10));
-        qvariant_cast<QObject*>(object->property("anchors"))->setProperty("top", lastObject->property("top"));
+void EffectComponent::fitComponent() {
+    auto bottomObject = qmlObject_;
+    QQuickItem *lastObject, *currentLastObject;
+    for (int x = 0; x < components_.size(); ++x) {
+        for (int y = 0; y < components_[x].size(); ++y) {
+            if (x == 0) {
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("left", qmlObject_->property("left"));
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("leftMargin", QVariant(50));
+                if (y == 0) {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", qmlObject_->property("top"));
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("topMargin", QVariant(130));
+                    lastObject = components_[x][y];
+                    currentLastObject = components_[x][y];
+                } else {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", bottomObject->property("bottom"));
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("topMargin", QVariant(10));
+                }
+                bottomObject = components_[x][y];
+            } else {
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("left", lastObject->property("right"));
+                qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("leftMargin", QVariant(10));
+                if (y == 0) {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", lastObject->property("top"));
+                    currentLastObject = components_[x][y];
+                } else {
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("top", bottomObject->property("bottom"));
+                    qvariant_cast<QObject*>(components_[x][y]->property("anchors"))->setProperty("topMargin", QVariant(10));
+                }
+                bottomObject = components_[x][y];
+            }
+        }
+        lastObject = currentLastObject;
     }
-    components_.push_back(object);
 }
 
 void EffectComponent::createEffect() {
@@ -49,15 +69,17 @@ void EffectComponent::createEffect() {
     componentManager_.clear();
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
-    std::set<std::string> types;
+    int i{0};
     for (const auto& comp: components) {
         if (comp.type == "Effect") {
             continue;
         }
-        QString component_id = comp.type + "/" + (types.contains(comp.type.toStdString()) ? QString("2") : QString(""));
-        types.insert(comp.type.toStdString());
-        auto *object = componentManager_.createComponent(comp.type, comp.name, component_id, qmlObject_, this, gen_helper.get());
-        fitComponent(object);
+        size_t arraySize = gen_helper->getArraySize(type_, effect_, comp.name);
+        auto objects = componentManager_.createComponent(comp, qmlObject_, this, gen_helper.get(), ++i, arraySize);
+        if (!objects.size())
+            continue;
+        components_.push_back(objects);
+        fitComponent();
     }
 
     gen_helper->setEffectInQml(type_, effect_);
@@ -73,9 +95,18 @@ void EffectComponent::onEffectTypeChanged(QString type) {
 void EffectComponent::notifyOfChanges() {
     emit componentChanged(componentId_, type_, nullifyOptionalFields(type_, effect_));
     qreal width{70}, height{0};
-    for (const auto component: components_) {
-        width += component->width() + 10;
-        height = std::max(height, component->height());
+    for (const auto &componentsRow: components_) {
+        auto it = std::max_element(componentsRow.begin(), componentsRow.end(), [](QQuickItem* a, QQuickItem* b){ return a->width() < b->width(); });
+        width += (*it)->width() + 10;
+        height = std::max(height, std::accumulate(componentsRow.begin(), componentsRow.end(), qreal{0}, [](qreal total, QQuickItem* next) { return total + next->height(); }) + 180);
     }
     emit sizeChanged(width, height);
+}
+
+void EffectComponent::addComponentToArray(QString type, QString fieldName, int typePosition) {
+    gen_helper->addElementToArray(fieldName);
+    auto updatedComponents = componentManager_.getComponentsRow(type, typePosition);
+    components_[typePosition-1] = updatedComponents;
+    fitComponent();
+    notifyOfChanges();
 }
