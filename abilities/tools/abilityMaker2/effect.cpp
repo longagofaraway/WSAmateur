@@ -85,6 +85,13 @@ void EffectComponent::createEffect() {
     gen_helper->setEffectInQml(type_, effect_);
 }
 
+void EffectComponent::updateComponents(QString type, int typePosition) {
+    auto updatedComponents = componentManager_.getComponentsRow(type, typePosition);
+    components_[typePosition-1] = updatedComponents;
+    fitComponent();
+    notifyOfChanges();
+}
+
 void EffectComponent::onEffectTypeChanged(QString type) {
     type_ = parse(type.toStdString(), formats::To<asn::EffectType>{});
     effect_ = getDefaultEffect(type_);
@@ -105,8 +112,10 @@ void EffectComponent::notifyOfChanges() {
 
 void EffectComponent::addComponentToArray(QString type, QString fieldName, int typePosition) {
     gen_helper->addElementToArray(fieldName);
-    auto updatedComponents = componentManager_.getComponentsRow(type, typePosition);
-    components_[typePosition-1] = updatedComponents;
-    fitComponent();
-    notifyOfChanges();
+    updateComponents(type, typePosition);
+}
+
+void EffectComponent::removeComponentFromArray(QString type, QString fieldName, int typePosition) {
+    gen_helper->removeElementFromArray(fieldName);
+    updateComponents(type, typePosition);
 }

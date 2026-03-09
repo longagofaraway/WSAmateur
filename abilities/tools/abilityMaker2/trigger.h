@@ -36,6 +36,7 @@ public:
     asn::TriggerType getLanguageComponentType(formats::To<asn::TriggerType>) override { return type_; }
     VarTrigger& getLanguageComponent(formats::To<VarTrigger>) override { return trigger_; }
     void addComponentToArray(QString type, QString fieldName, int typePosition) override;
+    void removeComponentFromArray(QString type, QString fieldName, int typePosition) override;
 
 signals:
     void componentChanged(std::vector<asn::Trigger> trigger);
@@ -45,6 +46,7 @@ private:
     void setTriggerInQml();
     void createTrigger();
     std::vector<asn::Trigger> constructTrigger();
+    void updateComponents(QString type, int typePosition);
 
 private slots:
     void onTriggerTypeChanged(QString);

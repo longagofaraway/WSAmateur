@@ -102,15 +102,19 @@ std::vector<asn::Trigger> TriggerComponent::constructTrigger() {
     return vec;
 }
 
-void TriggerComponent::addComponentToArray(QString type, QString fieldName, int typePosition) {
-    gen_helper->addElementToArray(fieldName);
+void TriggerComponent::updateComponents(QString type, int typePosition) {
     auto updatedComponents = componentManager_.getComponentsRow(type, typePosition);
-    if (type == "Condition") {
-        for (auto object: updatedComponents) {
-            object->setProperty("scale", QVariant(0.8));
-        }
-    }
     components_[typePosition-1] = updatedComponents;
     fitComponent();
     notifyOfChanges();
+}
+
+void TriggerComponent::addComponentToArray(QString type, QString fieldName, int typePosition) {
+    gen_helper->addElementToArray(fieldName);
+    updateComponents(type, typePosition);
+}
+
+void TriggerComponent::removeComponentFromArray(QString type, QString fieldName, int typePosition) {
+    gen_helper->removeElementFromArray(fieldName);
+    updateComponents(type, typePosition);
 }

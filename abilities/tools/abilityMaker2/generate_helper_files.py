@@ -87,15 +87,23 @@ public slots:
 
     def _getArrayElementAdderSignature(self):
         return f'addElementToArray(QString field_name)'
+    def _getArrayElementRemoverSignature(self):
+        return f'removeElementFromArray(QString field_name)'
 
 
     def getArrayElementAdderDeclaration(self):
         return f'''void {self._getArrayElementAdderSignature()} override;
 '''
+    def getArrayElementRemoverDeclaration(self):
+        return f'''void {self._getArrayElementRemoverSignature()} override;
+'''
     
 
     def getBaseClassArrayElementAdderDefinition(self):
         return f'''virtual void {self._getArrayElementAdderSignature()} {{}}
+'''
+    def getBaseClassArrayElementRemoverDefinition(self):
+        return f'''virtual void {self._getArrayElementRemoverSignature()} {{}}
 '''
 
 
@@ -165,6 +173,8 @@ public slots:
 
     def getArrayElementAdderDefinition(self):
         return self._getFunctionStarter(self._getArrayElementAdderSignature())
+    def getArrayElementRemoverDefinition(self):
+        return self._getFunctionStarter(self._getArrayElementRemoverSignature())
 
 
     def getBaseClassSlotDefinition(self, type):
@@ -206,6 +216,7 @@ class ParsedStruct:
         self.slot_code = {}
         self.array_size_getter_code = ''
         self.array_appender_code = ''
+        self.array_remover_code = ''
 
 
 def readFileWithoutComments(f):
@@ -306,6 +317,7 @@ def parseStruct(ss, current_line, lang):
     slot_code_header = signal_code
     array_size_getter_code = signal_code
     array_appender_code = signal_code
+    array_remover_code = signal_code
     type_matches = {}
     type_position = 0
     slot_code = {}
@@ -328,6 +340,8 @@ def parseStruct(ss, current_line, lang):
 '''
             array_appender_code += f'''        if (field_name.toLower() == "{field_name.lower()}") {{
 '''
+            array_remover_code += f'''        if (field_name.toLower() == "{field_name.lower()}") {{
+'''
         elif tokens[1] == 'Choice':
             field_type = parseChoice(ss, current_line)
             is_optional = True
@@ -348,6 +362,7 @@ def parseStruct(ss, current_line, lang):
             if is_array:
                 prepared_array_size_getter_field = prepared_signal_field + '.size()'
                 prepared_array_appender = prepared_signal_field + f'.push_back(defaultConstructor.get{field_type}())'
+                prepared_array_remover = prepared_signal_field + '.pop_back()'
                 prepared_signal_field_last_slot = prepared_signal_field + f'[{prepared_array_size_getter_field}-1]'
                 prepared_signal_field += '[i]'
         elif field_type in ['Int32', 'UInt8', 'Int8']:
@@ -360,6 +375,7 @@ def parseStruct(ss, current_line, lang):
                 prepared_array_size_getter_field = f'elem.{field_name}.size()'
                 prepared_signal_field_last_slot = f'QString::fromStdString(elem.{field_name}[{prepared_array_size_getter_field}-1])'
                 prepared_array_appender = f'elem.{field_name}.push_back("")'
+                prepared_array_remover = f'elem.{field_name}.pop_back()'
             prepared_slot_field = 'value.toStdString()' 
         else: #enum
             prepared_signal_field = f'QString::fromStdString(toString(elem.{field_name}))'
@@ -368,6 +384,7 @@ def parseStruct(ss, current_line, lang):
                 prepared_array_size_getter_field = f'elem.{field_name}.size()'
                 prepared_signal_field_last_slot = f'QString::fromStdString(toString(elem.{field_name}[{prepared_array_size_getter_field}-1]))'
                 prepared_array_appender = f'elem.{field_name}.push_back(elem.{field_name}.back())'
+                prepared_array_remover = f'elem.{field_name}.pop_back()'
             prepared_slot_field = f'parse(value.toStdString(), formats::To<asn::{field_type}>{{}})'
         component_id = field_type + '/' + str(type_position) + '/'
         array_index = '0'
@@ -402,6 +419,9 @@ def parseStruct(ss, current_line, lang):
             emit linkObject->set{field_type}({prepared_signal_field_last_slot}, "{component_id}"+QString::number({prepared_array_size_getter_field}-1));
         }}
 '''
+            array_remover_code += f'''            {prepared_array_remover};
+        }}
+'''
         else:
             slot_code[field_type] = slot_code.get(field_type, '') + f'''        {slot_type_position_check} {{
             elem.{field_name} = {prepared_slot_field};
@@ -418,10 +438,14 @@ def parseStruct(ss, current_line, lang):
     array_appender_code += '''        break;
     }
 '''
+    array_remover_code += '''        break;
+    }
+'''
     result = ParsedStruct()
     result.qml_setter_code = signal_code
     result.array_size_getter_code = array_size_getter_code
     result.array_appender_code = array_appender_code
+    result.array_remover_code = array_remover_code
     for key in slot_code:
         result.slot_code[key] = slot_code_header + slot_code[key] + '''        break;
     }
@@ -486,6 +510,7 @@ for filename in sys.argv[1:]:
     signal_code = ''
     array_size_getter_code = ''
     array_appender_code = ''
+    array_remover_code = ''
     for line in doc_ss:
         tokens = line.split()
         if len(tokens) < 1:
@@ -504,20 +529,25 @@ for filename in sys.argv[1:]:
         slot_code = {k: slot_code.get(k, '') + parse_result.slot_code.get(k, '') for k in slot_code.keys() | parse_result.slot_code.keys()}
         array_size_getter_code += parse_result.array_size_getter_code
         array_appender_code += parse_result.array_appender_code
+        array_remover_code += parse_result.array_remover_code
 
     qml_setter_code = lang.getQmlSetterCode() + signal_code
     array_size_getter_code = lang.getArraySizeGetterCode() + array_size_getter_code
     array_appender_code = lang.getArrayElementAdderDefinition() + array_appender_code
+    array_remover_code = lang.getArrayElementRemoverDefinition() + array_remover_code
     hpp_buffer += lang.getQmlSetterDeclaraion()
     hpp_buffer += lang.getArraySizeGetterDeclaraion()
     hpp_buffer += lang.getArrayElementAdderDeclaration()
+    hpp_buffer += lang.getArrayElementRemoverDeclaration()
 
     qml_setter_code += lang.getQmlSetterCodeFooter()
     array_size_getter_code += lang.getArraySizeGetterCodeFooter()
     array_appender_code += lang.getSlotCodeFooter('')
+    array_remover_code += lang.getSlotCodeFooter('')
     cpp += qml_setter_code
     cpp += array_size_getter_code
     cpp += array_appender_code
+    cpp += array_remover_code
     for key in slot_code:
         all_types.update([key])
         hpp_buffer += lang.getSlotFunctionDeclaraion(key)
@@ -529,6 +559,7 @@ for filename in sys.argv[1:]:
 '''
 
 hpp += global_lang.getBaseClassArrayElementAdderDefinition()
+hpp += global_lang.getBaseClassArrayElementRemoverDefinition()
 for key in all_types:
     hpp += global_lang.getBaseClassSlotDefinition(key)
 hpp += '''

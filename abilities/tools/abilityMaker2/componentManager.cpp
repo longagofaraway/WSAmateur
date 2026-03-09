@@ -235,7 +235,7 @@ std::vector<QQuickItem*> ComponentManager::createCppComponent(const LangComponen
     }
     if (langComponent.isArray) {
         QString arrayId = langComponent.type + QString::number(typeIndex);
-        arrayComponents_[arrayId] = std::make_unique<ArrayComponent>(langComponent, arrayId, typeIndex, parent, linkObject, this, mediator);
+        arrayComponents_[arrayId] = std::make_unique<ArrayComponent>(langComponent, arrayId, typeIndex, parent, linkObject, this, mediator, arraySize);
         result.push_back(arrayComponents_[arrayId].get()->getQmlObject());
     }
     return result;

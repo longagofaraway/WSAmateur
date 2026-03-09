@@ -10,7 +10,7 @@ class ComponentManager;
 class ArrayComponent : public BaseComponent {
     Q_OBJECT
 private:
-    size_t arraySize_{1};
+    size_t arraySize_;
     LangComponent langComponent_;
     BaseComponent* linkObject_;
     ComponentManager* componentManager_;
@@ -19,8 +19,9 @@ private:
     int typeIndex_;
 
 public:
-    ArrayComponent(const LangComponent& langComponent, QString componentId, int typeIndex, QQuickItem *parent, BaseComponent* linkObject, ComponentManager *componentManager, QObject *mediator);
+    ArrayComponent(const LangComponent& langComponent, QString componentId, int typeIndex, QQuickItem *parent, BaseComponent* linkObject, ComponentManager *componentManager, QObject *mediator, size_t arraySize);
 
 public slots:
     void addComponent();
+    void removeComponent();
 };

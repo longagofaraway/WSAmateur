@@ -120,3 +120,11 @@ void ConditionComponent::addComponentToArray(QString type, QString fieldName, in
     fitComponent();
     notifyOfChanges();
 }
+
+void ConditionComponent::removeComponentFromArray(QString type, QString fieldName, int typePosition) {
+    gen_helper->removeElementFromArray(fieldName);
+    auto updatedComponents = componentManager_.getComponentsRow(type, typePosition);
+    components_[typePosition-1] = updatedComponents;
+    fitComponent();
+    notifyOfChanges();
+}

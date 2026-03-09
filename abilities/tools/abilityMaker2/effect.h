@@ -36,6 +36,7 @@ public:
     virtual asn::EffectType getLanguageComponentType(formats::To<asn::EffectType>) override { return type_; }
     virtual VarEffect& getLanguageComponent(formats::To<VarEffect>) override { return effect_; }
     void addComponentToArray(QString type, QString fieldName, int typePosition) override;
+    void removeComponentFromArray(QString type, QString fieldName, int typePosition) override;
 
 signals:
     void componentChanged(QString nodeId, asn::EffectType type, VarEffect effect);
@@ -44,6 +45,7 @@ signals:
 private:
     void fitComponent();
     void createEffect();
+    void updateComponents(QString type, int typePosition);
 
 private slots:
     void onEffectTypeChanged(QString);

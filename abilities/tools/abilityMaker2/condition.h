@@ -37,6 +37,7 @@ public:
     asn::ConditionType getLanguageComponentType(formats::To<asn::ConditionType>) override { return type_; }
     VarCondition& getLanguageComponent(formats::To<VarCondition>) override { return condition_; }
     void addComponentToArray(QString type, QString fieldName, int typePosition) override;
+    void removeComponentFromArray(QString type, QString fieldName, int typePosition) override;
 
 signals:
     void componentChanged(QString nodeId, asn::ConditionType type, VarCondition condition);

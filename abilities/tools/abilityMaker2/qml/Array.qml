@@ -3,6 +3,7 @@ import QtQuick.Controls 2.12
 
 Row {
     signal addComponent()
+    signal removeComponent()
 
     spacing: 5
     height: childrenRect.height
@@ -14,7 +15,7 @@ Button {
     text: "+"
     onClicked: {
         currentNumber = currentNumber + 1;
-        addComponent()
+        addComponent();
     }
 }
 
@@ -22,7 +23,10 @@ Button {
 CancelButton {
     width: 50
     height: 30
-    onClicked: currentNumber = currentNumber - 1
+    onClicked: {
+        currentNumber = currentNumber - 1;
+        removeComponent();
+    }
     visible: currentNumber > 1
 }
 

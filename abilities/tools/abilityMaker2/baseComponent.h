@@ -37,6 +37,7 @@ public:
     virtual VarCondition& getLanguageComponent(formats::To<VarCondition>) { throw std::runtime_error("not implemented"); }
 
     virtual void addComponentToArray(QString type, QString fieldName, int typePosition) { throw std::runtime_error("not implemented"); }
+    virtual void removeComponentFromArray(QString type, QString fieldName, int typePosition) { throw std::runtime_error("not implemented"); }
 
 signals:
     void close();
