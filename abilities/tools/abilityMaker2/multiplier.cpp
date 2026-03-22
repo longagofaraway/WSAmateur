@@ -101,8 +101,10 @@ void MultiplierComponent::createMultiplier() {
 
     auto &spec = LanguageSpecification::get();
     auto components = spec.getComponentsByEnum(QString::fromStdString(toString(type_)));
+    int i = 0;
     for (const auto& comp: components) {
-        auto objects = componentManager_.createComponent(comp, qmlObject_, this, gen_helper.get(), 1, 1);
+        ++i;
+        auto objects = componentManager_.createComponent(comp, qmlObject_, this, gen_helper.get(), i, 1);
         if (objects.empty())
             continue;
         auto *object = objects[0];

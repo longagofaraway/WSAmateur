@@ -15,6 +15,7 @@ class EffectsTree;
 class AbilityComponent : public QQuickItem {
     Q_OBJECT
 private:
+    QString id_{"ability"};
     std::vector<asn::Trigger> triggers_;
     asn::AbilityType type_{asn::AbilityType::Auto};
     int activationTimes_ = 0;
@@ -27,14 +28,18 @@ private:
 public:
     Q_INVOKABLE void createTrigger(QString triggerId, QQuickItem *parent);
     Q_INVOKABLE void openTrigger(QQuickItem *parent);
+    Q_INVOKABLE void updateKeywords(QVariant keywordList);
 
     void setCurrentComponent(std::shared_ptr<BaseComponent> component);
     std::shared_ptr<BaseComponent> getCurrentComponent() { return currentComponent_; }
     void subscribeToEffectsChange(EffectsTree* effectsTree);
 
 signals:
-    void componentChanged(asn::Ability ability);
+    void componentChanged(asn::Ability ability, QString id);
     void translationChanged(QString text);
+
+public slots:
+    void setAbility(const asn::Ability& ability, QString id);
 
 private:
     asn::Ability constructAbility();

@@ -406,8 +406,8 @@ def parseStruct(ss, current_line, lang):
 '''
             slot_code[field_type] = slot_code.get(field_type, '') + f'''        {slot_type_position_check} {{
             if (elem.{field_name}.size() <= arrayPosition.toInt()) {{
-                qWarning() << "wrong arrat index for {field_name}";
-                throw std::runtime_error("wrong arrat index for {field_name}");
+                qWarning() << "wrong array index for {field_name}";
+                throw std::runtime_error("wrong array index for {field_name}");
             }}
             elem.{field_name}[arrayPosition.toInt()] = {prepared_slot_field};
         }}

@@ -21,6 +21,17 @@ decltype(asn::Effect::effect) getDefaultEffect(asn::EffectType type) {
     thisCardTarget.type = asn::TargetType::ThisCard;
 
     switch (type) {
+    case asn::EffectType::AbilityGain:{
+        auto ef = asn::AbilityGain();
+        ef.target = thisCardTarget;
+        ef.number = 1;
+        ef.duration = 1;
+        asn::Ability a;
+        a.type = asn::AbilityType::Auto;
+        a.ability = asn::AutoAbility{.activationTimes=0};
+        ef.abilities.push_back(a);
+        return ef;
+    }
     case asn::EffectType::AttributeGain:{
         auto ef = asn::AttributeGain();
         ef.target = thisCardTarget;
@@ -60,6 +71,12 @@ decltype(asn::Effect::effect) getDefaultEffect(asn::EffectType type) {
     }
     case asn::EffectType::PayCost:
         return asn::PayCost();
+    case asn::EffectType::PerformEffect:{
+        auto ef = asn::PerformEffect{};
+        ef.numberOfEffects = 1;
+        ef.numberOfTimes = 1;
+        return ef;
+    }
     }
 
     return kEmptyEffect.effect;

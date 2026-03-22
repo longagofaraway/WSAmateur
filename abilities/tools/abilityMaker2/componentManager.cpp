@@ -3,9 +3,11 @@
 #include <QDebug>
 #include <QQmlContext>
 
+#include "ability.h"
 #include "ability_maker_gen.h"
 #include "array.h"
 #include "componentHelper.h"
+#include "componentOpener.h"
 #include "card.h"
 #include "cardSpecifier.h"
 #include "condition.h"
@@ -25,7 +27,8 @@ const QSet<QString> kCppComponents {
     "Place",
     "Number",
     "Multiplier",
-    "Condition"
+    "Condition",
+    "Ability"
 };
 
 QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent, BaseComponent *linkObject) {
@@ -36,6 +39,7 @@ QQuickItem* createQmlObject(const QString &name, const QString &id, const QStrin
     QObject *obj = component.create(context);
     QQuickItem *qmlObject = qobject_cast<QQuickItem*>(obj);
     qmlObject->setProperty("displayName", displayName);
+    qmlObject->setProperty("componentName", displayName);
     qmlObject->setParentItem(parent);
     qmlObject->setParent(parent);
     return qmlObject;
@@ -162,6 +166,11 @@ QQuickItem* ComponentManager::createPlace(QString id, const LangComponent& langC
     if (!connections_.contains(connectionId)) {
         QMetaObject::Connection connection = QObject::connect(linkObject, &BaseComponent::setPlace, this,
             [=](const asn::Place& place, QString idParam) {
+                qWarning() << "comps:";
+                for (auto &cppComponent: cppComponents_) {
+                    qWarning() << cppComponent.first << " " << cppComponent.second->getComponentId();
+
+                }
                 auto *component = dynamic_cast<PlaceComponent*>(cppComponents_[idParam].get());
                 component->setPlace(place);
             });
@@ -222,6 +231,25 @@ QQuickItem* ComponentManager::createCondition(QString id, const LangComponent& l
         connections_.insert(connectionId, connection);
     }
     QObject::connect(component, SIGNAL(conditionReady(asn::Condition,QString)), mediator, SLOT(conditionChanged(asn::Condition,QString)));
+    return component->getQmlObject();
+}
+
+QQuickItem *ComponentManager::createAbility(QString id, const LangComponent &langComponent, QQuickItem *parent, BaseComponent *linkObject, QObject *mediator) {
+    auto abilityComponentCreator = [langComponent, id, parent, linkObject, mediator]() -> QQuickItem* {
+        QQuickItem *object = createQmlObject(getBasicComponentQmlPath(langComponent.type), id, langComponent.name, parent->parentItem(), linkObject);
+        QObject::connect(object, SIGNAL(componentChanged(asn::Ability,QString)), mediator, SLOT(abilityChanged(asn::Ability,QString)));
+        return object;
+    };
+    cppComponents_[id] = std::make_unique<ComponentOpener>(parent, parent->parentItem(), id, abilityComponentCreator);
+    auto *component = cppComponents_[id].get();
+    QString connectionId = linkObject->getComponentId() + '/' + langComponent.type;
+    if (!connections_.contains(connectionId)) {
+        QMetaObject::Connection connection = QObject::connect(linkObject, &BaseComponent::setAbility, this,
+            [=](const asn::Ability& ability, QString idParam) {
+                auto *component = dynamic_cast<ComponentOpener*>(cppComponents_[idParam].get());
+                component->initAbility(ability, idParam);
+            });
+    }
     return component->getQmlObject();
 }
 
@@ -312,6 +340,7 @@ ComponentManager::ComponentManager() {
         {"Multiplier", &ComponentManager::createMultiplier},
         {"Card", &ComponentManager::createCard},
         {"CardSpecifier", &ComponentManager::createCardSpecifier},
+        {"Ability", &ComponentManager::createAbility},
     };
 }
 

@@ -52,5 +52,6 @@
         <file>qml/FloatingArea.qml</file>
         <file>qml/Condition.qml</file>
         <file>qml/Array.qml</file>
+        <file>qml/ComponentOpener.qml</file>
     </qresource>
 </RCC>

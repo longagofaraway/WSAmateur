@@ -21,6 +21,8 @@ set(abilityMakerSources
     componentIdParser.cpp
     componentManager.h
     componentManager.cpp
+    componentOpener.h
+    componentOpener.cpp
     condition.h
     condition.cpp
     conditionInit.h

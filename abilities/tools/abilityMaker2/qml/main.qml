@@ -22,7 +22,7 @@ Window {
 
         Connections {
             target: rootAbility
-            function onComponentChanged(ability) {
+            function onComponentChanged(ability, id) {
                 abilityText.text = root.translate(ability);
             }
             function onAbilitySizeChanged(qmlWidth, qmlHeight) {

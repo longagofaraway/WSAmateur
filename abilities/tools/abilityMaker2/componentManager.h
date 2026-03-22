@@ -47,4 +47,5 @@ private:
     QQuickItem* createNumber(QString id, const LangComponent& langComponent, QQuickItem *parent, BaseComponent* linkObject, QObject *mediator);
     QQuickItem* createMultiplier(QString id, const LangComponent& langComponent, QQuickItem *parent, BaseComponent* linkObject, QObject *mediator);
     QQuickItem* createCondition(QString id, const LangComponent& langComponent, QQuickItem *parent, BaseComponent* linkObject, QObject *mediator);
+    QQuickItem* createAbility(QString id, const LangComponent& langComponent, QQuickItem *parent, BaseComponent* linkObject, QObject *mediator);
 };

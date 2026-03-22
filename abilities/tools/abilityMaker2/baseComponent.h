@@ -82,6 +82,7 @@ signals:
     void setTraitModificationType(QString, QString);
     void setTraitType(QString, QString);
 
+    void abilityReady(const asn::Ability&, QString);
     void targetReady(const asn::Target&, QString);
     void cardReady(const asn::Card&, QString);
     void targetAndPlaceReady(const asn::TargetAndPlace&, QString);

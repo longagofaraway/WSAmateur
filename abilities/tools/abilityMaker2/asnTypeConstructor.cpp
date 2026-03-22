@@ -35,7 +35,11 @@ asn::Effect AsnTypeConstructor::getEffect() {
     return asn::Effect{.type=asn::EffectType::NotSpecified,.cond=getCondition()};
 }
 asn::Ability AsnTypeConstructor::getAbility() {
-    return asn::Ability{.type=asn::AbilityType::Auto};
+
+    asn::Ability a;
+    a.type = asn::AbilityType::Auto;
+    a.ability = asn::AutoAbility{.activationTimes=0};
+    return a;
 }
 asn::EventAbility AsnTypeConstructor::getEventAbility() {
     return asn::EventAbility{};

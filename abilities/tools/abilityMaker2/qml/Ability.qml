@@ -14,8 +14,31 @@ AbilityComponent {
         abilityMenu.setTriggerText(triggerText);
     }
 
+    function setAbilityType(newValue) {
+        abilityCombo.dontTrigger = true;
+        abilityCombo.currentIndex = abilityCombo.indexOfValue(newValue);
+    }
+
+    function setKeywords(keys) {
+        for (let i = 0; i < keys.length; i++) {
+            let index = keywords.indexOfValue(keys[i]);
+            let object = keywords.model.get(index);
+            object.selected = true;
+        }
+        keywords.updateText();
+    }
+
     Component.onCompleted: {
         abilityMenu.passAbilityComponent(abilityComponent)
+    }
+
+    MouseArea {
+        anchors.fill: parent
+    }
+
+    Rectangle {
+        anchors.fill: parent
+        color: "white"
     }
 
     Column {
@@ -28,10 +51,27 @@ AbilityComponent {
         }
         ComboBox {
             id: abilityCombo
+
+            property bool dontTrigger: false
             currentIndex: -1
-            model: ["Cont", "Auto", "Act", "Event"]
+            textRole: "key"
+            valueRole: "value"
+            model: ListModel {
+                ListElement { key: "Cont"; value: "Cont" }
+                ListElement { key: "Auto"; value: "Auto" }
+                ListElement { key: "Act"; value: "Act" }
+                ListElement { key: "Event"; value: "Event" }
+            }
             onCurrentIndexChanged: {
                 activationTimes.enabled = (currentIndex == 1);
+            }
+            onCurrentValueChanged: {
+                if (dontTrigger) {
+                    dontTrigger = false;
+                    return;
+                }
+
+                //effectTypeChanged(currentValue);
             }
         }
     }
@@ -55,20 +95,27 @@ AbilityComponent {
         }
 
         MultiselectComboBox {
+            id: keywords
             anchors.bottom: abilitySpecs.bottom
+
+            textRole: "name"
+            valueRole: "value"
             model: ListModel {
-                ListElement { name: "CxCombo"; selected: false }
-                ListElement { name: "Brainstorm"; selected: false }
-                ListElement { name: "Backup"; selected: false }
-                ListElement { name: "Encore"; selected: false }
-                ListElement { name: "Assist"; selected: false }
-                ListElement { name: "Alarm"; selected: false }
-                ListElement { name: "Experience"; selected: false }
-                ListElement { name: "Resonance"; selected: false }
-                ListElement { name: "Bond"; selected: false }
-                ListElement { name: "Change"; selected: false }
-                ListElement { name: "Memory"; selected: false }
-                ListElement { name: "Replay"; selected: false }
+                ListElement { name: "CxCombo"; value: "Cxcombo"; selected: false }
+                ListElement { name: "Brainstorm"; value: "Brainstorm"; selected: false }
+                ListElement { name: "Backup"; value: "Backup"; selected: false }
+                ListElement { name: "Encore"; value: "Encore"; selected: false }
+                ListElement { name: "Assist"; value: "Assist"; selected: false }
+                ListElement { name: "Alarm"; value: "Alarm"; selected: false }
+                ListElement { name: "Experience"; value: "Experience"; selected: false }
+                ListElement { name: "Resonance"; value: "Resonance"; selected: false }
+                ListElement { name: "Bond"; value: "Bond"; selected: false }
+                ListElement { name: "Change"; value: "Change"; selected: false }
+                ListElement { name: "Memory"; value: "Memory"; selected: false }
+                ListElement { name: "Replay"; value: "Replay"; selected: false }
+            }
+            onCheckedChanged: {
+                abilityComponent.updateKeywords(keywordList);
             }
         }
     }
