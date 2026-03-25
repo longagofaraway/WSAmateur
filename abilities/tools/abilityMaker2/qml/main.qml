@@ -26,7 +26,6 @@ Window {
                 abilityText.text = root.translate(ability);
             }
             function onAbilitySizeChanged(qmlWidth, qmlHeight) {
-                console.log('new width: '+qmlWidth+', new height: '+qmlHeight);
                 if (qmlWidth > window.width)
                     window.width = qmlWidth;
                 if (qmlHeight > window.height)

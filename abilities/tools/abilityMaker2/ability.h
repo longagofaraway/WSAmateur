@@ -29,6 +29,7 @@ public:
     Q_INVOKABLE void createTrigger(QString triggerId, QQuickItem *parent);
     Q_INVOKABLE void openTrigger(QQuickItem *parent);
     Q_INVOKABLE void updateKeywords(QVariant keywordList);
+    Q_INVOKABLE void updateActivationTimes(QString value);
 
     void setCurrentComponent(std::shared_ptr<BaseComponent> component);
     std::shared_ptr<BaseComponent> getCurrentComponent() { return currentComponent_; }
@@ -62,11 +63,11 @@ T ability;
         ability.triggers = triggers_;
         ability.cost = cost_;
     }
-    ability.keywords = keywords_;
     if constexpr (std::is_same_v<T, asn::ActAbility>) {
         if (cost_.has_value())
             ability.cost = cost_.value();
     }
+    ability.keywords = keywords_;
     ability.effects = effects_;
     return ability;
 }

@@ -26,6 +26,10 @@ ScrollView {
     }
     function setTriggerText(triggerText: string) {
         triggers.text = 'Trigger' + '\n' + triggerText
+        triggerSet = true;
+    }
+    function setAbility(ability) {
+        effectsTree.setAbility(ability);
     }
 
 Column {

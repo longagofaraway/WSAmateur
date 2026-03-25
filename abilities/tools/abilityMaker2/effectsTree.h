@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE void setWorkingArea(QObject *workingArea);
     Q_INVOKABLE void setAbilityComponent(QQuickItem *abilityComponent);
     Q_INVOKABLE void loseFocus();
+    Q_INVOKABLE void setAbility(const asn::Ability ability);
 
 signals:
     void componentChanged(std::vector<asn::Effect> effects);
@@ -63,6 +64,8 @@ private:
     void createEffectComponent(const TreeNodeInfo *nodeInfo);
     void createConditionComponent(const TreeNodeInfo *nodeInfo);
     TreeNodeInfo* createNode(TreeNodeInfo *creatingNode, const asn::Effect& effect);
+    TreeNodeInfo* createEffectInternal(QString nodeId, const asn::Effect& effect);
+    void setEffects(const std::vector<asn::Effect>& effects, QString nodeId);
 
 private slots:
     void createEffect(QString,QString);

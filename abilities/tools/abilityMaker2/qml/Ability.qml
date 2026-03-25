@@ -28,6 +28,14 @@ AbilityComponent {
         keywords.updateText();
     }
 
+    function setActivationTime(activationTime) {
+        activationTimesCombo.currentIndex = activationTime;
+    }
+
+    function setAbility(ability) {
+        abilityMenu.setAbility(ability);
+    }
+
     Component.onCompleted: {
         abilityMenu.passAbilityComponent(abilityComponent)
     }
@@ -90,7 +98,9 @@ AbilityComponent {
             }
 
             ComboBox {
+                id: activationTimesCombo
                 model: ["always", "1", "2"]
+                onCurrentValueChanged: abilityComponent.updateActivationTimes(currentValue)
             }
         }
 

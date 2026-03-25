@@ -10,6 +10,13 @@
 #include "conditionInit.h"
 #include "language_parser.h"
 
+// helper type for the visitor
+template<class... Ts>
+struct overloads : Ts... { using Ts::operator()...; };
+
+template<class... Ts>
+overloads(Ts...) -> overloads<Ts...>;
+
 namespace {
 const int kNodeHeight = 35;
 const int kHeaderHeight = 15;
@@ -197,7 +204,7 @@ void EffectsTree::createEffectComponent(const TreeNodeInfo *nodeInfo) {
     setFocus(nodeInfo->object, /*isCondition*/ false);
 }
 
-void EffectsTree:: createConditionComponent(const TreeNodeInfo *nodeInfo) {
+void EffectsTree::createConditionComponent(const TreeNodeInfo *nodeInfo) {
     std::shared_ptr<ConditionComponent> conditionComponent = std::make_shared<ConditionComponent>(nodeInfo->id, workingArea_, nodeInfo->effect.value().cond);
     connect(&*conditionComponent, &ConditionComponent::componentChanged, this, &EffectsTree::conditionChanged);
     connect(&*conditionComponent, &ConditionComponent::sizeChanged, this, &EffectsTree::effectSizeChanged);
@@ -229,8 +236,13 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
         qWarning() << nodeId << " node not found";
         return;
     }
-    auto& node = nodeMap_.at(nodeId);
     auto effect = getEffectFromPreset(effectId);
+    createEffectInternal(nodeId, effect);
+    notifyOfChanges();
+}
+
+TreeNodeInfo* EffectsTree::createEffectInternal(QString nodeId, const asn::Effect& effect) {
+    auto& node = nodeMap_.at(nodeId);
     auto newNode = createNode(node.get(), effect);
     newNode->object->setProperty("effectMode", "selectMode");
     newNode->object->setProperty("effectName", QString::fromStdString(toString(effect.type)));
@@ -238,8 +250,7 @@ void EffectsTree::createEffect(QString nodeId, QString effectId) {
     createEffectComponent(newNode);
     updateEffectsTree(newNode);
     renderTree();
-
-    notifyOfChanges();
+    return newNode;
 }
 
 void EffectsTree::setEffect(QString nodeId, QString effectId) {
@@ -416,5 +427,53 @@ void EffectsTree::loseFocus() {
     }
     selectedItem_->setProperty("selected", false);
     selectedItem_->setProperty("conditionSelected", false);
+}
+
+void EffectsTree::setEffects(const std::vector<asn::Effect>& effects, QString nodeId) {
+    for (const auto& effect: effects) {
+        auto newNode = createEffectInternal(nodeId, effect);
+        if (effect.type == asn::EffectType::PayCost) {
+            const auto& payCost = std::get<asn::PayCost>(effect.effect);
+            auto subbranchNodeId = newNode->subBranches[0].back()->id;
+            setEffects(payCost.ifYouDo, subbranchNodeId);
+            subbranchNodeId = newNode->subBranches[1].back()->id;
+            setEffects(payCost.ifYouDont, subbranchNodeId);
+        }
+    }
+}
+
+void EffectsTree::setAbility(const asn::Ability ability) {
+    std::vector<asn::Effect> effects;
+    std::vector<asn::Trigger> triggers;
+    std::optional<asn::Cost> cost;
+
+    std::visit(overloads
+    {
+        [&](const asn::AutoAbility& ability) {
+            triggers = ability.triggers;
+            effects = ability.effects;
+            cost = ability.cost;
+        },
+        [&](const asn::ContAbility& ability) {
+            effects = ability.effects;
+        },
+        [&](const asn::ActAbility& ability) {
+            effects = ability.effects;
+        },
+        [&](const asn::EventAbility& ability) {
+            effects = ability.effects;
+        },
+        [](auto arg) {
+            qWarning() << "unhandled ability type";
+            throw std::runtime_error("unhandled ability type");
+        }
+    }, ability.ability);
+
+    QString nodeId = "New";
+    if (!nodeMap_.contains(nodeId)) {
+        qWarning() << nodeId << " node not found";
+        return;
+    }
+    setEffects(effects, nodeId);
 }
 

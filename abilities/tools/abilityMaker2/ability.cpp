@@ -17,8 +17,6 @@ struct overloads : Ts... { using Ts::operator()...; };
 template<class... Ts>
 overloads(Ts...) -> overloads<Ts...>;
 
-using value_t = std::variant<int, long, double, std::string>;
-
 void AbilityComponent::componentComplete() {
     QQuickItem::componentComplete();
 }
@@ -33,6 +31,7 @@ void AbilityComponent::createTrigger(QString triggerId, QQuickItem *parent) {
     } else {
         currentComponent_ = std::make_shared<TriggerComponent>(parent);
     }
+    emit componentChanged(constructAbility(), id_);
 }
 
 void AbilityComponent::openTrigger(QQuickItem *parent) {
@@ -46,6 +45,17 @@ void AbilityComponent::updateKeywords(QVariant keywordList) {
     auto list = keywordList.toList();
     for (int i = 0; i < list.size(); ++i)
         keywords_.push_back(parse(list[i].toString().toStdString(), formats::To<asn::Keyword>()));
+    emit componentChanged(constructAbility(), id_);
+}
+
+void AbilityComponent::updateActivationTimes(QString value) {
+    if (value == "always") {
+        activationTimes_ = 0;
+    } else if (value == "1") {
+        activationTimes_ = 1;
+    } else if (value == "2") {
+        activationTimes_ = 2;
+    }
     emit componentChanged(constructAbility(), id_);
 }
 
@@ -97,7 +107,7 @@ void AbilityComponent::setAbility(const asn::Ability& ability, QString id) {
     id_ = id;
     type_ = ability.type;
 
-    std::visit( overloads
+    std::visit(overloads
     {
         [this](const asn::AutoAbility& ability) {
             triggers_ = ability.triggers;
@@ -131,4 +141,11 @@ void AbilityComponent::setAbility(const asn::Ability& ability, QString id) {
     QList<QString> myList;
     std::copy(vec.begin(), vec.end(), std::back_inserter(myList));
     QMetaObject::invokeMethod(this, "setKeywords", Q_ARG(QVariant, QVariant::fromValue(myList)));
+
+    if (!triggers_.empty()) {
+        QMetaObject::invokeMethod(this, "setTriggerText", Q_ARG(QString, QString::fromStdString(toString(triggers_[0].type))));
+    }
+
+    QMetaObject::invokeMethod(this, "setActivationTime", Q_ARG(QVariant, activationTimes_));
+    QMetaObject::invokeMethod(this, "setAbility", Q_ARG(QVariant, QVariant::fromValue(ability)));
 }
