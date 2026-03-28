@@ -75,6 +75,13 @@ decltype(asn::Effect::effect) getDefaultEffect(asn::EffectType type) {
         auto ef = asn::PerformEffect{};
         ef.numberOfEffects = 1;
         ef.numberOfTimes = 1;
+        ef.effects.push_back(asn::EventAbility{});
+        return ef;
+    }
+    case asn::EffectType::DelayedAbility:{
+        auto ef = asn::DelayedAbility{};
+        ef.ability = std::make_shared<asn::AutoAbility>(asn::AutoAbility{.activationTimes=0});
+        ef.duration = 1;
         return ef;
     }
     }

@@ -17,12 +17,14 @@ private:
 
     std::optional<asn::Ability> ability_;
     QString id_;
+    bool fixedType_{false};
 
 public:
     ComponentOpener(QQuickItem *parent, QQuickItem *workingArea, QString componentId, std::function<QQuickItem*()>&& componentCreator);
     ~ComponentOpener();
 
     void initAbility(const asn::Ability& ability, QString idParam);
+    void initAbilityFixedType(const asn::Ability &ability, QString idParam);
 
 public slots:
     void openView();

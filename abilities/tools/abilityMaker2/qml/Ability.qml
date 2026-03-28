@@ -36,6 +36,10 @@ AbilityComponent {
         abilityMenu.setAbility(ability);
     }
 
+    function fixType() {
+        abilityCombo.enabled = false;
+    }
+
     Component.onCompleted: {
         abilityMenu.passAbilityComponent(abilityComponent)
     }

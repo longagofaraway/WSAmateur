@@ -17,12 +17,18 @@ void ComponentOpener::initAbility(const asn::Ability &ability, QString idParam) 
     abilityChanged(ability, idParam);
 }
 
+void ComponentOpener::initAbilityFixedType(const asn::Ability &ability, QString idParam) {
+    fixedType_ = true;
+    initAbility(ability, idParam);
+}
+
 void ComponentOpener::openView() {
     object_ = componentCreator_();
     connection_ = connect(this, SIGNAL(setAbility(asn::Ability,QString)), object_, SLOT(setAbility(asn::Ability,QString)));
     connect(object_, SIGNAL(componentChanged(asn::Ability,QString)), this, SLOT(abilityChanged(asn::Ability,QString)));
     qvariant_cast<QObject*>(object_->property("anchors"))->setProperty("fill", QVariant::fromValue(workingArea_));
 
+    QMetaObject::invokeMethod(object_, "fixType");
     if (ability_.has_value())
         emit setAbility(ability_.value(), id_);
 }
@@ -47,7 +53,12 @@ void ComponentOpener::abilityChanged(asn::Ability ability, QString id) {
             QMetaObject::invokeMethod(qmlObject_, "setDescription", Q_ARG(QString, QString::fromStdString(toString(ab.effects.front().type))));
         break;
     }
-        // initialize ability
+    case asn::AbilityType::Event: {
+        auto& ab = std::get<asn::EventAbility>(ability.ability);
+        if (ab.effects.size() > 0)
+            QMetaObject::invokeMethod(qmlObject_, "setDescription", Q_ARG(QString, QString::fromStdString(toString(ab.effects.front().type))));
+        break;
+    }
     }
 }
 

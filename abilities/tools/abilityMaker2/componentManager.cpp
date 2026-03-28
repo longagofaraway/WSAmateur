@@ -28,7 +28,9 @@ const QSet<QString> kCppComponents {
     "Number",
     "Multiplier",
     "Condition",
-    "Ability"
+    "Ability",
+    "AutoAbility",
+    "EventAbility",
 };
 
 QQuickItem* createQmlObject(const QString &name, const QString &id, const QString &displayName, QQuickItem *parent, BaseComponent *linkObject) {
@@ -234,7 +236,7 @@ QQuickItem* ComponentManager::createCondition(QString id, const LangComponent& l
     return component->getQmlObject();
 }
 
-QQuickItem *ComponentManager::createAbility(QString id, const LangComponent &langComponent, QQuickItem *parent, BaseComponent *linkObject, QObject *mediator) {
+QQuickItem* ComponentManager::createAbility(QString id, const LangComponent &langComponent, QQuickItem *parent, BaseComponent *linkObject, QObject *mediator) {
     auto abilityComponentCreator = [langComponent, id, parent, linkObject, mediator]() -> QQuickItem* {
         QQuickItem *object = createQmlObject(getBasicComponentQmlPath(langComponent.type), id, langComponent.name, parent->parentItem(), linkObject);
         QObject::connect(object, SIGNAL(componentChanged(asn::Ability,QString)), mediator, SLOT(abilityChanged(asn::Ability,QString)));
@@ -248,6 +250,46 @@ QQuickItem *ComponentManager::createAbility(QString id, const LangComponent &lan
             [=](const asn::Ability& ability, QString idParam) {
                 auto *component = dynamic_cast<ComponentOpener*>(cppComponents_[idParam].get());
                 component->initAbility(ability, idParam);
+            });
+    }
+    return component->getQmlObject();
+}
+
+QQuickItem* ComponentManager::createAutoAbility(QString id, const LangComponent &langComponent, QQuickItem *parent, BaseComponent *linkObject, QObject *mediator) {
+    auto abilityComponentCreator = [langComponent, id, parent, linkObject, mediator]() -> QQuickItem* {
+        QQuickItem *object = createQmlObject(getBasicComponentQmlPath(langComponent.type), id, langComponent.name, parent->parentItem(), linkObject);
+        QObject::connect(object, SIGNAL(componentChanged(asn::Ability,QString)), mediator, SLOT(autoAbilityChangedProxy(asn::Ability,QString)));
+        return object;
+    };
+    cppComponents_[id] = std::make_unique<ComponentOpener>(parent, parent->parentItem(), id, abilityComponentCreator);
+    auto *component = cppComponents_[id].get();
+    QString connectionId = linkObject->getComponentId() + '/' + langComponent.type;
+    if (!connections_.contains(connectionId)) {
+        QMetaObject::Connection connection = QObject::connect(linkObject, &BaseComponent::setAutoAbility, this,
+            [=](const asn::AutoAbility& ability, QString idParam) {
+                asn::Ability a{.type=asn::AbilityType::Auto,.ability=ability};
+                auto *component = dynamic_cast<ComponentOpener*>(cppComponents_[idParam].get());
+                component->initAbilityFixedType(a, idParam);
+            });
+    }
+    return component->getQmlObject();
+}
+
+QQuickItem* ComponentManager::createEventAbility(QString id, const LangComponent &langComponent, QQuickItem *parent, BaseComponent *linkObject, QObject *mediator) {
+    auto abilityComponentCreator = [langComponent, id, parent, linkObject, mediator]() -> QQuickItem* {
+        QQuickItem *object = createQmlObject(getBasicComponentQmlPath(langComponent.type), id, langComponent.name, parent->parentItem(), linkObject);
+        QObject::connect(object, SIGNAL(componentChanged(asn::Ability,QString)), mediator, SLOT(eventAbilityChangedProxy(asn::Ability,QString)));
+        return object;
+    };
+    cppComponents_[id] = std::make_unique<ComponentOpener>(parent, parent->parentItem(), id, abilityComponentCreator);
+    auto *component = cppComponents_[id].get();
+    QString connectionId = linkObject->getComponentId() + '/' + langComponent.type;
+    if (!connections_.contains(connectionId)) {
+        QMetaObject::Connection connection = QObject::connect(linkObject, &BaseComponent::setEventAbility, this,
+            [=](const asn::EventAbility& ability, QString idParam) {
+                asn::Ability a{.type=asn::AbilityType::Event,.ability=ability};
+                auto *component = dynamic_cast<ComponentOpener*>(cppComponents_[idParam].get());
+                component->initAbilityFixedType(a, idParam);
             });
     }
     return component->getQmlObject();
@@ -341,6 +383,8 @@ ComponentManager::ComponentManager() {
         {"Card", &ComponentManager::createCard},
         {"CardSpecifier", &ComponentManager::createCardSpecifier},
         {"Ability", &ComponentManager::createAbility},
+        {"AutoAbility", &ComponentManager::createAutoAbility},
+        {"EventAbility", &ComponentManager::createEventAbility},
     };
 }
 
